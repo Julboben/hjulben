@@ -1,14 +1,10 @@
 {
   "name": "Apple Valley",
-  "label": "APPLE VALLEY / 02",
   "finish": {
     "x": 3301.20703125,
     "y": 230.0234375
   },
   "description": "Let the hills do the work: roll into each dip with speed and it carries you up the next rise. The big hill goes easily with a run-up, and slowly without one. The flower hangs over the dip past the last kicker, so arrive with speed and hop to it.",
-  "lesson": "Momentum. Rollers grow from small to large, then a deep dip in front of a big hill shows that a run-up carries you up. The flower hangs over the dip past a small kicker, so the trail ends with a first little hop.",
-  "alsoNew": "The scarecrow, beehive, ladder and tyre.",
-  "world": "First Rides",
   "start": {
     "x": 200,
     "y": null,
@@ -1242,6 +1238,9 @@
     "windDirection": "left"
   },
   "timeOfDay": 12,
+  "lesson": "Momentum. Rollers grow from small to large, then a deep dip in front of a big hill shows that a run-up carries you up. The flower hangs over the dip past a small kicker, so the trail ends with a first little hop.",
+  "alsoNew": "The scarecrow, beehive, ladder and tyre.",
+  "world": "First Rides",
   "medals": {
     "gold": 14,
     "silver": 18.5,
@@ -1250,5 +1249,9 @@
   "nisse": {
     "x": -672.9821078698342,
     "y": 290.12549465815755
+  },
+  "preview": {
+    "x": -190,
+    "y": 205
   }
 }

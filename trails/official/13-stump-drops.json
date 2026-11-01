@@ -1,0 +1,710 @@
+{
+  "name": "Stump Drops",
+  "finish": {
+    "x": 2612.3830050609445,
+    "y": 379.34985078664056
+  },
+  "description": "Drops and step-downs, from a 40 unit stump ledge to a 90 unit stone dike. Come to each lip slowly, lean back as the front wheel goes over so the bike lands rear wheel first, then let the front come down and ride away down the landing. The steps in the middle are a staircase: roll them one by one. Watch the squirrel at the start.",
+  "lesson": "Small drops and step-downs, landing rear wheel first.",
+  "alsoNew": "The squirrel, stone dike props.",
+  "world": "The Woods",
+  "start": {
+    "x": -500,
+    "y": 108,
+    "facing": 1
+  },
+  "terrainBlocks": [
+    {
+      "id": "ground",
+      "material": "dirt",
+      "outer": {
+        "id": "ground-outer",
+        "nodes": [
+          {
+            "id": "ground-0",
+            "x": -1500,
+            "y": -60,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ground-1",
+            "x": -950,
+            "y": -60,
+            "mode": "smooth",
+            "in": [
+              -1133.3333,
+              -60
+            ],
+            "out": [
+              -910,
+              -60
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-2",
+            "x": -830,
+            "y": 120,
+            "mode": "smooth",
+            "in": [
+              -870,
+              120
+            ],
+            "out": [
+              -753.3333,
+              120
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-3",
+            "x": -600,
+            "y": 120,
+            "mode": "corner",
+            "in": [
+              -676.6667,
+              120
+            ],
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n9v7",
+            "x": -350,
+            "y": 120,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nfpn",
+            "x": -103.7665,
+            "y": 103.1736,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n8s4",
+            "x": 19.7001,
+            "y": 81.4865,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n7ip",
+            "x": 65.6853,
+            "y": 120,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ground-4",
+            "x": 440,
+            "y": 120,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ground-5",
+            "x": 444,
+            "y": 160,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ground-6",
+            "x": 640,
+            "y": 190,
+            "mode": "smooth",
+            "in": [
+              574.6667,
+              190
+            ],
+            "out": [
+              710,
+              190
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-7",
+            "x": 850,
+            "y": 190,
+            "mode": "smooth",
+            "in": [
+              780,
+              190
+            ],
+            "out": [
+              886.6667,
+              190
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-8",
+            "x": 960,
+            "y": 160,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ground-9",
+            "x": 1005,
+            "y": 160,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ground-10",
+            "x": 1008,
+            "y": 220,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ground-11",
+            "x": 1260,
+            "y": 250,
+            "mode": "smooth",
+            "in": [
+              1176,
+              250
+            ],
+            "out": [
+              1280,
+              250
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-12",
+            "x": 1320,
+            "y": 250,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ground-13",
+            "x": 1322,
+            "y": 275,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ground-14",
+            "x": 1390,
+            "y": 275,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ground-15",
+            "x": 1392,
+            "y": 300,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ground-16",
+            "x": 1460,
+            "y": 300,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ground-17",
+            "x": 1462,
+            "y": 325,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ground-18",
+            "x": 1600,
+            "y": 335,
+            "mode": "smooth",
+            "in": [
+              1554,
+              335
+            ],
+            "out": [
+              1633.3333,
+              335
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-19",
+            "x": 1700,
+            "y": 335,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ground-20",
+            "x": 1704,
+            "y": 410,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ground-21",
+            "x": 1950,
+            "y": 440,
+            "mode": "smooth",
+            "in": [
+              1868,
+              440
+            ],
+            "out": [
+              2083.3333,
+              440
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-22",
+            "x": 2350,
+            "y": 300,
+            "mode": "smooth",
+            "in": [
+              2216.6667,
+              300
+            ],
+            "out": [
+              2380,
+              300
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-23",
+            "x": 2440,
+            "y": 300,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ground-24",
+            "x": 2443,
+            "y": 390,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ground-25",
+            "x": 2700,
+            "y": 425,
+            "mode": "smooth",
+            "in": [
+              2614.3333,
+              425
+            ],
+            "out": [
+              2783.3333,
+              425
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-26",
+            "x": 2950,
+            "y": 425,
+            "mode": "smooth",
+            "in": [
+              2866.6667,
+              425
+            ],
+            "out": [
+              2986.6667,
+              425
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-27",
+            "x": 3060,
+            "y": 425,
+            "mode": "smooth",
+            "in": [
+              3023.3333,
+              425
+            ],
+            "out": [
+              3071.103,
+              425
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "n114",
+            "x": 3095.0398,
+            "y": 375.6413,
+            "mode": "independent",
+            "in": [
+              3083.9368,
+              401.5387
+            ],
+            "out": [
+              3096.4256,
+              329.4259
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-28",
+            "x": 3160,
+            "y": 250,
+            "mode": "smooth",
+            "in": [
+              3116.9251,
+              247.0135
+            ],
+            "out": [
+              3273.3333,
+              250
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-29",
+            "x": 3500,
+            "y": 250,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ground-30",
+            "x": 3500,
+            "y": 1200,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ground-31",
+            "x": -1500,
+            "y": 1200,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "dike-deco-1",
+      "material": "stone",
+      "outer": {
+        "id": "dike-deco-1-outer",
+        "nodes": [
+          {
+            "id": "dike-deco-1-0",
+            "x": -780,
+            "y": 96,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "dike-deco-1-1",
+            "x": -700,
+            "y": 96,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "dike-deco-1-2",
+            "x": -700,
+            "y": 120,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "dike-deco-1-3",
+            "x": -780,
+            "y": 120,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    }
+  ],
+  "apples": [
+    {
+      "x": 631,
+      "y": 128.75510204081633
+    },
+    {
+      "x": 1435,
+      "y": 240
+    },
+    {
+      "x": 2408.02858405968,
+      "y": 253.72385126543406
+    },
+    {
+      "x": 77.33178196358432,
+      "y": 37.96055237360525
+    }
+  ],
+  "props": [
+    {
+      "x": -1200,
+      "y": -60,
+      "type": "pine",
+      "layer": "back"
+    },
+    {
+      "x": -1060,
+      "y": -60,
+      "type": "pine-small",
+      "layer": "back"
+    },
+    {
+      "x": -740,
+      "y": 96,
+      "type": "moss",
+      "layer": "back"
+    },
+    {
+      "x": -620,
+      "y": 120,
+      "type": "stump",
+      "layer": "front"
+    },
+    {
+      "x": 230,
+      "y": null,
+      "type": "pine",
+      "layer": "back"
+    },
+    {
+      "x": 330,
+      "y": null,
+      "type": "pebbles",
+      "layer": "front"
+    },
+    {
+      "x": 446,
+      "y": 135,
+      "type": "roots",
+      "layer": "back"
+    },
+    {
+      "x": 430,
+      "y": null,
+      "type": "stump",
+      "layer": "front"
+    },
+    {
+      "x": 700,
+      "y": null,
+      "type": "pine-small",
+      "layer": "back"
+    },
+    {
+      "x": 780,
+      "y": null,
+      "type": "rock",
+      "layer": "front"
+    },
+    {
+      "x": 1100,
+      "y": null,
+      "type": "pine",
+      "layer": "back"
+    },
+    {
+      "x": 1551.4801188042834,
+      "y": 332.5538219435291,
+      "type": "squirrel",
+      "layer": "back"
+    },
+    {
+      "x": 1200,
+      "y": null,
+      "type": "mushrooms",
+      "layer": "front"
+    },
+    {
+      "x": 1355,
+      "y": null,
+      "type": "pebbles",
+      "layer": "front"
+    },
+    {
+      "x": 1690,
+      "y": null,
+      "type": "stump",
+      "layer": "front"
+    },
+    {
+      "x": 1706,
+      "y": 370,
+      "type": "roots",
+      "layer": "back"
+    },
+    {
+      "x": 1850,
+      "y": null,
+      "type": "pine",
+      "layer": "back"
+    },
+    {
+      "x": 2000,
+      "y": null,
+      "type": "boulder",
+      "layer": "back"
+    },
+    {
+      "x": 2120,
+      "y": null,
+      "type": "pine-small",
+      "layer": "back"
+    },
+    {
+      "x": 2300,
+      "y": null,
+      "type": "pine",
+      "layer": "back"
+    },
+    {
+      "x": 2520,
+      "y": null,
+      "type": "bush",
+      "layer": "back"
+    },
+    {
+      "x": 2720,
+      "y": 418.1906614785992,
+      "type": "pine",
+      "layer": "back"
+    },
+    {
+      "x": 2760,
+      "y": null,
+      "type": "lantern",
+      "layer": "back"
+    },
+    {
+      "x": 3000,
+      "y": null,
+      "type": "pine-small",
+      "layer": "back"
+    },
+    {
+      "x": 3104.2756766858492,
+      "y": 331.61898734529615,
+      "type": "roots",
+      "layer": "back",
+      "rotation": 14.2
+    },
+    {
+      "x": 3250,
+      "y": null,
+      "type": "pine",
+      "layer": "back"
+    },
+    {
+      "x": 3400,
+      "y": null,
+      "type": "pine-small",
+      "layer": "back"
+    },
+    {
+      "x": -190.4650480045467,
+      "y": 104.39152028437434,
+      "type": "pine",
+      "layer": "back"
+    },
+    {
+      "x": 1629.1197840237003,
+      "y": 327.99828651884525,
+      "type": "pine",
+      "layer": "back"
+    }
+  ],
+  "spikes": [],
+  "water": [],
+  "weather": {
+    "sun": 0.75,
+    "clouds": 0.25,
+    "fog": 0,
+    "rain": 0,
+    "snow": 0,
+    "lightning": 0,
+    "wind": 0.25,
+    "windDirection": "left"
+  },
+  "timeOfDay": 12,
+  "backdrop": "forest",
+  "medals": {
+    "gold": 15,
+    "silver": 20,
+    "bronze": 27
+  },
+  "preview": {
+    "x": 1190,
+    "y": 195
+  },
+  "nisse": {
+    "x": 3328.5439452530973,
+    "y": 247.5870870561286
+  }
+}

@@ -99,11 +99,9 @@ export function createBlankTerrainBlocks(material = "grass") {
 
 export const cloneTrail = (trail) => JSON.parse(JSON.stringify(trail));
 
-export function createBlankTrail(index = 0) {
-  const number = String(index + 1).padStart(2, "0");
+export function createBlankTrail() {
   return {
     name: "New Trail",
-    label: `NEW TRAIL / ${number}`,
     finish: { x: 1200, y: null },
     description: "",
     start: { x: 90, y: null, facing: 1 },
@@ -198,10 +196,9 @@ export function normalizeSpike(spike, groundY = null) {
 }
 
 export const AUTHOR_MAX_LENGTH = 40;
-// The name is shown in the trail list and the label on the loading card, so
-// neither can run on for ever; the description is the trail's blurb.
+// The name is shown in the trail list, so it can't run on for ever; the
+// description is the trail's blurb.
 export const NAME_MAX_LENGTH = 60;
-export const LABEL_MAX_LENGTH = 80;
 export const DESCRIPTION_MAX_LENGTH = 2000;
 /** A trail's notes for the career's overview, and how long each may be. */
 export const OVERVIEW_KEYS = ["lesson", "alsoNew", "world"];
@@ -238,14 +235,13 @@ export function normalizeAuthor(author) {
 const optionalY = (y) =>
   y === null || y === undefined || !Number.isFinite(Number(y)) ? null : Number(y);
 
-export function normalizeTrail(input, index = 0) {
-  const fallback = createBlankTrail(index);
+export function normalizeTrail(input) {
+  const fallback = createBlankTrail();
   const trail = { ...fallback, ...cloneTrail(input || {}) };
   trail.name = String(trail.name || fallback.name).slice(0, NAME_MAX_LENGTH);
-  trail.label = String(
-    trail.label ||
-      `${trail.name.toUpperCase()} / ${String(index + 1).padStart(2, "0")}`,
-  ).slice(0, LABEL_MAX_LENGTH);
+  // Older files and share links may carry a label: a numbered caption that
+  // nothing shows any more, so it is dropped.
+  delete trail.label;
   // Credits are optional; an empty author is not stored.
   const author = normalizeAuthor(trail.author);
   if (author) trail.author = author;
@@ -466,6 +462,37 @@ function startWheels(trail) {
   }));
 }
 
+// How far off the line between its neighbours a point may be and still count
+// as on it, in units: well under anything the bike or the eye can tell.
+const STRAIGHT_POINT_TOLERANCE = 0.01;
+
+/**
+ * The points of a block that lie on the straight line between their
+ * neighbours, with no curve handle on either side. They change nothing about
+ * the shape and only add to the trail's size. Each comes with its ring and
+ * index, so removing them in reverse order leaves the rest in place.
+ * @returns {Array<{ ring: { nodes: object[] }, index: number }>}
+ */
+export function straightLinePoints(block) {
+  const found = [];
+  for (const ring of [block?.outer, ...(block?.inner || [])]) {
+    const nodes = ring?.nodes || [];
+    if (nodes.length <= 3) continue;
+    nodes.forEach((node, index) => {
+      const before = nodes[(index + nodes.length - 1) % nodes.length];
+      const after = nodes[(index + 1) % nodes.length];
+      if (before.out || node.in || node.out || after.in) return;
+      const dx = after.x - before.x, dy = after.y - before.y;
+      const lengthSquared = dx * dx + dy * dy;
+      if (!lengthSquared) return;
+      const off = Math.abs((node.x - before.x) * dy - (node.y - before.y) * dx) / Math.sqrt(lengthSquared);
+      const along = ((node.x - before.x) * dx + (node.y - before.y) * dy) / lengthSquared;
+      if (off < STRAIGHT_POINT_TOLERANCE && along > 0 && along < 1) found.push({ ring, index });
+    });
+  }
+  return found;
+}
+
 export function validateTrail(trail) {
   const messages = [];
   // A target names the item a message is about, as the editor's selection
@@ -514,6 +541,22 @@ export function validateTrail(trail) {
         `The terrain is very detailed (${edges} edges after curves are flattened) and may be slow on older devices.`,
       );
   }
+
+  // Points on a straight line cost size and nothing else, which adds up in a
+  // trail drawn with many of them, so they are named once for the trail.
+  let straightPoints = 0;
+  const straightBlocks = [];
+  allBlocks.forEach((block, index) => {
+    const count = straightLinePoints(block).length;
+    if (!count) return;
+    straightPoints += count;
+    straightBlocks.push(index + 1);
+  });
+  if (straightPoints)
+    warning(
+      `${straightPoints === 1 ? "A point lies" : `${straightPoints} points lie`} on the straight line between ${straightPoints === 1 ? "its" : "their"} neighbours (block${straightBlocks.length === 1 ? "" : "s"} ${straightBlocks.join(", ")}), so ${straightPoints === 1 ? "it changes" : "they change"} nothing but the trail's size. Delete ${straightPoints === 1 ? "it" : "them"}: a straight run needs only its two ends.`,
+      { type: "block", index: straightBlocks[0] - 1 },
+    );
 
   if (!blocks.length) error("A trail needs terrain: add at least one block.");
   // The finish may sit on either side of the start, so it is checked against

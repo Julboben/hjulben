@@ -1,0 +1,449 @@
+{
+  "name": "Kerbside",
+  "finish": {
+    "x": 2629.1961524227063,
+    "y": 250
+  },
+  "description": "Step-ups. Every kerb and stair has a vertical face, so you can't just roll up it: just before the face, lean back and give it a burst of throttle to pop the front wheel up, then lean forward as the rear wheel hits so it climbs over. The kerbs come first, then a flight of three 24 unit stairs, a drop back to the street, and finally four 30 unit stairs up to the plaza.",
+  "lesson": "Step-ups. Pop the front wheel up brick stairs and kerbs with near-vertical faces and crisp corners.",
+  "alsoNew": "Cones, barriers, graffiti.",
+  "world": "The City",
+  "start": {
+    "x": 90,
+    "y": null,
+    "facing": 1
+  },
+  "terrainBlocks": [
+    {
+      "id": "street",
+      "material": "brick",
+      "outer": {
+        "id": "street-outer",
+        "nodes": [
+          {
+            "id": "street-0",
+            "x": -550,
+            "y": 1200,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "street-1",
+            "x": -550,
+            "y": 100,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "street-2",
+            "x": -150,
+            "y": 100,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "street-3",
+            "x": -150,
+            "y": 400,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "street-5",
+            "x": 400,
+            "y": 400,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "street-6",
+            "x": 400,
+            "y": 386,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "street-7",
+            "x": 700,
+            "y": 386,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "street-8",
+            "x": 700,
+            "y": 400,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "street-9",
+            "x": 950,
+            "y": 400,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "street-10",
+            "x": 950,
+            "y": 378,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "street-11",
+            "x": 1250,
+            "y": 378,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "street-12",
+            "x": 1250,
+            "y": 400,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "street-13",
+            "x": 1500,
+            "y": 400,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "street-14",
+            "x": 1500,
+            "y": 376,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "street-15",
+            "x": 1590,
+            "y": 376,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "street-16",
+            "x": 1590,
+            "y": 352,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "street-17",
+            "x": 1680,
+            "y": 352,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "street-18",
+            "x": 1680,
+            "y": 328,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "street-19",
+            "x": 1930,
+            "y": 328,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "street-20",
+            "x": 1930,
+            "y": 400,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "street-21",
+            "x": 2190,
+            "y": 400,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "street-22",
+            "x": 2190,
+            "y": 370,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "street-23",
+            "x": 2270,
+            "y": 370,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "street-24",
+            "x": 2270,
+            "y": 340,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "street-25",
+            "x": 2350,
+            "y": 340,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "street-26",
+            "x": 2350,
+            "y": 310,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "street-27",
+            "x": 2430,
+            "y": 310,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "street-28",
+            "x": 2430,
+            "y": 280,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "street-29",
+            "x": 2730,
+            "y": 280,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "street-31",
+            "x": 2730,
+            "y": -20,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "street-32",
+            "x": 3130,
+            "y": -20,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "street-33",
+            "x": 3130,
+            "y": 1200,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    }
+  ],
+  "apples": [
+    {
+      "x": 550,
+      "y": null
+    },
+    {
+      "x": 1100,
+      "y": null
+    },
+    {
+      "x": 1680,
+      "y": null
+    },
+    {
+      "x": 1850,
+      "y": null
+    },
+    {
+      "x": 2390,
+      "y": null
+    }
+  ],
+  "props": [
+    {
+      "x": -80,
+      "y": null,
+      "type": "lamp",
+      "layer": "back"
+    },
+    {
+      "x": 300,
+      "y": null,
+      "type": "cone",
+      "layer": "front"
+    },
+    {
+      "x": 380,
+      "y": null,
+      "type": "cone",
+      "layer": "front"
+    },
+    {
+      "x": 600,
+      "y": null,
+      "type": "graffiti",
+      "layer": "back"
+    },
+    {
+      "x": 820,
+      "y": null,
+      "type": "barrier",
+      "layer": "front"
+    },
+    {
+      "x": 900,
+      "y": null,
+      "type": "cone",
+      "layer": "front"
+    },
+    {
+      "x": 1100,
+      "y": null,
+      "type": "graffiti",
+      "layer": "back"
+    },
+    {
+      "x": 1380,
+      "y": null,
+      "type": "lamp",
+      "layer": "back"
+    },
+    {
+      "x": 1640,
+      "y": null,
+      "type": "graffiti",
+      "layer": "back"
+    },
+    {
+      "x": 1800,
+      "y": null,
+      "type": "cone",
+      "layer": "front"
+    },
+    {
+      "x": 1890,
+      "y": null,
+      "type": "barrier",
+      "layer": "front"
+    },
+    {
+      "x": 2030,
+      "y": null,
+      "type": "graffiti",
+      "layer": "back"
+    },
+    {
+      "x": 2150,
+      "y": null,
+      "type": "cone",
+      "layer": "front"
+    },
+    {
+      "x": 2510,
+      "y": null,
+      "type": "lamp",
+      "layer": "back"
+    },
+    {
+      "x": 2570,
+      "y": null,
+      "type": "fence",
+      "layer": "back"
+    }
+  ],
+  "spikes": [],
+  "water": [],
+  "weather": {
+    "sun": 0.35,
+    "clouds": 0.4,
+    "fog": 0,
+    "rain": 0,
+    "snow": 0,
+    "lightning": 0,
+    "wind": 0.3,
+    "windDirection": "left"
+  },
+  "timeOfDay": 19,
+  "backdrop": "city",
+  "medals": {
+    "gold": 15,
+    "silver": 20,
+    "bronze": 27
+  }
+}

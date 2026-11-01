@@ -1,0 +1,619 @@
+{
+  "name": "Kickback",
+  "finish": {
+    "x": 2810,
+    "y": 226
+  },
+  "description": "Steep faces kick the front wheel up. Lean forward to keep it down, or ease off and let it rise into a wheelie and ride it up. The faces get steeper as the evening draws in: 47°, then 52°, a two-step at 50° and 58°, and the last at 60°. If you stall, roll back, take a longer run-up and try again.",
+  "lesson": "Wheelies. Steep faces lift the front wheel, and leaning controls it.",
+  "alsoNew": "Evening light.",
+  "world": "The Woods",
+  "start": {
+    "x": 90,
+    "y": null,
+    "facing": 1
+  },
+  "terrainBlocks": [
+    {
+      "id": "ground",
+      "material": "dirt",
+      "outer": {
+        "id": "ground-outer",
+        "nodes": [
+          {
+            "id": "ground-0",
+            "x": -1200,
+            "y": 120,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ground-1",
+            "x": -420,
+            "y": 120,
+            "mode": "smooth",
+            "in": [
+              -613.3333,
+              120
+            ],
+            "out": [
+              -380,
+              120
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-2",
+            "x": -300,
+            "y": 320,
+            "mode": "smooth",
+            "in": [
+              -340,
+              320
+            ],
+            "out": [
+              -216.6667,
+              320
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-3",
+            "x": -50,
+            "y": 320,
+            "mode": "smooth",
+            "in": [
+              -133.3333,
+              320
+            ],
+            "out": [
+              66.6667,
+              320
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-4",
+            "x": 300,
+            "y": 320,
+            "mode": "smooth",
+            "in": [
+              183.3333,
+              320
+            ],
+            "out": [
+              340,
+              320
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-5",
+            "x": 420,
+            "y": 300,
+            "mode": "smooth",
+            "in": [
+              380,
+              300
+            ],
+            "out": [
+              466.6667,
+              300
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-6",
+            "x": 560,
+            "y": 322,
+            "mode": "smooth",
+            "in": [
+              513.3333,
+              322
+            ],
+            "out": [
+              600,
+              322
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-7",
+            "x": 680,
+            "y": 322,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ground-8",
+            "x": 712,
+            "y": 288,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ground-9",
+            "x": 900,
+            "y": 288,
+            "mode": "smooth",
+            "in": [
+              837.3333,
+              288
+            ],
+            "out": [
+              940,
+              288
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-10",
+            "x": 1020,
+            "y": 316,
+            "mode": "smooth",
+            "in": [
+              980,
+              316
+            ],
+            "out": [
+              1066.6667,
+              316
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-11",
+            "x": 1160,
+            "y": 320,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ground-12",
+            "x": 1205,
+            "y": 262,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ground-13",
+            "x": 1400,
+            "y": 262,
+            "mode": "smooth",
+            "in": [
+              1335,
+              262
+            ],
+            "out": [
+              1473.3333,
+              262
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-14",
+            "x": 1620,
+            "y": 330,
+            "mode": "smooth",
+            "in": [
+              1546.6667,
+              330
+            ],
+            "out": [
+              1646.6667,
+              330
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-15",
+            "x": 1700,
+            "y": 330,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ground-16",
+            "x": 1735,
+            "y": 288,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ground-17",
+            "x": 1830,
+            "y": 288,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ground-18",
+            "x": 1862,
+            "y": 236,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ground-19",
+            "x": 2100,
+            "y": 236,
+            "mode": "smooth",
+            "in": [
+              2020.6667,
+              236
+            ],
+            "out": [
+              2226.6667,
+              236
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-20",
+            "x": 2480,
+            "y": 334,
+            "mode": "smooth",
+            "in": [
+              2353.3333,
+              334
+            ],
+            "out": [
+              2513.3333,
+              334
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-21",
+            "x": 2580,
+            "y": 334,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ground-22",
+            "x": 2620,
+            "y": 266,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ground-23",
+            "x": 2920,
+            "y": 266,
+            "mode": "smooth",
+            "in": [
+              2820,
+              266
+            ],
+            "out": [
+              2960,
+              266
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-24",
+            "x": 3040,
+            "y": 266,
+            "mode": "smooth",
+            "in": [
+              3000,
+              266
+            ],
+            "out": [
+              3080,
+              266
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-25",
+            "x": 3160,
+            "y": 70,
+            "mode": "smooth",
+            "in": [
+              3120,
+              70
+            ],
+            "out": [
+              3273.3333,
+              70
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-26",
+            "x": 4000,
+            "y": 70,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ground-27",
+            "x": 4000,
+            "y": 1200,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ground-28",
+            "x": -1200,
+            "y": 1200,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    }
+  ],
+  "apples": [
+    {
+      "x": 790,
+      "y": 238
+    },
+    {
+      "x": 1330,
+      "y": 212
+    },
+    {
+      "x": 2030,
+      "y": 186
+    }
+  ],
+  "props": [
+    {
+      "x": -700,
+      "y": null,
+      "type": "pine",
+      "layer": "back"
+    },
+    {
+      "x": -560,
+      "y": null,
+      "type": "pine-small",
+      "layer": "back"
+    },
+    {
+      "x": -450,
+      "y": null,
+      "type": "stump",
+      "layer": "front"
+    },
+    {
+      "x": -330,
+      "y": 250,
+      "type": "roots",
+      "layer": "back"
+    },
+    {
+      "x": 240,
+      "y": null,
+      "type": "pine",
+      "layer": "back"
+    },
+    {
+      "x": 380,
+      "y": null,
+      "type": "bush",
+      "layer": "back"
+    },
+    {
+      "x": 520,
+      "y": null,
+      "type": "pine-small",
+      "layer": "back"
+    },
+    {
+      "x": 696,
+      "y": 305,
+      "type": "moss",
+      "layer": "back"
+    },
+    {
+      "x": 760,
+      "y": null,
+      "type": "stump",
+      "layer": "front"
+    },
+    {
+      "x": 860,
+      "y": null,
+      "type": "pine",
+      "layer": "back"
+    },
+    {
+      "x": 1060,
+      "y": null,
+      "type": "rock",
+      "layer": "front"
+    },
+    {
+      "x": 1120,
+      "y": null,
+      "type": "pine-small",
+      "layer": "back"
+    },
+    {
+      "x": 1182,
+      "y": 292,
+      "type": "roots",
+      "layer": "back"
+    },
+    {
+      "x": 1260,
+      "y": null,
+      "type": "pine",
+      "layer": "back"
+    },
+    {
+      "x": 1360,
+      "y": null,
+      "type": "mushrooms",
+      "layer": "front"
+    },
+    {
+      "x": 1500,
+      "y": null,
+      "type": "tree",
+      "layer": "back"
+    },
+    {
+      "x": 1718,
+      "y": 309,
+      "type": "moss",
+      "layer": "back"
+    },
+    {
+      "x": 1846,
+      "y": 262,
+      "type": "roots",
+      "layer": "back"
+    },
+    {
+      "x": 1950,
+      "y": null,
+      "type": "pine",
+      "layer": "back"
+    },
+    {
+      "x": 2060,
+      "y": null,
+      "type": "stump",
+      "layer": "front"
+    },
+    {
+      "x": 2200,
+      "y": null,
+      "type": "pine-small",
+      "layer": "back"
+    },
+    {
+      "x": 2330,
+      "y": null,
+      "type": "bush",
+      "layer": "back"
+    },
+    {
+      "x": 2420,
+      "y": null,
+      "type": "boulder",
+      "layer": "back"
+    },
+    {
+      "x": 2600,
+      "y": 300,
+      "type": "roots",
+      "layer": "back"
+    },
+    {
+      "x": 2700,
+      "y": null,
+      "type": "pine",
+      "layer": "back"
+    },
+    {
+      "x": 3000,
+      "y": 266,
+      "type": "pine-small",
+      "layer": "back"
+    },
+    {
+      "x": 3080,
+      "y": 170,
+      "type": "moss",
+      "layer": "back"
+    },
+    {
+      "x": 3250,
+      "y": null,
+      "type": "pine",
+      "layer": "back"
+    },
+    {
+      "x": 3380,
+      "y": null,
+      "type": "pine",
+      "layer": "back"
+    },
+    {
+      "x": 2911.3960771135094,
+      "y": 265.9090715990277,
+      "type": "tent",
+      "layer": "back"
+    },
+    {
+      "x": 2729.1218563533366,
+      "y": 263.94114889775153,
+      "type": "grass",
+      "layer": "back"
+    },
+    {
+      "x": 209.7987363711752,
+      "y": 316.0256691423605,
+      "type": "grass",
+      "layer": "back"
+    },
+    {
+      "x": -352.8959055297706,
+      "y": 259.6847117101662,
+      "type": "ivy",
+      "layer": "back",
+      "rotation": -22.5
+    },
+    {
+      "x": 421.34375,
+      "y": 380.7671875,
+      "type": "tutorial-light",
+      "layer": "front"
+    }
+  ],
+  "spikes": [],
+  "water": [],
+  "weather": {
+    "sun": 0.55,
+    "clouds": 0.3,
+    "fog": 0,
+    "rain": 0,
+    "snow": 0,
+    "lightning": 0,
+    "wind": 0.25,
+    "windDirection": "left"
+  },
+  "timeOfDay": 19,
+  "backdrop": "forest",
+  "medals": {
+    "gold": 17,
+    "silver": 22,
+    "bronze": 29
+  }
+}

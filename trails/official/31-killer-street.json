@@ -1,0 +1,307 @@
+{
+  "name": "Killer Street",
+  "finish": {
+    "x": 2700,
+    "y": null
+  },
+  "description": "Spikes: touch one and the run is over. The first one hangs well above the street, out of your way, so take a look at it. Further on they sit on the route with plenty of room between them: pop the kerb, keep your speed steady, and hop or roll through the gaps. Don't rush.",
+  "lesson": "Spikes. First a still spike well off the route, then still spikes on the route with plenty of room.",
+  "alsoNew": "Dumpsters, pigeons.",
+  "world": "The City",
+  "start": {
+    "x": 90,
+    "y": null,
+    "facing": 1
+  },
+  "terrainBlocks": [
+    {
+      "id": "street",
+      "material": "brick",
+      "outer": {
+        "id": "street-outer",
+        "nodes": [
+          {
+            "id": "street-0",
+            "x": -550,
+            "y": 1200,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "street-1",
+            "x": -550,
+            "y": 100,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "street-2",
+            "x": -150,
+            "y": 100,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "street-3",
+            "x": -150,
+            "y": 400,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "street-5",
+            "x": 1150,
+            "y": 400,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "street-6",
+            "x": 1150,
+            "y": 374,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "street-7",
+            "x": 1450,
+            "y": 374,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "street-8",
+            "x": 1450,
+            "y": 400,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "street-9",
+            "x": 2400,
+            "y": 400,
+            "mode": "smooth",
+            "in": [
+              2083.3333,
+              400
+            ],
+            "out": [
+              2466.6667,
+              400
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "street-10",
+            "x": 2600,
+            "y": 340,
+            "mode": "smooth",
+            "in": [
+              2533.3333,
+              340
+            ],
+            "out": [
+              2666.6667,
+              340
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "street-11",
+            "x": 2800,
+            "y": 340,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "street-13",
+            "x": 2800,
+            "y": 40,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "street-14",
+            "x": 3200,
+            "y": 40,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "street-15",
+            "x": 3200,
+            "y": 1200,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    }
+  ],
+  "apples": [
+    {
+      "x": 360,
+      "y": null
+    },
+    {
+      "x": 900,
+      "y": null
+    },
+    {
+      "x": 1300,
+      "y": null
+    },
+    {
+      "x": 1800,
+      "y": null
+    },
+    {
+      "x": 2120,
+      "y": null
+    }
+  ],
+  "props": [
+    {
+      "x": -80,
+      "y": null,
+      "type": "lamp",
+      "layer": "back"
+    },
+    {
+      "x": 140,
+      "y": null,
+      "type": "sign",
+      "layer": "front",
+      "text": "! SPIKES"
+    },
+    {
+      "x": 300,
+      "y": null,
+      "type": "bird",
+      "layer": "front"
+    },
+    {
+      "x": 520,
+      "y": null,
+      "type": "dumpster",
+      "layer": "back"
+    },
+    {
+      "x": 660,
+      "y": null,
+      "type": "bird",
+      "layer": "back"
+    },
+    {
+      "x": 780,
+      "y": null,
+      "type": "graffiti",
+      "layer": "back"
+    },
+    {
+      "x": 1000,
+      "y": null,
+      "type": "cone",
+      "layer": "front"
+    },
+    {
+      "x": 1100,
+      "y": null,
+      "type": "dumpster",
+      "layer": "back"
+    },
+    {
+      "x": 1250,
+      "y": 374,
+      "type": "bird",
+      "layer": "front"
+    },
+    {
+      "x": 1520,
+      "y": null,
+      "type": "lamp",
+      "layer": "back"
+    },
+    {
+      "x": 1700,
+      "y": null,
+      "type": "dumpster",
+      "layer": "back"
+    },
+    {
+      "x": 1880,
+      "y": null,
+      "type": "bird",
+      "layer": "front"
+    },
+    {
+      "x": 2050,
+      "y": null,
+      "type": "graffiti",
+      "layer": "back"
+    },
+    {
+      "x": 2350,
+      "y": null,
+      "type": "barrier",
+      "layer": "front"
+    },
+    {
+      "x": 2650,
+      "y": null,
+      "type": "lamp",
+      "layer": "back"
+    }
+  ],
+  "spikes": [
+    {
+      "x": 600,
+      "y": 250,
+      "radius": 14,
+      "spin": 0
+    }
+  ],
+  "water": [],
+  "weather": {
+    "sun": 0.3,
+    "clouds": 0.45,
+    "fog": 0,
+    "rain": 0,
+    "snow": 0,
+    "lightning": 0,
+    "wind": 0.3,
+    "windDirection": "left"
+  },
+  "timeOfDay": 19,
+  "backdrop": "city",
+  "medals": {
+    "gold": 14,
+    "silver": 19,
+    "bronze": 26
+  }
+}

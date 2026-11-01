@@ -21,8 +21,8 @@ Create new trails as a single JSON file each, following the format below.
 3. `js/materials.js`: Valid terrain materials
 4. `trails/custom/README.md`: Where custom trail files go and how they are loaded
 5. `trails/official/01-the-orchard.json`: Example trail: easy
-6. `trails/official/13-kicker-canyon.json`: Example trail: medium
-7. `trails/official/33-long-way-up.json`: Example trail: advanced
+6. `trails/official/16-kicker-canyon.json`: Example trail: medium
+7. `trails/official/37-long-way-up.json`: Example trail: advanced
 8. `trails/bonus/01-the-bonny-tyler.json`: Example trail: hard
 
 ---
@@ -54,7 +54,6 @@ The world uses Canvas coordinates:
 ```js
 {
   name: 'Example Trail',
-  label: 'EXAMPLE TRAIL / 08',
   start: { x: 90, y: null, facing: 1 },
   finish: { x: 1800, y: null },
 
@@ -159,6 +158,7 @@ Authoring guidelines:
 - **Ground**: one wide block whose top edge is the route and whose bottom sits well below it. Keep the opening section relatively flat so both wheels spawn safely, and keep terrain beyond the finish.
 - **Ends**: close each end with terrain that fits the setting, such as a bank, a rock wall or a rise in the fields, so the rider can't ride out. Then let the ground carry on well beyond it, further than the camera can see from anywhere the rider can reach. An edge where the terrain stops looks unfinished unless it's meant, like a cliff or a floating island.
 - **Slopes**: broad curved edges ride well. Spans of `140–190` units per hill are forgiving; short spans with large height changes create abrupt geometry.
+- **Few points**: use as few points as the shape needs, since every point adds to the trail's size and to its share link. A straight run, level or sloped, is just its two ends; validation warns about points on a straight line. A bend is a `smooth` point with `in` and `out` handles, not a chain of short straight pieces sampled along a curve.
 - **Gaps**: a break between two blocks. The walls either side are solid, so a rider who falls in can hit the cliff face. Start around `80–100` units wide for introductory jumps; wider gaps need a clear launch ramp and a landing below the takeoff height.
 - **Ledges and islands**: a separate block above the ground. Leave at least one wheel diameter between it and the ground, and more when the rider is expected to pass underneath.
 - **Caves**: an `inner` boundary inside a block. The cave is open space with a solid roof and floor.
@@ -204,7 +204,9 @@ start: { x: 90, y: null, facing: 1 }
 - `y` is the wheel-axle height. Use `null` to place both wheels automatically on the topmost surface at `x`, or a number for an explicit airborne, ledge, or cave start.
 - `facing` is `1` for right and `-1` for left.
 
-The editor's **Start** tool places an explicit start position. Select the start marker to move it or change its facing in the inspector. A trail always has one start, so it cannot be deleted.
+Put the start on level ground, unless the clock is meant to start at once: `y: null` on the top surface, or, on a ledge or in a cave, the floor's height minus 12 (the wheel's radius). A bike standing on the ground there settles onto its suspension before the run and starts at rest; the clock starts on the rider's first input, or as soon as the bike moves by itself. Level means the ground under both wheels, 25 units either side of `x`, is at the same height: on a slope the bike rolls away, or on a gentle one creeps off its spot, and a start even a unit above the ground drops the bike, which starts the clock at once. A start in the air, or on a steep slope, is fine when it's meant: the clock starts as the bike drops or rolls away, so it's part of everyone's time.
+
+The editor's **Start** tool places the start where you click, and snaps it onto the ground under its wheels when you click close to it; further away, it stays in the air. Select the start marker to move it (dragging snaps the same way) or change its facing in the inspector. A trail always has one start, so it cannot be deleted.
 
 ## Finish: `finish`
 
@@ -503,7 +505,8 @@ A trail can also be named by part of its catalog id or file name, such as `12` o
 - the jumps (the longest with its takeoff, landing and height), flips, turns on the ground and in the air, time spent hanging from one wheel under a ledge, top speed, time crawling, and the hardest landing
 - the route, as the bike's position once a second
 - **forgiveness:** the share of reruns that still reach the goal when the timing of one second of the run is off by up to 50 ms, and the tight spots, where few did and what went wrong. The bot rides with perfect timing; this shows where a person would struggle. A spot where nothing survives needs frame-perfect riding.
-- **traps:** places where a miss leaves the rider with no way back to the line and no crash, so a player can only restart by hand, such as a pit between two buildings with a floor. Besides the jittered reruns, each jump's run-up is ridden again a moment before takeoff at 60% and 80% of the bot's speed, as a player who comes in too slowly would. Wherever a miss leaves the bike at rest off the line, the bot gets a short search to get back to any point of the stretch's line, ahead or behind; where it can't, that's a trap, listed with the stretch and summed up at the end. Fix every one: give it a way back, or make the miss end the run (see "Every miss ends in a way back or a crash" in `TRAILS_GUIDE.md`).
+- **traps:** places where a miss leaves the rider with no way back to the line and no crash, so a player can only restart by hand, such as a pit between two buildings with a floor. Besides the jittered reruns, each jump's run-up is ridden again a moment before takeoff at 60% and 80% of the bot's speed, as a player who comes in too slowly would. Wherever a miss leaves the bike at rest off the line, the bot gets a short search to get back to any point of the line ridden so far, this stretch's or an earlier one's, ahead or behind (a miss that drops the rider back onto an earlier stretch costs time, but isn't a trap); where it can't, that's a trap, listed with the stretch and summed up at the end. Fix every one: give it a way back, or make the miss end the run (see "Every miss ends in a way back or a crash" in `TRAILS_GUIDE.md`).
+- **escapes:** ends of the trail the rider can ride out of. From the line's outermost point at each end, facing outwards, the bot looks for a way to the last 150 units of the terrain there, past the closing: out along the ground beyond it, or up the wall that ends the terrain. The search takes up to 30 seconds an end, enough for a hard climb up a steep bank, and its answer is saved with the trail's ground: it only searches again after the terrain, start, finish or apples change. Where it gets there, the playtest looks at what lies out there. Onto plain ground and nature it reports an ESCAPE, which is probably a mistake: close that end with terrain nobody gets over. Onto the nisse, or onto other props, it reports an OPEN END instead, which is fine when it's the way to something hidden there.
 
 The bot takes the apples nearest first. When a trail is meant to be ridden in another order, give it with `--order 2,1,3` (apples left out are taken nearest first afterwards), or the bot may ride past an apple it can't come back for. A stretch the bot can't solve is reported with the apples still to take, where the greedy bot got stuck and how close the explorer got. That means the trail may be impossible there, or need a longer search (`--minutes`, default 2 per stretch). At the end it gives the bot's total time, which is not optimised: treat it as an upper bound for gold, and set gold at most about 5% above it. The official trails' silver is about 1.3× gold and bronze about 1.75×.
 
@@ -513,10 +516,10 @@ The run is saved in `.playtest/` (git-ignored) and tried first next time, so aft
 
 **Probing one spot.** `--probe X,Y,FACING,SPEED` places the bike at `X`, at height `Y` (`ground` to stand on the surface), facing `1` (right) or `-1` (left), already moving at `SPEED` units per second. Then either:
 
-- `--script "..."` rides a fixed set of inputs and prints a trace (time, position, velocity, angle, whether the bike is on the ground, in a wheelie, hanging or in the air, and events such as landings, apples and crashes) every `--every` seconds (default 0.1). Each part of the script is what to hold and for how long: `gas`, `brake` or neither (`coast`), plus a lean of `fwd` or `back` (optionally `half`) relative to the way the bike faces, then the seconds. `turn` turns around. This is the way to measure a jump: how far and high a kicker throws the bike at a given speed, whether it clears a gap, how it lands.
+- `--script "..."` rides a fixed set of inputs and prints a trace (time, position, velocity, angle, whether the bike is on the ground, in a wheelie, hanging or in the air, and events such as landings, apples and crashes) every `--every` seconds (default 0.1). Each part of the script is what to hold and for how long: `gas`, `brake` or neither (`coast`), plus a lean of `fwd` or `back` (optionally `half`) relative to the way the bike faces, then the seconds. `turn` turns around. This is the way to measure a jump: how far and high a kicker throws the bike at a given speed, whether it clears a gap, how it lands. The last line gives the highest point the bike reached and its angle there, which shows how far the lip pitched it.
 - `--goal apple:N`, `--goal reach:X,Y` or `--goal finish` lets the bot find its own way there, and prints the inputs it used in the script format.
 
-Two things worth knowing when writing scripts: lean turns the bike hard, so hold it in taps of 0.1–0.2 s as the bot does (held for most of a second it flips the bike over), and gas from a standstill lifts the front, so tap `fwd` now and then to keep it down. How fast the bike gets going on flat ground, and its top speed, are in the table below.
+Write the output to a file, or read it straight from the terminal: piped through `sed` or similar, it is held back until the command ends, and lost if the command is stopped first. Two things worth knowing when writing scripts: lean turns the bike hard, so hold it in taps of 0.1–0.2 s as the bot does (held for most of a second it flips the bike over), and gas from a standstill lifts the front, so tap `fwd` now and then to keep it down. How fast the bike gets going on flat ground, and its top speed, are in the table below.
 
 `--json FILE` also writes the whole report as JSON.
 
@@ -529,20 +532,24 @@ Measured on small test pieces with the game's own simulation by `scripts/measure
 
 | Reaches 200 | Reaches 300 | Reaches 400 | After 2 s | Top speed |
 |---|---|---|---|---|
-| 0.8 s | 1.5 s | 2.3 s | 368 units/s, 415 units on | 778 units/s |
+| 0.8 s | 1.5 s | 2.3 s | 368 units/s, 417 units on | 778 units/s |
 
 **Kickers:** a 40-unit kicker, its lip at the end of flat ground that carries on level beyond it. Each cell is how far past the lip the bike lands, and how high it rises above the lip, at that approach speed:
 
 | Kicker | 200 units/s | 300 units/s | 400 units/s | 500 units/s |
 |---|---|---|---|---|
-| 15° | 228 on, 0 up | 261 on, 0 up | 321 on, 2 up | 403 on, 7 up |
-| 25° | 195 on, 0 up | 247 on, 5 up | 331 on, 16 up | 464 on, 36 up |
-| 35° | 171 on, 5 up | 223 on, 17 up | 309 on, 37 up | 429 on, 63 up |
+| 15° | 228 on, 0 up | 263 on, 0 up | 315 on, 1 up | 399 on, 7 up |
+| 25° | 196 on, 0 up | 246 on, 5 up | 334 on, 17 up | 452 on, 33 up |
+| 35° | 172 on, 5 up | 220 on, 16 up | 307 on, 36 up | 424 on, 64 up |
 
 **Climbs:** a 300-unit-tall slope is climbed up to 45° from a standstill at its foot, and up to 50° with a run-up at 400 units/s (tried in steps of 5°). Steeper, the bike flips over backwards or stalls.
 
 **Steps:** a sheer step is ridden up to 20 units tall from a crawl, 20 units tall at 200 units/s, 20 units tall at 400 units/s, lifting the front just before it (tried in steps of 10). Taller than that, the rider's head hits the step: give it a ramp or a kicker.
 <!-- limits:end -->
+
+Over a run of jumps, height turns into speed: where each hill, valley and the next hill end up level overall, the speed only changes with the difference in hill heights, but a run that falls overall speeds up from jump to jump until the bike runs at its top speed. Keep a row of jumps roughly level, and give each landing slope the room the flight needs: with gravity at 380, a fast jump carries the bike several hundred units before it comes down. Islands too: a jump onto a flat-topped island lands as on flat ground, so give its near edge a slope that falls away.
+
+The bike leaves a kicker pitched about as steeply as the lip's last stretch, and further where the kicker curves tightly. With the gas held and no lean, a curved 60-unit kicker 240 units long, ending at about 28°, has the bike at about −25° (nose up) at the top of the jump; one 120 units long, ending at about 53°, throws it higher but at −80° to −100°, close to standing on its tail, which few players save. To throw the bike high and keep it landable, make the kicker taller and longer rather than shorter and steeper, and check the angle with `--probe --script`.
 
 ### A ledge to hang from
 
@@ -705,11 +712,9 @@ export function createBlankTerrainBlocks(material = "grass") {
 
 export const cloneTrail = (trail) => JSON.parse(JSON.stringify(trail));
 
-export function createBlankTrail(index = 0) {
-  const number = String(index + 1).padStart(2, "0");
+export function createBlankTrail() {
   return {
     name: "New Trail",
-    label: `NEW TRAIL / ${number}`,
     finish: { x: 1200, y: null },
     description: "",
     start: { x: 90, y: null, facing: 1 },
@@ -804,10 +809,9 @@ export function normalizeSpike(spike, groundY = null) {
 }
 
 export const AUTHOR_MAX_LENGTH = 40;
-// The name is shown in the trail list and the label on the loading card, so
-// neither can run on for ever; the description is the trail's blurb.
+// The name is shown in the trail list, so it can't run on for ever; the
+// description is the trail's blurb.
 export const NAME_MAX_LENGTH = 60;
-export const LABEL_MAX_LENGTH = 80;
 export const DESCRIPTION_MAX_LENGTH = 2000;
 /** A trail's notes for the career's overview, and how long each may be. */
 export const OVERVIEW_KEYS = ["lesson", "alsoNew", "world"];
@@ -844,14 +848,13 @@ export function normalizeAuthor(author) {
 const optionalY = (y) =>
   y === null || y === undefined || !Number.isFinite(Number(y)) ? null : Number(y);
 
-export function normalizeTrail(input, index = 0) {
-  const fallback = createBlankTrail(index);
+export function normalizeTrail(input) {
+  const fallback = createBlankTrail();
   const trail = { ...fallback, ...cloneTrail(input || {}) };
   trail.name = String(trail.name || fallback.name).slice(0, NAME_MAX_LENGTH);
-  trail.label = String(
-    trail.label ||
-      `${trail.name.toUpperCase()} / ${String(index + 1).padStart(2, "0")}`,
-  ).slice(0, LABEL_MAX_LENGTH);
+  // Older files and share links may carry a label: a numbered caption that
+  // nothing shows any more, so it is dropped.
+  delete trail.label;
   // Credits are optional; an empty author is not stored.
   const author = normalizeAuthor(trail.author);
   if (author) trail.author = author;
@@ -1072,6 +1075,37 @@ function startWheels(trail) {
   }));
 }
 
+// How far off the line between its neighbours a point may be and still count
+// as on it, in units: well under anything the bike or the eye can tell.
+const STRAIGHT_POINT_TOLERANCE = 0.01;
+
+/**
+ * The points of a block that lie on the straight line between their
+ * neighbours, with no curve handle on either side. They change nothing about
+ * the shape and only add to the trail's size. Each comes with its ring and
+ * index, so removing them in reverse order leaves the rest in place.
+ * @returns {Array<{ ring: { nodes: object[] }, index: number }>}
+ */
+export function straightLinePoints(block) {
+  const found = [];
+  for (const ring of [block?.outer, ...(block?.inner || [])]) {
+    const nodes = ring?.nodes || [];
+    if (nodes.length <= 3) continue;
+    nodes.forEach((node, index) => {
+      const before = nodes[(index + nodes.length - 1) % nodes.length];
+      const after = nodes[(index + 1) % nodes.length];
+      if (before.out || node.in || node.out || after.in) return;
+      const dx = after.x - before.x, dy = after.y - before.y;
+      const lengthSquared = dx * dx + dy * dy;
+      if (!lengthSquared) return;
+      const off = Math.abs((node.x - before.x) * dy - (node.y - before.y) * dx) / Math.sqrt(lengthSquared);
+      const along = ((node.x - before.x) * dx + (node.y - before.y) * dy) / lengthSquared;
+      if (off < STRAIGHT_POINT_TOLERANCE && along > 0 && along < 1) found.push({ ring, index });
+    });
+  }
+  return found;
+}
+
 export function validateTrail(trail) {
   const messages = [];
   // A target names the item a message is about, as the editor's selection
@@ -1120,6 +1154,22 @@ export function validateTrail(trail) {
         `The terrain is very detailed (${edges} edges after curves are flattened) and may be slow on older devices.`,
       );
   }
+
+  // Points on a straight line cost size and nothing else, which adds up in a
+  // trail drawn with many of them, so they are named once for the trail.
+  let straightPoints = 0;
+  const straightBlocks = [];
+  allBlocks.forEach((block, index) => {
+    const count = straightLinePoints(block).length;
+    if (!count) return;
+    straightPoints += count;
+    straightBlocks.push(index + 1);
+  });
+  if (straightPoints)
+    warning(
+      `${straightPoints === 1 ? "A point lies" : `${straightPoints} points lie`} on the straight line between ${straightPoints === 1 ? "its" : "their"} neighbours (block${straightBlocks.length === 1 ? "" : "s"} ${straightBlocks.join(", ")}), so ${straightPoints === 1 ? "it changes" : "they change"} nothing but the trail's size. Delete ${straightPoints === 1 ? "it" : "them"}: a straight run needs only its two ends.`,
+      { type: "block", index: straightBlocks[0] - 1 },
+    );
 
   if (!blocks.length) error("A trail needs terrain: add at least one block.");
   // The finish may sit on either side of the start, so it is checked against
@@ -1588,18 +1638,14 @@ Example trail: easy.
 ```json
 {
   "name": "The Orchard",
-  "label": "THE ORCHARD / 01",
   "finish": {
     "x": 2109.276035710421,
     "y": 290.1897147270387
   },
   "description": "Learn the rhythm: build speed on gentle rollers, lean forward on climbs, and settle the bike before each landing.",
-  "lesson": "Gas, lean and gentle rollers.",
-  "alsoNew": "Farm props, collecting apples.",
-  "world": "First Rides",
   "start": {
     "x": 271.93445286745373,
-    "y": 303.45703530867854,
+    "y": null,
     "facing": 1
   },
   "terrainBlocks": [
@@ -2453,24 +2499,30 @@ Example trail: easy.
     "windDirection": "left"
   },
   "timeOfDay": 12,
+  "lesson": "Gas, lean and gentle rollers.",
+  "alsoNew": "Farm props, collecting apples.",
+  "world": "First Rides",
   "medals": {
     "gold": 11,
     "silver": 14.5,
     "bronze": 19
+  },
+  "preview": {
+    "x": 787,
+    "y": 230
   }
 }
 ```
 
 ---
 
-## `trails/official/13-kicker-canyon.json`
+## `trails/official/16-kicker-canyon.json`
 
 Example trail: medium.
 
 ```json
 {
   "name": "Kicker Canyon",
-  "label": "KICKER CANYON / 12",
   "finish": {
     "x": 3244.3685535694976,
     "y": 131.62977237070947
@@ -2481,7 +2533,7 @@ Example trail: medium.
   "world": "The Desert",
   "start": {
     "x": 126.00276453217202,
-    "y": 262.99729187990346,
+    "y": null,
     "facing": 1
   },
   "terrainBlocks": [
@@ -4143,15 +4195,6 @@ Example trail: medium.
             "edge": "straight"
           },
           {
-            "id": "n6qho",
-            "x": 1748.0012,
-            "y": 1016.8552,
-            "mode": "corner",
-            "in": null,
-            "out": null,
-            "edge": "straight"
-          },
-          {
             "id": "n6fo3",
             "x": 885.7464,
             "y": 1016.8552,
@@ -4354,14 +4397,13 @@ Example trail: medium.
 
 ---
 
-## `trails/official/33-long-way-up.json`
+## `trails/official/37-long-way-up.json`
 
 Example trail: advanced.
 
 ```json
 {
   "name": "Long Way Up",
-  "label": "LONG WAY UP / 31",
   "finish": {
     "x": 3658.2026876591453,
     "y": -504.8164131254289
@@ -5858,7 +5900,6 @@ Example trail: hard.
 ```json
 {
   "name": "THE BONNY TYLER",
-  "label": "THE BONNY TYLER / 01",
   "finish": {
     "x": 3937.3001028728117,
     "y": -225.35628766109969
@@ -5866,7 +5907,7 @@ Example trail: hard.
   "description": "",
   "start": {
     "x": -3198.4140687454105,
-    "y": -291.0913534281511,
+    "y": null,
     "facing": 1
   },
   "terrainBlocks": [
@@ -5915,15 +5956,6 @@ Example trail: hard.
           {
             "id": "n26tki",
             "x": -2793.1286,
-            "y": 96.6088,
-            "mode": "corner",
-            "in": null,
-            "out": null,
-            "edge": "straight"
-          },
-          {
-            "id": "n26tkj",
-            "x": -2784.5024,
             "y": 96.6088,
             "mode": "corner",
             "in": null,
@@ -6543,15 +6575,6 @@ Example trail: hard.
             "edge": "straight"
           },
           {
-            "id": "n26tmg",
-            "x": 732.2342,
-            "y": 473.0448,
-            "mode": "corner",
-            "in": null,
-            "out": null,
-            "edge": "straight"
-          },
-          {
             "id": "n26tmh",
             "x": 758.6912,
             "y": 467.7447,
@@ -6579,24 +6602,6 @@ Example trail: hard.
             "edge": "straight"
           },
           {
-            "id": "n26tmk",
-            "x": 819.6747,
-            "y": 454.6248,
-            "mode": "corner",
-            "in": null,
-            "out": null,
-            "edge": "straight"
-          },
-          {
-            "id": "n26tml",
-            "x": 841.3312,
-            "y": 449.9763,
-            "mode": "corner",
-            "in": null,
-            "out": null,
-            "edge": "straight"
-          },
-          {
             "id": "n26tmm",
             "x": 862.9877,
             "y": 445.3279,
@@ -6609,15 +6614,6 @@ Example trail: hard.
             "id": "n26tmn",
             "x": 882.5155,
             "y": 440.8641,
-            "mode": "corner",
-            "in": null,
-            "out": null,
-            "edge": "straight"
-          },
-          {
-            "id": "n26tmo",
-            "x": 899.9146,
-            "y": 435.0427,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -7245,15 +7241,6 @@ Example trail: hard.
             "edge": "straight"
           },
           {
-            "id": "n26tom",
-            "x": 1258.286,
-            "y": -141.0697,
-            "mode": "corner",
-            "in": null,
-            "out": null,
-            "edge": "straight"
-          },
-          {
             "id": "n26ton",
             "x": 1255.092,
             "y": -142.6968,
@@ -7335,15 +7322,6 @@ Example trail: hard.
             "edge": "straight"
           },
           {
-            "id": "n26tow",
-            "x": 1214.5429,
-            "y": -163.0927,
-            "mode": "corner",
-            "in": null,
-            "out": null,
-            "edge": "straight"
-          },
-          {
             "id": "n26tox",
             "x": 1211.6478,
             "y": -164.6115,
@@ -7356,15 +7334,6 @@ Example trail: hard.
             "id": "n26toy",
             "x": 1207.8038,
             "y": -166.6819,
-            "mode": "corner",
-            "in": null,
-            "out": null,
-            "edge": "straight"
-          },
-          {
-            "id": "n26toz",
-            "x": 1203.9036,
-            "y": -168.628,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -7488,27 +7457,9 @@ Example trail: hard.
             "edge": "straight"
           },
           {
-            "id": "n26tpd",
-            "x": 1153.006,
-            "y": -186.47,
-            "mode": "corner",
-            "in": null,
-            "out": null,
-            "edge": "straight"
-          },
-          {
             "id": "n26tpe",
             "x": 1150.0226,
             "y": -187.3949,
-            "mode": "corner",
-            "in": null,
-            "out": null,
-            "edge": "straight"
-          },
-          {
-            "id": "n26tpf",
-            "x": 1146.947,
-            "y": -188.2215,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -8522,7 +8473,7 @@ Example trail: hard.
           {
             "id": "n26tt9",
             "x": -3343.3194,
-            "y": -195.5162,
+            "y": -203.5727,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -8882,15 +8833,6 @@ Example trail: hard.
             "edge": "straight"
           },
           {
-            "id": "ns4ea",
-            "x": -49.8004,
-            "y": 603.6222,
-            "mode": "corner",
-            "in": null,
-            "out": null,
-            "edge": "straight"
-          },
-          {
             "id": "ns4eb",
             "x": -32.3362,
             "y": 602.4818,
@@ -9057,15 +8999,6 @@ Example trail: hard.
             "id": "n12uhx",
             "x": 1158.9698,
             "y": 92.8202,
-            "mode": "corner",
-            "in": null,
-            "out": null,
-            "edge": "straight"
-          },
-          {
-            "id": "n12uhy",
-            "x": 1149.6838,
-            "y": 74.2373,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -9381,15 +9314,6 @@ Example trail: hard.
             "id": "n12uix",
             "x": 304.3437,
             "y": 149.9023,
-            "mode": "corner",
-            "in": null,
-            "out": null,
-            "edge": "straight"
-          },
-          {
-            "id": "n12uiy",
-            "x": 308.2745,
-            "y": 138.6634,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -10169,8 +10093,8 @@ Example trail: hard.
       "y": -471.204338320629
     },
     {
-      "x": 3260.518084770913,
-      "y": 206.48777610685025
+      "x": 3303.168206191673,
+      "y": 219.89654256681905
     },
     {
       "x": 3097.4751146821077,
@@ -10560,20 +10484,20 @@ Example trail: hard.
       "layer": "back"
     },
     {
-      "x": 2128.2170622599865,
-      "y": -473.96081655550626,
+      "x": 2124.8891626747004,
+      "y": -458.9359255942564,
       "type": "squirrel",
       "layer": "back"
     },
     {
-      "x": 2163.4907248483637,
-      "y": -511.0944573473816,
+      "x": 2171.1418364655733,
+      "y": -509.99754550364696,
       "type": "fence",
       "layer": "back"
     },
     {
-      "x": 2276.9588128729424,
-      "y": -600.7289259364933,
+      "x": 2282.460542903166,
+      "y": -594.4848108186593,
       "type": "fence",
       "layer": "back"
     },
@@ -10602,26 +10526,26 @@ Example trail: hard.
       "layer": "back"
     },
     {
-      "x": 3356.2664939185984,
-      "y": 263.9254984114693,
+      "x": 3355.7592810134365,
+      "y": 269.00551160150576,
       "type": "tyre",
       "layer": "back"
     },
     {
-      "x": 3528.5405004099925,
-      "y": 210.3181013032901,
+      "x": 3531.4431773724323,
+      "y": 214.8094321578024,
       "type": "tyre",
       "layer": "back"
     },
     {
-      "x": 3654.901298108441,
-      "y": 122.80024082170436,
+      "x": 3657.562194825933,
+      "y": 129.3164812276513,
       "type": "barrier",
       "layer": "back"
     },
     {
-      "x": 3173.3636595454113,
-      "y": 132.96068121842424,
+      "x": 3165.888182298097,
+      "y": 130.41541853112454,
       "type": "dumpster",
       "layer": "back"
     },
@@ -10671,8 +10595,8 @@ Example trail: hard.
     "wind": 0.9,
     "windDirection": "left"
   },
-  "author": "Nikolaj Gunge",
   "timeOfDay": 0,
+  "author": "Nikolaj Gunge",
   "backdrop": "mountains"
 }
 ```

@@ -14,7 +14,7 @@ import { ctx } from "./dom.js";
 import { pushHistory } from "./history.js";
 import { isBlockLocked } from "./locks.js";
 import { syncInspector } from "./inspector.js";
-import { floorUnder, groundY, render } from "./render.js";
+import { floorUnder, groundY, render, startY } from "./render.js";
 import { blocksSelection } from "./selection.js";
 import { gridSpacing } from "./snap.js";
 import { editor } from "./state.js";
@@ -165,7 +165,7 @@ export function addAt(point) {
   } else if (editor.tool === "start") {
     editor.trail.start = {
       x: point.x,
-      y: point.y,
+      y: startY(point.x, point.y),
       facing: Number(toolSettings.start.facing) < 0 ? -1 : 1,
     };
     editor.selection = { kind: "start" };

@@ -74,6 +74,7 @@ try {
   assert.match(solved, /turns [1-9]/, 'the way back takes a turn');
   assert.match(solved, /forgiveness: \d+% of reruns/);
   assert.match(solved, /Result: the bot finished in [\d.]+ s/);
+  assert.doesNotMatch(solved, /ESCAPE/, 'walls the bike can\'t get over close the trail');
   const saved = JSON.parse(readFileSync(playtestRunPath(ID), 'utf8'));
   assert.equal(saved.stretches.length, 2, 'the run is saved stretch by stretch');
   assert.ok(saved.inputs, 'a finished run is saved whole as well');
@@ -94,15 +95,17 @@ try {
   assert.match(unturned, /Result: NOT finished; the bot took 1 of 1 apples/);
 
   // A jump over a deep pit with a floor: a rider who misses lands on the floor,
-  // can't climb out and doesn't crash, which is a trap. Spikes on the floor
-  // make the same miss end the run, so it isn't.
+  // can't climb out and doesn't crash, which is a trap. The far side is a
+  // slope too steep to climb rather than a sheer wall, so a jump that falls
+  // short slides down it onto the floor instead of hitting it head first.
+  // Spikes on the floor make the same miss end the run, so it isn't.
   const pit = {
     ...trail,
     terrainBlocks: [
       rectangle(-300, 0, 0, 900, 'grass', 'west-wall'),
       polygonBlock([[-300, 300], [520, 300], [600, 270], [600, 900], [-300, 900]], 'grass', 'takeoff'),
-      rectangle(600, 560, 940, 900, 'stone', 'pit-floor'),
-      rectangle(940, 300, 1800, 900, 'grass', 'landing'),
+      rectangle(600, 560, 880, 900, 'stone', 'pit-floor'),
+      polygonBlock([[880, 560], [940, 300], [1800, 300], [1800, 900], [880, 900]], 'grass', 'landing'),
       rectangle(1800, 0, 2100, 900, 'grass', 'east-wall'),
     ],
     start: { x: 100, y: null, facing: 1 },
@@ -116,6 +119,32 @@ try {
   assert.match(trapped, /^TRAPS: 1 place/m, 'and it is summed up at the end');
   writeFileSync(pitFile, JSON.stringify({ ...pit, spikes: [640, 700, 760, 820, 880].map(x => ({ x, y: 540, radius: 20 })) }));
   assert.doesNotMatch(runPit('--fresh', '--minutes', '0.5'), /TRAP/, 'spikes on its floor make it a crash, not a trap');
+
+  // An end closed by a gentle ramp onto the ground beyond it can be ridden
+  // out of: the rider escapes the trail.
+  const ramp = {
+    ...trail,
+    terrainBlocks: [
+      rectangle(-300, 0, 0, 700, 'grass', 'west-wall'),
+      polygonBlock([[-300, 320], [2000, 320], [2400, 220], [3600, 220], [3600, 700], [-300, 700]], 'grass', 'ground'),
+    ],
+  };
+  writeFileSync(pitFile, JSON.stringify(ramp));
+  assert.match(runPit('--fresh', '--minutes', '0.5', '--trials', '1'), /ESCAPE: the rider can ride out past the east end/, 'a ramp out of the trail is an escape');
+  // With a nisse hidden out there, the open end is the way to it, not a fault.
+  writeFileSync(pitFile, JSON.stringify({ ...ramp, nisse: { x: 3200, y: null } }));
+  const hidden = runPit('--minutes', '0.5', '--trials', '1');
+  assert.match(hidden, /OPEN END: the rider can ride out past the east end.*to the nisse hidden out there/, 'an end opening onto the nisse is reported as a choice');
+  assert.doesNotMatch(hidden, /ESCAPE/, 'and not as an escape');
+  // A roof over the walled field runs out past both walls. Its top is the
+  // topmost ground at either end, but the rider is inside, below it.
+  writeFileSync(pitFile, JSON.stringify({
+    ...trail,
+    terrainBlocks: [...trail.terrainBlocks, rectangle(-300, -100, 2300, -50, 'stone', 'roof')],
+    start: { x: 400, y: 308, facing: 1 },
+    apples: [{ x: 900, y: 260 }],
+  }));
+  assert.doesNotMatch(runPit('--fresh', '--minutes', '0.5', '--trials', '1'), /ESCAPE|OPEN END/, 'the ground above a roof is no way out');
 
   // A scripted probe prints a trace and rides where the script says.
   const scripted = run('playtest.mjs', '--probe', '400,ground,1,0', '--script', 'gas 0.5; gas fwd 0.1; gas 0.5; turn; brake 0.3', '--every', '0.5');

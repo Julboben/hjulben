@@ -1,0 +1,620 @@
+{
+  "name": "Out and Back",
+  "finish": {
+    "x": -450,
+    "y": 270
+  },
+  "description": "The Lakeland finale. Ride out through the ford, hop the deep pool off its lip and splash through the wide ford to the far end. Collect the apple high on the bank, turn around (Space) and ride all the way back: through the ford, over the pool from the other side and past the start to the finish behind it. Thunder rolls in the distance; keep moving.",
+  "lesson": "Ride out, collect, turn around, and finish behind where you started. Combines fords, deep water and turning around.",
+  "alsoNew": "Distant thunder.",
+  "world": "Lakeland",
+  "start": {
+    "x": 90,
+    "y": null,
+    "facing": 1
+  },
+  "terrainBlocks": [
+    {
+      "id": "ground",
+      "material": "grass",
+      "outer": {
+        "id": "ground-outer",
+        "nodes": [
+          {
+            "id": "ground-0",
+            "x": -1100,
+            "y": 1200,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ground-1",
+            "x": -1100,
+            "y": 100,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ground-2",
+            "x": -720,
+            "y": 100,
+            "mode": "smooth",
+            "in": [
+              -846.6667,
+              100
+            ],
+            "out": [
+              -680,
+              100
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-3",
+            "x": -600,
+            "y": 300,
+            "mode": "smooth",
+            "in": [
+              -640,
+              300
+            ],
+            "out": [
+              -450,
+              300
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-4",
+            "x": -150,
+            "y": 300,
+            "mode": "smooth",
+            "in": [
+              -300,
+              300
+            ],
+            "out": [
+              -50,
+              300
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-5",
+            "x": 150,
+            "y": 300,
+            "mode": "smooth",
+            "in": [
+              50,
+              300
+            ],
+            "out": [
+              200,
+              300
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-6",
+            "x": 300,
+            "y": 300,
+            "mode": "independent",
+            "in": [
+              247.5,
+              300
+            ],
+            "out": [
+              314,
+              307.7
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-7",
+            "x": 340,
+            "y": 322,
+            "mode": "independent",
+            "in": [
+              326,
+              314.3
+            ],
+            "out": [
+              389,
+              322
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-8",
+            "x": 480,
+            "y": 322,
+            "mode": "independent",
+            "in": [
+              431,
+              322
+            ],
+            "out": [
+              494,
+              314.3
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-9",
+            "x": 520,
+            "y": 300,
+            "mode": "independent",
+            "in": [
+              506,
+              307.7
+            ],
+            "out": [
+              562,
+              300
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-10",
+            "x": 640,
+            "y": 300,
+            "mode": "smooth",
+            "in": [
+              600,
+              300
+            ],
+            "out": [
+              683.3333,
+              300
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-11",
+            "x": 770,
+            "y": 300,
+            "mode": "smooth",
+            "in": [
+              726.6667,
+              300
+            ],
+            "out": [
+              811.3333,
+              300
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-12",
+            "x": 894,
+            "y": 276,
+            "mode": "independent",
+            "in": [
+              850.6,
+              284.4
+            ],
+            "out": [
+              896.1,
+              274.6
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-13",
+            "x": 900,
+            "y": 272,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ground-14",
+            "x": 904,
+            "y": 390,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ground-15",
+            "x": 966,
+            "y": 390,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ground-16",
+            "x": 970,
+            "y": 272,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ground-17",
+            "x": 976,
+            "y": 276,
+            "mode": "independent",
+            "in": [
+              973.9,
+              274.6
+            ],
+            "out": [
+              1019.4,
+              284.4
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-18",
+            "x": 1100,
+            "y": 300,
+            "mode": "smooth",
+            "in": [
+              1058.6667,
+              300
+            ],
+            "out": [
+              1116.6667,
+              300
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-19",
+            "x": 1150,
+            "y": 300,
+            "mode": "smooth",
+            "in": [
+              1133.3333,
+              300
+            ],
+            "out": [
+              1200,
+              300
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-20",
+            "x": 1300,
+            "y": 300,
+            "mode": "independent",
+            "in": [
+              1247.5,
+              300
+            ],
+            "out": [
+              1314,
+              307.7
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-21",
+            "x": 1340,
+            "y": 322,
+            "mode": "independent",
+            "in": [
+              1326,
+              314.3
+            ],
+            "out": [
+              1417,
+              322
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-22",
+            "x": 1560,
+            "y": 322,
+            "mode": "independent",
+            "in": [
+              1483,
+              322
+            ],
+            "out": [
+              1574,
+              314.3
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-23",
+            "x": 1600,
+            "y": 300,
+            "mode": "independent",
+            "in": [
+              1586,
+              307.7
+            ],
+            "out": [
+              1635,
+              300
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-24",
+            "x": 1700,
+            "y": 300,
+            "mode": "smooth",
+            "in": [
+              1666.6667,
+              300
+            ],
+            "out": [
+              1760,
+              300
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-25",
+            "x": 1880,
+            "y": 300,
+            "mode": "smooth",
+            "in": [
+              1820,
+              300
+            ],
+            "out": [
+              1920,
+              300
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-26",
+            "x": 2000,
+            "y": 210,
+            "mode": "independent",
+            "in": [
+              1958,
+              241.5
+            ],
+            "out": [
+              2014,
+              171.5
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-27",
+            "x": 2040,
+            "y": 100,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ground-28",
+            "x": 2400,
+            "y": 100,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ground-29",
+            "x": 2400,
+            "y": 1200,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    }
+  ],
+  "apples": [
+    {
+      "x": 410,
+      "y": 260
+    },
+    {
+      "x": 935,
+      "y": 230
+    },
+    {
+      "x": 1450,
+      "y": 260.1390058731598
+    },
+    {
+      "x": 1975,
+      "y": 170
+    },
+    {
+      "x": -200,
+      "y": 250
+    }
+  ],
+  "props": [
+    {
+      "x": -900,
+      "y": null,
+      "type": "tree",
+      "layer": "back"
+    },
+    {
+      "x": -760,
+      "y": null,
+      "type": "bush",
+      "layer": "back"
+    },
+    {
+      "x": -280,
+      "y": null,
+      "type": "tree",
+      "layer": "back"
+    },
+    {
+      "x": 120,
+      "y": null,
+      "type": "sign",
+      "layer": "front",
+      "text": "OUT →"
+    },
+    {
+      "x": 290,
+      "y": null,
+      "type": "reeds",
+      "layer": "front"
+    },
+    {
+      "x": 380,
+      "y": 302,
+      "type": "lily",
+      "layer": "back"
+    },
+    {
+      "x": 470,
+      "y": 302,
+      "type": "lily",
+      "layer": "back"
+    },
+    {
+      "x": 530,
+      "y": null,
+      "type": "reeds",
+      "layer": "back"
+    },
+    {
+      "x": 700,
+      "y": null,
+      "type": "tree",
+      "layer": "back"
+    },
+    {
+      "x": 2074.129326141473,
+      "y": 98.84195557302999,
+      "type": "sign",
+      "layer": "front",
+      "text": "Turn around"
+    },
+    {
+      "x": 935,
+      "y": 304,
+      "type": "duck",
+      "layer": "back"
+    },
+    {
+      "x": 930,
+      "y": 350,
+      "type": "fish",
+      "layer": "back"
+    },
+    {
+      "x": 1080,
+      "y": null,
+      "type": "reeds",
+      "layer": "front"
+    },
+    {
+      "x": 1220,
+      "y": null,
+      "type": "bush",
+      "layer": "back"
+    },
+    {
+      "x": 1290,
+      "y": null,
+      "type": "reeds",
+      "layer": "front"
+    },
+    {
+      "x": 1380,
+      "y": 302,
+      "type": "lily",
+      "layer": "back"
+    },
+    {
+      "x": 1420,
+      "y": 302,
+      "type": "lily",
+      "layer": "back"
+    },
+    {
+      "x": 1520,
+      "y": 302,
+      "type": "lily",
+      "layer": "back"
+    },
+    {
+      "x": 1610,
+      "y": null,
+      "type": "reeds",
+      "layer": "back"
+    },
+    {
+      "x": 1760,
+      "y": null,
+      "type": "tree",
+      "layer": "back"
+    },
+    {
+      "x": 2150,
+      "y": 100,
+      "type": "tree",
+      "layer": "back"
+    },
+    {
+      "x": 2300,
+      "y": 100,
+      "type": "bush",
+      "layer": "back"
+    }
+  ],
+  "spikes": [],
+  "water": [
+    {
+      "x": 886.535670287662,
+      "y": 288.758144102896,
+      "width": 93.56779091733029,
+      "depth": 118.15869524821056
+    },
+    {
+      "x": 284.44140625,
+      "y": 303.07421875,
+      "width": 240,
+      "depth": 32
+    },
+    {
+      "x": 1300,
+      "y": 304.70189333916994,
+      "width": 305.26960838354034,
+      "depth": 32
+    }
+  ],
+  "weather": {
+    "sun": 0.2,
+    "clouds": 0.85,
+    "fog": 0,
+    "rain": 0.5,
+    "snow": 0,
+    "lightning": 0,
+    "wind": 0.55,
+    "windDirection": "left"
+  },
+  "timeOfDay": 7,
+  "backdrop": "mountains",
+  "medals": {
+    "gold": 20,
+    "silver": 26,
+    "bronze": 35
+  }
+}

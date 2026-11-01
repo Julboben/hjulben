@@ -127,18 +127,12 @@ $("trail-picker").addEventListener("change", (event) =>
 $("save-trail").addEventListener("click", saveTrail);
 
 $("new-trail").addEventListener("click", () =>
-  createCustomTrail(
-    normalizeTrail(
-      { ...createBlankTrail(trailEntries.length), author: rememberedAuthor() },
-      trailEntries.length,
-    ),
-  ),
+  createCustomTrail(normalizeTrail({ ...createBlankTrail(), author: rememberedAuthor() })),
 );
 
 $("duplicate-trail").addEventListener("click", () => {
   const copy = cloneTrail(editor.trail);
   copy.name = `${editor.trail.name} Copy`;
-  copy.label = `${copy.name.toUpperCase()} / ${String(trailEntries.length + 1).padStart(2, "0")}`;
   createCustomTrail(copy);
 });
 
@@ -266,7 +260,7 @@ $("import-json").addEventListener("click", () => {
   try {
     // Parsed and normalized before the undo step is taken, so a typo in the
     // JSON leaves the history as it was.
-    const imported = normalizeTrail(JSON.parse($("trail-json").value), editor.trailIndex);
+    const imported = normalizeTrail(JSON.parse($("trail-json").value));
     pushHistory();
     editor.trail = imported;
     editor.selection = null;

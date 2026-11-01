@@ -758,6 +758,22 @@ fire('pointerup');
   syncInspector();
 }
 
+// A start put down close to the ground snaps onto it, so the bike doesn't
+// drop or jolt as a run begins; one put further up stays in the air.
+{
+  const { startY } = await import('../../js/editor/render.js');
+  const { surfaceBelow } = await import('../../js/trail-schema.js');
+  const x = editorState.trail.start.x;
+  const ground = surfaceBelow(editorState.trail, x, null)?.y;
+  if (Number.isFinite(ground)) {
+    const zoom = editorState.zoom;
+    editorState.zoom = 1;
+    report.startSnaps = startY(x, ground - 12 - 6) === null && startY(x, ground - 12 + 3) === null;
+    report.startStaysUp = startY(x, ground - 12 - 200) === ground - 12 - 200;
+    editorState.zoom = zoom;
+  }
+}
+
 const run = (label, gesture) => {
   try { gesture(); }
   catch (error) { report.errors.push(`${label}: ${error.message}`); }

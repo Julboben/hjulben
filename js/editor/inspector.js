@@ -567,15 +567,10 @@ export function renameTrail(name) {
   name = String(name).trim();
   if (!name || name === editor.trail.name) return false;
   pushHistory();
-  setTrailName(name);
+  editor.trail.name = name;
   syncInspector();
   render();
   return true;
-}
-
-function setTrailName(name) {
-  editor.trail.name = name;
-  editor.trail.label = `${name.toUpperCase()} / ${String(editor.trailIndex + 1).padStart(2, "0")}`;
 }
 
 /**

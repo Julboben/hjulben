@@ -1042,7 +1042,7 @@ export function startGame({ shared = null } = {}) {
       braking: !holding && input.held('down')
     };
     const running = ride.status === 'running';
-    gasHeld = running && stepInput.accelerating && !stepInput.braking;
+    gasHeld = running && stepInput.accelerating;
     physicsDebug.recordInput({ ...stepInput, accelerating: running && stepInput.accelerating, braking: running && stepInput.braking });
     if (running && !replay) recorded.push(stepInput);
     const speed = bikeSpeed(ride);

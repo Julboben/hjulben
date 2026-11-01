@@ -20,7 +20,6 @@ The world uses Canvas coordinates:
 ```js
 {
   name: 'Example Trail',
-  label: 'EXAMPLE TRAIL / 08',
   start: { x: 90, y: null, facing: 1 },
   finish: { x: 1800, y: null },
 
@@ -125,6 +124,7 @@ Authoring guidelines:
 - **Ground**: one wide block whose top edge is the route and whose bottom sits well below it. Keep the opening section relatively flat so both wheels spawn safely, and keep terrain beyond the finish.
 - **Ends**: close each end with terrain that fits the setting, such as a bank, a rock wall or a rise in the fields, so the rider can't ride out. Then let the ground carry on well beyond it, further than the camera can see from anywhere the rider can reach. An edge where the terrain stops looks unfinished unless it's meant, like a cliff or a floating island.
 - **Slopes**: broad curved edges ride well. Spans of `140–190` units per hill are forgiving; short spans with large height changes create abrupt geometry.
+- **Few points**: use as few points as the shape needs, since every point adds to the trail's size and to its share link. A straight run, level or sloped, is just its two ends; validation warns about points on a straight line. A bend is a `smooth` point with `in` and `out` handles, not a chain of short straight pieces sampled along a curve.
 - **Gaps**: a break between two blocks. The walls either side are solid, so a rider who falls in can hit the cliff face. Start around `80–100` units wide for introductory jumps; wider gaps need a clear launch ramp and a landing below the takeoff height.
 - **Ledges and islands**: a separate block above the ground. Leave at least one wheel diameter between it and the ground, and more when the rider is expected to pass underneath.
 - **Caves**: an `inner` boundary inside a block. The cave is open space with a solid roof and floor.
@@ -170,7 +170,9 @@ start: { x: 90, y: null, facing: 1 }
 - `y` is the wheel-axle height. Use `null` to place both wheels automatically on the topmost surface at `x`, or a number for an explicit airborne, ledge, or cave start.
 - `facing` is `1` for right and `-1` for left.
 
-The editor's **Start** tool places an explicit start position. Select the start marker to move it or change its facing in the inspector. A trail always has one start, so it cannot be deleted.
+Put the start on level ground, unless the clock is meant to start at once: `y: null` on the top surface, or, on a ledge or in a cave, the floor's height minus 12 (the wheel's radius). A bike standing on the ground there settles onto its suspension before the run and starts at rest; the clock starts on the rider's first input, or as soon as the bike moves by itself. Level means the ground under both wheels, 25 units either side of `x`, is at the same height: on a slope the bike rolls away, or on a gentle one creeps off its spot, and a start even a unit above the ground drops the bike, which starts the clock at once. A start in the air, or on a steep slope, is fine when it's meant: the clock starts as the bike drops or rolls away, so it's part of everyone's time.
+
+The editor's **Start** tool places the start where you click, and snaps it onto the ground under its wheels when you click close to it; further away, it stays in the air. Select the start marker to move it (dragging snaps the same way) or change its facing in the inspector. A trail always has one start, so it cannot be deleted.
 
 ## Finish: `finish`
 
@@ -469,7 +471,8 @@ A trail can also be named by part of its catalog id or file name, such as `12` o
 - the jumps (the longest with its takeoff, landing and height), flips, turns on the ground and in the air, time spent hanging from one wheel under a ledge, top speed, time crawling, and the hardest landing
 - the route, as the bike's position once a second
 - **forgiveness:** the share of reruns that still reach the goal when the timing of one second of the run is off by up to 50 ms, and the tight spots, where few did and what went wrong. The bot rides with perfect timing; this shows where a person would struggle. A spot where nothing survives needs frame-perfect riding.
-- **traps:** places where a miss leaves the rider with no way back to the line and no crash, so a player can only restart by hand, such as a pit between two buildings with a floor. Besides the jittered reruns, each jump's run-up is ridden again a moment before takeoff at 60% and 80% of the bot's speed, as a player who comes in too slowly would. Wherever a miss leaves the bike at rest off the line, the bot gets a short search to get back to any point of the stretch's line, ahead or behind; where it can't, that's a trap, listed with the stretch and summed up at the end. Fix every one: give it a way back, or make the miss end the run (see "Every miss ends in a way back or a crash" in `TRAILS_GUIDE.md`).
+- **traps:** places where a miss leaves the rider with no way back to the line and no crash, so a player can only restart by hand, such as a pit between two buildings with a floor. Besides the jittered reruns, each jump's run-up is ridden again a moment before takeoff at 60% and 80% of the bot's speed, as a player who comes in too slowly would. Wherever a miss leaves the bike at rest off the line, the bot gets a short search to get back to any point of the line ridden so far, this stretch's or an earlier one's, ahead or behind (a miss that drops the rider back onto an earlier stretch costs time, but isn't a trap); where it can't, that's a trap, listed with the stretch and summed up at the end. Fix every one: give it a way back, or make the miss end the run (see "Every miss ends in a way back or a crash" in `TRAILS_GUIDE.md`).
+- **escapes:** ends of the trail the rider can ride out of. From the line's outermost point at each end, facing outwards, the bot looks for a way to the last 150 units of the terrain there, past the closing: out along the ground beyond it, or up the wall that ends the terrain. The search takes up to 30 seconds an end, enough for a hard climb up a steep bank, and its answer is saved with the trail's ground: it only searches again after the terrain, start, finish or apples change. Where it gets there, the playtest looks at what lies out there. Onto plain ground and nature it reports an ESCAPE, which is probably a mistake: close that end with terrain nobody gets over. Onto the nisse, or onto other props, it reports an OPEN END instead, which is fine when it's the way to something hidden there.
 
 The bot takes the apples nearest first. When a trail is meant to be ridden in another order, give it with `--order 2,1,3` (apples left out are taken nearest first afterwards), or the bot may ride past an apple it can't come back for. A stretch the bot can't solve is reported with the apples still to take, where the greedy bot got stuck and how close the explorer got. That means the trail may be impossible there, or need a longer search (`--minutes`, default 2 per stretch). At the end it gives the bot's total time, which is not optimised: treat it as an upper bound for gold, and set gold at most about 5% above it. The official trails' silver is about 1.3× gold and bronze about 1.75×.
 
@@ -479,10 +482,10 @@ The run is saved in `.playtest/` (git-ignored) and tried first next time, so aft
 
 **Probing one spot.** `--probe X,Y,FACING,SPEED` places the bike at `X`, at height `Y` (`ground` to stand on the surface), facing `1` (right) or `-1` (left), already moving at `SPEED` units per second. Then either:
 
-- `--script "..."` rides a fixed set of inputs and prints a trace (time, position, velocity, angle, whether the bike is on the ground, in a wheelie, hanging or in the air, and events such as landings, apples and crashes) every `--every` seconds (default 0.1). Each part of the script is what to hold and for how long: `gas`, `brake` or neither (`coast`), plus a lean of `fwd` or `back` (optionally `half`) relative to the way the bike faces, then the seconds. `turn` turns around. This is the way to measure a jump: how far and high a kicker throws the bike at a given speed, whether it clears a gap, how it lands.
+- `--script "..."` rides a fixed set of inputs and prints a trace (time, position, velocity, angle, whether the bike is on the ground, in a wheelie, hanging or in the air, and events such as landings, apples and crashes) every `--every` seconds (default 0.1). Each part of the script is what to hold and for how long: `gas`, `brake` or neither (`coast`), plus a lean of `fwd` or `back` (optionally `half`) relative to the way the bike faces, then the seconds. `turn` turns around. This is the way to measure a jump: how far and high a kicker throws the bike at a given speed, whether it clears a gap, how it lands. The last line gives the highest point the bike reached and its angle there, which shows how far the lip pitched it.
 - `--goal apple:N`, `--goal reach:X,Y` or `--goal finish` lets the bot find its own way there, and prints the inputs it used in the script format.
 
-Two things worth knowing when writing scripts: lean turns the bike hard, so hold it in taps of 0.1–0.2 s as the bot does (held for most of a second it flips the bike over), and gas from a standstill lifts the front, so tap `fwd` now and then to keep it down. How fast the bike gets going on flat ground, and its top speed, are in the table below.
+Write the output to a file, or read it straight from the terminal: piped through `sed` or similar, it is held back until the command ends, and lost if the command is stopped first. Two things worth knowing when writing scripts: lean turns the bike hard, so hold it in taps of 0.1–0.2 s as the bot does (held for most of a second it flips the bike over), and gas from a standstill lifts the front, so tap `fwd` now and then to keep it down. How fast the bike gets going on flat ground, and its top speed, are in the table below.
 
 `--json FILE` also writes the whole report as JSON.
 
@@ -495,20 +498,24 @@ Measured on small test pieces with the game's own simulation by `scripts/measure
 
 | Reaches 200 | Reaches 300 | Reaches 400 | After 2 s | Top speed |
 |---|---|---|---|---|
-| 0.8 s | 1.5 s | 2.3 s | 368 units/s, 415 units on | 778 units/s |
+| 0.8 s | 1.5 s | 2.3 s | 368 units/s, 417 units on | 778 units/s |
 
 **Kickers:** a 40-unit kicker, its lip at the end of flat ground that carries on level beyond it. Each cell is how far past the lip the bike lands, and how high it rises above the lip, at that approach speed:
 
 | Kicker | 200 units/s | 300 units/s | 400 units/s | 500 units/s |
 |---|---|---|---|---|
-| 15° | 228 on, 0 up | 261 on, 0 up | 321 on, 2 up | 403 on, 7 up |
-| 25° | 195 on, 0 up | 247 on, 5 up | 331 on, 16 up | 464 on, 36 up |
-| 35° | 171 on, 5 up | 223 on, 17 up | 309 on, 37 up | 429 on, 63 up |
+| 15° | 228 on, 0 up | 263 on, 0 up | 315 on, 1 up | 399 on, 7 up |
+| 25° | 196 on, 0 up | 246 on, 5 up | 334 on, 17 up | 452 on, 33 up |
+| 35° | 172 on, 5 up | 220 on, 16 up | 307 on, 36 up | 424 on, 64 up |
 
 **Climbs:** a 300-unit-tall slope is climbed up to 45° from a standstill at its foot, and up to 50° with a run-up at 400 units/s (tried in steps of 5°). Steeper, the bike flips over backwards or stalls.
 
 **Steps:** a sheer step is ridden up to 20 units tall from a crawl, 20 units tall at 200 units/s, 20 units tall at 400 units/s, lifting the front just before it (tried in steps of 10). Taller than that, the rider's head hits the step: give it a ramp or a kicker.
 <!-- limits:end -->
+
+Over a run of jumps, height turns into speed: where each hill, valley and the next hill end up level overall, the speed only changes with the difference in hill heights, but a run that falls overall speeds up from jump to jump until the bike runs at its top speed. Keep a row of jumps roughly level, and give each landing slope the room the flight needs: with gravity at 380, a fast jump carries the bike several hundred units before it comes down. Islands too: a jump onto a flat-topped island lands as on flat ground, so give its near edge a slope that falls away.
+
+The bike leaves a kicker pitched about as steeply as the lip's last stretch, and further where the kicker curves tightly. With the gas held and no lean, a curved 60-unit kicker 240 units long, ending at about 28°, has the bike at about −25° (nose up) at the top of the jump; one 120 units long, ending at about 53°, throws it higher but at −80° to −100°, close to standing on its tail, which few players save. To throw the bike high and keep it landable, make the kicker taller and longer rather than shorter and steeper, and check the angle with `--probe --script`.
 
 ### A ledge to hang from
 

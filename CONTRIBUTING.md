@@ -107,6 +107,10 @@ When changing physics values, validate at least these cases:
 6. Reversing direction and riding back through a trail
 7. Crossing the gap in Skybound
 
+A change to how the bike rides needs `RIDE_VERSION` in `js/ride.js` bumped, which starts fresh leaderboards, ghosts and best times on every trail, and every replay re-recorded. So changes that need one wait here, to go in together with the next one that does:
+
+- **A stronger mid-range.** The bike pulls like a real motocross bike for its first second and then fades early; the measurements and the plan are under "Speed and acceleration" and "Next steps" in `PHYSICS.md`. Try it on a branch of its own first.
+
 ## Stylesheets
 
 The CSS is plain CSS served as written, with no preprocessor or build step. Each page loads three stylesheets in this order:
@@ -195,6 +199,13 @@ Setup on Netlify:
 - `RP_ID` (optional, default `julben.dk`): the domain passkeys belong to. They work on that domain and every subdomain, such as `h.julben.dk`. Changing it makes existing passkeys unusable.
 
 Tables are created automatically on first use. A rider without a passkey (for example, one imported by hand from an older board) is unclaimed: the first person to create an online rider with that name takes it over, times included. Runs without a replay show on the board but can't be a ghost. Passkeys don't work on `*.netlify.app` deploy previews of the production domain (each preview host has its own), nor in `npm run dev`, which has no functions.
+
+If the game outgrows the free Netlify and Neon plans, the function calls run out first: a player makes a few hundred an hour, mostly cloud saves, then board fetches and posted runs. Past the limit the game keeps working offline, and finished runs wait to be posted. Before that, cut calls per player rather than paying for more:
+
+- Let Netlify's cache answer board fetches: every player on a trail gets the same top 10, so a `Netlify-CDN-Cache-Control` header of a few seconds on the `GET` in `leaderboard.mjs` makes the function run a few times a minute per trail, however many people ride it. Check in Netlify's docs that cached answers don't count as calls.
+- Upload the save less often: after a new best or a finished trail, and when the tab is hidden, rather than shortly after every change (`SAVE_SYNC_DELAY_MS` in `js/account.js`).
+
+The game also loads every trail file before the menu shows (`loadTrailEntries` in `js/trails.js`), because the menu needs each trail's name, medals, author, nisse and hash, and best times and the board are keyed by the hash. A trail built from thousands of blocks, like Copenhagen Rooftops, makes every player download and parse it at startup. If startup gets slow, on phones especially, let the generated catalog carry what the menu needs and fetch a trail's file only when it is ridden, edited or previewed, with the service worker fetching the rest after the menu is up so offline play keeps working. `npm test` must then check the catalog against the files: a stale hash would file times under the wrong key.
 
 ## Releasing
 

@@ -1,6 +1,5 @@
 {
   "name": "The Mining Cave",
-  "label": "THE MINING CAVE / 13",
   "finish": {
     "x": 1524.497057251215,
     "y": 286.18171347317434
@@ -8,7 +7,7 @@
   "description": "Technical rock climbing",
   "start": {
     "x": 80.80171785390098,
-    "y": 295.794571658295,
+    "y": 300.64,
     "facing": 1
   },
   "terrainBlocks": [
@@ -21,7 +20,16 @@
           {
             "id": "n1",
             "x": -60.9147,
-            "y": 320.263,
+            "y": 312.64,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n1-level",
+            "x": 120,
+            "y": 312.64,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -587,15 +595,6 @@
             "edge": "straight"
           },
           {
-            "id": "n148l-9",
-            "x": 1599.6379,
-            "y": 788.3748,
-            "mode": "corner",
-            "in": null,
-            "out": null,
-            "edge": "straight"
-          },
-          {
             "id": "n148l-10",
             "x": 1099.6379,
             "y": 788.3748,
@@ -707,15 +706,6 @@
           {
             "id": "n6j5o",
             "x": -65.6668,
-            "y": 155.3057,
-            "mode": "corner",
-            "in": null,
-            "out": null,
-            "edge": "straight"
-          },
-          {
-            "id": "n6j5p",
-            "x": -80.2999,
             "y": 155.3057,
             "mode": "corner",
             "in": null,
@@ -897,15 +887,6 @@
             "id": "n6j69",
             "x": -57.609,
             "y": 252.8586,
-            "mode": "corner",
-            "in": null,
-            "out": null,
-            "edge": "straight"
-          },
-          {
-            "id": "n6j6a",
-            "x": -60.4448,
-            "y": 258.2623,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -2566,15 +2547,6 @@
             "edge": "straight"
           },
           {
-            "id": "n6ne9",
-            "x": 821.8978,
-            "y": 9.8313,
-            "mode": "corner",
-            "in": null,
-            "out": null,
-            "edge": "straight"
-          },
-          {
             "id": "n6nea",
             "x": 814.0976,
             "y": 9.8313,
@@ -2686,15 +2658,6 @@
             "id": "n6nem",
             "x": 716.6553,
             "y": 0.8172,
-            "mode": "corner",
-            "in": null,
-            "out": null,
-            "edge": "straight"
-          },
-          {
-            "id": "n6nen",
-            "x": 711.073,
-            "y": -6.998,
             "mode": "corner",
             "in": null,
             "out": null,

@@ -228,9 +228,9 @@ export function saveBrowserTrail(trail, key = null, { shared = false } = {}) {
  */
 export function saveSharedTrail(trail) {
   const hash = trailHash(trail);
-  // The label is left out: a link without one gets a numbered default.
-  const content = value => canonical({ ...value, label: undefined });
   const copies = customTrailEntries.filter(entry => entry.storage === 'browser' && entry.name === trail.name && trailHash(entry.trail) === hash);
+  // Copies saved before trails lost their label may still carry one.
+  const content = value => canonical({ ...value, label: undefined });
   const same = copies.find(entry => content(entry.trail) === content(trail));
   if (same) return same;
   const older = copies.find(entry => entry.shared);

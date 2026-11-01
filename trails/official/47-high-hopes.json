@@ -1,0 +1,1910 @@
+{
+  "name": "High Hopes",
+  "description": "Steeper faces create wheelies and bigger airtime. Shift your weight early, then use small lean inputs to match the landing slope.",
+  "lesson": "Steeper faces that lift the front and throw bigger air. Shift your weight early, then match the landing slope with small leans.",
+  "start": {
+    "x": 90,
+    "y": null,
+    "facing": 1
+  },
+  "finish": {
+    "x": 3312.5687986229404,
+    "y": -69.98383381447223
+  },
+  "terrainBlocks": [
+    {
+      "id": "b1",
+      "material": "concrete",
+      "outer": {
+        "id": "b1gh",
+        "nodes": [
+          {
+            "id": "n1d6",
+            "x": 807.4986,
+            "y": 45.1992,
+            "mode": "independent",
+            "in": [
+              794.5819,
+              52.0486
+            ],
+            "out": [
+              820.4153,
+              38.3497
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "n1d7",
+            "x": 846.2486,
+            "y": 19.0362,
+            "mode": "independent",
+            "in": [
+              833.3319,
+              28.7228
+            ],
+            "out": [
+              859.1653,
+              9.3496
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "n1d8",
+            "x": 884.9986,
+            "y": -7.1268,
+            "mode": "independent",
+            "in": [
+              872.0819,
+              -0.2773
+            ],
+            "out": [
+              897.9153,
+              -13.9762
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "n1d9",
+            "x": 923.7486,
+            "y": -17.9638,
+            "mode": "independent",
+            "in": [
+              910.8319,
+              -17.9638
+            ],
+            "out": [
+              935.4153,
+              -17.9638
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "n1da",
+            "x": 958.7486,
+            "y": -7.7125,
+            "mode": "independent",
+            "in": [
+              947.0819,
+              -14.1917
+            ],
+            "out": [
+              970.4153,
+              -1.2333
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "n1db",
+            "x": 993.7486,
+            "y": 17.0362,
+            "mode": "independent",
+            "in": [
+              982.0819,
+              7.8732
+            ],
+            "out": [
+              1005.4153,
+              26.1992
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "n1dc",
+            "x": 1028.7486,
+            "y": 41.7849,
+            "mode": "independent",
+            "in": [
+              1017.0819,
+              35.3057
+            ],
+            "out": [
+              1040.4153,
+              48.2641
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "n1dd",
+            "x": 1063.7486,
+            "y": 52.0362,
+            "mode": "independent",
+            "in": [
+              1052.0819,
+              52.0362
+            ],
+            "out": [
+              1078.7486,
+              52.0362
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "n1de",
+            "x": 1108.7486,
+            "y": 31.8266,
+            "mode": "independent",
+            "in": [
+              1093.7486,
+              44.5999
+            ],
+            "out": [
+              1123.7486,
+              19.0533
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "n1df",
+            "x": 1153.7486,
+            "y": -16.9638,
+            "mode": "independent",
+            "in": [
+              1138.7486,
+              1.1004
+            ],
+            "out": [
+              1168.7486,
+              -35.028
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "n1dg",
+            "x": 1198.7486,
+            "y": -65.7542,
+            "mode": "independent",
+            "in": [
+              1183.7486,
+              -52.9809
+            ],
+            "out": [
+              1213.7486,
+              -78.5275
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "n1dh",
+            "x": 1243.7486,
+            "y": -85.9638,
+            "mode": "independent",
+            "in": [
+              1228.7486,
+              -85.9638
+            ],
+            "out": [
+              1258.7486,
+              -85.9638
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "n1di",
+            "x": 1288.7486,
+            "y": -65.6077,
+            "mode": "independent",
+            "in": [
+              1273.7486,
+              -78.4736
+            ],
+            "out": [
+              1303.7486,
+              -52.7419
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "n1dj",
+            "x": 1333.7486,
+            "y": -16.4638,
+            "mode": "independent",
+            "in": [
+              1318.7486,
+              -34.6589
+            ],
+            "out": [
+              1348.7486,
+              1.7313
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "n1dk",
+            "x": 1378.7486,
+            "y": 32.6801,
+            "mode": "independent",
+            "in": [
+              1363.7486,
+              19.8143
+            ],
+            "out": [
+              1393.7486,
+              45.546
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "n1dl",
+            "x": 1423.7486,
+            "y": 53.0362,
+            "mode": "independent",
+            "in": [
+              1408.7486,
+              53.0362
+            ],
+            "out": [
+              1436.2486,
+              53.0362
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "n1dm",
+            "x": 2018.7486,
+            "y": 58.0362,
+            "mode": "independent",
+            "in": [
+              2007.0819,
+              58.0362
+            ],
+            "out": [
+              2033.3319,
+              58.0362
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "n1dn",
+            "x": 2062.4986,
+            "y": 39.1446,
+            "mode": "independent",
+            "in": [
+              2047.9153,
+              51.0848
+            ],
+            "out": [
+              2077.0819,
+              27.2043
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "n1do",
+            "x": 2106.2486,
+            "y": -6.4638,
+            "mode": "independent",
+            "in": [
+              2091.6653,
+              10.4223
+            ],
+            "out": [
+              2120.8319,
+              -23.3499
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "n1dp",
+            "x": 2149.9986,
+            "y": -52.0722,
+            "mode": "independent",
+            "in": [
+              2135.4153,
+              -40.1319
+            ],
+            "out": [
+              2164.5819,
+              -64.0124
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "n1dq",
+            "x": 2193.7486,
+            "y": -70.9638,
+            "mode": "independent",
+            "in": [
+              2179.1653,
+              -70.9638
+            ],
+            "out": [
+              2207.9153,
+              -70.9638
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "n1dr",
+            "x": 2236.2486,
+            "y": -52.8044,
+            "mode": "independent",
+            "in": [
+              2222.0819,
+              -64.2819
+            ],
+            "out": [
+              2250.4153,
+              -41.327
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "n1ds",
+            "x": 2278.7486,
+            "y": -8.9638,
+            "mode": "independent",
+            "in": [
+              2264.5819,
+              -25.1954
+            ],
+            "out": [
+              2292.9153,
+              7.2678
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "n1dt",
+            "x": 2321.2486,
+            "y": 34.8768,
+            "mode": "independent",
+            "in": [
+              2307.0819,
+              23.3994
+            ],
+            "out": [
+              2335.4153,
+              46.3543
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "n1du",
+            "x": 2363.7486,
+            "y": 53.0362,
+            "mode": "independent",
+            "in": [
+              2349.5819,
+              53.0362
+            ],
+            "out": [
+              2376.6653,
+              53.0362
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "n1dv",
+            "x": 2402.4986,
+            "y": 41.4669,
+            "mode": "independent",
+            "in": [
+              2389.5819,
+              48.7792
+            ],
+            "out": [
+              2415.4153,
+              34.1547
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "n1dw",
+            "x": 2441.2486,
+            "y": 13.5362,
+            "mode": "independent",
+            "in": [
+              2428.3319,
+              23.8773
+            ],
+            "out": [
+              2454.1653,
+              3.1951
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "n1dx",
+            "x": 2479.9986,
+            "y": -14.3945,
+            "mode": "independent",
+            "in": [
+              2467.0819,
+              -7.0823
+            ],
+            "out": [
+              2492.9153,
+              -21.7068
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "n1dy",
+            "x": 2518.7486,
+            "y": -25.9638,
+            "mode": "independent",
+            "in": [
+              2505.8319,
+              -25.9638
+            ],
+            "out": [
+              2530.8319,
+              -25.9638
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "n1dz",
+            "x": 2554.9986,
+            "y": -12.4907,
+            "mode": "independent",
+            "in": [
+              2542.9153,
+              -21.0062
+            ],
+            "out": [
+              2567.0819,
+              -3.9752
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "n1e0",
+            "x": 2591.2486,
+            "y": 20.0362,
+            "mode": "independent",
+            "in": [
+              2579.1653,
+              7.9934
+            ],
+            "out": [
+              2603.3319,
+              32.079
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "n1e1",
+            "x": 2627.4986,
+            "y": 52.5631,
+            "mode": "independent",
+            "in": [
+              2615.4153,
+              44.0476
+            ],
+            "out": [
+              2639.5819,
+              61.0786
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "n1e2",
+            "x": 2663.7486,
+            "y": 66.0362,
+            "mode": "independent",
+            "in": [
+              2651.6653,
+              66.0362
+            ],
+            "out": [
+              2677.9153,
+              66.0362
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "n1e3",
+            "x": 2706.2486,
+            "y": 47.8768,
+            "mode": "independent",
+            "in": [
+              2692.0819,
+              59.3543
+            ],
+            "out": [
+              2720.4153,
+              36.3994
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "n1e4",
+            "x": 2748.7486,
+            "y": 4.0362,
+            "mode": "independent",
+            "in": [
+              2734.5819,
+              20.2678
+            ],
+            "out": [
+              2762.9153,
+              -12.1954
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "n1e5",
+            "x": 2791.2486,
+            "y": -39.8044,
+            "mode": "independent",
+            "in": [
+              2777.0819,
+              -28.327
+            ],
+            "out": [
+              2805.4153,
+              -51.2819
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "n1e6",
+            "x": 2833.7486,
+            "y": -57.9638,
+            "mode": "independent",
+            "in": [
+              2819.5819,
+              -57.9638
+            ],
+            "out": [
+              2847.0819,
+              -57.9638
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "n1e7",
+            "x": 2873.7486,
+            "y": -42.4405,
+            "mode": "independent",
+            "in": [
+              2860.4153,
+              -52.2518
+            ],
+            "out": [
+              2887.0819,
+              -32.6291
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "n1e8",
+            "x": 2913.7486,
+            "y": -4.9638,
+            "mode": "independent",
+            "in": [
+              2900.4153,
+              -18.8392
+            ],
+            "out": [
+              2927.0819,
+              8.9116
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "n1e9",
+            "x": 2953.7486,
+            "y": 32.5129,
+            "mode": "independent",
+            "in": [
+              2940.4153,
+              22.7015
+            ],
+            "out": [
+              2967.0819,
+              42.3242
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "n1ea",
+            "x": 2993.7486,
+            "y": 48.0362,
+            "mode": "independent",
+            "in": [
+              2980.4153,
+              48.0362
+            ],
+            "out": [
+              3006.2486,
+              48.0362
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "n1eb",
+            "x": 3031.2486,
+            "y": 40.8603,
+            "mode": "independent",
+            "in": [
+              3018.7486,
+              45.3958
+            ],
+            "out": [
+              3043.7486,
+              36.3249
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "n1ec",
+            "x": 3068.7486,
+            "y": 23.5362,
+            "mode": "independent",
+            "in": [
+              3056.2486,
+              29.9503
+            ],
+            "out": [
+              3081.2486,
+              17.1221
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "n1ed",
+            "x": 3160.1408,
+            "y": -53.3222,
+            "mode": "corner",
+            "in": [
+              3093.7486,
+              10.7475
+            ],
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n1ee",
+            "x": 3176.5804,
+            "y": 25.2618,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n1ef",
+            "x": 3473.7486,
+            "y": 25.2618,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n1eg",
+            "x": 3473.7486,
+            "y": -1075.9638,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n1eh",
+            "x": 4473.7486,
+            "y": -1075.9638,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n1ei",
+            "x": 4473.7486,
+            "y": 724.0362,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n1ej",
+            "x": -1126.2514,
+            "y": 724.0362,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n1ek",
+            "x": -1126.2514,
+            "y": 44.0362,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n1ep",
+            "x": 143.7486,
+            "y": 44.0362,
+            "mode": "independent",
+            "in": null,
+            "out": [
+              156.6653,
+              44.0362
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "n1eq",
+            "x": 182.4986,
+            "y": 34.5172,
+            "mode": "independent",
+            "in": [
+              169.5819,
+              40.5336
+            ],
+            "out": [
+              195.4153,
+              28.5008
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "n1er",
+            "x": 221.2486,
+            "y": 11.5362,
+            "mode": "independent",
+            "in": [
+              208.3319,
+              20.0447
+            ],
+            "out": [
+              234.1653,
+              3.0277
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "n1es",
+            "x": 259.9986,
+            "y": -11.4448,
+            "mode": "independent",
+            "in": [
+              247.0819,
+              -5.4284
+            ],
+            "out": [
+              272.9153,
+              -17.4612
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "n1et",
+            "x": 298.7486,
+            "y": -20.9638,
+            "mode": "independent",
+            "in": [
+              285.8319,
+              -20.9638
+            ],
+            "out": [
+              310.4153,
+              -20.9638
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "n1eu",
+            "x": 333.7486,
+            "y": -8.5158,
+            "mode": "independent",
+            "in": [
+              322.0819,
+              -16.3834
+            ],
+            "out": [
+              345.4153,
+              -0.6482
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "n1ev",
+            "x": 368.7486,
+            "y": 21.5362,
+            "mode": "independent",
+            "in": [
+              357.0819,
+              10.4097
+            ],
+            "out": [
+              380.4153,
+              32.6627
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "n1ew",
+            "x": 403.7486,
+            "y": 51.5882,
+            "mode": "independent",
+            "in": [
+              392.0819,
+              43.7206
+            ],
+            "out": [
+              415.4153,
+              59.4558
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "n1ex",
+            "x": 438.7486,
+            "y": 64.0362,
+            "mode": "independent",
+            "in": [
+              427.0819,
+              64.0362
+            ],
+            "out": [
+              452.9153,
+              64.0362
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "n1ey",
+            "x": 768.7486,
+            "y": 56.0362,
+            "mode": "independent",
+            "in": [
+              755.4153,
+              56.0362
+            ],
+            "out": [
+              781.6653,
+              56.0362
+            ],
+            "edge": "curve"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "b1gv",
+      "material": "brick",
+      "outer": {
+        "id": "b1gi",
+        "nodes": [
+          {
+            "id": "n1ez",
+            "x": -550.6754,
+            "y": -378.7112,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n1f0",
+            "x": -300.6754,
+            "y": -378.7112,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n1f1",
+            "x": -300.6754,
+            "y": -178.7112,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n1f2",
+            "x": -100.5939,
+            "y": -178.7112,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n1f3",
+            "x": -100.5939,
+            "y": 48.0844,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n1f4",
+            "x": -550.6754,
+            "y": 48.0844,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": [
+        {
+          "id": "b1gj",
+          "nodes": [
+            {
+              "id": "n1f5",
+              "x": -200.5939,
+              "y": -128.7112,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            },
+            {
+              "id": "n1f6",
+              "x": -200.5939,
+              "y": -78.7112,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            },
+            {
+              "id": "n1f7",
+              "x": -150.5939,
+              "y": -78.7112,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            },
+            {
+              "id": "n1f8",
+              "x": -150.5939,
+              "y": -128.7112,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            }
+          ]
+        },
+        {
+          "id": "b1gk",
+          "nodes": [
+            {
+              "id": "n1f9",
+              "x": -250.5939,
+              "y": -128.7112,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            },
+            {
+              "id": "n1fa",
+              "x": -300.5939,
+              "y": -128.7112,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            },
+            {
+              "id": "n1fb",
+              "x": -300.5939,
+              "y": -78.7112,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            },
+            {
+              "id": "n1fc",
+              "x": -250.5939,
+              "y": -78.7112,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            }
+          ]
+        },
+        {
+          "id": "b1gl",
+          "nodes": [
+            {
+              "id": "n1fd",
+              "x": -150.5939,
+              "y": 21.2888,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            },
+            {
+              "id": "n1fe",
+              "x": -150.5939,
+              "y": -28.7112,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            },
+            {
+              "id": "n1ff",
+              "x": -200.5939,
+              "y": -28.7112,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            },
+            {
+              "id": "n1fg",
+              "x": -200.5939,
+              "y": 21.2888,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            }
+          ]
+        },
+        {
+          "id": "b1gm",
+          "nodes": [
+            {
+              "id": "n1fh",
+              "x": -300.5939,
+              "y": 21.2888,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            },
+            {
+              "id": "n1fi",
+              "x": -250.5939,
+              "y": 21.2888,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            },
+            {
+              "id": "n1fj",
+              "x": -250.5939,
+              "y": -28.7112,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            },
+            {
+              "id": "n1fk",
+              "x": -300.5939,
+              "y": -28.7112,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            }
+          ]
+        },
+        {
+          "id": "b1gn",
+          "nodes": [
+            {
+              "id": "n1fl",
+              "x": -400.5939,
+              "y": -28.7112,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            },
+            {
+              "id": "n1fm",
+              "x": -400.5939,
+              "y": 21.2888,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            },
+            {
+              "id": "n1fn",
+              "x": -350.5939,
+              "y": 21.2888,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            },
+            {
+              "id": "n1fo",
+              "x": -350.5939,
+              "y": -28.7112,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            }
+          ]
+        },
+        {
+          "id": "b1go",
+          "nodes": [
+            {
+              "id": "n1fp",
+              "x": -450.5939,
+              "y": -28.7112,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            },
+            {
+              "id": "n1fq",
+              "x": -500.5939,
+              "y": -28.7112,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            },
+            {
+              "id": "n1fr",
+              "x": -500.5939,
+              "y": 21.2888,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            },
+            {
+              "id": "n1fs",
+              "x": -450.5939,
+              "y": 21.2888,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            }
+          ]
+        },
+        {
+          "id": "b1gp",
+          "nodes": [
+            {
+              "id": "n1ft",
+              "x": -350.5939,
+              "y": -78.7112,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            },
+            {
+              "id": "n1fu",
+              "x": -350.5939,
+              "y": -128.7112,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            },
+            {
+              "id": "n1fv",
+              "x": -400.5939,
+              "y": -128.7112,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            },
+            {
+              "id": "n1fw",
+              "x": -400.5939,
+              "y": -78.7112,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            }
+          ]
+        },
+        {
+          "id": "b1gq",
+          "nodes": [
+            {
+              "id": "n1fx",
+              "x": -400.5939,
+              "y": -178.7112,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            },
+            {
+              "id": "n1fy",
+              "x": -350.5939,
+              "y": -178.7112,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            },
+            {
+              "id": "n1fz",
+              "x": -350.5939,
+              "y": -228.7112,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            },
+            {
+              "id": "n1g0",
+              "x": -400.5939,
+              "y": -228.7112,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            }
+          ]
+        },
+        {
+          "id": "b1gr",
+          "nodes": [
+            {
+              "id": "n1g1",
+              "x": -500.5939,
+              "y": -228.7112,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            },
+            {
+              "id": "n1g2",
+              "x": -500.5939,
+              "y": -178.7112,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            },
+            {
+              "id": "n1g3",
+              "x": -450.5939,
+              "y": -178.7112,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            },
+            {
+              "id": "n1g4",
+              "x": -450.5939,
+              "y": -228.7112,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            }
+          ]
+        },
+        {
+          "id": "b1gs",
+          "nodes": [
+            {
+              "id": "n1g5",
+              "x": -450.5939,
+              "y": -128.7112,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            },
+            {
+              "id": "n1g6",
+              "x": -500.5939,
+              "y": -128.7112,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            },
+            {
+              "id": "n1g7",
+              "x": -500.5939,
+              "y": -78.7112,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            },
+            {
+              "id": "n1g8",
+              "x": -450.5939,
+              "y": -78.7112,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            }
+          ]
+        },
+        {
+          "id": "b1gt",
+          "nodes": [
+            {
+              "id": "n1g9",
+              "x": -350.5939,
+              "y": -278.7112,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            },
+            {
+              "id": "n1ga",
+              "x": -350.5939,
+              "y": -328.7112,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            },
+            {
+              "id": "n1gb",
+              "x": -400.5939,
+              "y": -328.7112,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            },
+            {
+              "id": "n1gc",
+              "x": -400.5939,
+              "y": -278.7112,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            }
+          ]
+        },
+        {
+          "id": "b1gu",
+          "nodes": [
+            {
+              "id": "n1gd",
+              "x": -500.5939,
+              "y": -278.7112,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            },
+            {
+              "id": "n1ge",
+              "x": -450.5939,
+              "y": -278.7112,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            },
+            {
+              "id": "n1gf",
+              "x": -450.5939,
+              "y": -328.7112,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            },
+            {
+              "id": "n1gg",
+              "x": -500.5939,
+              "y": -328.7112,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b3m",
+      "material": "brick",
+      "outer": {
+        "id": "b3n",
+        "nodes": [
+          {
+            "id": "n3o",
+            "x": 510.7079,
+            "y": 41.6467,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n3p",
+            "x": 661.3915,
+            "y": 36.7483,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n3q",
+            "x": 663.1337,
+            "y": 56.1311,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n3r",
+            "x": 512.8915,
+            "y": 59.2561,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "b3s",
+      "material": "concrete",
+      "outer": {
+        "id": "b3t",
+        "nodes": [
+          {
+            "id": "n3u",
+            "x": -331.9189,
+            "y": -400.0898,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n3v",
+            "x": -315.79,
+            "y": -399.7261,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n3w",
+            "x": -315.2209,
+            "y": -377.2641,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n3x",
+            "x": -331.6313,
+            "y": -376.9036,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "b3y",
+      "material": "brick",
+      "outer": {
+        "id": "b3z",
+        "nodes": [
+          {
+            "id": "n40",
+            "x": 643.8095,
+            "y": 12.6976,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n41",
+            "x": 752.5792,
+            "y": 37.1428,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n42",
+            "x": 747.7938,
+            "y": 52.6897,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n43",
+            "x": 640.6297,
+            "y": 30.5452,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "b44",
+      "material": "brick",
+      "outer": {
+        "id": "b45",
+        "nodes": [
+          {
+            "id": "n46",
+            "x": 1675.2414,
+            "y": -32.5932,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n47",
+            "x": 1699.0822,
+            "y": 50.9759,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n48",
+            "x": 1527.7511,
+            "y": 50.9759,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "b49",
+      "material": "brick",
+      "outer": {
+        "id": "b4a",
+        "nodes": [
+          {
+            "id": "n4b",
+            "x": 1899.0983,
+            "y": -24.8167,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nl79",
+            "x": 1871.0345,
+            "y": 0.646,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n10bg",
+            "x": 1904.9002,
+            "y": 54.1854,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n4c",
+            "x": 1872.7136,
+            "y": 56.094,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n4d",
+            "x": 1690.3708,
+            "y": 9.8194,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n4e",
+            "x": 1724.1369,
+            "y": -68.9463,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "bwr4",
+      "material": "concrete",
+      "outer": {
+        "id": "bwr5",
+        "nodes": [
+          {
+            "id": "nwr6",
+            "x": -273.7994,
+            "y": -231.2806,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nwr7",
+            "x": -233.6398,
+            "y": -231.6441,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nwr8",
+            "x": -233.8452,
+            "y": -176.2945,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nwr9",
+            "x": -273.3959,
+            "y": -176.6579,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "bk9s",
+      "material": "glass",
+      "outer": {
+        "id": "bk9r",
+        "nodes": [
+          {
+            "id": "nk9n",
+            "x": -200.2891,
+            "y": -128.1977,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nk9o",
+            "x": -150.2891,
+            "y": -128.1977,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nk9p",
+            "x": -150.2891,
+            "y": -78.1977,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nk9q",
+            "x": -200.2891,
+            "y": -78.1977,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    }
+  ],
+  "apples": [
+    {
+      "x": 665.0065998513232,
+      "y": -35.443920899936245
+    },
+    {
+      "x": 1260,
+      "y": null
+    },
+    {
+      "x": 2210,
+      "y": null
+    },
+    {
+      "x": 2649.210499556912,
+      "y": -13.890106328648073
+    }
+  ],
+  "props": [
+    {
+      "x": -71.1328125,
+      "y": 44.092356014456456,
+      "type": "rock",
+      "layer": "front"
+    },
+    {
+      "x": 875,
+      "y": null,
+      "type": "tree",
+      "layer": "back"
+    },
+    {
+      "x": 1360,
+      "y": null,
+      "type": "flowers",
+      "layer": "front"
+    },
+    {
+      "x": 2110,
+      "y": null,
+      "type": "rock",
+      "layer": "front"
+    },
+    {
+      "x": 2930,
+      "y": null,
+      "type": "tree",
+      "layer": "back"
+    },
+    {
+      "x": -176.7255027154823,
+      "y": 14.575064287151164,
+      "type": "fence",
+      "layer": "back"
+    },
+    {
+      "x": -176.21193971774957,
+      "y": 22.417599231694552,
+      "type": "fence",
+      "layer": "back"
+    },
+    {
+      "x": 610.703125,
+      "y": 31.319012499999985,
+      "type": "flowers",
+      "layer": "back"
+    },
+    {
+      "x": 1696.229437209308,
+      "y": 7.648150506184152,
+      "type": "bush",
+      "layer": "back"
+    },
+    {
+      "x": 1691.4505598593894,
+      "y": 26.154812551180953,
+      "type": "roots",
+      "layer": "back"
+    },
+    {
+      "x": 281.6953125,
+      "y": -18.802081250000015,
+      "type": "cone",
+      "layer": "back"
+    },
+    {
+      "x": 357.4375,
+      "y": 3.1393249999999853,
+      "type": "lamp",
+      "layer": "back"
+    },
+    {
+      "x": 531.73828125,
+      "y": 37.658856249999985,
+      "type": "bird",
+      "layer": "back"
+    },
+    {
+      "x": 2352.1953125,
+      "y": 42.330731249999985,
+      "type": "dumpster",
+      "layer": "front"
+    },
+    {
+      "x": -174.91789805854043,
+      "y": -54.602687594913974,
+      "type": "graffiti",
+      "layer": "front"
+    }
+  ],
+  "spikes": [],
+  "water": [],
+  "weather": {
+    "sun": 0.35,
+    "clouds": 0.15,
+    "fog": 0,
+    "rain": 0.28,
+    "snow": 0,
+    "lightning": 0,
+    "wind": 0.3,
+    "windDirection": "left"
+  },
+  "medals": {
+    "gold": 18.5,
+    "silver": 24.5,
+    "bronze": 32
+  },
+  "timeOfDay": 19,
+  "backdrop": "city"
+}

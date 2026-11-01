@@ -1,0 +1,875 @@
+{
+  "name": "Mirage",
+  "description": "The desert finale. Hop the dune for the first apple, then clear the gaps: the apples float in the air above them, so jump high as well as far. The kicker throws you onto a floating island: land on its back slope, collect the apple, and ride off its far edge across a 100 unit gap. The sand pit at the end has a floor, but coming up short costs time.",
+  "lesson": "Apples floating over gaps, and a floating island to jump onto and off.",
+  "alsoNew": "Heat haze.",
+  "world": "The Desert",
+  "start": {
+    "x": 40,
+    "y": null,
+    "facing": 1
+  },
+  "finish": {
+    "x": 3200,
+    "y": null
+  },
+  "terrainBlocks": [
+    {
+      "id": "mesa-1",
+      "material": "sand",
+      "outer": {
+        "id": "mesa-1-outer",
+        "nodes": [
+          {
+            "id": "mesa-1-0",
+            "x": -1000,
+            "y": 900,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "mesa-1-1",
+            "x": -1000,
+            "y": 90,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "curve"
+          },
+          {
+            "id": "mesa-1-2",
+            "x": -420,
+            "y": 90,
+            "mode": "smooth",
+            "in": [
+              -613.3333,
+              90
+            ],
+            "out": [
+              -380.0,
+              90
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "mesa-1-3",
+            "x": -300,
+            "y": 300,
+            "mode": "smooth",
+            "in": [
+              -340.0,
+              300
+            ],
+            "out": [
+              -150.0,
+              300
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "mesa-1-4",
+            "x": 150,
+            "y": 300,
+            "mode": "smooth",
+            "in": [
+              0.0,
+              300
+            ],
+            "out": [
+              226.6667,
+              300
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "mesa-1-5",
+            "x": 380,
+            "y": 262,
+            "mode": "smooth",
+            "in": [
+              303.3333,
+              262
+            ],
+            "out": [
+              466.6667,
+              262
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "mesa-1-6",
+            "x": 640,
+            "y": 306,
+            "mode": "smooth",
+            "in": [
+              553.3333,
+              306
+            ],
+            "out": [
+              686.6667,
+              306
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "mesa-1-7",
+            "x": 780,
+            "y": 306,
+            "mode": "smooth",
+            "in": [
+              733.3333,
+              306
+            ],
+            "out": [
+              820.0,
+              306
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "mesa-1-8",
+            "x": 900,
+            "y": 306,
+            "mode": "smooth",
+            "in": [
+              860.0,
+              306
+            ],
+            "out": [
+              947.3333,
+              306
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "mesa-1-9",
+            "x": 1042,
+            "y": 292,
+            "mode": "independent",
+            "in": [
+              992.3,
+              296.9
+            ],
+            "out": [
+              1044.8,
+              291.3
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "mesa-1-10",
+            "x": 1050,
+            "y": 290,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "mesa-1-11",
+            "x": 1050,
+            "y": 900,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "mesa-2",
+      "material": "sand",
+      "outer": {
+        "id": "mesa-2-outer",
+        "nodes": [
+          {
+            "id": "mesa-2-0",
+            "x": 1140,
+            "y": 900,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "mesa-2-1",
+            "x": 1140,
+            "y": 308,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "curve"
+          },
+          {
+            "id": "mesa-2-2",
+            "x": 1180,
+            "y": 314,
+            "mode": "independent",
+            "in": [
+              1166.0,
+              311.9
+            ],
+            "out": [
+              1232.5,
+              319.6
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "mesa-2-3",
+            "x": 1330,
+            "y": 330,
+            "mode": "smooth",
+            "in": [
+              1280.0,
+              330
+            ],
+            "out": [
+              1360.0,
+              330
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "mesa-2-4",
+            "x": 1420,
+            "y": 326,
+            "mode": "smooth",
+            "in": [
+              1390.0,
+              326
+            ],
+            "out": [
+              1463.3333,
+              326
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "mesa-2-5",
+            "x": 1550,
+            "y": 326,
+            "mode": "smooth",
+            "in": [
+              1506.6667,
+              326
+            ],
+            "out": [
+              1597.3333,
+              326
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "mesa-2-6",
+            "x": 1692,
+            "y": 312,
+            "mode": "independent",
+            "in": [
+              1642.3,
+              316.9
+            ],
+            "out": [
+              1694.8,
+              311.3
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "mesa-2-7",
+            "x": 1700,
+            "y": 310,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "mesa-2-8",
+            "x": 1700,
+            "y": 900,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "island",
+      "material": "sand",
+      "outer": {
+        "id": "island-outer",
+        "nodes": [
+          {
+            "id": "island-0",
+            "x": 1790,
+            "y": 322,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "curve"
+          },
+          {
+            "id": "island-1",
+            "x": 1830,
+            "y": 326,
+            "mode": "independent",
+            "in": [
+              1816.0,
+              324.6
+            ],
+            "out": [
+              1889.5,
+              328.8
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "island-2",
+            "x": 2000,
+            "y": 334,
+            "mode": "smooth",
+            "in": [
+              1943.3333,
+              334
+            ],
+            "out": [
+              2033.3333,
+              334
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "island-3",
+            "x": 2100,
+            "y": 330,
+            "mode": "smooth",
+            "in": [
+              2066.6667,
+              330
+            ],
+            "out": [
+              2110.0,
+              330
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "island-4",
+            "x": 2130,
+            "y": 322,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "curve"
+          },
+          {
+            "id": "island-5",
+            "x": 2130,
+            "y": 356,
+            "mode": "independent",
+            "in": [
+              2130.0,
+              344.1
+            ],
+            "out": [
+              2105.5,
+              371.4
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "island-6",
+            "x": 2060,
+            "y": 400,
+            "mode": "independent",
+            "in": [
+              2084.5,
+              384.6
+            ],
+            "out": [
+              2025.0,
+              407.0
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "island-7",
+            "x": 1960,
+            "y": 420,
+            "mode": "smooth",
+            "in": [
+              1993.3333,
+              420
+            ],
+            "out": [
+              1923.3333,
+              420
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "island-8",
+            "x": 1850,
+            "y": 390,
+            "mode": "independent",
+            "in": [
+              1888.5,
+              400.5
+            ],
+            "out": [
+              1829.0,
+              372.5
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "island-9",
+            "x": 1790,
+            "y": 340,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "mesa-3",
+      "material": "sand",
+      "outer": {
+        "id": "mesa-3-outer",
+        "nodes": [
+          {
+            "id": "mesa-3-0",
+            "x": 2230,
+            "y": 900,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "mesa-3-1",
+            "x": 2230,
+            "y": 360,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "curve"
+          },
+          {
+            "id": "mesa-3-2",
+            "x": 2270,
+            "y": 366,
+            "mode": "independent",
+            "in": [
+              2256.0,
+              363.9
+            ],
+            "out": [
+              2322.5,
+              371.6
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "mesa-3-3",
+            "x": 2420,
+            "y": 382,
+            "mode": "smooth",
+            "in": [
+              2370.0,
+              382
+            ],
+            "out": [
+              2443.3333,
+              382
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "mesa-3-4",
+            "x": 2490,
+            "y": 386,
+            "mode": "smooth",
+            "in": [
+              2466.6667,
+              386
+            ],
+            "out": [
+              2556.6667,
+              386
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "mesa-3-5",
+            "x": 2690,
+            "y": 333,
+            "mode": "independent",
+            "in": [
+              2620.0,
+              351.55
+            ],
+            "out": [
+              2693.5,
+              331.95
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "mesa-3-6",
+            "x": 2700,
+            "y": 330,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "mesa-3-7",
+            "x": 2714,
+            "y": 394,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "mesa-3-8",
+            "x": 2790,
+            "y": 394,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "mesa-3-9",
+            "x": 2860,
+            "y": 344,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "curve"
+          },
+          {
+            "id": "mesa-3-10",
+            "x": 3010,
+            "y": 354,
+            "mode": "smooth",
+            "in": [
+              2960.0,
+              354
+            ],
+            "out": [
+              3056.6667,
+              354
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "mesa-3-11",
+            "x": 3150,
+            "y": 354,
+            "mode": "smooth",
+            "in": [
+              3103.3333,
+              354
+            ],
+            "out": [
+              3186.6667,
+              354
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "mesa-3-12",
+            "x": 3260,
+            "y": 354,
+            "mode": "smooth",
+            "in": [
+              3223.3333,
+              354
+            ],
+            "out": [
+              3300.0,
+              354
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "mesa-3-13",
+            "x": 3380,
+            "y": 140,
+            "mode": "smooth",
+            "in": [
+              3340.0,
+              140
+            ],
+            "out": [
+              3520.0,
+              140
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "mesa-3-14",
+            "x": 3800,
+            "y": 140,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "mesa-3-15",
+            "x": 3800,
+            "y": 900,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    }
+  ],
+  "apples": [
+    {
+      "x": 420,
+      "y": 185
+    },
+    {
+      "x": 1095,
+      "y": 250
+    },
+    {
+      "x": 1960,
+      "y": null
+    },
+    {
+      "x": 2180,
+      "y": 270
+    },
+    {
+      "x": 2780,
+      "y": 250
+    }
+  ],
+  "props": [
+    {
+      "x": -700,
+      "y": null,
+      "type": "cactus",
+      "layer": "back"
+    },
+    {
+      "x": -540,
+      "y": null,
+      "type": "skull",
+      "layer": "back"
+    },
+    {
+      "x": -200,
+      "y": null,
+      "type": "cactus-small",
+      "layer": "back"
+    },
+    {
+      "x": 240,
+      "y": null,
+      "type": "heat-haze",
+      "layer": "back"
+    },
+    {
+      "x": 560,
+      "y": null,
+      "type": "cactus",
+      "layer": "back"
+    },
+    {
+      "x": 720,
+      "y": null,
+      "type": "pebbles",
+      "layer": "front"
+    },
+    {
+      "x": 930,
+      "y": null,
+      "type": "sign",
+      "layer": "front",
+      "text": "! GAP"
+    },
+    {
+      "x": 1000,
+      "y": null,
+      "type": "tyre",
+      "layer": "back"
+    },
+    {
+      "x": 1016,
+      "y": null,
+      "type": "tyre",
+      "layer": "back"
+    },
+    {
+      "x": 1032,
+      "y": null,
+      "type": "tyre",
+      "layer": "back"
+    },
+    {
+      "x": 1200,
+      "y": null,
+      "type": "cactus-small",
+      "layer": "back"
+    },
+    {
+      "x": 1330,
+      "y": null,
+      "type": "heat-haze",
+      "layer": "front"
+    },
+    {
+      "x": 1500,
+      "y": null,
+      "type": "cactus",
+      "layer": "back"
+    },
+    {
+      "x": 1580,
+      "y": null,
+      "type": "sign",
+      "layer": "front",
+      "text": "JUMP \u2192"
+    },
+    {
+      "x": 1650,
+      "y": null,
+      "type": "tyre",
+      "layer": "back"
+    },
+    {
+      "x": 1666,
+      "y": null,
+      "type": "tyre",
+      "layer": "back"
+    },
+    {
+      "x": 1682,
+      "y": null,
+      "type": "tyre",
+      "layer": "back"
+    },
+    {
+      "x": 1900,
+      "y": null,
+      "type": "cactus-small",
+      "layer": "back"
+    },
+    {
+      "x": 2060,
+      "y": null,
+      "type": "pebbles",
+      "layer": "front"
+    },
+    {
+      "x": 2000,
+      "y": null,
+      "type": "heat-haze",
+      "layer": "back"
+    },
+    {
+      "x": 2350,
+      "y": null,
+      "type": "cactus",
+      "layer": "back"
+    },
+    {
+      "x": 2450,
+      "y": null,
+      "type": "car-wreck",
+      "layer": "back"
+    },
+    {
+      "x": 2600,
+      "y": null,
+      "type": "sign",
+      "layer": "front",
+      "text": "! PIT"
+    },
+    {
+      "x": 2750,
+      "y": null,
+      "type": "skull",
+      "layer": "front"
+    },
+    {
+      "x": 2950,
+      "y": null,
+      "type": "heat-haze",
+      "layer": "front"
+    },
+    {
+      "x": 3050,
+      "y": null,
+      "type": "cactus-small",
+      "layer": "back"
+    },
+    {
+      "x": 3120,
+      "y": null,
+      "type": "water-tower",
+      "layer": "back"
+    },
+    {
+      "x": 3300,
+      "y": null,
+      "type": "vulture",
+      "layer": "back"
+    },
+    {
+      "x": 3500,
+      "y": null,
+      "type": "windmill",
+      "layer": "back"
+    },
+    {
+      "x": 3650,
+      "y": null,
+      "type": "cactus",
+      "layer": "back"
+    }
+  ],
+  "spikes": [],
+  "water": [],
+  "weather": {
+    "sun": 1,
+    "clouds": 0.05,
+    "fog": 0,
+    "rain": 0,
+    "snow": 0,
+    "lightning": 0,
+    "wind": 0.1,
+    "windDirection": "left"
+  },
+  "timeOfDay": 12,
+  "backdrop": "desert",
+  "medals": {
+    "gold": 19,
+    "silver": 25,
+    "bronze": 33
+  }
+}

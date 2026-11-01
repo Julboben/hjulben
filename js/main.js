@@ -2,13 +2,13 @@
 import './update-prompt.js';
 import { startGame } from './game.js';
 import { readSharedTrail, trailLinkFromHash } from './trail-link.js';
-import { customTrailEntries, saveSharedTrail } from './trails.js';
+import { saveSharedTrail } from './trails.js';
 
 // A share link (#trail=…) rides its trail straight away and keeps it under
 // Custom Trails.
 let shared = null;
 try {
-  const trail = await readSharedTrail(window.location.hash, customTrailEntries.length);
+  const trail = await readSharedTrail(window.location.hash);
   if (trail) shared = { entry: saveSharedTrail(trail) };
 } catch (error) {
   shared = { error };

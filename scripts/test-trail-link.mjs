@@ -9,9 +9,14 @@ import { loadCatalogTrails } from './lib/trails.mjs';
 
 const rejects = (promise, pattern) => assert.rejects(promise, error => pattern.test(error.message));
 
-// Every shipped trail survives a link unchanged, down to its hash.
+// The shipped trails stand in for real ones: each survives a link unchanged,
+// down to its hash, or is refused as too big when its JSON won't fit.
 for (const entry of [...loadCatalogTrails('official'), ...loadCatalogTrails('bonus')]) {
   const trail = normalizeTrail(entry.trail);
+  if (new TextEncoder().encode(JSON.stringify(trail)).length > MAX_JSON_BYTES) {
+    await rejects(encodeTrailLink(trail), /too big/);
+    continue;
+  }
   const packed = await encodeTrailLink(trail);
   assert.match(packed, /^1\.[A-Za-z0-9_-]+$/, `${entry.id} packs into URL-safe characters`);
   const opened = await readSharedTrail(`#trail=${packed}`);
@@ -70,12 +75,18 @@ for (const entry of [...loadCatalogTrails('official'), ...loadCatalogTrails('bon
   const linked = { ...base, name: 'Linked' };
   const copy = saveSharedTrail(linked);
   assert.equal(copy.shared, true);
-  assert.equal(saveSharedTrail({ ...linked, label: 'LINKED / 09' }), copy, 'the same link reuses its copy, whatever its default label');
+  assert.equal(saveSharedTrail({ ...linked }), copy, 'the same link reuses its copy');
   const count = customTrailEntries.length;
   const updated = saveSharedTrail({ ...linked, description: 'Now with more props.' });
   assert.equal(updated.id, copy.id, 'a newer link to the same trail updates its copy');
   assert.equal(updated.trail.description, 'Now with more props.');
   assert.equal(customTrailEntries.length, count, 'without adding another');
+
+  // A trail of your own saved before trails lost their label still carries one.
+  const labelled = saveBrowserTrail({ ...base, name: 'Old own', label: 'Trail 3' });
+  const relinked = saveSharedTrail({ ...base, name: 'Old own' });
+  assert.equal(relinked.id, labelled.id, 'a link to your own trail finds it, even with an old label');
+  assert.ok(!relinked.shared, 'and it stays yours');
 
   const mine = saveBrowserTrail({ ...base, name: 'Mine', description: 'My edit.' });
   assert.equal(saveSharedTrail({ ...base, name: 'Mine', description: 'My edit.' }), mine, 'a link to your own trail finds it');

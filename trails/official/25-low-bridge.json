@@ -1,0 +1,910 @@
+{
+  "name": "Low Bridge",
+  "description": "Into the hillside. The ceiling drops lower the further in you ride: a hanging overhang, a run of rollers under a low roof, a step down with the rock right above the landing, and a long crawl at the end. Keep your head down, don't wheelie, and don't bounce: ride smoothly and lean forward under the low parts. Hit the rock with your head and the run is over.",
+  "lesson": "Overhangs and low ceilings. Keep your head down and don't bounce.",
+  "alsoNew": "Hanging roots, stalactites.",
+  "world": "Underground",
+  "start": {
+    "x": 0,
+    "y": null,
+    "facing": 1
+  },
+  "finish": {
+    "x": 2720,
+    "y": null
+  },
+  "terrainBlocks": [
+    {
+      "id": "ground-out",
+      "material": "grass",
+      "outer": {
+        "id": "ground-out-outer",
+        "nodes": [
+          {
+            "id": "ground-out-0",
+            "x": -900,
+            "y": 1200,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ground-out-1",
+            "x": -900,
+            "y": 100,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "curve"
+          },
+          {
+            "id": "ground-out-2",
+            "x": -420,
+            "y": 100,
+            "mode": "smooth",
+            "in": [
+              -580.0,
+              100
+            ],
+            "out": [
+              -380.0,
+              100
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-out-3",
+            "x": -300,
+            "y": 300,
+            "mode": "smooth",
+            "in": [
+              -340.0,
+              300
+            ],
+            "out": [
+              -13.3333,
+              300
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-out-4",
+            "x": 560,
+            "y": 300,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ground-out-5",
+            "x": 560,
+            "y": 1200,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "cave-floor",
+      "material": "stone",
+      "outer": {
+        "id": "cave-floor-outer",
+        "nodes": [
+          {
+            "id": "cave-floor-0",
+            "x": 560,
+            "y": 1200,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "cave-floor-1",
+            "x": 560,
+            "y": 300,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "curve"
+          },
+          {
+            "id": "cave-floor-2",
+            "x": 1200,
+            "y": 300,
+            "mode": "smooth",
+            "in": [
+              986.6667,
+              300
+            ],
+            "out": [
+              1220.0,
+              300
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "cave-floor-3",
+            "x": 1260,
+            "y": 288,
+            "mode": "smooth",
+            "in": [
+              1240.0,
+              288
+            ],
+            "out": [
+              1280.0,
+              288
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "cave-floor-4",
+            "x": 1320,
+            "y": 300,
+            "mode": "smooth",
+            "in": [
+              1300.0,
+              300
+            ],
+            "out": [
+              1340.0,
+              300
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "cave-floor-5",
+            "x": 1380,
+            "y": 288,
+            "mode": "smooth",
+            "in": [
+              1360.0,
+              288
+            ],
+            "out": [
+              1400.0,
+              288
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "cave-floor-6",
+            "x": 1440,
+            "y": 300,
+            "mode": "smooth",
+            "in": [
+              1420.0,
+              300
+            ],
+            "out": [
+              1523.3333,
+              300
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "cave-floor-7",
+            "x": 1690,
+            "y": 300,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "cave-floor-8",
+            "x": 1696,
+            "y": 330,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "cave-floor-9",
+            "x": 2500,
+            "y": 330,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "cave-floor-10",
+            "x": 2500,
+            "y": 1200,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "ground-exit",
+      "material": "grass",
+      "outer": {
+        "id": "ground-exit-outer",
+        "nodes": [
+          {
+            "id": "ground-exit-0",
+            "x": 2500,
+            "y": 1200,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ground-exit-1",
+            "x": 2500,
+            "y": 330,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "curve"
+          },
+          {
+            "id": "ground-exit-2",
+            "x": 2700,
+            "y": 330,
+            "mode": "smooth",
+            "in": [
+              2633.3333,
+              330
+            ],
+            "out": [
+              2753.3333,
+              330
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-exit-3",
+            "x": 2860,
+            "y": 330,
+            "mode": "smooth",
+            "in": [
+              2806.6667,
+              330
+            ],
+            "out": [
+              2900.0,
+              330
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-exit-4",
+            "x": 2980,
+            "y": 110,
+            "mode": "smooth",
+            "in": [
+              2940.0,
+              110
+            ],
+            "out": [
+              3086.6667,
+              110
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-exit-5",
+            "x": 3300,
+            "y": 110,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ground-exit-6",
+            "x": 3300,
+            "y": 1200,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "roof",
+      "material": "stone",
+      "outer": {
+        "id": "roof-outer",
+        "nodes": [
+          {
+            "id": "roof-0",
+            "x": 600,
+            "y": 150,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "curve"
+          },
+          {
+            "id": "roof-1",
+            "x": 800,
+            "y": 160,
+            "mode": "smooth",
+            "in": [
+              733.3333,
+              160
+            ],
+            "out": [
+              860.0,
+              160
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "roof-2",
+            "x": 980,
+            "y": 190,
+            "mode": "independent",
+            "in": [
+              917.0,
+              179.5
+            ],
+            "out": [
+              994.0,
+              196.3
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "roof-3",
+            "x": 1020,
+            "y": 208,
+            "mode": "smooth",
+            "in": [
+              1006.6667,
+              208
+            ],
+            "out": [
+              1033.3333,
+              208
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "roof-4",
+            "x": 1060,
+            "y": 190,
+            "mode": "independent",
+            "in": [
+              1046.0,
+              196.3
+            ],
+            "out": [
+              1091.5,
+              182.3
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "roof-5",
+            "x": 1150,
+            "y": 168,
+            "mode": "smooth",
+            "in": [
+              1120.0,
+              168
+            ],
+            "out": [
+              1166.6667,
+              168
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "roof-6",
+            "x": 1200,
+            "y": 180,
+            "mode": "independent",
+            "in": [
+              1182.5,
+              175.8
+            ],
+            "out": [
+              1214.0,
+              185.6
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "roof-7",
+            "x": 1240,
+            "y": 196,
+            "mode": "smooth",
+            "in": [
+              1226.6667,
+              196
+            ],
+            "out": [
+              1300.0,
+              196
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "roof-8",
+            "x": 1420,
+            "y": 196,
+            "mode": "smooth",
+            "in": [
+              1360.0,
+              196
+            ],
+            "out": [
+              1433.3333,
+              196
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "roof-9",
+            "x": 1460,
+            "y": 178,
+            "mode": "independent",
+            "in": [
+              1446.0,
+              184.3
+            ],
+            "out": [
+              1509.0,
+              175.2
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "roof-10",
+            "x": 1600,
+            "y": 170,
+            "mode": "smooth",
+            "in": [
+              1553.3333,
+              170
+            ],
+            "out": [
+              1640.0,
+              170
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "roof-11",
+            "x": 1720,
+            "y": 222,
+            "mode": "independent",
+            "in": [
+              1678.0,
+              203.8
+            ],
+            "out": [
+              1741.0,
+              223.4
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "roof-12",
+            "x": 1780,
+            "y": 226,
+            "mode": "smooth",
+            "in": [
+              1760.0,
+              226
+            ],
+            "out": [
+              1796.6667,
+              226
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "roof-13",
+            "x": 1830,
+            "y": 200,
+            "mode": "independent",
+            "in": [
+              1812.5,
+              209.1
+            ],
+            "out": [
+              1847.5,
+              199.3
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "roof-14",
+            "x": 1880,
+            "y": 198,
+            "mode": "smooth",
+            "in": [
+              1863.3333,
+              198
+            ],
+            "out": [
+              1896.6667,
+              198
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "roof-15",
+            "x": 1930,
+            "y": 215,
+            "mode": "independent",
+            "in": [
+              1912.5,
+              209.05
+            ],
+            "out": [
+              1944.0,
+              224.45
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "roof-16",
+            "x": 1970,
+            "y": 242,
+            "mode": "smooth",
+            "in": [
+              1956.6667,
+              242
+            ],
+            "out": [
+              2073.3333,
+              242
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "roof-17",
+            "x": 2280,
+            "y": 242,
+            "mode": "smooth",
+            "in": [
+              2176.6667,
+              242
+            ],
+            "out": [
+              2293.3333,
+              242
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "roof-18",
+            "x": 2320,
+            "y": 215,
+            "mode": "independent",
+            "in": [
+              2306.0,
+              224.45
+            ],
+            "out": [
+              2365.5,
+              206.25
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "roof-19",
+            "x": 2450,
+            "y": 190,
+            "mode": "smooth",
+            "in": [
+              2406.6667,
+              190
+            ],
+            "out": [
+              2466.6667,
+              190
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "roof-20",
+            "x": 2500,
+            "y": 170,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "roof-21",
+            "x": 2560,
+            "y": 90,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "curve"
+          },
+          {
+            "id": "roof-22",
+            "x": 2200,
+            "y": -60,
+            "mode": "smooth",
+            "in": [
+              2320.0,
+              -60
+            ],
+            "out": [
+              1966.6667,
+              -60
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "roof-23",
+            "x": 1500,
+            "y": -110,
+            "mode": "smooth",
+            "in": [
+              1733.3333,
+              -110
+            ],
+            "out": [
+              1300.0,
+              -110
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "roof-24",
+            "x": 900,
+            "y": -60,
+            "mode": "smooth",
+            "in": [
+              1100.0,
+              -60
+            ],
+            "out": [
+              813.3333,
+              -60
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "roof-25",
+            "x": 640,
+            "y": 40,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    }
+  ],
+  "apples": [
+    {
+      "x": 800,
+      "y": 275
+    },
+    {
+      "x": 1350,
+      "y": 268
+    },
+    {
+      "x": 1760,
+      "y": 305
+    },
+    {
+      "x": 2120,
+      "y": 305
+    }
+  ],
+  "props": [
+    {
+      "x": -700,
+      "y": null,
+      "type": "tree",
+      "layer": "back"
+    },
+    {
+      "x": -520,
+      "y": null,
+      "type": "bush",
+      "layer": "back"
+    },
+    {
+      "x": -200,
+      "y": null,
+      "type": "flowers",
+      "layer": "front"
+    },
+    {
+      "x": 200,
+      "y": null,
+      "type": "tree",
+      "layer": "back"
+    },
+    {
+      "x": 380,
+      "y": null,
+      "type": "sign",
+      "layer": "front",
+      "text": "LOW BRIDGE"
+    },
+    {
+      "x": 480,
+      "y": null,
+      "type": "bush",
+      "layer": "back"
+    },
+    {
+      "x": 620,
+      "y": 152,
+      "type": "hanging-roots",
+      "layer": "back"
+    },
+    {
+      "x": 700,
+      "y": 155,
+      "type": "hanging-roots",
+      "layer": "back"
+    },
+    {
+      "x": 760,
+      "y": 158,
+      "type": "stalactites",
+      "layer": "back"
+    },
+    {
+      "x": 1020,
+      "y": 208,
+      "type": "stalactites",
+      "layer": "back"
+    },
+    {
+      "x": 1000,
+      "y": 200,
+      "type": "hanging-roots",
+      "layer": "back"
+    },
+    {
+      "x": 1110,
+      "y": 300,
+      "type": "sign",
+      "layer": "front",
+      "text": "HEAD DOWN"
+    },
+    {
+      "x": 1300,
+      "y": 196,
+      "type": "stalactites",
+      "layer": "back"
+    },
+    {
+      "x": 1400,
+      "y": 196,
+      "type": "stalactites",
+      "layer": "back"
+    },
+    {
+      "x": 1600,
+      "y": 300,
+      "type": "sign",
+      "layer": "front",
+      "text": "! STEP"
+    },
+    {
+      "x": 1760,
+      "y": 226,
+      "type": "stalactites",
+      "layer": "back"
+    },
+    {
+      "x": 1880,
+      "y": 330,
+      "type": "pebbles",
+      "layer": "front"
+    },
+    {
+      "x": 1900,
+      "y": 198,
+      "type": "hanging-roots",
+      "layer": "back"
+    },
+    {
+      "x": 2050,
+      "y": 242,
+      "type": "stalactites",
+      "layer": "back"
+    },
+    {
+      "x": 2200,
+      "y": 242,
+      "type": "stalactites",
+      "layer": "back"
+    },
+    {
+      "x": 2400,
+      "y": 330,
+      "type": "pebbles",
+      "layer": "front"
+    },
+    {
+      "x": 2470,
+      "y": 180,
+      "type": "hanging-roots",
+      "layer": "back"
+    },
+    {
+      "x": 2650,
+      "y": null,
+      "type": "bush",
+      "layer": "back"
+    },
+    {
+      "x": 2800,
+      "y": null,
+      "type": "tree",
+      "layer": "back"
+    },
+    {
+      "x": 3100,
+      "y": 110,
+      "type": "tree",
+      "layer": "back"
+    },
+    {
+      "x": 1200,
+      "y": -80,
+      "type": "tree",
+      "layer": "back"
+    },
+    {
+      "x": 1700,
+      "y": -100,
+      "type": "pine",
+      "layer": "back"
+    },
+    {
+      "x": 2100,
+      "y": -65,
+      "type": "bush",
+      "layer": "back"
+    }
+  ],
+  "spikes": [],
+  "water": [],
+  "weather": {
+    "sun": 0.6,
+    "clouds": 0.4,
+    "fog": 0,
+    "rain": 0,
+    "snow": 0,
+    "lightning": 0,
+    "wind": 0.3,
+    "windDirection": "left"
+  },
+  "timeOfDay": 7,
+  "backdrop": "mountains",
+  "medals": {
+    "gold": 14,
+    "silver": 19,
+    "bronze": 26
+  }
+}

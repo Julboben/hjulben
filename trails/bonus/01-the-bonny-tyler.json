@@ -1,6 +1,5 @@
 {
   "name": "THE BONNY TYLER",
-  "label": "THE BONNY TYLER / 01",
   "finish": {
     "x": 3937.3001028728117,
     "y": -225.35628766109969
@@ -8,7 +7,7 @@
   "description": "",
   "start": {
     "x": -3198.4140687454105,
-    "y": -291.0913534281511,
+    "y": null,
     "facing": 1
   },
   "terrainBlocks": [
@@ -57,15 +56,6 @@
           {
             "id": "n26tki",
             "x": -2793.1286,
-            "y": 96.6088,
-            "mode": "corner",
-            "in": null,
-            "out": null,
-            "edge": "straight"
-          },
-          {
-            "id": "n26tkj",
-            "x": -2784.5024,
             "y": 96.6088,
             "mode": "corner",
             "in": null,
@@ -685,15 +675,6 @@
             "edge": "straight"
           },
           {
-            "id": "n26tmg",
-            "x": 732.2342,
-            "y": 473.0448,
-            "mode": "corner",
-            "in": null,
-            "out": null,
-            "edge": "straight"
-          },
-          {
             "id": "n26tmh",
             "x": 758.6912,
             "y": 467.7447,
@@ -721,24 +702,6 @@
             "edge": "straight"
           },
           {
-            "id": "n26tmk",
-            "x": 819.6747,
-            "y": 454.6248,
-            "mode": "corner",
-            "in": null,
-            "out": null,
-            "edge": "straight"
-          },
-          {
-            "id": "n26tml",
-            "x": 841.3312,
-            "y": 449.9763,
-            "mode": "corner",
-            "in": null,
-            "out": null,
-            "edge": "straight"
-          },
-          {
             "id": "n26tmm",
             "x": 862.9877,
             "y": 445.3279,
@@ -751,15 +714,6 @@
             "id": "n26tmn",
             "x": 882.5155,
             "y": 440.8641,
-            "mode": "corner",
-            "in": null,
-            "out": null,
-            "edge": "straight"
-          },
-          {
-            "id": "n26tmo",
-            "x": 899.9146,
-            "y": 435.0427,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -1387,15 +1341,6 @@
             "edge": "straight"
           },
           {
-            "id": "n26tom",
-            "x": 1258.286,
-            "y": -141.0697,
-            "mode": "corner",
-            "in": null,
-            "out": null,
-            "edge": "straight"
-          },
-          {
             "id": "n26ton",
             "x": 1255.092,
             "y": -142.6968,
@@ -1477,15 +1422,6 @@
             "edge": "straight"
           },
           {
-            "id": "n26tow",
-            "x": 1214.5429,
-            "y": -163.0927,
-            "mode": "corner",
-            "in": null,
-            "out": null,
-            "edge": "straight"
-          },
-          {
             "id": "n26tox",
             "x": 1211.6478,
             "y": -164.6115,
@@ -1498,15 +1434,6 @@
             "id": "n26toy",
             "x": 1207.8038,
             "y": -166.6819,
-            "mode": "corner",
-            "in": null,
-            "out": null,
-            "edge": "straight"
-          },
-          {
-            "id": "n26toz",
-            "x": 1203.9036,
-            "y": -168.628,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -1630,27 +1557,9 @@
             "edge": "straight"
           },
           {
-            "id": "n26tpd",
-            "x": 1153.006,
-            "y": -186.47,
-            "mode": "corner",
-            "in": null,
-            "out": null,
-            "edge": "straight"
-          },
-          {
             "id": "n26tpe",
             "x": 1150.0226,
             "y": -187.3949,
-            "mode": "corner",
-            "in": null,
-            "out": null,
-            "edge": "straight"
-          },
-          {
-            "id": "n26tpf",
-            "x": 1146.947,
-            "y": -188.2215,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -2664,7 +2573,7 @@
           {
             "id": "n26tt9",
             "x": -3343.3194,
-            "y": -195.5162,
+            "y": -203.5727,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -3024,15 +2933,6 @@
             "edge": "straight"
           },
           {
-            "id": "ns4ea",
-            "x": -49.8004,
-            "y": 603.6222,
-            "mode": "corner",
-            "in": null,
-            "out": null,
-            "edge": "straight"
-          },
-          {
             "id": "ns4eb",
             "x": -32.3362,
             "y": 602.4818,
@@ -3199,15 +3099,6 @@
             "id": "n12uhx",
             "x": 1158.9698,
             "y": 92.8202,
-            "mode": "corner",
-            "in": null,
-            "out": null,
-            "edge": "straight"
-          },
-          {
-            "id": "n12uhy",
-            "x": 1149.6838,
-            "y": 74.2373,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -3523,15 +3414,6 @@
             "id": "n12uix",
             "x": 304.3437,
             "y": 149.9023,
-            "mode": "corner",
-            "in": null,
-            "out": null,
-            "edge": "straight"
-          },
-          {
-            "id": "n12uiy",
-            "x": 308.2745,
-            "y": 138.6634,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -4311,8 +4193,8 @@
       "y": -471.204338320629
     },
     {
-      "x": 3260.518084770913,
-      "y": 206.48777610685025
+      "x": 3303.168206191673,
+      "y": 219.89654256681905
     },
     {
       "x": 3097.4751146821077,
@@ -4702,20 +4584,20 @@
       "layer": "back"
     },
     {
-      "x": 2128.2170622599865,
-      "y": -473.96081655550626,
+      "x": 2124.8891626747004,
+      "y": -458.9359255942564,
       "type": "squirrel",
       "layer": "back"
     },
     {
-      "x": 2163.4907248483637,
-      "y": -511.0944573473816,
+      "x": 2171.1418364655733,
+      "y": -509.99754550364696,
       "type": "fence",
       "layer": "back"
     },
     {
-      "x": 2276.9588128729424,
-      "y": -600.7289259364933,
+      "x": 2282.460542903166,
+      "y": -594.4848108186593,
       "type": "fence",
       "layer": "back"
     },
@@ -4744,26 +4626,26 @@
       "layer": "back"
     },
     {
-      "x": 3356.2664939185984,
-      "y": 263.9254984114693,
+      "x": 3355.7592810134365,
+      "y": 269.00551160150576,
       "type": "tyre",
       "layer": "back"
     },
     {
-      "x": 3528.5405004099925,
-      "y": 210.3181013032901,
+      "x": 3531.4431773724323,
+      "y": 214.8094321578024,
       "type": "tyre",
       "layer": "back"
     },
     {
-      "x": 3654.901298108441,
-      "y": 122.80024082170436,
+      "x": 3657.562194825933,
+      "y": 129.3164812276513,
       "type": "barrier",
       "layer": "back"
     },
     {
-      "x": 3173.3636595454113,
-      "y": 132.96068121842424,
+      "x": 3165.888182298097,
+      "y": 130.41541853112454,
       "type": "dumpster",
       "layer": "back"
     },
@@ -4813,7 +4695,7 @@
     "wind": 0.9,
     "windDirection": "left"
   },
-  "author": "Nikolaj Gunge",
   "timeOfDay": 0,
+  "author": "Nikolaj Gunge",
   "backdrop": "mountains"
 }

@@ -485,6 +485,10 @@ export function propDrawAngle(type, slope = 0) {
 // How far the camera can climb while the sun still sinks a little in the sky;
 // above that it holds its place so it stays in view on tall trails.
 const SUN_CLIMB_LIMIT = 600;
+// The backdrop's hills rise as the camera goes down, and below them is only
+// their flat colour, so past this camera height they stop: a trail that runs
+// far below the usual ground would otherwise lose its sky and hills.
+const BACKDROP_SINK_LIMIT = 300;
 // Vertical spacing, in cloud-parallax space, of the cloud rows repeated above
 // the first one as the camera climbs.
 const CLOUD_ROW_SPACING = 180;
@@ -5149,7 +5153,7 @@ export function createGameArt(ctx) {
       for (const layer of layers) {
         fogWash(0.45);
         const offsetX = snap(cameraX * layer.parallax);
-        const offsetY = snap(cameraY * layer.parallax);
+        const offsetY = snap(Math.min(cameraY, BACKDROP_SINK_LIMIT) * layer.parallax);
         const first = Math.floor(offsetX / BACKGROUND_STRIP_WIDTH);
         const last = Math.floor((offsetX + width) / BACKGROUND_STRIP_WIDTH);
         const stripTop = BACKGROUND_STRIP_TOP - offsetY;

@@ -86,6 +86,10 @@ const reported = (report, label) => {
   check('the JSON box is filled as its dialog opens', report.jsonFilled);
   check('and follows edits while it is open', report.jsonFollowsOpen);
   check('but is left alone while it is closed', report.jsonLeftClosed);
+  if ('startSnaps' in report) {
+    check('a start put close to the ground snaps onto it', report.startSnaps);
+    check('one put well above it stays in the air', report.startStaysUp);
+  }
 }
 
 // ---------------------------------------------------------------------------

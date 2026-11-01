@@ -93,6 +93,7 @@
  * @property {object[][]} frameLinks point pairs joined by the suspension and frame
  * @property {boolean} [framePassThrough] crashed frame ignores terrain while straddling a ledge
  * @property {object[]} bikePoints
+ * @property {{ rev: number, clutchTorque?: number }} engine revs in rear-wheel terms, and the torque the clutch passed last step
  *
  * @typedef {object} RideInput
  * @property {number} [facing] 1 or -1; omitted keeps the current facing
@@ -128,7 +129,7 @@
  * @property {Spike[]} spikes
  * @property {Water[]} water
  * @property {'running' | 'crashed' | 'won'} status
- * @property {boolean} started whether the timer has started (on first input)
+ * @property {boolean} started whether the timer has started (on first input, or once the bike rolls or drops off its start by itself)
  * @property {number} time simulated seconds since spawn
  * @property {number} elapsed timer seconds
  * @property {number} elapsedSteps steps the timer has run, which `elapsed` is made from

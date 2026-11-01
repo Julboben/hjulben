@@ -1,0 +1,4899 @@
+{
+  "name": "Sky Ladder",
+  "finish": {
+    "x": -85,
+    "y": 0
+  },
+  "description": "SKY LADDER. The one with the islands stacked into the sky: a short, easy climb from the meadow to the highest island, hopping from island to island, then turning back and hopping on up above the islands you came by. The career's first floating islands, with the meadow under every one of them.\nROUTE AND APPLES: 1) A grassy kicker on the meadow throws you up onto island 0; apple 1 hangs over its near edge. 2) Island 0's curved lip throws you up onto island 1, and island 1's lip over the lip of the hill island. 3) The hill island: a ramp up to a crest with an apple tree, and behind the crest a hollow you can't see from below. Apple 2 floats in it: the one you go looking for. The rim beyond is steep: ride up it, roll back, turn (Space) and ride back over the crest. 4) Down the ramp at speed, the hill island's lip throws you high and back west, up onto the first upper island above island 1; apple 3 floats over its edge. 5) Two more hops up, each lip throwing you onto the next island's landing shoulder; apple 4 floats over the top island's edge by the potato stall. 6) The finish: a steep bank up to the summit, with the flower floating by the old apple tree and the rock.\nSKILLS: momentum (every lip wants a run-up, and the ramp gives the big hop its speed), small hops off kickers, turning around (once, on the hill island), big air (level the bike before each landing). New: taking off from one island and landing on another, higher or lower. No turning in the air.\nRECOVERY: there is ground under every island. Miss on the lower row and you land on the meadow: ride back to the start kicker, or to the west-facing kicker under the hill island, which throws you back onto island 1. Miss on the upper row and you drop onto a lower island and ride up again. Fly off the rim and you land on the meadow. The summit rock stops a rider who reaches the top still short of an apple.\nENDS: the bank behind the start, the overhanging bank in the east, and the summit rock.",
+  "start": {
+    "x": 0,
+    "y": 588,
+    "facing": 1
+  },
+  "terrainBlocks": [
+    {
+      "id": "ground",
+      "material": "grass",
+      "outer": {
+        "id": "bl4",
+        "nodes": [
+          {
+            "id": "nl5",
+            "x": -2600,
+            "y": 1100,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nl6",
+            "x": -2600,
+            "y": 330,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nl7",
+            "x": -1800,
+            "y": 300,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nl8",
+            "x": -1100,
+            "y": 320,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nl9",
+            "x": -600,
+            "y": 300,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nla",
+            "x": -420,
+            "y": 305,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nlb",
+            "x": -380,
+            "y": 310,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nlf",
+            "x": -330,
+            "y": 330,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nlg",
+            "x": -320,
+            "y": 353.3,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nlh",
+            "x": -310,
+            "y": 376.7,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nli",
+            "x": -300,
+            "y": 400,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nlj",
+            "x": -287.5,
+            "y": 446.9,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nlk",
+            "x": -275,
+            "y": 487.5,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nll",
+            "x": -262.5,
+            "y": 521.9,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nlm",
+            "x": -250,
+            "y": 550,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nln",
+            "x": -237.5,
+            "y": 571.9,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nlo",
+            "x": -225,
+            "y": 587.5,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nlp",
+            "x": -212.5,
+            "y": 596.9,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nlq",
+            "x": -200,
+            "y": 600,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nn2",
+            "x": 320,
+            "y": 600,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nn3",
+            "x": 330,
+            "y": 599.5,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nn4",
+            "x": 340,
+            "y": 598,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nn5",
+            "x": 350,
+            "y": 595.5,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nn6",
+            "x": 360,
+            "y": 592.1,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nn7",
+            "x": 370,
+            "y": 587.6,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nn8",
+            "x": 380,
+            "y": 582.1,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nn9",
+            "x": 390,
+            "y": 575.7,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nna",
+            "x": 400,
+            "y": 568.3,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nnb",
+            "x": 410,
+            "y": 559.8,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nnc",
+            "x": 420,
+            "y": 550.4,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nnd",
+            "x": 430,
+            "y": 540,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nne",
+            "x": 438,
+            "y": 542,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nnf",
+            "x": 448.3,
+            "y": 544.9,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nng",
+            "x": 458.6,
+            "y": 552.9,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nnh",
+            "x": 468.9,
+            "y": 564.5,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nni",
+            "x": 479.1,
+            "y": 577.5,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nnj",
+            "x": 489.4,
+            "y": 589.1,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nnk",
+            "x": 499.7,
+            "y": 597.1,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nnl",
+            "x": 510,
+            "y": 600,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nnm",
+            "x": 1490,
+            "y": 600,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nnn",
+            "x": 1500.3,
+            "y": 597.4,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nno",
+            "x": 1510.6,
+            "y": 590,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nnp",
+            "x": 1520.9,
+            "y": 579.4,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nnq",
+            "x": 1531.1,
+            "y": 567.6,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nnr",
+            "x": 1541.4,
+            "y": 557,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nns",
+            "x": 1551.7,
+            "y": 549.6,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nnt",
+            "x": 1562,
+            "y": 547,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nnu",
+            "x": 1570,
+            "y": 545,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nnv",
+            "x": 1580,
+            "y": 555.5,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nnw",
+            "x": 1590,
+            "y": 564.8,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nnx",
+            "x": 1600,
+            "y": 573.1,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nny",
+            "x": 1610,
+            "y": 580.2,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nnz",
+            "x": 1620,
+            "y": 586.3,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "no0",
+            "x": 1630,
+            "y": 591.2,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "no1",
+            "x": 1640,
+            "y": 595.1,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "no2",
+            "x": 1650,
+            "y": 597.8,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "no3",
+            "x": 1660,
+            "y": 599.5,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "no4",
+            "x": 1670,
+            "y": 600,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "no5",
+            "x": 2760,
+            "y": 600,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "no6",
+            "x": 2772.2,
+            "y": 598.1,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "no7",
+            "x": 2784.4,
+            "y": 592.6,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "no8",
+            "x": 2796.7,
+            "y": 583.3,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "no9",
+            "x": 2808.9,
+            "y": 570.4,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "noa",
+            "x": 2821.1,
+            "y": 553.7,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nob",
+            "x": 2833.3,
+            "y": 533.3,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "noc",
+            "x": 2845.6,
+            "y": 509.3,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nod",
+            "x": 2857.8,
+            "y": 481.5,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "noe",
+            "x": 2870,
+            "y": 450,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nof",
+            "x": 2881.7,
+            "y": 423.3,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nog",
+            "x": 2893.3,
+            "y": 396.7,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "noh",
+            "x": 2905,
+            "y": 370,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nok",
+            "x": 2875,
+            "y": 325,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nol",
+            "x": 2890,
+            "y": 305,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nom",
+            "x": 2901.7,
+            "y": 302,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "non",
+            "x": 2913.3,
+            "y": 299,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "noo",
+            "x": 2925,
+            "y": 296,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nop",
+            "x": 2937.3,
+            "y": 295.9,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "noq",
+            "x": 2949.7,
+            "y": 295.5,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nor",
+            "x": 2962,
+            "y": 294.9,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nos",
+            "x": 2974.3,
+            "y": 294.2,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "not",
+            "x": 2986.7,
+            "y": 293.3,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nov",
+            "x": 3011.3,
+            "y": 291.1,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "now",
+            "x": 3023.7,
+            "y": 289.9,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nox",
+            "x": 3036,
+            "y": 288.8,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "noz",
+            "x": 3060.7,
+            "y": 286.8,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "np0",
+            "x": 3073,
+            "y": 286.1,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "np1",
+            "x": 3085.3,
+            "y": 285.5,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "np2",
+            "x": 3097.7,
+            "y": 285.1,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "np3",
+            "x": 3110,
+            "y": 285,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "np4",
+            "x": 3400,
+            "y": 300,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "np5",
+            "x": 4000,
+            "y": 270,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "np6",
+            "x": 4800,
+            "y": 300,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "np7",
+            "x": 4800,
+            "y": 1100,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "island-0",
+      "material": "grass",
+      "outer": {
+        "id": "bp8",
+        "nodes": [
+          {
+            "id": "np9",
+            "x": 560,
+            "y": 488,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "npa",
+            "x": 570,
+            "y": 488.4,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "npb",
+            "x": 580,
+            "y": 489.5,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "npc",
+            "x": 590,
+            "y": 491.2,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "npd",
+            "x": 600,
+            "y": 493.5,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "npe",
+            "x": 610,
+            "y": 496.2,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "npg",
+            "x": 630,
+            "y": 501.8,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nph",
+            "x": 640,
+            "y": 504.5,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "npi",
+            "x": 650,
+            "y": 506.8,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "npj",
+            "x": 660,
+            "y": 508.5,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "npk",
+            "x": 670,
+            "y": 509.6,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "npl",
+            "x": 680,
+            "y": 510,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nq0",
+            "x": 830,
+            "y": 510,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nq1",
+            "x": 840,
+            "y": 509.6,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nq2",
+            "x": 850,
+            "y": 508.3,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nq3",
+            "x": 860,
+            "y": 506.3,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nq4",
+            "x": 870,
+            "y": 503.4,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nq5",
+            "x": 880,
+            "y": 499.6,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nq6",
+            "x": 890,
+            "y": 495.1,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nq7",
+            "x": 900,
+            "y": 489.7,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nq8",
+            "x": 910,
+            "y": 483.5,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nq9",
+            "x": 920,
+            "y": 476.4,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nqa",
+            "x": 930,
+            "y": 468.6,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nqb",
+            "x": 940,
+            "y": 459.9,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nqc",
+            "x": 950,
+            "y": 450.4,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nqd",
+            "x": 960,
+            "y": 440,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nqe",
+            "x": 937.8,
+            "y": 524.5,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nqf",
+            "x": 915.6,
+            "y": 545.3,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nqg",
+            "x": 893.3,
+            "y": 562.2,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nqh",
+            "x": 871.1,
+            "y": 576.6,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nqi",
+            "x": 848.9,
+            "y": 588,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nqj",
+            "x": 826.7,
+            "y": 596.8,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nqk",
+            "x": 804.4,
+            "y": 599.5,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nql",
+            "x": 782.2,
+            "y": 601.7,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nqm",
+            "x": 760,
+            "y": 606.4,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nqn",
+            "x": 737.8,
+            "y": 611,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nqo",
+            "x": 715.6,
+            "y": 609.7,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nqp",
+            "x": 693.3,
+            "y": 600.3,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nqq",
+            "x": 671.1,
+            "y": 586.3,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nqr",
+            "x": 648.9,
+            "y": 572.6,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nqs",
+            "x": 626.7,
+            "y": 560.8,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nqt",
+            "x": 604.4,
+            "y": 549.6,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nqu",
+            "x": 582.2,
+            "y": 531,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "island-1",
+      "material": "grass",
+      "outer": {
+        "id": "bqv",
+        "nodes": [
+          {
+            "id": "nqw",
+            "x": 1060,
+            "y": 418,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nqx",
+            "x": 1070,
+            "y": 418.4,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nqy",
+            "x": 1080,
+            "y": 419.5,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nqz",
+            "x": 1090,
+            "y": 421.2,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nr0",
+            "x": 1100,
+            "y": 423.5,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nr1",
+            "x": 1110,
+            "y": 426.2,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nr3",
+            "x": 1130,
+            "y": 431.8,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nr4",
+            "x": 1140,
+            "y": 434.5,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nr5",
+            "x": 1150,
+            "y": 436.8,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nr6",
+            "x": 1160,
+            "y": 438.5,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nr7",
+            "x": 1170,
+            "y": 439.6,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nr8",
+            "x": 1180,
+            "y": 440,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nrn",
+            "x": 1330,
+            "y": 440,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nro",
+            "x": 1340,
+            "y": 439.6,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nrp",
+            "x": 1350,
+            "y": 438.3,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nrq",
+            "x": 1360,
+            "y": 436.3,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nrr",
+            "x": 1370,
+            "y": 433.4,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nrs",
+            "x": 1380,
+            "y": 429.6,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nrt",
+            "x": 1390,
+            "y": 425.1,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nru",
+            "x": 1400,
+            "y": 419.7,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nrv",
+            "x": 1410,
+            "y": 413.5,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nrw",
+            "x": 1420,
+            "y": 406.4,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nrx",
+            "x": 1430,
+            "y": 398.6,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nry",
+            "x": 1440,
+            "y": 389.9,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nrz",
+            "x": 1450,
+            "y": 380.4,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ns0",
+            "x": 1460,
+            "y": 370,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ns1",
+            "x": 1437.8,
+            "y": 452.9,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ns2",
+            "x": 1415.6,
+            "y": 471.3,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ns3",
+            "x": 1393.3,
+            "y": 484.2,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ns4",
+            "x": 1371.1,
+            "y": 496.1,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ns5",
+            "x": 1348.9,
+            "y": 508.9,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ns6",
+            "x": 1326.7,
+            "y": 521.4,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ns7",
+            "x": 1304.4,
+            "y": 525.3,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ns8",
+            "x": 1282.2,
+            "y": 523.8,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ns9",
+            "x": 1260,
+            "y": 523,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nsa",
+            "x": 1237.8,
+            "y": 525.4,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nsb",
+            "x": 1215.6,
+            "y": 527.5,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nsc",
+            "x": 1193.3,
+            "y": 523.7,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nsd",
+            "x": 1171.1,
+            "y": 512.6,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nse",
+            "x": 1148.9,
+            "y": 497.8,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nsf",
+            "x": 1126.7,
+            "y": 484.1,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nsg",
+            "x": 1104.4,
+            "y": 473.4,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nsh",
+            "x": 1082.2,
+            "y": 457.8,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "hill-island",
+      "material": "grass",
+      "outer": {
+        "id": "bsi",
+        "nodes": [
+          {
+            "id": "nsj",
+            "x": 1560,
+            "y": 340,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nsk",
+            "x": 1570,
+            "y": 349.6,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nsl",
+            "x": 1580,
+            "y": 358.6,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nsm",
+            "x": 1590,
+            "y": 366.8,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nsn",
+            "x": 1600,
+            "y": 374.3,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nso",
+            "x": 1610,
+            "y": 381.1,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nsp",
+            "x": 1620,
+            "y": 387.1,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nsq",
+            "x": 1630,
+            "y": 392.5,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nsr",
+            "x": 1640,
+            "y": 397.1,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nss",
+            "x": 1650,
+            "y": 401.1,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nst",
+            "x": 1660,
+            "y": 404.3,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nsu",
+            "x": 1670,
+            "y": 406.8,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nsv",
+            "x": 1680,
+            "y": 408.6,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nsw",
+            "x": 1690,
+            "y": 409.6,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nsx",
+            "x": 1700,
+            "y": 410,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nt7",
+            "x": 1800,
+            "y": 410,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nt8",
+            "x": 1810,
+            "y": 409.7,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nt9",
+            "x": 1820,
+            "y": 408.9,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nta",
+            "x": 1830,
+            "y": 407.4,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ntb",
+            "x": 1840,
+            "y": 405.5,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ntc",
+            "x": 1850,
+            "y": 403,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ntd",
+            "x": 1860,
+            "y": 400,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nte",
+            "x": 1870,
+            "y": 396.4,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ntf",
+            "x": 1880,
+            "y": 392.5,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ntg",
+            "x": 1890,
+            "y": 388,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nth",
+            "x": 1900,
+            "y": 383.2,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nti",
+            "x": 1910,
+            "y": 378,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ntj",
+            "x": 1920,
+            "y": 372.5,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ntk",
+            "x": 1930,
+            "y": 366.7,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ntl",
+            "x": 1940,
+            "y": 360.7,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ntm",
+            "x": 1950,
+            "y": 354.4,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ntn",
+            "x": 1960,
+            "y": 348,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ntr",
+            "x": 2000,
+            "y": 322,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nts",
+            "x": 2010,
+            "y": 315.6,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ntt",
+            "x": 2020,
+            "y": 309.3,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ntu",
+            "x": 2030,
+            "y": 303.3,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ntv",
+            "x": 2040,
+            "y": 297.5,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ntw",
+            "x": 2050,
+            "y": 292,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ntx",
+            "x": 2060,
+            "y": 286.8,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nty",
+            "x": 2070,
+            "y": 282,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ntz",
+            "x": 2080,
+            "y": 277.5,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nu0",
+            "x": 2090,
+            "y": 273.6,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nu1",
+            "x": 2100,
+            "y": 270,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nu2",
+            "x": 2110,
+            "y": 267,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nu3",
+            "x": 2120,
+            "y": 264.5,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nu4",
+            "x": 2130,
+            "y": 262.6,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nu5",
+            "x": 2140,
+            "y": 261.1,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nu6",
+            "x": 2150,
+            "y": 260.3,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nu7",
+            "x": 2160,
+            "y": 260,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nub",
+            "x": 2200,
+            "y": 260,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nuc",
+            "x": 2210,
+            "y": 260.1,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nud",
+            "x": 2220,
+            "y": 260.6,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nue",
+            "x": 2230,
+            "y": 261.2,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nuf",
+            "x": 2240,
+            "y": 262.2,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nug",
+            "x": 2250,
+            "y": 263.4,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nuh",
+            "x": 2260,
+            "y": 265,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nui",
+            "x": 2270,
+            "y": 266.7,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nuj",
+            "x": 2280,
+            "y": 268.8,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nuk",
+            "x": 2290,
+            "y": 271.1,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nul",
+            "x": 2300,
+            "y": 273.8,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "num",
+            "x": 2310,
+            "y": 276.6,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nun",
+            "x": 2320,
+            "y": 279.8,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nuo",
+            "x": 2330,
+            "y": 283.2,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nup",
+            "x": 2340,
+            "y": 287,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nuq",
+            "x": 2350,
+            "y": 290.9,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nur",
+            "x": 2360,
+            "y": 295.2,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nus",
+            "x": 2370,
+            "y": 299.7,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nut",
+            "x": 2380,
+            "y": 304.6,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nuu",
+            "x": 2390,
+            "y": 309.6,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nuv",
+            "x": 2400,
+            "y": 315,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nuz",
+            "x": 2440,
+            "y": 315,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nv0",
+            "x": 2450,
+            "y": 314.4,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nv1",
+            "x": 2460,
+            "y": 312.4,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nv2",
+            "x": 2470,
+            "y": 309.3,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nv3",
+            "x": 2480,
+            "y": 304.8,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nv4",
+            "x": 2490,
+            "y": 299.1,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nv5",
+            "x": 2500,
+            "y": 292,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nv6",
+            "x": 2510,
+            "y": 283.8,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nv7",
+            "x": 2520,
+            "y": 274.2,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nv8",
+            "x": 2530,
+            "y": 263.3,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nv9",
+            "x": 2540,
+            "y": 251.2,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nva",
+            "x": 2550,
+            "y": 237.8,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nvb",
+            "x": 2560,
+            "y": 223.2,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nvc",
+            "x": 2570,
+            "y": 207.2,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nvd",
+            "x": 2580,
+            "y": 190,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nvg",
+            "x": 2610,
+            "y": 184,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nvh",
+            "x": 2588.1,
+            "y": 276.9,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nvi",
+            "x": 2566.3,
+            "y": 303.9,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nvj",
+            "x": 2544.4,
+            "y": 325.2,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nvk",
+            "x": 2522.5,
+            "y": 340.6,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nvl",
+            "x": 2500.6,
+            "y": 349,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nvm",
+            "x": 2478.8,
+            "y": 352,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nvn",
+            "x": 2456.9,
+            "y": 353.6,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nvo",
+            "x": 2435,
+            "y": 356.3,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nvp",
+            "x": 2413.1,
+            "y": 361.6,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nvq",
+            "x": 2391.3,
+            "y": 368.1,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nvr",
+            "x": 2369.4,
+            "y": 373.1,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nvs",
+            "x": 2347.5,
+            "y": 374.4,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nvt",
+            "x": 2325.6,
+            "y": 365.4,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nvu",
+            "x": 2303.8,
+            "y": 354.4,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nvv",
+            "x": 2281.9,
+            "y": 348.6,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nvw",
+            "x": 2260,
+            "y": 347.2,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nvx",
+            "x": 2238.1,
+            "y": 348.2,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nvy",
+            "x": 2216.3,
+            "y": 347.2,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nvz",
+            "x": 2194.4,
+            "y": 343,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nw0",
+            "x": 2172.5,
+            "y": 339.8,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nw1",
+            "x": 2150.6,
+            "y": 342.2,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nw2",
+            "x": 2128.8,
+            "y": 355.1,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nw3",
+            "x": 2106.9,
+            "y": 371.9,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nw4",
+            "x": 2085,
+            "y": 386.2,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nw5",
+            "x": 2063.1,
+            "y": 396,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nw6",
+            "x": 2041.3,
+            "y": 404.2,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nw7",
+            "x": 2019.4,
+            "y": 415.4,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nw8",
+            "x": 1997.5,
+            "y": 431.2,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nw9",
+            "x": 1975.6,
+            "y": 448.3,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nwa",
+            "x": 1953.8,
+            "y": 461.4,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nwb",
+            "x": 1931.9,
+            "y": 467.5,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nwc",
+            "x": 1910,
+            "y": 468.1,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nwd",
+            "x": 1888.1,
+            "y": 467.4,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nwe",
+            "x": 1866.3,
+            "y": 468.2,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nwf",
+            "x": 1844.4,
+            "y": 470,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nwg",
+            "x": 1822.5,
+            "y": 474,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nwh",
+            "x": 1800.6,
+            "y": 474.3,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nwi",
+            "x": 1778.8,
+            "y": 470.1,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nwj",
+            "x": 1756.9,
+            "y": 464.7,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nwk",
+            "x": 1735,
+            "y": 460.4,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nwl",
+            "x": 1713.1,
+            "y": 457,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nwm",
+            "x": 1691.3,
+            "y": 452.1,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nwn",
+            "x": 1669.4,
+            "y": 444.2,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nwo",
+            "x": 1647.5,
+            "y": 438.5,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nwp",
+            "x": 1625.6,
+            "y": 431.6,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nwq",
+            "x": 1603.8,
+            "y": 422.2,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nwr",
+            "x": 1581.9,
+            "y": 409.5,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "island-u1",
+      "material": "grass",
+      "outer": {
+        "id": "bws",
+        "nodes": [
+          {
+            "id": "nwt",
+            "x": 930,
+            "y": 210,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nwu",
+            "x": 940,
+            "y": 220.4,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nwv",
+            "x": 950,
+            "y": 229.9,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nww",
+            "x": 960,
+            "y": 238.6,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nwx",
+            "x": 970,
+            "y": 246.4,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nwy",
+            "x": 980,
+            "y": 253.5,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nwz",
+            "x": 990,
+            "y": 259.7,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nx0",
+            "x": 1000,
+            "y": 265.1,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nx1",
+            "x": 1010,
+            "y": 269.6,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nx2",
+            "x": 1020,
+            "y": 273.4,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nx3",
+            "x": 1030,
+            "y": 276.3,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nx4",
+            "x": 1040,
+            "y": 278.3,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nx5",
+            "x": 1050,
+            "y": 279.6,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nx6",
+            "x": 1060,
+            "y": 280,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nxj",
+            "x": 1190,
+            "y": 280,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nxk",
+            "x": 1200,
+            "y": 279.7,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nxl",
+            "x": 1210,
+            "y": 278.6,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nxm",
+            "x": 1220,
+            "y": 277,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nxn",
+            "x": 1230,
+            "y": 274.8,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nxo",
+            "x": 1240,
+            "y": 272.1,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nxp",
+            "x": 1250,
+            "y": 268.9,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nxq",
+            "x": 1260,
+            "y": 265.5,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nxr",
+            "x": 1270,
+            "y": 261.8,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nxs",
+            "x": 1280,
+            "y": 258.2,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nxt",
+            "x": 1290,
+            "y": 254.5,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nxu",
+            "x": 1300,
+            "y": 251.1,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nxv",
+            "x": 1310,
+            "y": 247.9,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nxw",
+            "x": 1320,
+            "y": 245.2,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nxx",
+            "x": 1330,
+            "y": 243,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nxy",
+            "x": 1340,
+            "y": 241.4,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nxz",
+            "x": 1350,
+            "y": 240.3,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ny0",
+            "x": 1360,
+            "y": 240,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ny1",
+            "x": 1338.5,
+            "y": 272.4,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ny2",
+            "x": 1317,
+            "y": 288.7,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ny3",
+            "x": 1295.5,
+            "y": 303.9,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ny4",
+            "x": 1274,
+            "y": 314.1,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ny5",
+            "x": 1252.5,
+            "y": 317.6,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ny6",
+            "x": 1231,
+            "y": 317.7,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ny7",
+            "x": 1209.5,
+            "y": 323.9,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ny8",
+            "x": 1188,
+            "y": 333,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ny9",
+            "x": 1166.5,
+            "y": 341.4,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nya",
+            "x": 1145,
+            "y": 344.4,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nyb",
+            "x": 1123.5,
+            "y": 340.6,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nyc",
+            "x": 1102,
+            "y": 333.4,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nyd",
+            "x": 1080.5,
+            "y": 327.5,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nye",
+            "x": 1059,
+            "y": 324,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nyf",
+            "x": 1037.5,
+            "y": 319.5,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nyg",
+            "x": 1016,
+            "y": 316.8,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nyh",
+            "x": 994.5,
+            "y": 309.8,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nyi",
+            "x": 973,
+            "y": 298.3,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nyj",
+            "x": 951.5,
+            "y": 283.5,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "island-u2",
+      "material": "grass",
+      "outer": {
+        "id": "byk",
+        "nodes": [
+          {
+            "id": "nyl",
+            "x": 430,
+            "y": 155,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nym",
+            "x": 440,
+            "y": 165.4,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nyn",
+            "x": 450,
+            "y": 174.9,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nyo",
+            "x": 460,
+            "y": 183.6,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nyp",
+            "x": 470,
+            "y": 191.4,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nyq",
+            "x": 480,
+            "y": 198.5,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nyr",
+            "x": 490,
+            "y": 204.7,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nys",
+            "x": 500,
+            "y": 210.1,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nyt",
+            "x": 510,
+            "y": 214.6,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nyu",
+            "x": 520,
+            "y": 218.4,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nyv",
+            "x": 530,
+            "y": 221.3,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nyw",
+            "x": 540,
+            "y": 223.3,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nyx",
+            "x": 550,
+            "y": 224.6,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nyy",
+            "x": 560,
+            "y": 225,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nz7",
+            "x": 650,
+            "y": 225,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nz8",
+            "x": 660,
+            "y": 224.7,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nz9",
+            "x": 670,
+            "y": 223.6,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nza",
+            "x": 680,
+            "y": 222,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nzb",
+            "x": 690,
+            "y": 219.8,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nzc",
+            "x": 700,
+            "y": 217.1,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nzd",
+            "x": 710,
+            "y": 213.9,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nze",
+            "x": 720,
+            "y": 210.5,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nzf",
+            "x": 730,
+            "y": 206.8,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nzg",
+            "x": 740,
+            "y": 203.2,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nzh",
+            "x": 750,
+            "y": 199.5,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nzi",
+            "x": 760,
+            "y": 196.1,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nzj",
+            "x": 770,
+            "y": 192.9,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nzk",
+            "x": 780,
+            "y": 190.2,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nzl",
+            "x": 790,
+            "y": 188,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nzm",
+            "x": 800,
+            "y": 186.4,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nzn",
+            "x": 810,
+            "y": 185.3,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nzo",
+            "x": 820,
+            "y": 185,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nzp",
+            "x": 798.3,
+            "y": 223.4,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nzq",
+            "x": 776.7,
+            "y": 241.1,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nzr",
+            "x": 755,
+            "y": 254.4,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nzs",
+            "x": 733.3,
+            "y": 265.6,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nzt",
+            "x": 711.7,
+            "y": 276.5,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nzu",
+            "x": 690,
+            "y": 286.1,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nzv",
+            "x": 668.3,
+            "y": 295.5,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nzw",
+            "x": 646.7,
+            "y": 297.5,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nzx",
+            "x": 625,
+            "y": 294.4,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nzy",
+            "x": 603.3,
+            "y": 291.4,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nzz",
+            "x": 581.7,
+            "y": 290.6,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n100",
+            "x": 560,
+            "y": 289.2,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n101",
+            "x": 538.3,
+            "y": 282,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n102",
+            "x": 516.7,
+            "y": 274.1,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n103",
+            "x": 495,
+            "y": 262.9,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n104",
+            "x": 473.3,
+            "y": 249.6,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n105",
+            "x": 451.7,
+            "y": 233.1,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "island-top",
+      "material": "grass",
+      "outer": {
+        "id": "b106",
+        "nodes": [
+          {
+            "id": "n107",
+            "x": -230,
+            "y": 40,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n10q",
+            "x": -40,
+            "y": 40,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n10r",
+            "x": -30,
+            "y": 40.6,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n10s",
+            "x": -20,
+            "y": 42.5,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n10t",
+            "x": -10,
+            "y": 45.6,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n10u",
+            "x": 0,
+            "y": 49.9,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n10v",
+            "x": 10,
+            "y": 55.3,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n10w",
+            "x": 20,
+            "y": 61.6,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n10x",
+            "x": 30,
+            "y": 68.7,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n10y",
+            "x": 40,
+            "y": 76.5,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n10z",
+            "x": 50,
+            "y": 84.9,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n110",
+            "x": 60,
+            "y": 93.6,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n112",
+            "x": 80,
+            "y": 111.4,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n113",
+            "x": 90,
+            "y": 120.1,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n114",
+            "x": 100,
+            "y": 128.5,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n115",
+            "x": 110,
+            "y": 136.3,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n116",
+            "x": 120,
+            "y": 143.4,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n117",
+            "x": 130,
+            "y": 149.7,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n118",
+            "x": 140,
+            "y": 155.1,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n119",
+            "x": 150,
+            "y": 159.4,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n11a",
+            "x": 160,
+            "y": 162.5,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n11b",
+            "x": 170,
+            "y": 164.4,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n11c",
+            "x": 180,
+            "y": 165,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n11i",
+            "x": 240,
+            "y": 165,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n11j",
+            "x": 250,
+            "y": 164.7,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n11k",
+            "x": 260,
+            "y": 163.8,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n11l",
+            "x": 270,
+            "y": 162.4,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n11m",
+            "x": 280,
+            "y": 160.6,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n11n",
+            "x": 290,
+            "y": 158.6,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n11o",
+            "x": 300,
+            "y": 156.4,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n11p",
+            "x": 310,
+            "y": 154.4,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n11q",
+            "x": 320,
+            "y": 152.6,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n11r",
+            "x": 330,
+            "y": 151.2,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n11s",
+            "x": 340,
+            "y": 150.3,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n11t",
+            "x": 350,
+            "y": 150,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n11u",
+            "x": 327.7,
+            "y": 186.3,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n11v",
+            "x": 305.4,
+            "y": 201.7,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n11w",
+            "x": 283.1,
+            "y": 217.2,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n11x",
+            "x": 260.8,
+            "y": 231.5,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n11y",
+            "x": 238.5,
+            "y": 241.8,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n11z",
+            "x": 216.2,
+            "y": 247,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n120",
+            "x": 193.8,
+            "y": 249.3,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n121",
+            "x": 171.5,
+            "y": 251.8,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n122",
+            "x": 149.2,
+            "y": 260.9,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n123",
+            "x": 126.9,
+            "y": 269.1,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n124",
+            "x": 104.6,
+            "y": 269.6,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n125",
+            "x": 82.3,
+            "y": 258.9,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n126",
+            "x": 60,
+            "y": 242,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n127",
+            "x": 37.7,
+            "y": 224.9,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n128",
+            "x": 15.4,
+            "y": 208.8,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n129",
+            "x": -6.9,
+            "y": 191,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n12a",
+            "x": -29.2,
+            "y": 168.9,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n12b",
+            "x": -51.5,
+            "y": 145,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n12c",
+            "x": -73.8,
+            "y": 131.6,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n12d",
+            "x": -96.2,
+            "y": 122.5,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n12e",
+            "x": -118.5,
+            "y": 116.6,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n12f",
+            "x": -140.8,
+            "y": 110,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n12g",
+            "x": -163.1,
+            "y": 99.7,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n12h",
+            "x": -185.4,
+            "y": 86.4,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n12i",
+            "x": -207.7,
+            "y": 72,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "summit-rock",
+      "material": "stone",
+      "outer": {
+        "id": "b12j",
+        "nodes": [
+          {
+            "id": "n12k",
+            "x": -178,
+            "y": 52,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n12l",
+            "x": -190,
+            "y": 14,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n12m",
+            "x": -176,
+            "y": -24,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n12n",
+            "x": -148,
+            "y": -40,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n12o",
+            "x": -122,
+            "y": -32,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n12p",
+            "x": -106,
+            "y": -6,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n12q",
+            "x": -110,
+            "y": 18,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n12r",
+            "x": -102,
+            "y": 36,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n12s",
+            "x": -108,
+            "y": 52,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n12t",
+            "x": -142,
+            "y": 60,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    }
+  ],
+  "apples": [
+    {
+      "x": 590,
+      "y": 455
+    },
+    {
+      "x": 2420,
+      "y": 258
+    },
+    {
+      "x": 1330,
+      "y": 212
+    },
+    {
+      "x": 280,
+      "y": 107
+    }
+  ],
+  "props": [
+    {
+      "x": -900,
+      "y": null,
+      "type": "tree",
+      "layer": "back"
+    },
+    {
+      "x": -720,
+      "y": null,
+      "type": "sapling",
+      "layer": "back"
+    },
+    {
+      "x": -560,
+      "y": null,
+      "type": "bush",
+      "layer": "back"
+    },
+    {
+      "x": -430,
+      "y": null,
+      "type": "tree",
+      "layer": "back"
+    },
+    {
+      "x": -360,
+      "y": null,
+      "type": "flowers",
+      "layer": "back"
+    },
+    {
+      "x": 3000,
+      "y": null,
+      "type": "tree",
+      "layer": "back"
+    },
+    {
+      "x": 3120,
+      "y": null,
+      "type": "bush",
+      "layer": "back"
+    },
+    {
+      "x": 3260,
+      "y": null,
+      "type": "sapling",
+      "layer": "back"
+    },
+    {
+      "x": 3480,
+      "y": null,
+      "type": "tree",
+      "layer": "back"
+    },
+    {
+      "x": -150,
+      "y": 600,
+      "type": "flowers",
+      "layer": "back"
+    },
+    {
+      "x": -40,
+      "y": 600,
+      "type": "grass",
+      "layer": "front"
+    },
+    {
+      "x": 120,
+      "y": 600,
+      "type": "fence",
+      "layer": "back"
+    },
+    {
+      "x": 205,
+      "y": 600,
+      "type": "wheelbarrow",
+      "layer": "back"
+    },
+    {
+      "x": 270,
+      "y": 600,
+      "type": "tree",
+      "layer": "back"
+    },
+    {
+      "x": 640,
+      "y": 600,
+      "type": "bush",
+      "layer": "back"
+    },
+    {
+      "x": 760,
+      "y": 600,
+      "type": "flowers",
+      "layer": "back"
+    },
+    {
+      "x": 880,
+      "y": 600,
+      "type": "rabbit",
+      "layer": "back"
+    },
+    {
+      "x": 1010,
+      "y": 600,
+      "type": "bush",
+      "layer": "back"
+    },
+    {
+      "x": 1200,
+      "y": 600,
+      "type": "flowers",
+      "layer": "back"
+    },
+    {
+      "x": 1380,
+      "y": 600,
+      "type": "grass",
+      "layer": "front"
+    },
+    {
+      "x": 1790,
+      "y": 600,
+      "type": "beehive",
+      "layer": "back"
+    },
+    {
+      "x": 1930,
+      "y": 600,
+      "type": "flowers",
+      "layer": "back"
+    },
+    {
+      "x": 2080,
+      "y": 600,
+      "type": "bush",
+      "layer": "back"
+    },
+    {
+      "x": 2260,
+      "y": 600,
+      "type": "tree",
+      "layer": "back"
+    },
+    {
+      "x": 2420,
+      "y": 600,
+      "type": "stump",
+      "layer": "back"
+    },
+    {
+      "x": 2520,
+      "y": 600,
+      "type": "flowers",
+      "layer": "back"
+    },
+    {
+      "x": 2640,
+      "y": 600,
+      "type": "rock",
+      "layer": "back"
+    },
+    {
+      "x": 600,
+      "y": 493.5,
+      "type": "sapling",
+      "layer": "back"
+    },
+    {
+      "x": 700,
+      "y": 510,
+      "type": "flowers",
+      "layer": "back"
+    },
+    {
+      "x": 790,
+      "y": 510,
+      "type": "grass",
+      "layer": "back"
+    },
+    {
+      "x": 700,
+      "y": 627.1,
+      "type": "hanging-roots",
+      "layer": "back"
+    },
+    {
+      "x": 1150,
+      "y": 436.8,
+      "type": "flowers",
+      "layer": "back"
+    },
+    {
+      "x": 1210,
+      "y": 440,
+      "type": "grass",
+      "layer": "back"
+    },
+    {
+      "x": 1280,
+      "y": 440,
+      "type": "flowers",
+      "layer": "back"
+    },
+    {
+      "x": 1261.523725771576,
+      "y": 542.0566820608047,
+      "type": "hanging-roots",
+      "layer": "back"
+    },
+    {
+      "x": 1740,
+      "y": 410,
+      "type": "flowers",
+      "layer": "back"
+    },
+    {
+      "x": 1790,
+      "y": 410,
+      "type": "bush",
+      "layer": "back"
+    },
+    {
+      "x": 1950,
+      "y": 354.4,
+      "type": "grass",
+      "layer": "back"
+    },
+    {
+      "x": 2060,
+      "y": 286.8,
+      "type": "flowers",
+      "layer": "back"
+    },
+    {
+      "x": 2240,
+      "y": 262.2,
+      "type": "sapling",
+      "layer": "back"
+    },
+    {
+      "x": 2185,
+      "y": 260,
+      "type": "tree",
+      "layer": "back"
+    },
+    {
+      "x": 2160,
+      "y": 140,
+      "type": "apple",
+      "layer": "back"
+    },
+    {
+      "x": 2205,
+      "y": 125,
+      "type": "apple",
+      "layer": "back"
+    },
+    {
+      "x": 2228,
+      "y": 152,
+      "type": "apple",
+      "layer": "back"
+    },
+    {
+      "x": 2455,
+      "y": 313.4,
+      "type": "grass",
+      "layer": "back"
+    },
+    {
+      "x": 2380,
+      "y": 304.6,
+      "type": "flowers",
+      "layer": "back"
+    },
+    {
+      "x": 2595,
+      "y": 187,
+      "type": "bird",
+      "layer": "back"
+    },
+    {
+      "x": 1900,
+      "y": 491.8,
+      "type": "hanging-roots",
+      "layer": "back"
+    },
+    {
+      "x": 2280,
+      "y": 372.5,
+      "type": "hanging-roots",
+      "layer": "back"
+    },
+    {
+      "x": 1100,
+      "y": 280,
+      "type": "flowers",
+      "layer": "back"
+    },
+    {
+      "x": 1160,
+      "y": 280,
+      "type": "grass",
+      "layer": "back"
+    },
+    {
+      "x": 1230,
+      "y": 274.8,
+      "type": "bird",
+      "layer": "back"
+    },
+    {
+      "x": 1300,
+      "y": 251.1,
+      "type": "bush",
+      "layer": "back"
+    },
+    {
+      "x": 1340,
+      "y": 241.4,
+      "type": "flowers",
+      "layer": "back"
+    },
+    {
+      "x": 600,
+      "y": 225,
+      "type": "sapling",
+      "layer": "back"
+    },
+    {
+      "x": 680,
+      "y": 222,
+      "type": "flowers",
+      "layer": "back"
+    },
+    {
+      "x": 640,
+      "y": 225,
+      "type": "grass",
+      "layer": "back"
+    },
+    {
+      "x": 780,
+      "y": 190.2,
+      "type": "bush",
+      "layer": "back"
+    },
+    {
+      "x": 652.1556720235658,
+      "y": 306.3245781906633,
+      "type": "hanging-roots",
+      "layer": "back"
+    },
+    {
+      "x": -203.28190382617976,
+      "y": 36.33589833376365,
+      "type": "tree",
+      "layer": "back"
+    },
+    {
+      "x": -219.0930855514154,
+      "y": -90.46435072653132,
+      "type": "apple",
+      "layer": "back"
+    },
+    {
+      "x": -174.0930855514154,
+      "y": -104.46435072653132,
+      "type": "apple",
+      "layer": "back"
+    },
+    {
+      "x": -159.0930855514154,
+      "y": -76.46435072653132,
+      "type": "apple",
+      "layer": "back"
+    },
+    {
+      "x": 40,
+      "y": 76.5,
+      "type": "flowers",
+      "layer": "back"
+    },
+    {
+      "x": -20,
+      "y": 42.5,
+      "type": "grass",
+      "layer": "back"
+    },
+    {
+      "x": -60,
+      "y": 40,
+      "type": "bush",
+      "layer": "back"
+    },
+    {
+      "x": 210,
+      "y": 165,
+      "type": "stall",
+      "layer": "back"
+    },
+    {
+      "x": 300,
+      "y": 156.4,
+      "type": "grass",
+      "layer": "back"
+    },
+    {
+      "x": 114.15696044367655,
+      "y": 260.5086281806522,
+      "type": "hanging-roots",
+      "layer": "back"
+    },
+    {
+      "x": -208.35903037535797,
+      "y": 50.05766042000377,
+      "type": "roots",
+      "layer": "back",
+      "rotation": -37.6
+    }
+  ],
+  "spikes": [],
+  "water": [],
+  "weather": {
+    "sun": 0.8,
+    "clouds": 0.35,
+    "fog": 0,
+    "rain": 0,
+    "snow": 0,
+    "lightning": 0,
+    "wind": 0.3,
+    "windDirection": "left"
+  },
+  "timeOfDay": 13,
+  "world": "First Rides",
+  "lesson": "Floating islands. Hop up from one island onto the next, and drop onto lower ones, climbing into the sky over a meadow that catches every miss.",
+  "alsoNew": "Floating meadows stacked into the sky with roots hanging beneath them, and a potato stall on the highest island.",
+  "medals": {
+    "gold": 22,
+    "silver": 28.5,
+    "bronze": 38.5
+  },
+  "preview": {
+    "x": 406,
+    "y": 142
+  }
+}

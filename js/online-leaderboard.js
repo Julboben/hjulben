@@ -6,7 +6,9 @@ import { legacyRider, lookOf } from './cosmetics.js';
 import { noteRenewal, SIGNED_OUT_EVENT } from './account.js';
 
 const API = '/api/leaderboard';
-const REFRESH_MS = 30_000;
+// How old a board may get before a run start fetches it again: short enough
+// that riders racing each other see a new best within a few restarts.
+const REFRESH_MS = 10_000;
 // How soon a board is asked for again after the server couldn't be reached.
 const RETRY_MS = 5_000;
 export const ONLINE_LEADERBOARD_EVENT = 'hjulben:online-leaderboard';

@@ -10,6 +10,7 @@ import {
   TAU,
   SUSPENSION_REST_LENGTH,
   SUSPENSION_TOP_OUT_LENGTH,
+  ENGINE,
   XPBD_THROTTLE_INPUT_RESPONSE,
   XPBD_THROTTLE_RELEASE_RESPONSE,
   XPBD_LEAN_INPUT_RESPONSE,
@@ -31,7 +32,7 @@ import { playerTouch } from "./player-shape.js";
 import { spikeShape } from "./spike.js";
 import { createRagdoll, stepRagdoll } from "./ragdoll.js";
 import { atan2, cos, exp, hypot, sin } from "./det-math.js";
-import { rideTerrain, shatterGlass } from "./glass.js";
+import { copyRideTerrain, rideTerrain, shatterGlass } from "./glass.js";
 import {
   BIKE_WATER,
   CHASSIS_WATER_RADIUS,
@@ -53,7 +54,7 @@ import {
  * Bump whenever a change makes old inputs replay differently, so stored
  * ghosts and replay fixtures from older physics are not trusted.
  */
-export const RIDE_VERSION = 6;
+export const RIDE_VERSION = 7;
 
 /** @type {Array<[string, number, number, number]>} name, local x, local y, radius */
 const RIDER_PROBES = [
@@ -125,14 +126,25 @@ function suspensionClunk(events, wheel, before, after) {
  */
 export function createRide(trail, { seed = 1, start = trail.start, helmet = true } = {}) {
   const { x: startX, y: startY, facing } = start;
-  const rear = makeWheel(trail, startX - WHEELBASE / 2, startY);
-  const front = makeWheel(trail, startX + WHEELBASE / 2, startY);
+  const terrain = rideTerrain(trail);
+  const water = waterBodies(trail);
+  const placeBike = () => {
+    const rear = makeWheel(trail, startX - WHEELBASE / 2, startY);
+    const front = makeWheel(trail, startX + WHEELBASE / 2, startY);
+    return { rear, front, vehicle: createVehicle(rear, front) };
+  };
+  let bike = placeBike();
+  if ([bike.rear, bike.front].every((wheel) => terrainCollisionsAt(trail, wheel.x, wheel.y, RADIUS + START_GROUND_REACH).length)) {
+    const settled = placeBike();
+    if (settleOnStart(settled.vehicle, terrain, water, facing)) bike = settled;
+  }
+  const { rear, front, vehicle } = bike;
   /** @type {Ride} */
   const ride = {
-    trail: rideTerrain(trail),
+    trail: terrain,
     rear,
     front,
-    vehicle: createVehicle(rear, front),
+    vehicle,
     flower: finishFlower(trail),
     apples: trail.apples.map((apple) => ({
       x: apple.x,
@@ -151,7 +163,7 @@ export function createRide(trail, { seed = 1, start = trail.start, helmet = true
     spikes: (trail.spikes || []).map((spike) =>
       normalizeSpike(spike, terrainAt(trail, Number(spike?.x) || 0)?.y ?? null),
     ),
-    water: waterBodies(trail),
+    water,
     seed,
     helmet,
     random: seededRandom(seed),
@@ -185,6 +197,54 @@ export function createRide(trail, { seed = 1, start = trail.start, helmet = true
   };
   ride.previousRiderContacts = riderCollisionPoints(ride);
   return ride;
+}
+
+// A wheel this close to the ground counts as standing on it.
+const START_GROUND_REACH = 0.5;
+// How long the bike is left to settle on its start, well past the half second
+// its suspension takes to come to rest under the rider.
+const START_SETTLE_STEPS = Math.round(1 / STEP);
+
+/**
+ * Lets a bike standing on its start sink into its suspension before the run,
+ * and then stops it dead: it starts at rest, with nothing left to bounce, so
+ * waiting for it to settle gains nothing. A bike set down in the air is left
+ * to drop. False, with the bike to be thrown away, when glass under it cracks
+ * or breaks under its weight: that bike is set down unsettled, so the glass
+ * gives way in the run.
+ */
+function settleOnStart(vehicle, terrain, water, facing) {
+  // On a copy of the glass, which the run never sees.
+  const trail = copyRideTerrain(terrain);
+  const points = vehicle.bikePoints;
+  const controls = {
+    facing, throttle: 0, brakePressure: 0, leanControl: 0,
+    accelerating: false, braking: false, coasting: true,
+  };
+  for (let step = 0; step < START_SETTLE_STEPS; step++) {
+    if (water.length)
+      for (const point of points)
+        applyWater(point, point === vehicle.rear || point === vehicle.front ? RADIUS : CHASSIS_WATER_RADIUS, water, BIKE_WATER);
+    stepVehicle(vehicle, trail, controls);
+    // Held where it was set down, as at a start gate, so a bike on a slope
+    // settles on its start rather than rolling off it. The brakes would hold
+    // it too, but they pitch it onto its fork, which rises as they let go.
+    let drift = 0;
+    for (const point of points) drift += point.x - point.ox;
+    drift /= points.length;
+    for (const point of points) point.x -= drift;
+  }
+  if (trail.brokenBlocks?.size || trail.glassCracks?.length) return false;
+  for (const point of points) {
+    point.ox = point.x;
+    point.oy = point.y;
+  }
+  for (const wheel of [vehicle.rear, vehicle.front]) {
+    wheel.angularVelocity = 0;
+    wheel.impactSpeed = 0;
+  }
+  vehicle.engine = { rev: ENGINE.idle };
+  return true;
 }
 
 /**
@@ -408,6 +468,20 @@ export function stepRide(ride, input = {}, hooks = {}) {
   return events;
 }
 
+// A bike settled on its start stays well under this: it trembles at about
+// 0.00003 units/s, and creeps down a gentle slope at about a tenth of a unit
+// a second. One rolling away or dropping off its start passes it within a
+// step or two.
+const MOVING_AWAY_SPEED = 1;
+
+/** Whether the bike has moved off its start by itself, rolling or falling. */
+function movingAway(ride) {
+  const { rear, front } = ride;
+  const vx = (rear.x - rear.ox + (front.x - front.ox)) / (2 * STEP);
+  const vy = (rear.y - rear.oy + (front.y - front.oy)) / (2 * STEP);
+  return vx * vx + vy * vy > MOVING_AWAY_SPEED * MOVING_AWAY_SPEED;
+}
+
 /**
  * @param {Ride} ride
  * @param {RideInput} input
@@ -449,7 +523,10 @@ function advanceRide(ride, input, hooks, events) {
     1 - exp(-XPBD_LEAN_INPUT_RESPONSE * STEP),
   );
   const coasting = !accelerating && !braking;
-  const throttleTarget = accelerating && !braking ? 1 : 0;
+  // The throttle opens while braking too. The rider has the clutch in then,
+  // so the engine revs against the brakes, and letting them go drops the
+  // clutch at high revs for a harder launch or pop.
+  const throttleTarget = accelerating ? 1 : 0;
   const throttleRate =
     throttleTarget > ride.throttle
       ? XPBD_THROTTLE_INPUT_RESPONSE
@@ -495,6 +572,13 @@ function advanceRide(ride, input, hooks, events) {
     hooks,
   );
   trackAirRotation(ride, events);
+  // A bike that moves off by itself, rolling down a steep slope or dropping
+  // from a start in the air, starts it too, timed from the step it moved in.
+  if (running && !ride.started && movingAway(ride)) {
+    ride.started = true;
+    events.push({ type: "start" });
+    ride.elapsed = ++ride.elapsedSteps * STEP;
+  }
 
   const landingImpact = Math.max(
     !wasRearGrounded && rear.grounded ? rear.impactSpeed : 0,
@@ -520,7 +604,8 @@ function advanceRide(ride, input, hooks, events) {
   const { x: mx, y: my } = bikeMidpoint(ride);
   // Only the head crashes on terrain; the body may brush corners that poke
   // between the wheels. Spikes still hurt the whole rider below.
-  const riderObstacle = headObstacle(trail, ride.previousRiderContacts?.head, head);
+  const previousRiderContacts = ride.previousRiderContacts;
+  const riderObstacle = headObstacle(trail, previousRiderContacts?.head, head);
   ride.previousRiderContacts = riderContacts;
   const bikeContacts = { rear, front, probes: Object.values(riderContacts) };
   const player = { ...bikeContacts, frameReach: FRAME_REACH };
@@ -575,6 +660,11 @@ function advanceRide(ride, input, hooks, events) {
   if (bikeTouchesFlower(ride.flower, bikeContacts)) {
     if (ride.collected === ride.apples.length) {
       ride.status = "won";
+      // The bike reached the flower somewhere within this step. Timing the
+      // run to that moment, rather than to the step's end, keeps close runs
+      // from tying on whole steps.
+      if (ride.started)
+        ride.elapsed = (ride.elapsedSteps - 1 + touchFraction(ride.flower, bikeContacts, previousRiderContacts)) * STEP;
       events.push({ type: "win", time: ride.elapsed, x: mx, y: my });
     } else if (ride.time - ride.lastGateNotice > 5) {
       ride.lastGateNotice = ride.time;
@@ -592,6 +682,40 @@ function advanceRide(ride, input, hooks, events) {
     1 - exp(-7 * STEP),
   );
   return events;
+}
+
+// Halvings of the step that find when the bike reached the flower: ten time
+// it to under a hundredth of a millisecond.
+const TOUCH_BISECTIONS = 10;
+
+/**
+ * How far through the latest step (0 … 1) the bike first touched the flower,
+ * with every part of it moving in a straight line over the step. A bike that
+ * was touching it already, when the last apple opens it, finishes at the
+ * step's end.
+ */
+function touchFraction(flower, bike, previousProbes) {
+  const before = previousProbes ? Object.values(previousProbes) : bike.probes;
+  const at = (amount) => {
+    const wheel = (point) => ({ px: point.px, py: point.py, x: point.px + (point.x - point.px) * amount, y: point.py + (point.y - point.py) * amount });
+    return {
+      rear: wheel(bike.rear),
+      front: wheel(bike.front),
+      probes: bike.probes.map((probe, index) => ({
+        x: before[index].x + (probe.x - before[index].x) * amount,
+        y: before[index].y + (probe.y - before[index].y) * amount,
+        radius: probe.radius,
+      })),
+    };
+  };
+  if (bikeTouchesFlower(flower, at(0))) return 1;
+  let low = 0, high = 1;
+  for (let halving = 0; halving < TOUCH_BISECTIONS; halving++) {
+    const middle = (low + high) / 2;
+    if (bikeTouchesFlower(flower, at(middle))) high = middle;
+    else low = middle;
+  }
+  return high;
 }
 
 /** The thrown rider's joints, and the helmet once it has come off. */

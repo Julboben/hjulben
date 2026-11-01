@@ -39,7 +39,7 @@ import {
 } from "./inspector.js";
 import { closePlaytest, openPlaytest, playtestOpen } from "./playtest.js";
 import { openQuickPick } from "./quick-pick.js";
-import { render, renderView } from "./render.js";
+import { render, renderView, startY } from "./render.js";
 import {
   blockNodes,
   cyclePropType,
@@ -308,6 +308,8 @@ function dragSelectionTo(pointer, shift) {
         length: snapped.length,
       };
   }
+  // A start dragged close to the ground lands on it, unless Shift holds it to the grid.
+  if (editor.selection?.kind === "start" && !shift) y = startY(x, y);
   updateSelectedPosition(x, y);
   syncInspector({ live: true });
   render();

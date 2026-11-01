@@ -97,10 +97,10 @@ export async function trailShareUrl(trail, base) {
  * The trail a page's URL hash shares, normalized and checked like an imported
  * file; null without one. Rejects with a message fit for the player.
  */
-export async function readSharedTrail(hash, index = 0) {
+export async function readSharedTrail(hash) {
   const packed = trailLinkFromHash(hash);
   if (packed === null) return null;
-  const trail = normalizeTrail(await decodeTrailLink(packed), index);
+  const trail = normalizeTrail(await decodeTrailLink(packed));
   const errors = validateTrail(trail).filter(message => message.type === 'error');
   if (errors.length) throw new Error(errors[0].text);
   return trail;

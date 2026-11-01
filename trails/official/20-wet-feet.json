@@ -1,0 +1,568 @@
+{
+  "name": "Wet Feet",
+  "finish": {
+    "x": 2480,
+    "y": 280
+  },
+  "description": "Shallow fords. The water drags on the wheels and slows the bike, so carry speed in and keep the throttle on all the way across. Each ford is wider than the last. If you stop in the middle, just ride on out: shallow water won't hurt you.",
+  "lesson": "Shallow fords that drag on the bike and slow it down.",
+  "alsoNew": "Reeds, lilies.",
+  "world": "Lakeland",
+  "start": {
+    "x": 90,
+    "y": null,
+    "facing": 1
+  },
+  "terrainBlocks": [
+    {
+      "id": "ground",
+      "material": "grass",
+      "outer": {
+        "id": "ground-outer",
+        "nodes": [
+          {
+            "id": "ground-0",
+            "x": -1000,
+            "y": 100,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ground-1",
+            "x": -420,
+            "y": 100,
+            "mode": "smooth",
+            "in": [
+              -613.3333,
+              100
+            ],
+            "out": [
+              -380,
+              100
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-2",
+            "x": -300,
+            "y": 300,
+            "mode": "smooth",
+            "in": [
+              -340,
+              300
+            ],
+            "out": [
+              -100,
+              300
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-3",
+            "x": 300,
+            "y": 300,
+            "mode": "smooth",
+            "in": [
+              100,
+              300
+            ],
+            "out": [
+              373.3333,
+              300
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-4",
+            "x": 520,
+            "y": 300,
+            "mode": "independent",
+            "in": [
+              443,
+              300
+            ],
+            "out": [
+              534,
+              307.7
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-5",
+            "x": 560,
+            "y": 322,
+            "mode": "independent",
+            "in": [
+              546,
+              314.3
+            ],
+            "out": [
+              593.1141525402513,
+              330.11003594552034
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-6",
+            "x": 660,
+            "y": 322,
+            "mode": "independent",
+            "in": [
+              623.1141525402513,
+              330.11003594552034
+            ],
+            "out": [
+              674,
+              314.3
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-7",
+            "x": 700,
+            "y": 300,
+            "mode": "independent",
+            "in": [
+              686,
+              307.7
+            ],
+            "out": [
+              840,
+              300
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-8",
+            "x": 1100,
+            "y": 300,
+            "mode": "independent",
+            "in": [
+              960,
+              300
+            ],
+            "out": [
+              1114,
+              307.7
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-9",
+            "x": 1140,
+            "y": 322,
+            "mode": "independent",
+            "in": [
+              1126,
+              314.3
+            ],
+            "out": [
+              1199.8212,
+              344.5649
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-10",
+            "x": 1320,
+            "y": 322,
+            "mode": "independent",
+            "in": [
+              1253.8212,
+              344.5649
+            ],
+            "out": [
+              1334,
+              314.3
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-11",
+            "x": 1360,
+            "y": 300,
+            "mode": "independent",
+            "in": [
+              1346,
+              307.7
+            ],
+            "out": [
+              1514,
+              300
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-12",
+            "x": 1800,
+            "y": 300,
+            "mode": "independent",
+            "in": [
+              1646,
+              300
+            ],
+            "out": [
+              1814,
+              307.7
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-13",
+            "x": 1840,
+            "y": 322,
+            "mode": "independent",
+            "in": [
+              1826,
+              314.3
+            ],
+            "out": [
+              1938,
+              322
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-14",
+            "x": 2120,
+            "y": 322,
+            "mode": "independent",
+            "in": [
+              2022,
+              322
+            ],
+            "out": [
+              2134,
+              314.3
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-15",
+            "x": 2160,
+            "y": 300,
+            "mode": "independent",
+            "in": [
+              2146,
+              307.7
+            ],
+            "out": [
+              2244,
+              300
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-16",
+            "x": 2400,
+            "y": 300,
+            "mode": "smooth",
+            "in": [
+              2320,
+              300
+            ],
+            "out": [
+              2453.3333,
+              300
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-17",
+            "x": 2560,
+            "y": 300,
+            "mode": "smooth",
+            "in": [
+              2506.6667,
+              300
+            ],
+            "out": [
+              2600,
+              300
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-18",
+            "x": 2680,
+            "y": 110,
+            "mode": "smooth",
+            "in": [
+              2640,
+              110
+            ],
+            "out": [
+              2820,
+              110
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-19",
+            "x": 3100,
+            "y": 110,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ground-20",
+            "x": 3100,
+            "y": 1200,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ground-21",
+            "x": -1000,
+            "y": 1200,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    }
+  ],
+  "apples": [
+    {
+      "x": 610,
+      "y": 270
+    },
+    {
+      "x": 1230,
+      "y": 270
+    },
+    {
+      "x": 1980,
+      "y": 270
+    }
+  ],
+  "props": [
+    {
+      "x": -700,
+      "y": null,
+      "type": "tree",
+      "layer": "back"
+    },
+    {
+      "x": -520,
+      "y": null,
+      "type": "bush",
+      "layer": "back"
+    },
+    {
+      "x": -200,
+      "y": null,
+      "type": "flowers",
+      "layer": "front"
+    },
+    {
+      "x": 160,
+      "y": null,
+      "type": "sign",
+      "layer": "front",
+      "text": "FORD →"
+    },
+    {
+      "x": 380,
+      "y": null,
+      "type": "tree",
+      "layer": "back"
+    },
+    {
+      "x": 505,
+      "y": null,
+      "type": "reeds",
+      "layer": "front"
+    },
+    {
+      "x": 705,
+      "y": null,
+      "type": "reeds",
+      "layer": "back"
+    },
+    {
+      "x": 600,
+      "y": 302,
+      "type": "lily",
+      "layer": "back"
+    },
+    {
+      "x": 650,
+      "y": 302,
+      "type": "lily",
+      "layer": "back"
+    },
+    {
+      "x": 860,
+      "y": null,
+      "type": "bush",
+      "layer": "back"
+    },
+    {
+      "x": 990,
+      "y": null,
+      "type": "tree",
+      "layer": "back"
+    },
+    {
+      "x": 1090,
+      "y": null,
+      "type": "reeds",
+      "layer": "front"
+    },
+    {
+      "x": 1180,
+      "y": 302,
+      "type": "lily",
+      "layer": "back"
+    },
+    {
+      "x": 1290,
+      "y": 302,
+      "type": "lily",
+      "layer": "back"
+    },
+    {
+      "x": 1370,
+      "y": null,
+      "type": "reeds",
+      "layer": "back"
+    },
+    {
+      "x": 1500,
+      "y": null,
+      "type": "fence",
+      "layer": "back"
+    },
+    {
+      "x": 1650,
+      "y": null,
+      "type": "tree",
+      "layer": "back"
+    },
+    {
+      "x": 1790,
+      "y": null,
+      "type": "reeds",
+      "layer": "front"
+    },
+    {
+      "x": 1900,
+      "y": 302,
+      "type": "lily",
+      "layer": "back"
+    },
+    {
+      "x": 1990,
+      "y": 302,
+      "type": "lily",
+      "layer": "back"
+    },
+    {
+      "x": 2050,
+      "y": 302,
+      "type": "lily",
+      "layer": "back"
+    },
+    {
+      "x": 2170,
+      "y": null,
+      "type": "reeds",
+      "layer": "front"
+    },
+    {
+      "x": 2300,
+      "y": null,
+      "type": "bush",
+      "layer": "back"
+    },
+    {
+      "x": 2560,
+      "y": null,
+      "type": "tree",
+      "layer": "back"
+    },
+    {
+      "x": 2850,
+      "y": null,
+      "type": "tree",
+      "layer": "back"
+    },
+    {
+      "x": 2980,
+      "y": null,
+      "type": "bush",
+      "layer": "back"
+    },
+    {
+      "x": 371.4372475708907,
+      "y": 299.2998936923042,
+      "type": "ivy",
+      "layer": "back"
+    },
+    {
+      "x": 1683.6918877000203,
+      "y": 299.93998602670626,
+      "type": "grass",
+      "layer": "front"
+    },
+    {
+      "x": 2526.2773462476252,
+      "y": 296.87818487954513,
+      "type": "grass",
+      "layer": "front"
+    },
+    {
+      "x": 333.0661388055803,
+      "y": 300.4850005166206,
+      "type": "grass",
+      "layer": "front"
+    }
+  ],
+  "spikes": [],
+  "water": [
+    {
+      "x": 520,
+      "y": 302,
+      "width": 180,
+      "depth": 30.293792772858865
+    },
+    {
+      "x": 1100,
+      "y": 302,
+      "width": 260,
+      "depth": 45.19591141747219
+    },
+    {
+      "x": 1800,
+      "y": 302,
+      "width": 360,
+      "depth": 20
+    }
+  ],
+  "weather": {
+    "sun": 0.45,
+    "clouds": 0.55,
+    "fog": 0,
+    "rain": 0.2,
+    "snow": 0,
+    "lightning": 0,
+    "wind": 0.2,
+    "windDirection": "left"
+  },
+  "timeOfDay": 7,
+  "medals": {
+    "gold": 15,
+    "silver": 20,
+    "bronze": 27
+  }
+}

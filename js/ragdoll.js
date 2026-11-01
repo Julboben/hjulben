@@ -68,12 +68,15 @@ const HINGES = [
   ["hip", "knee", "foot"],
 ];
 
-// The helmet rides on the head until a single step's contacts change the
-// head's velocity by more than the strap holds, in world units a second. Each
-// crash draws its strap strength in this range, so only the hardest hits are
-// sure to knock it off.
-export const HELMET_KNOCK_MIN = 160;
-export const HELMET_KNOCK_MAX = 240;
+// The helmet rides on the head until a single step's contacts, with the
+// ground or the bike, change the head's velocity by more than the strap holds,
+// in world units a second; hits to the rest of the body don't count. Each
+// crash draws its strap strength in this range. Measured over crashes on the
+// official trails, it stays on in nearly every crash at trail speed and comes
+// off in about one in ten of the fast ones (above about 450 units/s), so
+// losing it reads as a big hit.
+export const HELMET_KNOCK_MIN = 300;
+export const HELMET_KNOCK_MAX = 450;
 export const HELMET_RADIUS = 6;
 // The bare head is a little smaller than the helmet around it.
 const BARE_HEAD_RADIUS = 4.5;

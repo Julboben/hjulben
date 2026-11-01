@@ -1,14 +1,10 @@
 {
   "name": "Windfall",
-  "label": "WINDFALL / 03",
   "finish": {
     "x": 396.15010819050997,
     "y": 185.43663423391195
   },
   "description": "Turn around (Space) to go the other way. The first apple floats too high to reach from the slope below it: ride down into the bowl and up the long ramp, turn, and come back down fast enough for the kicker to throw you up to it. The last apple waits at the hay bales, and the flower hangs over the dip behind the kicker you passed, so turn once more and hop to it.",
-  "lesson": "Turning around. Ride up, roll back, turn and drive down to reach an apple you passed.",
-  "alsoNew": "Windfall apples in the grass, hay bales.",
-  "world": "First Rides",
   "start": {
     "x": -300,
     "y": 333,
@@ -935,9 +931,16 @@
     "windDirection": "left"
   },
   "timeOfDay": 12,
+  "lesson": "Turning around. Ride up, roll back, turn and drive down to reach an apple you passed.",
+  "alsoNew": "Windfall apples in the grass, hay bales.",
+  "world": "First Rides",
   "medals": {
     "gold": 32,
     "silver": 42,
     "bronze": 55
+  },
+  "preview": {
+    "x": 1301,
+    "y": 153
   }
 }

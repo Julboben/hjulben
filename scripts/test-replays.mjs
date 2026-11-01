@@ -37,7 +37,8 @@ for (const entry of entries) {
     stepRide(ride, input);
     const points = ride.vehicle.bikePoints;
     assert.ok(points.every(point => Number.isFinite(point.x + point.y + point.ox + point.oy)), `${entry.id}: state stays finite at step ${ride.steps}`);
-    worstPenetration = Math.max(worstPenetration, deepestPenetration(entry.trail, [ride.rear, ride.front], RADIUS));
+    // Against the ride's own terrain, which loses its glass panes as they break.
+    worstPenetration = Math.max(worstPenetration, deepestPenetration(ride.trail, [ride.rear, ride.front], RADIUS));
     if (ride.status !== 'running') break;
   }
   assert.ok(worstPenetration < RADIUS * .75, `${entry.id}: wheels never tunnel into terrain (deepest ${worstPenetration.toFixed(2)})`);
@@ -76,6 +77,80 @@ for (const entry of entries) {
   const events = stepRide(ride, { facing: 1, accelerating: true });
   assert.ok(events.some(event => event.type === 'start'));
   assert.ok(Math.abs(ride.elapsed - STEP) < 1e-9);
+}
+
+// A bike set down on a steep slope rolls away by itself, and that starts the
+// clock, or waiting would be a free head start. Creeping down a gentle slope
+// doesn't, however long the rider waits.
+{
+  // The ground falls `drop` over 3000 units: about 20° and 6°.
+  const slope = drop => flatTrail({ terrainBlocks: [polygonBlock([[-200, 300], [0, 300], [3000, 300 + drop], [3000, 700 + drop], [-200, 700 + drop]], 'grass', 'slope')], start: { x: 500, y: null, facing: 1 } });
+  const steep = createRide(slope(1092));
+  const events = [];
+  for (let step = 0; step < Math.round(3 / STEP); step++) events.push(...stepRide(steep, { facing: 1 }));
+  assert.ok(events.some(event => event.type === 'start'), 'rolling away starts the clock');
+  assert.ok(steep.elapsed > 1.5, `and soon: it runs while the bike rolls (${steep.elapsed.toFixed(2)} s of 3)`);
+  const gentle = createRide(slope(315));
+  for (let step = 0; step < Math.round(60 / STEP); step++) stepRide(gentle, { facing: 1 });
+  assert.equal(gentle.elapsed, 0, 'creeping for a minute does not');
+  // A start in the air drops the bike, and the drop is timed: the clock starts
+  // as it falls, not when it lands.
+  const air = createRide(flatTrail({ start: { x: 500, y: 100, facing: 1 } }));
+  let landed = false;
+  for (let step = 0; step < Math.round(3 / STEP) && !landed; step++) {
+    stepRide(air, { facing: 1 });
+    landed = air.rear.grounded || air.front.grounded;
+  }
+  assert.ok(landed && air.started && air.elapsed > 0.3, `dropping from a start in the air starts the clock before landing (${air.elapsed.toFixed(2)} s timed)`);
+  const drop = createRide(flatTrail({ start: { x: 500, y: 100, facing: 1 } }));
+  stepRide(drop, { facing: 1 });
+  assert.ok(drop.started, 'from its first step: no part of the drop is free');
+}
+
+// A bike on the ground starts settled on its suspension and at rest, so it
+// doesn't bounce, and waiting for it to settle gains nothing.
+{
+  const ride = createRide(flatTrail());
+  assert.ok(ride.rear.compression > 3 && ride.front.compression > 2, `it starts sunk into its suspension (${ride.rear.compression.toFixed(1)}, ${ride.front.compression.toFixed(1)})`);
+  let fastest = 0;
+  for (let step = 0; step < 120; step++) {
+    stepRide(ride, { facing: 1 });
+    fastest = Math.max(fastest, Math.hypot(ride.rear.x - ride.rear.ox, ride.rear.y - ride.rear.oy, ride.front.x - ride.front.ox, ride.front.y - ride.front.oy) / STEP);
+  }
+  assert.ok(fastest < .1, `and stays still (${fastest.toFixed(3)} units/s at most)`);
+}
+
+// Gas held on the brakes revs the engine against them without moving the
+// bike, and letting the brakes go drops the clutch at high revs.
+{
+  const ride = createRide(flatTrail());
+  const x = ride.rear.x;
+  for (let step = 0; step < 60; step++) stepRide(ride, { facing: 1, accelerating: true, braking: true });
+  assert.ok(ride.vehicle.engine.rev > 60, `it revs (${ride.vehicle.engine.rev.toFixed(1)})`);
+  assert.ok(Math.abs(ride.rear.x - x) < 1, 'and the brakes hold the bike');
+  const launch = (revSteps) => {
+    const bike = createRide(flatTrail());
+    for (let step = 0; step < revSteps; step++) stepRide(bike, { facing: 1, accelerating: true, braking: true });
+    for (let step = 0; step < 60; step++) stepRide(bike, { facing: 1, accelerating: true });
+    return bike.rear.x;
+  };
+  assert.ok(launch(60) > launch(0) + 1, 'a revved launch pulls harder over its first half second');
+}
+
+// The finish is timed to the moment within its step that the bike reached the
+// flower, not to the step's end.
+{
+  const { ride } = simulateRun(flatTrail({ finish: { x: 600, y: null } }), hold(600, { accelerating: true }));
+  assert.equal(ride.status, 'won');
+  const whole = ride.elapsedSteps * STEP;
+  assert.ok(ride.elapsed > whole - STEP && ride.elapsed < whole - 1e-6, `a finish between steps (${ride.elapsed} s, the step ends at ${whole} s)`);
+}
+// A bike put down on its start, on every shipped trail, stays put long enough
+// that only the rider starts the clock.
+for (const entry of [...loadCatalogTrails('official'), ...loadCatalogTrails('bonus')]) {
+  const ride = createRide(entry.trail);
+  for (let step = 0; step < Math.round(10 / STEP); step++) stepRide(ride, { facing: entry.trail.start.facing });
+  assert.equal(ride.elapsed, 0, `${entry.id}: the bike stays on its start until the rider moves it`);
 }
 
 // Rider probes are anchored to the chassis and sit above the wheels at rest.
@@ -248,10 +323,11 @@ for (const entry of entries) {
   assert.ok(rising < 100, `tumbling bike doesn't fling the rider (rose at ${rising.toFixed(0)} px/s)`);
 }
 
-// Riding face-first into a beam knocks the helmet off; it tumbles away on its
-// own, comes to rest on the ground, and does so the same way every time.
+// Riding face-first into a beam at speed knocks the helmet off; it tumbles
+// away on its own, comes to rest on the ground, and does so the same way
+// every time.
 {
-  const trail = flatTrail({ terrainBlocks: [rectangle(0, 320, 3000, 620), rectangle(600, 100, 800, 270)] });
+  const trail = flatTrail({ terrainBlocks: [rectangle(0, 320, 3000, 620), rectangle(1200, 100, 1400, 270)] });
   const run = () => {
     const ride = createRide(trail, { seed: 3 });
     const knocks = [];

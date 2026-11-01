@@ -1,0 +1,662 @@
+{
+  "name": "Big Air",
+  "finish": {
+    "x": 2800,
+    "y": null
+  },
+  "description": "Big kickers and big gaps: 120, 140 and 160 units across, under a clear sky high up the mountain. Roll down the start slope to build speed, keep the throttle on up every kicker and level the bike in the air to land on the downslope. Want gold? Throw an air flip off a kicker: lean hard and come round in time to land on both wheels.",
+  "lesson": "Big kickers and gaps of 120–160 units. Air flips are optional, for gold times.",
+  "alsoNew": "A clear high-altitude sky.",
+  "world": "The Mountains",
+  "start": {
+    "x": -200,
+    "y": null,
+    "facing": 1
+  },
+  "terrainBlocks": [
+    {
+      "id": "slope-1",
+      "material": "snow",
+      "outer": {
+        "id": "slope-1-outer",
+        "nodes": [
+          {
+            "id": "slope-1-0",
+            "x": -1000,
+            "y": 1200,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "slope-1-1",
+            "x": -1000,
+            "y": -200,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "slope-1-2",
+            "x": -500,
+            "y": -200,
+            "mode": "smooth",
+            "in": [
+              -666.6667,
+              -200
+            ],
+            "out": [
+              -460,
+              -200
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "slope-1-3",
+            "x": -380,
+            "y": 0,
+            "mode": "smooth",
+            "in": [
+              -420,
+              0
+            ],
+            "out": [
+              -286.6667,
+              0
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "slope-1-4",
+            "x": -100,
+            "y": 0,
+            "mode": "smooth",
+            "in": [
+              -193.3333,
+              0
+            ],
+            "out": [
+              33.3333,
+              0
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "slope-1-5",
+            "x": 300,
+            "y": 140,
+            "mode": "smooth",
+            "in": [
+              166.6667,
+              140
+            ],
+            "out": [
+              373.3333,
+              140
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "slope-1-6",
+            "x": 520,
+            "y": 200,
+            "mode": "smooth",
+            "in": [
+              446.6667,
+              200
+            ],
+            "out": [
+              533.3333,
+              200
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "slope-1-7",
+            "x": 560,
+            "y": 200,
+            "mode": "smooth",
+            "in": [
+              546.6667,
+              200
+            ],
+            "out": [
+              644,
+              200
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "slope-1-8",
+            "x": 812,
+            "y": 186,
+            "mode": "independent",
+            "in": [
+              723.8,
+              190.9
+            ],
+            "out": [
+              840,
+              176.9
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "slope-1-9",
+            "x": 892,
+            "y": 160,
+            "mode": "independent",
+            "in": [
+              864,
+              169.1
+            ],
+            "out": [
+              894.8,
+              159.3
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "slope-1-10",
+            "x": 900,
+            "y": 158,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "slope-1-11",
+            "x": 900,
+            "y": 1200,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "slope-2",
+      "material": "snow",
+      "outer": {
+        "id": "slope-2-outer",
+        "nodes": [
+          {
+            "id": "slope-2-0",
+            "x": 1020,
+            "y": 1200,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "slope-2-1",
+            "x": 1020,
+            "y": 180,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "slope-2-2",
+            "x": 1060,
+            "y": 190,
+            "mode": "independent",
+            "in": [
+              1046,
+              186.5
+            ],
+            "out": [
+              1109,
+              200.5
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "slope-2-3",
+            "x": 1200,
+            "y": 220,
+            "mode": "smooth",
+            "in": [
+              1153.3333,
+              220
+            ],
+            "out": [
+              1206.6667,
+              220
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "slope-2-4",
+            "x": 1220,
+            "y": 200,
+            "mode": "smooth",
+            "in": [
+              1213.3333,
+              200
+            ],
+            "out": [
+              1304,
+              200
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "slope-2-5",
+            "x": 1472,
+            "y": 186,
+            "mode": "independent",
+            "in": [
+              1383.8,
+              190.9
+            ],
+            "out": [
+              1500,
+              176.9
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "slope-2-6",
+            "x": 1552,
+            "y": 160,
+            "mode": "independent",
+            "in": [
+              1524,
+              169.1
+            ],
+            "out": [
+              1554.8,
+              159.3
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "slope-2-7",
+            "x": 1560,
+            "y": 158,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "slope-2-8",
+            "x": 1560,
+            "y": 1200,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "slope-3",
+      "material": "snow",
+      "outer": {
+        "id": "slope-3-outer",
+        "nodes": [
+          {
+            "id": "slope-3-0",
+            "x": 1700,
+            "y": 1200,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "slope-3-1",
+            "x": 1700,
+            "y": 190,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "slope-3-2",
+            "x": 1740,
+            "y": 200,
+            "mode": "independent",
+            "in": [
+              1726,
+              196.5
+            ],
+            "out": [
+              1789,
+              210.5
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "slope-3-3",
+            "x": 1880,
+            "y": 230,
+            "mode": "smooth",
+            "in": [
+              1833.3333,
+              230
+            ],
+            "out": [
+              1893.3333,
+              230
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "slope-3-4",
+            "x": 1920,
+            "y": 210,
+            "mode": "smooth",
+            "in": [
+              1906.6667,
+              210
+            ],
+            "out": [
+              2004,
+              210
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "slope-3-5",
+            "x": 2172,
+            "y": 196,
+            "mode": "independent",
+            "in": [
+              2083.8,
+              200.9
+            ],
+            "out": [
+              2200,
+              186.9
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "slope-3-6",
+            "x": 2252,
+            "y": 170,
+            "mode": "independent",
+            "in": [
+              2224,
+              179.1
+            ],
+            "out": [
+              2254.8,
+              169.3
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "slope-3-7",
+            "x": 2260,
+            "y": 168,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "slope-3-8",
+            "x": 2260,
+            "y": 1200,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "slope-4",
+      "material": "snow",
+      "outer": {
+        "id": "slope-4-outer",
+        "nodes": [
+          {
+            "id": "slope-4-0",
+            "x": 2420,
+            "y": 1200,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "slope-4-1",
+            "x": 2420,
+            "y": 200,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "slope-4-2",
+            "x": 2460,
+            "y": 210,
+            "mode": "independent",
+            "in": [
+              2446,
+              206.5
+            ],
+            "out": [
+              2509,
+              220.5
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "slope-4-3",
+            "x": 2600,
+            "y": 240,
+            "mode": "smooth",
+            "in": [
+              2553.3333,
+              240
+            ],
+            "out": [
+              2633.3333,
+              240
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "slope-4-4",
+            "x": 2700,
+            "y": 250,
+            "mode": "smooth",
+            "in": [
+              2666.6667,
+              250
+            ],
+            "out": [
+              2766.6667,
+              250
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "slope-4-5",
+            "x": 2900,
+            "y": 250,
+            "mode": "smooth",
+            "in": [
+              2833.3333,
+              250
+            ],
+            "out": [
+              2943.3333,
+              250
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "slope-4-6",
+            "x": 3030,
+            "y": 0,
+            "mode": "smooth",
+            "in": [
+              2986.6667,
+              0
+            ],
+            "out": [
+              3153.3333,
+              0
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "slope-4-7",
+            "x": 3400,
+            "y": 0,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "slope-4-8",
+            "x": 3400,
+            "y": 1200,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    }
+  ],
+  "apples": [
+    {
+      "x": 960,
+      "y": 80
+    },
+    {
+      "x": 1630,
+      "y": 85
+    },
+    {
+      "x": 2340,
+      "y": 90
+    },
+    {
+      "x": 1300,
+      "y": null
+    },
+    {
+      "x": 2000,
+      "y": null
+    }
+  ],
+  "props": [
+    {
+      "x": -800,
+      "y": null,
+      "type": "snow-pine",
+      "layer": "back"
+    },
+    {
+      "x": -600,
+      "y": null,
+      "type": "snow-pine",
+      "layer": "back"
+    },
+    {
+      "x": -250,
+      "y": null,
+      "type": "hut",
+      "layer": "back"
+    },
+    {
+      "x": 400,
+      "y": null,
+      "type": "snow-pine",
+      "layer": "back"
+    },
+    {
+      "x": 1150,
+      "y": null,
+      "type": "cairn",
+      "layer": "front"
+    },
+    {
+      "x": 1400,
+      "y": null,
+      "type": "snow-pine",
+      "layer": "back"
+    },
+    {
+      "x": 1850,
+      "y": null,
+      "type": "pine-small",
+      "layer": "back"
+    },
+    {
+      "x": 2100,
+      "y": null,
+      "type": "snow-pine",
+      "layer": "back"
+    },
+    {
+      "x": 2550,
+      "y": null,
+      "type": "cairn",
+      "layer": "front"
+    },
+    {
+      "x": 2700,
+      "y": null,
+      "type": "snowman",
+      "layer": "back"
+    },
+    {
+      "x": 3200,
+      "y": 0,
+      "type": "snow-pine",
+      "layer": "back"
+    },
+    {
+      "x": 3300,
+      "y": 0,
+      "type": "snow-pine",
+      "layer": "back"
+    }
+  ],
+  "spikes": [],
+  "water": [],
+  "weather": {
+    "sun": 1,
+    "clouds": 0,
+    "fog": 0,
+    "rain": 0,
+    "snow": 0,
+    "lightning": 0,
+    "wind": 0.2,
+    "windDirection": "left"
+  },
+  "timeOfDay": 12,
+  "backdrop": "mountains",
+  "medals": {
+    "gold": 11,
+    "silver": 15.5,
+    "bronze": 21
+  }
+}

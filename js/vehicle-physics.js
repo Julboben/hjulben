@@ -1090,10 +1090,12 @@ export function stepVehicle(vehicle, trail, controls, hooks = {}) {
   // Torques here are in rear-wheel terms: the angular acceleration they give
   // the wheel alone.
   const angularDrive = facing * clutchTorque;
+  // Gas held on the brakes only revs the engine, with the clutch in, so it
+  // gives lean back no boost.
   const riderAssist = riderTorqueMultiplier(
     leanControl,
     facing,
-    throttle,
+    braking ? 0 : throttle,
     accelerating,
     XPBD_THROTTLE_LEAN_ASSIST,
   );
@@ -1395,10 +1397,10 @@ export function createSimulation({ vehicle, trail, facing = 1, hooks = {} }) {
     const coasting = !accelerating && !braking;
     throttle = lerp(
       throttle,
-      accelerating ? throttleTarget : 0,
+      throttleTarget,
       1 -
         exp(
-          -((accelerating ? throttleTarget : 0) > throttle
+          -(throttleTarget > throttle
             ? XPBD_THROTTLE_INPUT_RESPONSE
             : XPBD_THROTTLE_RELEASE_RESPONSE) * STEP,
         ),

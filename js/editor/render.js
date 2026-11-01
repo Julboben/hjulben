@@ -6,6 +6,7 @@ import {
   propRotation,
   propWallFit,
 } from "../drawing.js";
+import { RADIUS, WHEELBASE } from "../config.js";
 import { FINISH_FLOWER_RADIUS } from "../finish.js";
 import { NISSE_GROUND_LIFT, drawNisse } from "../nisse.js";
 import { SPIKE_TIP } from "../spike.js";
@@ -247,6 +248,26 @@ export function restingY(x, y) {
   const floor = floorUnder(x, y - 1);
   if (floor !== null && Math.abs(floor - top.y) < 0.5) return null;
   return floor ?? y;
+}
+
+// How close on screen a start put down by hand must come to the ground under
+// its wheels to snap onto it. A start a few units off the ground drops or
+// jolts the bike as a run begins; one put further away is meant to be there.
+const START_SNAP_PX = 16;
+
+/**
+ * Where the start goes when it is put down at (x, y): resting on the floor
+ * under its wheels when it is that close, else where it was put. Null is the
+ * topmost surface, which the start then follows when the terrain changes.
+ */
+export function startY(x, y) {
+  const wheels = [x - WHEELBASE / 2, x + WHEELBASE / 2];
+  const floors = wheels.map((wheel) => floorUnder(wheel, y));
+  if (floors.some((floor) => floor === null)) return y;
+  const resting = Math.min(...floors) - RADIUS;
+  if (Math.abs(resting - y) > START_SNAP_PX / editor.zoom) return y;
+  const onTop = wheels.every((wheel, index) => Math.abs((surfaceBelow(editor.trail, wheel, null)?.y ?? NaN) - floors[index]) < 0.5);
+  return onTop ? null : resting;
 }
 
 // Below this zoom the game art is too small to read and slow to draw, so the

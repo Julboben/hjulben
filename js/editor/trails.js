@@ -86,7 +86,7 @@ function setVersion(kind, at, trail, published = editor.version?.published) {
 
 function publishedJson(index) {
   const entry = trailEntries[index];
-  return JSON.stringify(normalizeTrail(entry?.trail || createBlankTrail(index), index), null, 2);
+  return JSON.stringify(normalizeTrail(entry?.trail || createBlankTrail()), null, 2);
 }
 
 /**
@@ -116,7 +116,7 @@ export function loadTrailData(index) {
     editor.version.rescueFailedAt = autosave.at;
   }
   try {
-    const restored = normalizeTrail(autosave.trail, index);
+    const restored = normalizeTrail(autosave.trail);
     if (JSON.stringify(restored, null, 2) === editor.version.base) return trail;
     editor.version.restoredAt = autosave.at;
     editor.history.push({ trail: JSON.stringify(trail), selection: null });
@@ -129,7 +129,7 @@ export function loadTrailData(index) {
 function loadVersion(index) {
   const entry = trailEntries[index];
   const stored = entry?.trail;
-  const fallback = () => normalizeTrail(stored || createBlankTrail(index), index);
+  const fallback = () => normalizeTrail(stored || createBlankTrail());
   const draft = entry ? listDrafts(entry.id)[0] : null;
   if (draft && draft.at > savedAt(entry.id)) {
     const published = publishedJson(index);
@@ -143,7 +143,7 @@ function loadVersion(index) {
       return trail;
     }
     try {
-      const trail = normalizeTrail(draft.trail, index);
+      const trail = normalizeTrail(draft.trail);
       setVersion("draft", draft.at, trail, published);
       return trail;
     } catch (_) {}
@@ -213,7 +213,7 @@ export function saveDraft() {
 function openVersion(kind, at, data) {
   /** @type {HTMLDialogElement} */ ($("versions")).close();
   pushHistory();
-  editor.trail = normalizeTrail(JSON.parse(JSON.stringify(data)), editor.trailIndex);
+  editor.trail = normalizeTrail(JSON.parse(JSON.stringify(data)));
   setVersion(kind, at, editor.trail);
   editor.selection = null;
   syncInspector();
@@ -262,7 +262,7 @@ export function renderVersions() {
   const json = JSON.stringify(editor.trail, null, 2);
   const matches = (data) => {
     try {
-      return JSON.stringify(normalizeTrail(JSON.parse(JSON.stringify(data)), editor.trailIndex), null, 2) === json;
+      return JSON.stringify(normalizeTrail(JSON.parse(JSON.stringify(data))), null, 2) === json;
     } catch (_) {
       return false;
     }
@@ -270,7 +270,7 @@ export function renderVersions() {
   $("versions-title").textContent = `VERSIONS · ${editor.trail.name.toUpperCase()}`;
   $("versions-where").textContent = saveStatusText(entry);
   const drafts = listDrafts(entry.id);
-  const saved = entry.trail || createBlankTrail(editor.trailIndex);
+  const saved = entry.trail || createBlankTrail();
   const rows = [
     versionRow({
       title: savedName(entry),
@@ -392,6 +392,8 @@ export function updateTrailControls() {
       ? "Save to this browser's trail library, where the game plays it (Cmd/Ctrl+Shift+S)"
       : `Write trails/${entry?.file} (Cmd/Ctrl+Shift+S)`;
   $("delete-trail").hidden = !canDelete(entry);
+  // Official and bonus trails come with the game, so only custom ones are shared.
+  $("share-trail").hidden = shipped;
   // A trail that can't be saved can't be edited either: it can be looked at,
   // played, duplicated and exported. The fields stay visible but disabled, so
   // its settings can still be read.
