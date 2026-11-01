@@ -160,7 +160,7 @@ How to work:
 1. Read CLAUDE.md, TRAIL_AUTHORING_CONTEXT.md and TRAILS_GUIDE.md first, and follow the rules for each trail.
 2. Measure the original before changing anything: playtest it with scripts/playtest.mjs (save the output) and render it with scripts/render-trail.mjs, sections and --camera. Write down what the trail is the one with, what works, and what holds it back for the change I asked for.
 3. Plan the change as a short list of edits, each with what it should do to the numbers (time, forgiveness of a stretch, a skill it adds), and keep the trail's character and its best parts. Update the design brief in the description to match.
-4. Make the edits one at a time, playtesting after each: measure new jumps with --probe, prove each new skill with --without, and fix every TRAP the playtest reports.
+4. Make the edits one at a time, playtesting after each: measure new jumps with --probe, prove each new skill with --without, and fix every TRAP the playtest reports. Where you rework terrain, rebuild any bend drawn as a chain of short straight pieces with a few smooth points and handles, and delete the points validation reports on straight lines (see "Few points" in TRAIL_FORMAT.md); keep the shape, and playtest again, since the bike rides the new line a little differently.
 5. Render again, sections and --camera, and compare with the original's images.
 6. Set the medals again from the new bot time, as for a new trail (gold at most 5% above it), and run `npm run trails`.
 
