@@ -147,6 +147,9 @@ const SHADOW_COLOR = "rgb(31,53,39)";
 const PARTICLE_SCALE_MAX = 2.2,
   PARTICLE_SCALE_LIGHT = 1.1;
 const GHOST_ALPHA = 0.38;
+// Setting off from a standstill, the rider's toe presses the gear lever into
+// first this fast.
+const GEAR_TAP_SECONDS = 0.15;
 // World units around the hair root that the ghost's hair and cape can reach.
 const GHOST_HAIR_REACH = 56;
 // Where a front prop hides the rider, the hidden part shows as a silhouette.
@@ -280,6 +283,8 @@ export function createRenderer(canvas) {
   let W = 380,
     H = 410,
     pixelScale = 1;
+  /** Each rider's foot, by ride; see stepFoot. */
+  const feet = new WeakMap();
   /** The player's tyre dirt from the effects; the ghost's wheels stay clean. */
   let wheelDirt = null,
     wheelSquish = null;
@@ -1180,6 +1185,29 @@ export function createRenderer(canvas) {
     hair?.settle(seconds, hairState(ride, flipVisual, look));
   }
 
+  /**
+   * Steps the foot of the rider on `ride`: a tap on the gear lever as the bike
+   * sets off from standing at the start. `kick` is how far through
+   * kick-starting the engine the rider is, 0 to 1, or null. Drawing only:
+   * nothing here feeds the simulation.
+   */
+  function stepFoot(ride, dt, kick = null) {
+    const standing =
+      !ride.started && !ride.ragdoll && ride.rear.grounded && ride.front.grounded;
+    let foot = feet.get(ride);
+    if (!foot) {
+      foot = { standing, kick: null, tap: null };
+      feet.set(ride, foot);
+    }
+    if (foot.standing && ride.started && !ride.ragdoll) foot.tap = 0;
+    else if (foot.tap !== null) {
+      foot.tap += dt / GEAR_TAP_SECONDS;
+      if (foot.tap >= 1) foot.tap = null;
+    }
+    foot.standing = standing;
+    foot.kick = standing ? kick : null;
+  }
+
   function bikeGeometry(ride) {
     const { rear, front } = ride;
     return {
@@ -1248,6 +1276,7 @@ export function createRenderer(canvas) {
       look,
       dirt: wheelDirt,
       squish: wheelSquish,
+      foot: feet.get(ride) ?? null,
     };
   }
 
@@ -1303,6 +1332,7 @@ export function createRenderer(canvas) {
       state: ghost.ragdoll ? "ragdoll" : "running",
       leanVisual: ghost.leanVisual,
       look,
+      foot: feet.get(ghost) ?? null,
     });
     if (ghost.ragdoll) gameArt.drawRagdoll(ghost.ragdoll, look);
     ctx.globalAlpha = 1;
@@ -1955,9 +1985,10 @@ export function createRenderer(canvas) {
    * @param {{
    *   ride: any, ghost: any, camera: any, effects: any, state: string,
    *   look?: import('./cosmetics.js').Look | null, ghostLook?: import('./cosmetics.js').Look | null,
-   *   full: boolean, dt: number, debug: boolean
+   *   full: boolean, dt: number, debug: boolean, kick?: number | null
    * }} frame  `look` is the rider's, `ghostLook` the ghost's (the rider's by default);
-   *   `dt` is the seconds since the last frame, 0 for a still scene
+   *   `dt` is the seconds since the last frame, 0 for a still scene; `kick`
+   *   is how far through kick-starting the engine the rider is, 0 to 1
    */
   function draw({
     ride,
@@ -1971,6 +2002,7 @@ export function createRenderer(canvas) {
     dt,
     debug,
     fireworks = null,
+    kick = null,
   }) {
     const paused = state === "paused";
     wonFor = state === "won" ? wonFor + dt : 0;
@@ -1981,6 +2013,11 @@ export function createRenderer(canvas) {
     if (state === "won") effects.weather.time += animationDt;
     sceneClock += animationDt * 1000;
     const now = sceneClock;
+    // Posed scenes for the menu ("ready") hold the rider still.
+    if (state !== "ready") {
+      stepFoot(ride, animationDt, kick);
+      if (ghost) stepFoot(ghost, animationDt);
+    }
     const focus = focusOf(ride);
     // The ride is already interpolated for this frame, and nothing here feeds
     // back into the simulation, so replays are unaffected.

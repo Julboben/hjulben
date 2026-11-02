@@ -36,6 +36,11 @@ import { isNight } from './time-of-day.js';
 
 const LANDING_SOUND_IMPACT = 45;
 const HARD_LANDING_IMPACT = 170;
+// The kick-start on opening a trail: the foot up onto the lever, the stamp
+// that catches the engine halfway through, and the foot back to the peg.
+const KICK_SECONDS = .9;
+// The drawing's stamp bottoms out at this point too (riderAnkle in drawing.js).
+const KICK_CATCHES = KICK_SECONDS / 2;
 const CRASH_COLORS = { spike: '#d95832', head: '#ed8b54', fall: '#ed8b54', water: '#8fd6e8' };
 
 /**
@@ -58,6 +63,7 @@ export function startGame({ shared = null } = {}) {
     const ride = session.ride;
     return {
       state: session.state, rear: ride?.rear, front: ride?.front, engine: ride?.vehicle.engine, gas: gasHeld && session.state === 'running', started: ride?.started ?? false,
+      ignition: kick === null ? 'on' : kick < KICK_CATCHES ? 'off' : 'kicked',
       brakePressure: ride?.brakePressure ?? 0, weather: session.trail?.weather,
     };
   });
@@ -153,6 +159,10 @@ export function startGame({ shared = null } = {}) {
   // Attempts that got going since the trail was opened from the menu or Next
   // Trail, for achievements such as First Try.
   let attempts = 0, openingTrail = false;
+  // Opening a trail, the rider kick-starts the engine: seconds into the kick,
+  // or null once it has caught, on a retry, or when the rider sets off first.
+  // It is drawing and sound only; the bike can be ridden from the first frame.
+  let kick = null;
   // How much of the attempt was simulated against the time that passed. A
   // device too slow for the fixed step drops time (see frame()), which plays
   // in slow motion: more time to react per simulated second, so such a run
@@ -475,6 +485,7 @@ export function startGame({ shared = null } = {}) {
   }
 
   function initializeTrail(trail, marker) {
+    kick = openingTrail && !replay ? 0 : null;
     if (openingTrail) attempts = 0;
     openingTrail = false;
     feats.reset();
@@ -913,6 +924,8 @@ export function startGame({ shared = null } = {}) {
       case 'start':
         startStep = recorded.length - 1;
         attempts++;
+        // Setting off from a standstill, the rider clicks into first.
+        if (ride.rear.grounded && ride.front.grounded) sounds.gearClunk();
         break;
       case 'airTurn':
         sounds.airTurn(event.full);
@@ -1097,6 +1110,7 @@ export function startGame({ shared = null } = {}) {
         }
         // Measured from the rider setting off, as waiting at the line is free.
         if (ride.started && state === 'running') { simulatedTime += steps * STEP; passedTime += elapsed; }
+        if (kick !== null) kick = ride.started || kick + dt >= KICK_SECONDS ? null : kick + dt;
       } else accumulator = 0;
       const stepping = session.state === 'running' || session.state === 'ragdoll';
       const alpha = stepping ? accumulator / STEP : 1;
@@ -1110,7 +1124,8 @@ export function startGame({ shared = null } = {}) {
         const restoreGhost = ghostRide ? interpolateRide(ghostRide, ghostRide.status === 'won' ? 1 : alpha) : null;
         renderer.draw({
           ride, ghost: ghostRide, camera, effects, look: replay?.look ?? session.look, ghostLook: ghost?.look, state: session.state,
-          full: session.preferences.scenery === 'full', dt, debug: debugEnabled, fireworks
+          full: session.preferences.scenery === 'full', dt, debug: debugEnabled, fireworks,
+          kick: kick === null ? null : kick / KICK_SECONDS
         });
         restoreGhost?.();
         restore();
