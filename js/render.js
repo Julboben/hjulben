@@ -26,7 +26,6 @@ import {
   waterPropAt,
 } from "./drawing.js";
 import { fallLine, terrainAt, groundShadowSamples, terrainGeometry, terrainRaycastAt } from "./terrain.js";
-import { terrainSolidAt } from "./terrain-runtime.js";
 import { finishHeight } from "./trail-schema.js";
 import { waterBodies, waterColumns, surfaceWave } from "./water.js";
 import { createTerrainRenderer } from "./terrain-render.js";
@@ -148,6 +147,9 @@ const SHADOW_COLOR = "rgb(31,53,39)";
 const PARTICLE_SCALE_MAX = 2.2,
   PARTICLE_SCALE_LIGHT = 1.1;
 const GHOST_ALPHA = 0.38;
+// Setting off from a standstill, the rider's toe presses the gear lever into
+// first this fast.
+const GEAR_TAP_SECONDS = 0.15;
 // World units around the hair root that the ghost's hair and cape can reach.
 const GHOST_HAIR_REACH = 56;
 // Where a front prop hides the rider, the hidden part shows as a silhouette.
@@ -281,6 +283,8 @@ export function createRenderer(canvas) {
   let W = 380,
     H = 410,
     pixelScale = 1;
+  /** Each rider's foot, by ride; see stepFoot. */
+  const feet = new WeakMap();
   /** The player's tyre dirt from the effects; the ghost's wheels stay clean. */
   let wheelDirt = null,
     wheelSquish = null;
@@ -1181,6 +1185,29 @@ export function createRenderer(canvas) {
     hair?.settle(seconds, hairState(ride, flipVisual, look));
   }
 
+  /**
+   * Steps the foot of the rider on `ride`: a tap on the gear lever as the bike
+   * sets off from standing at the start. `kick` is how far through
+   * kick-starting the engine the rider is, 0 to 1, or null. Drawing only:
+   * nothing here feeds the simulation.
+   */
+  function stepFoot(ride, dt, kick = null) {
+    const standing =
+      !ride.started && !ride.ragdoll && ride.rear.grounded && ride.front.grounded;
+    let foot = feet.get(ride);
+    if (!foot) {
+      foot = { standing, kick: null, tap: null };
+      feet.set(ride, foot);
+    }
+    if (foot.standing && ride.started && !ride.ragdoll) foot.tap = 0;
+    else if (foot.tap !== null) {
+      foot.tap += dt / GEAR_TAP_SECONDS;
+      if (foot.tap >= 1) foot.tap = null;
+    }
+    foot.standing = standing;
+    foot.kick = standing ? kick : null;
+  }
+
   function bikeGeometry(ride) {
     const { rear, front } = ride;
     return {
@@ -1249,6 +1276,7 @@ export function createRenderer(canvas) {
       look,
       dirt: wheelDirt,
       squish: wheelSquish,
+      foot: feet.get(ride) ?? null,
     };
   }
 
@@ -1304,6 +1332,7 @@ export function createRenderer(canvas) {
       state: ghost.ragdoll ? "ragdoll" : "running",
       leanVisual: ghost.leanVisual,
       look,
+      foot: feet.get(ghost) ?? null,
     });
     if (ghost.ragdoll) gameArt.drawRagdoll(ghost.ragdoll, look);
     ctx.globalAlpha = 1;
@@ -1436,18 +1465,13 @@ export function createRenderer(canvas) {
   // The first terrain or water surface along each slanted falling path, for
   // rain and snow to land on. Weather drifts sideways by `drift` world units
   // per unit fallen, so every point on one path shares x - drift * y; paths
-  // are cached by that, and each is cast against the terrain only once. Drops
-  // and flakes come in at the top of the view, so a path is only cast from
-  // just above it: traced further back, a path blown nearly flat in a gale
-  // would run into a hill far upwind and keep the whole view dry. A path that
-  // starts inside rock (the roof of a cave the view is in) is sheltered all
-  // the way down. The start steps with the camera, a band at a time, so the
-  // casts are reused.
+  // are cached by that, and each is cast against the terrain only once. A
+  // path is cast from above the highest terrain, as rain falls from the sky,
+  // so anything overhead shelters what is under it, however far above the
+  // view it is. The casts don't depend on the camera, so they last until the
+  // slant or the terrain changes.
   const weatherGround = new WeakMap();
   const WEATHER_COLUMN = ART_PIXEL * 2;
-  const WEATHER_BAND = 128;
-  // How far above the view a path starts: past where drops and flakes come in.
-  const WEATHER_ABOVE = 64;
   // How much of the camera's vertical movement rain and snow follow. Sideways
   // they move with the world at their depth, for parallax; up and down they
   // keep nearly to the screen, or a rider falling as fast as the flakes would
@@ -1461,24 +1485,20 @@ export function createRenderer(canvas) {
     if (!cache || cache.geometry !== geometry)
       weatherGround.set(
         trail,
-        (cache = { geometry, water: waterBodies(trail), paths: new Map(), slant: NaN, top: NaN, columns: null }),
+        (cache = { geometry, water: waterBodies(trail), paths: new Map(), slant: NaN, columns: null }),
       );
     const slant = Math.round(drift * 100) / 100;
-    const top = Math.floor((cameraY - WEATHER_ABOVE) / WEATHER_BAND) * WEATHER_BAND;
-    // Nearly every call is for the same slant and band as the last.
+    // Nearly every call is for the same slant as the last.
     let columns;
-    if (cache.slant === slant && cache.top === top) columns = cache.columns;
+    if (cache.slant === slant) columns = cache.columns;
     else {
-      const key = `${slant}|${top}`;
-      columns = cache.paths.get(key);
+      columns = cache.paths.get(slant);
       if (!columns) {
-        // A slider being dragged changes the slant, and the camera the band;
-        // keep just the latest few.
+        // Only a slider being dragged changes the slant; keep just the latest few.
         if (cache.paths.size >= 8) cache.paths.delete(cache.paths.keys().next().value);
-        cache.paths.set(key, (columns = new Map()));
+        cache.paths.set(slant, (columns = new Map()));
       }
       cache.slant = slant;
-      cache.top = top;
       cache.columns = columns;
     }
     const column = Math.round((x - slant * y) / WEATHER_COLUMN);
@@ -1486,18 +1506,15 @@ export function createRenderer(canvas) {
     if (hit === undefined) {
       const along = (atY) => column * WEATHER_COLUMN + slant * atY;
       hit = { y: Infinity, water: false };
-      if (geometry && top < geometry.bounds.bottom) {
-        const bottom = geometry.bounds.bottom + 1;
-        if (terrainSolidAt(geometry, along(top), top)) hit.y = top;
-        else {
-          const contact = terrainRaycastAt(trail, along(top), top, along(bottom), bottom);
-          if (contact) hit.y = contact.y;
-        }
+      if (geometry) {
+        const top = geometry.bounds.top - 1,
+          bottom = geometry.bounds.bottom + 1;
+        const contact = terrainRaycastAt(trail, along(top), top, along(bottom), bottom);
+        if (contact) hit.y = contact.y;
       }
       for (const body of cache.water) {
         const at = along(body.y);
-        if (body.y >= top && at >= body.x && at <= body.x + body.width && body.y < hit.y)
-          hit = { y: body.y, water: true };
+        if (at >= body.x && at <= body.x + body.width && body.y < hit.y) hit = { y: body.y, water: true };
       }
       columns.set(column, hit);
     }
@@ -1640,8 +1657,8 @@ export function createRenderer(canvas) {
     const slots = Math.ceil(want);
     const share = want - Math.floor(want) || 1;
     const speed = 150 + strength * 230;
-    // The open air's floor at a world x: the first surface from above the
-    // view, smoothed over the columns either side so a low gust flows over
+    // The open air's floor at a world x: the first surface from the sky,
+    // smoothed over the columns either side so a low gust flows over
     // the ground rather than stepping with it. The paths are cast a column
     // (WEATHER_COLUMN) at a time, so the floor is worked out once per column
     // a gust crosses and kept for the rest of that gust.
@@ -1968,9 +1985,10 @@ export function createRenderer(canvas) {
    * @param {{
    *   ride: any, ghost: any, camera: any, effects: any, state: string,
    *   look?: import('./cosmetics.js').Look | null, ghostLook?: import('./cosmetics.js').Look | null,
-   *   full: boolean, dt: number, debug: boolean
+   *   full: boolean, dt: number, debug: boolean, kick?: number | null
    * }} frame  `look` is the rider's, `ghostLook` the ghost's (the rider's by default);
-   *   `dt` is the seconds since the last frame, 0 for a still scene
+   *   `dt` is the seconds since the last frame, 0 for a still scene; `kick`
+   *   is how far through kick-starting the engine the rider is, 0 to 1
    */
   function draw({
     ride,
@@ -1984,6 +2002,7 @@ export function createRenderer(canvas) {
     dt,
     debug,
     fireworks = null,
+    kick = null,
   }) {
     const paused = state === "paused";
     wonFor = state === "won" ? wonFor + dt : 0;
@@ -1994,6 +2013,11 @@ export function createRenderer(canvas) {
     if (state === "won") effects.weather.time += animationDt;
     sceneClock += animationDt * 1000;
     const now = sceneClock;
+    // Posed scenes for the menu ("ready") hold the rider still.
+    if (state !== "ready") {
+      stepFoot(ride, animationDt, kick);
+      if (ghost) stepFoot(ghost, animationDt);
+    }
     const focus = focusOf(ride);
     // The ride is already interpolated for this frame, and nothing here feeds
     // back into the simulation, so replays are unaffected.

@@ -315,20 +315,22 @@ export function createAudio(getSnapshot) {
   }
 
   /**
-   * The engine runs while riding. A new run kicks it into life with a couple
-   * of blips; a crash stalls it and the finish switches it off. It plays the
-   * physics engine: its revs and how hard its clutch pulls on the wheel.
+   * The engine runs while riding. A new run starts it with a couple of
+   * blips, after the rider's kick when a trail is opened; a crash stalls it
+   * and the finish switches it off. It plays the physics engine: its revs
+   * and how hard its clutch pulls on the wheel.
    * @param {{ rev: number, clutchTorque?: number } | undefined} bikeEngine
    * @param {boolean} fresh the run has not begun moving yet
+   * @param {'on' | 'off' | 'kicked'} ignition 'off' until the kick catches
    */
-  function updateEngine(state, bikeEngine, gas, fresh) {
+  function updateEngine(state, bikeEngine, gas, fresh, ignition) {
     const { context, engine, engineDrive, engineFilter, enginePipe, engineGain, raspFilter, raspLevel, pitchDrift, levelDrift } = audio;
     const time = context.currentTime;
     const dt = clamp(time - motor.time, 0, .1);
     motor.time = time;
-    const on = state === 'running' && bikeEngine;
+    const on = state === 'running' && bikeEngine && ignition !== 'off';
     if (on && motor.phase !== 'on') {
-      if (fresh) kickStart();
+      if (fresh && ignition === 'kicked') kickStart();
       Object.assign(motor, { phase: 'on', startedAt: fresh ? time : -10, revs: 0, grip: 0, lastThrottle: 0, liftedAt: -1 });
     } else if (state === 'ragdoll' && motor.phase === 'on') {
       Object.assign(motor, { phase: 'stalling', stalledAt: time });
@@ -399,7 +401,7 @@ export function createAudio(getSnapshot) {
 
   function update() {
     if (!audio) return;
-    const { state, rear, front, engine, gas, started, brakePressure, weather } = getSnapshot();
+    const { state, rear, front, engine, gas, started, ignition = 'on', brakePressure, weather } = getSnapshot();
     const { context, skidFilter, skidGain, squealFilter, squealGain, rainGain, windFilter, windGain } = audio;
     // Pausing freezes every sound where it is (rain, wind, a rolling thunder
     // clap, the engine) by suspending the whole context; resuming carries on.
@@ -414,7 +416,7 @@ export function createAudio(getSnapshot) {
     audio.hidden = false;
     if (context.state !== 'running') resumeContext();
     const speed = rideSpeed(rear, front);
-    updateEngine(state, engine, Boolean(gas), !started);
+    updateEngine(state, engine, Boolean(gas), !started, ignition);
     const skidLevel = skidAmount({ state, rear, front, brakePressure }) * .16;
     // The skid sounds like the ground under the tyre doing it: the rear when
     // it is down, else the front.
@@ -462,6 +464,11 @@ export function createAudio(getSnapshot) {
     setEnabled,
     setVolume,
     update,
+    // The gear lever clicking into first: a short, hard metal knock.
+    gearClunk() {
+      playTone(170, .05, 'square', .03, 0, 110);
+      playNoise(.03, .025, 2600);
+    },
     splash(speed) {
       const volume = Math.min(.16, .05 + speed / 3000);
       playNoise(.28, volume, 1400);

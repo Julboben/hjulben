@@ -109,7 +109,7 @@ When changing physics values, validate at least these cases:
 
 A change to how the bike rides needs `RIDE_VERSION` in `js/ride.js` bumped, which starts fresh leaderboards, ghosts and best times on every trail, and every replay re-recorded. So changes that need one wait here, to go in together with the next one that does:
 
-- **A stronger mid-range.** The bike pulls like a real motocross bike for its first second and then fades early; the measurements and the plan are under "Speed and acceleration" and "Next steps" in `PHYSICS.md`. Try it on a branch of its own first.
+- Nothing is waiting.
 
 ## Stylesheets
 

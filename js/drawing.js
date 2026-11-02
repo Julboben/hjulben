@@ -2419,6 +2419,48 @@ export function drawBareHead(rect, colors, hair) {
 // model shares. The ponytail's root in rider-hair.js follows the head.
 const RIDER_HEAD = [-1, -44];
 const RIDER_HAND = [16, -28];
+// Where the ankle goes off the footpeg, in the body's frame. Kick-starting,
+// the foot goes up onto the kick lever and stamps it down through its swing.
+const RIDER_PEG = [-2, -3];
+const RIDER_KICK_TOP = [-8, -10];
+const RIDER_KICK_BOTTOM = [-6, 0];
+
+const easeInOut = (t) => t * t * (3 - 2 * t);
+const towards = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
+
+/** The rider's ankle for `foot` (see drawBike): on the peg, or kicking. */
+function riderAnkle(foot) {
+  if (!foot) return RIDER_PEG;
+  let ankle = RIDER_PEG;
+  const kick = foot.kick;
+  if (kick !== null && kick !== undefined) {
+    // Up onto the lever, a quick stamp through its swing, and back to the peg.
+    // The stamp bottoms out halfway, as the engine catches with its thud
+    // (KICK_CATCHES in game.js).
+    if (kick < 0.3) ankle = towards(RIDER_PEG, RIDER_KICK_TOP, easeInOut(kick / 0.3));
+    else if (kick < 0.5) ankle = towards(RIDER_KICK_TOP, RIDER_KICK_BOTTOM, (kick - 0.3) / 0.2);
+    else ankle = towards(RIDER_KICK_BOTTOM, RIDER_PEG, easeInOut((kick - 0.5) / 0.5));
+  }
+  // Setting off, the toe presses the gear lever down into first.
+  if (foot.tap !== null && foot.tap !== undefined) {
+    const press = Math.sin(Math.PI * foot.tap);
+    ankle = [ankle[0] + 3 * press, ankle[1] + 2 * press];
+  }
+  return ankle;
+}
+
+/**
+ * The knee of a leg from `hip` to `ankle` with the thigh and shin the given
+ * lengths, bent forward.
+ */
+function riderKnee(hip, ankle, thigh, shin) {
+  const dx = ankle[0] - hip[0], dy = ankle[1] - hip[1];
+  const reach = Math.hypot(dx, dy) || 1;
+  const along = (reach * reach + thigh * thigh - shin * shin) / (2 * reach);
+  const out = Math.sqrt(Math.max(0, thigh * thigh - along * along));
+  const ux = dx / reach, uy = dy / reach;
+  return [hip[0] + ux * along + uy * out, hip[1] + uy * along - ux * out];
+}
 
 // The jersey, leaning forward from the hip on the seat to the shoulder. Top
 // left at (-16, -38), moved with the lean.
@@ -6948,6 +6990,7 @@ export function createGameArt(ctx) {
     bike = null,
     dirt = null,
     squish = null,
+    foot = null,
   }) {
     const parts = lookParts(look);
     const modelId = bikeModel(look, bike);
@@ -7039,8 +7082,21 @@ export function createGameArt(ctx) {
       const outline = "#263b36";
 
       const hip = [-11 + shift, -26];
-      const knee = [2 + shift * 0.45, -16];
-      const ankle = [-2, -3];
+      const pegKnee = [2 + shift * 0.45, -16];
+      const ankle = riderAnkle(foot);
+      const knee = ankle === RIDER_PEG
+        ? pegKnee
+        : riderKnee(
+            hip,
+            ankle,
+            Math.hypot(pegKnee[0] - hip[0], pegKnee[1] - hip[1]),
+            Math.hypot(RIDER_PEG[0] - pegKnee[0], RIDER_PEG[1] - pegKnee[1]),
+          );
+      // The boot moves with the ankle by whole art pixels.
+      const bootX = Math.round((ankle[0] - RIDER_PEG[0]) / 2) * 2,
+        bootY = Math.round((ankle[1] - RIDER_PEG[1]) / 2) * 2;
+      const bootRect = (x, y, width, height, color) =>
+        bodyRect(x + bootX, y + bootY, width, height, color);
 
       const shoulder = [-4 + shift, -36];
       const elbow = [8 + shift * 0.45, -32];
@@ -7100,7 +7156,7 @@ export function createGameArt(ctx) {
         bodyRect(knee[0] + 2, knee[1] - 2, 4, 4, colors.panel);
       }
 
-      // Boots stay anchored at the existing foot / peg position.
+      // Boots follow the ankle, on the peg or off it.
       if (style.boots === "tall" || style.boots === "welly") {
         const top = along(leg, 0.72).at;
         bodyPath([top, ankle], outline, 4);
@@ -7108,19 +7164,19 @@ export function createGameArt(ctx) {
         if (style.boots === "tall") limbBands(leg, { color: "sole", at: [0.86] }, 1.5);
       }
       if (style.boots === "trainer") {
-        bodyRect(-3, -7, 4, 2, colors.trousers);
-        bodyRect(-5, -5, 10, 4, colors.boots);
-        bodyRect(-5, -3, 10, 2, colors.sole);
+        bootRect(-3, -7, 4, 2, colors.trousers);
+        bootRect(-5, -5, 10, 4, colors.boots);
+        bootRect(-5, -3, 10, 2, colors.sole);
       } else {
-        bodyRect(-5, -7, 6, 6, colors.boots);
-        bodyRect(-5, -5, 10, 4, colors.boots);
-        bodyRect(-5, -3, 10, 2, colors.sole);
-        if (style.boots === "boot") bodyRect(-3, -7, 4, 2, colors.trousersLight);
+        bootRect(-5, -7, 6, 6, colors.boots);
+        bootRect(-5, -5, 10, 4, colors.boots);
+        bootRect(-5, -3, 10, 2, colors.sole);
+        if (style.boots === "boot") bootRect(-3, -7, 4, 2, colors.trousersLight);
         if (style.boots === "heel") {
-          bodyRect(-5, -1, 4, 2, colors.sole);
-          bodyRect(5, -3, 2, 2, colors.boots);
+          bootRect(-5, -1, 4, 2, colors.sole);
+          bootRect(5, -3, 2, 2, colors.boots);
         }
-        if (style.boots === "snow") bodyRect(-7, -9, 10, 2, colors[style.bootRim]);
+        if (style.boots === "snow") bootRect(-7, -9, 10, 2, colors[style.bootRim]);
       }
 
       // Neck, slanting forward with the back from inside the collar, which
