@@ -26,7 +26,6 @@ import {
   waterPropAt,
 } from "./drawing.js";
 import { fallLine, terrainAt, groundShadowSamples, terrainGeometry, terrainRaycastAt } from "./terrain.js";
-import { terrainSolidAt } from "./terrain-runtime.js";
 import { finishHeight } from "./trail-schema.js";
 import { waterBodies, waterColumns, surfaceWave } from "./water.js";
 import { createTerrainRenderer } from "./terrain-render.js";
@@ -1436,18 +1435,13 @@ export function createRenderer(canvas) {
   // The first terrain or water surface along each slanted falling path, for
   // rain and snow to land on. Weather drifts sideways by `drift` world units
   // per unit fallen, so every point on one path shares x - drift * y; paths
-  // are cached by that, and each is cast against the terrain only once. Drops
-  // and flakes come in at the top of the view, so a path is only cast from
-  // just above it: traced further back, a path blown nearly flat in a gale
-  // would run into a hill far upwind and keep the whole view dry. A path that
-  // starts inside rock (the roof of a cave the view is in) is sheltered all
-  // the way down. The start steps with the camera, a band at a time, so the
-  // casts are reused.
+  // are cached by that, and each is cast against the terrain only once. A
+  // path is cast from above the highest terrain, as rain falls from the sky,
+  // so anything overhead shelters what is under it, however far above the
+  // view it is. The casts don't depend on the camera, so they last until the
+  // slant or the terrain changes.
   const weatherGround = new WeakMap();
   const WEATHER_COLUMN = ART_PIXEL * 2;
-  const WEATHER_BAND = 128;
-  // How far above the view a path starts: past where drops and flakes come in.
-  const WEATHER_ABOVE = 64;
   // How much of the camera's vertical movement rain and snow follow. Sideways
   // they move with the world at their depth, for parallax; up and down they
   // keep nearly to the screen, or a rider falling as fast as the flakes would
@@ -1461,24 +1455,20 @@ export function createRenderer(canvas) {
     if (!cache || cache.geometry !== geometry)
       weatherGround.set(
         trail,
-        (cache = { geometry, water: waterBodies(trail), paths: new Map(), slant: NaN, top: NaN, columns: null }),
+        (cache = { geometry, water: waterBodies(trail), paths: new Map(), slant: NaN, columns: null }),
       );
     const slant = Math.round(drift * 100) / 100;
-    const top = Math.floor((cameraY - WEATHER_ABOVE) / WEATHER_BAND) * WEATHER_BAND;
-    // Nearly every call is for the same slant and band as the last.
+    // Nearly every call is for the same slant as the last.
     let columns;
-    if (cache.slant === slant && cache.top === top) columns = cache.columns;
+    if (cache.slant === slant) columns = cache.columns;
     else {
-      const key = `${slant}|${top}`;
-      columns = cache.paths.get(key);
+      columns = cache.paths.get(slant);
       if (!columns) {
-        // A slider being dragged changes the slant, and the camera the band;
-        // keep just the latest few.
+        // Only a slider being dragged changes the slant; keep just the latest few.
         if (cache.paths.size >= 8) cache.paths.delete(cache.paths.keys().next().value);
-        cache.paths.set(key, (columns = new Map()));
+        cache.paths.set(slant, (columns = new Map()));
       }
       cache.slant = slant;
-      cache.top = top;
       cache.columns = columns;
     }
     const column = Math.round((x - slant * y) / WEATHER_COLUMN);
@@ -1486,18 +1476,15 @@ export function createRenderer(canvas) {
     if (hit === undefined) {
       const along = (atY) => column * WEATHER_COLUMN + slant * atY;
       hit = { y: Infinity, water: false };
-      if (geometry && top < geometry.bounds.bottom) {
-        const bottom = geometry.bounds.bottom + 1;
-        if (terrainSolidAt(geometry, along(top), top)) hit.y = top;
-        else {
-          const contact = terrainRaycastAt(trail, along(top), top, along(bottom), bottom);
-          if (contact) hit.y = contact.y;
-        }
+      if (geometry) {
+        const top = geometry.bounds.top - 1,
+          bottom = geometry.bounds.bottom + 1;
+        const contact = terrainRaycastAt(trail, along(top), top, along(bottom), bottom);
+        if (contact) hit.y = contact.y;
       }
       for (const body of cache.water) {
         const at = along(body.y);
-        if (body.y >= top && at >= body.x && at <= body.x + body.width && body.y < hit.y)
-          hit = { y: body.y, water: true };
+        if (at >= body.x && at <= body.x + body.width && body.y < hit.y) hit = { y: body.y, water: true };
       }
       columns.set(column, hit);
     }
@@ -1640,8 +1627,8 @@ export function createRenderer(canvas) {
     const slots = Math.ceil(want);
     const share = want - Math.floor(want) || 1;
     const speed = 150 + strength * 230;
-    // The open air's floor at a world x: the first surface from above the
-    // view, smoothed over the columns either side so a low gust flows over
+    // The open air's floor at a world x: the first surface from the sky,
+    // smoothed over the columns either side so a low gust flows over
     // the ground rather than stepping with it. The paths are cast a column
     // (WEATHER_COLUMN) at a time, so the floor is worked out once per column
     // a gust crosses and kept for the rest of that gust.
