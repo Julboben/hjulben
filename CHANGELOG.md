@@ -2,6 +2,32 @@
 
 Player-facing release notes. The game shows them under **What's new**, and each GitHub Release uses its section.
 
+## 0.6.0 — 2026-11-02
+
+### Heads up
+- Leaderboards, ghosts and best times have started fresh, because of the changes to how runs start and how finishes are timed.
+
+### New
+- Sky Ladder is now trail 6 and Floating Fields is trail 8, both teaching floating islands in First Rides.
+- Windmill Hills joins First Rides as trail 5, with a row of tall, thin hills to fly over. High Orchard moves to trail 9 as the world's finale.
+- Copenhagen Rooftops joins The City as trail 36, with medals at 56, 73 and 98.
+- The rider now kick-starts the engine when you open a trail, and taps the gear lever with a clunk when setting off from a standstill. Retries start straight away.
+
+### Improved
+- The bike now settles into its suspension and starts at rest, so it no longer bounces and waiting gains nothing.
+- Finish times are now measured within the step, so close runs no longer tie.
+- The clock starts on your first input, or when the bike moves off its start by itself, so a start in the air is timed from the drop.
+- Holding gas on the brakes now revs the engine, for a harder pop when you let go.
+- Several trails now start resting on level ground, including The Orchard, Windmill Hill, Splinter Ridge, Kicker Canyon, The Shaft, The Ring, The Bonny Tyler and The Mining Cave.
+- Rain and snow now fall from the top of the world, so anything overhead shelters what is under it.
+- Your helmet now stays on in nearly all crashes at normal trail speed and only comes off in hard head hits.
+- Editor: The start now snaps onto the ground beneath its wheels when you place or drag it close to the ground.
+- Editor: Validation now warns about points that sit on a straight line between their neighbours and add nothing to the shape.
+
+### Fixed
+- Opening a link to one of your own older saved trails now finds it instead of saving a duplicate.
+- The backdrop hills and sky no longer sink away on trails that sit far below the usual ground.
+
 ## 0.5.0 — 2026-10-27
 
 ### New
