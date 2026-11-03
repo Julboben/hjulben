@@ -1,5 +1,5 @@
 import {
-  compileTerrain, recompileTerrain, terrainContacts, terrainSweep, terrainSurfaceBelow, terrainSurfaces,
+  compileTerrain, recompileTerrain, removeTerrainBodies, terrainContacts, terrainSweep, terrainSurfaceBelow, terrainSurfaces,
   terrainShadowSamples, terrainRaycast,
 } from './terrain-runtime.js';
 import { isBackWall, trailTerrainBlocks, trailBackWalls } from './trail-schema.js';
@@ -86,11 +86,15 @@ export function fallLine(trail) {
 
 /**
  * Takes a block out of a ride's copy of a trail, recording `info` about how
- * it went. The next query compiles the terrain without it.
+ * it went. Its body leaves the compiled terrain at once.
  */
 export function breakTerrainBlock(trail, blockId, info) {
+  // Taken out of the terrain as it was, rather than compiled again, so a
+  // pane breaking on a trail of many blocks doesn't stall the frame.
+  const previous = terrainGeometry(trail);
   trail.brokenBlocks.set(blockId, info);
-  geometryCache.delete(trail);
+  if (previous) geometryCache.set(trail, removeTerrainBodies(previous, new Set([blockId])));
+  else geometryCache.delete(trail);
 }
 
 /**

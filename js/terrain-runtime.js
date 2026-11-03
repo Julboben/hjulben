@@ -147,6 +147,50 @@ export function recompileTerrain(previous, blockCount, changed) {
   return compiled;
 }
 
+/**
+ * The compiled terrain without the bodies of the blocks in `blockIds`, as a
+ * pane of glass breaking takes its block out of a ride's terrain: the same
+ * result as compiling again with them in `brokenBlocks`, but only the bodies
+ * that overlapped one are classified again. Compiling a trail built of many
+ * blocks takes long enough to stall a frame, and this happens mid-ride.
+ *
+ * `previous` is left as it was, since it is usually the trail's own terrain,
+ * shared by every ride on it. The result carries `update` as
+ * recompileTerrain's does, so the renderer redraws only around the gap.
+ *
+ * @param {ReturnType<typeof compileTerrain>} previous
+ * @param {{ has(id: string): boolean }} blockIds
+ */
+export function removeTerrainBodies(previous, blockIds) {
+  const removed = previous.bodies.filter(body => blockIds.has(body.blockId));
+  if (!removed.length) return previous;
+  // Bodies keep their place in the order; those after a removed one move up,
+  // as a fresh compile numbers them, on a copy.
+  const bodies = [];
+  for (const body of previous.bodies) {
+    if (blockIds.has(body.blockId)) continue;
+    bodies.push(body.order === bodies.length ? body : { ...body, order: bodies.length });
+  }
+  const bounds = { left: Infinity, right: -Infinity, top: Infinity, bottom: -Infinity };
+  for (const body of bodies) {
+    bounds.left = Math.min(bounds.left, body.bounds.left);
+    bounds.right = Math.max(bounds.right, body.bounds.right);
+    bounds.top = Math.min(bounds.top, body.bounds.top);
+    bounds.bottom = Math.max(bounds.bottom, body.bounds.bottom);
+  }
+  const compiled = { version: TERRAIN_COMPILER_VERSION, bodies, bounds, blockCount: previous.blockCount, columns: indexColumns(bodies) };
+  // Only a body that overlapped a removed one can have gained surface: a copy
+  // of it is classified again.
+  const touched = new Set();
+  for (const { bounds: region } of removed)
+    for (const body of bodiesNear(compiled, region.left, region.right, region.top, region.bottom)) touched.add(body);
+  const rebuilt = [...touched].map(body => (bodies[body.order] = { ...body }));
+  compiled.columns = indexColumns(bodies);
+  classifyEdges(compiled, rebuilt.sort((a, b) => a.order - b.order));
+  compiled.update = { from: previous, ranges: removed.map(({ bounds: region }) => [region.left, region.right]) };
+  return compiled;
+}
+
 function finiteRing(points) {
   return points.filter(point => Number.isFinite(point[0]) && Number.isFinite(point[1]));
 }

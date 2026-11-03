@@ -209,6 +209,19 @@ function solidIn(spans, y) {
   return false;
 }
 
+/** Where two lists of spans, each sorted top to bottom, are both solid. */
+function overlapSpans(a, b) {
+  const out = [];
+  for (let i = 0, j = 0; i < a.length && j < b.length; ) {
+    const top = Math.max(a[i].top, b[j].top),
+      bottom = Math.min(a[i].bottom, b[j].bottom);
+    if (top < bottom) out.push({ top, bottom });
+    if (a[i].bottom < b[j].bottom) i++;
+    else j++;
+  }
+  return out;
+}
+
 /** The body whose material shows at `y`: the latest block among those solid there. */
 function bodyIn(bodySpans, y) {
   let best = null;
@@ -296,6 +309,12 @@ export function rasterizeTerrainChunk(
     const left = spansAt(column - 1),
       right = spansAt(column + 1);
     if (!here.length) continue;
+    // The rows solid in every column within WALL_REACH either side, where no
+    // wall face can be. That is most of a chunk, and looking for the air
+    // beside each of its pixels was most of what drawing one cost.
+    let buried = here;
+    for (let step = 1; step <= WALL_REACH && buried.length; step++)
+      buried = overlapSpans(overlapSpans(buried, spansAt(column - step)), spansAt(column + step));
     const single =
       own.length === 1 ? materialColors(own[0].topBody.material) : null;
     const wobble = [0, 1, 2, 3].map((i) => Math.sin(x * 0.022 + i) * 5);
@@ -413,8 +432,9 @@ export function rasterizeTerrainChunk(
         }
         // Wall faces: a lit band toward the sun, shade on the far side, and
         // the odd ledge. Only steep faces count, so slopes are left alone.
-        const airRight = airDistance(column, y, 1),
-          airLeft = airDistance(column, y, -1);
+        const open = !solidIn(buried, y);
+        const airRight = open ? airDistance(column, y, 1) : 0,
+          airLeft = open ? airDistance(column, y, -1) : 0;
         const reach = Math.min(airRight || Infinity, airLeft || Infinity);
         if (reach !== Infinity && reach * pixel * WALL_STEEPNESS < y - span.top) {
           const lit = airRight > 0 && (!airLeft || airRight <= airLeft);
@@ -455,25 +475,53 @@ export function rasterizeTerrainChunk(
   return result;
 }
 
-/** Which stone the world art pixel (`column`, `row`) belongs to, as an id. */
-function stoneCellAt(column, row) {
+/**
+ * The stones around a block of world art pixels, `columns` × `rows` from
+ * (`left`, `top`): each stone's centre and how much bigger than its
+ * neighbours it is, seeded by its place so chunks agree. They are worked out
+ * once per chunk rather than for each of a pixel's nine candidate stones.
+ */
+function stoneGrid(left, top, columns, rows) {
+  const first = Math.floor(top / STONE_HEIGHT) - 1,
+    last = Math.floor((top + rows - 1) / STONE_HEIGHT) + 1;
+  // A row is shifted right by up to half a stone, and a pixel looks at the
+  // stone either side of the one it is over.
+  const firstAcross = Math.floor((left - (STONE_WIDTH >> 1)) / STONE_WIDTH) - 1,
+    lastAcross = Math.floor((left + columns - 1) / STONE_WIDTH) + 1;
+  const stride = lastAcross - firstAcross + 1;
+  const count = (last - first + 1) * stride;
+  const x = new Float64Array(count),
+    y = new Float64Array(count),
+    growth = new Float64Array(count);
+  for (let r = first; r <= last; r++)
+    for (let c = firstAcross; c <= lastAcross; c++) {
+      const index = (r - first) * stride + c - firstAcross;
+      x[index] = (c + 0.2 + hash2(c, r) * 0.6) * STONE_WIDTH;
+      y[index] = (r + 0.2 + hash2(r + 4099, c) * 0.6) * STONE_HEIGHT;
+      growth[index] = hash2(c + 7919, r) * STONE_GROWTH;
+    }
+  return { first, firstAcross, stride, x, y, growth };
+}
+
+/** Which stone of `stones` (see stoneGrid) the world art pixel (`column`, `row`) belongs to, as an id. */
+function stoneCellAt(stones, column, row) {
   const near = Math.floor(row / STONE_HEIGHT);
   let best = Infinity,
     id = 0;
   for (let r = near - 1; r <= near + 1; r++) {
     const shift = (r & 1) * (STONE_WIDTH >> 1);
     const across = Math.floor((column - shift) / STONE_WIDTH);
+    const offset = (r - stones.first) * stones.stride - stones.firstAcross;
     for (let c = across - 1; c <= across + 1; c++) {
-      const dx =
-        column - (c + 0.2 + hash2(c, r) * 0.6) * STONE_WIDTH - shift;
-      const dy =
-        (row - (r + 0.2 + hash2(r + 4099, c) * 0.6) * STONE_HEIGHT) *
-        STONE_FLATTEN;
+      const dx = column - stones.x[offset + c] - shift;
+      const dy = (row - stones.y[offset + c]) * STONE_FLATTEN;
+      // Squared twice: `** 4` is a general power, and was most of what a
+      // stone chunk cost to draw.
+      const dx2 = dx * dx,
+        dy2 = dy * dy;
       // A squarish distance gives blocky stones with clipped corners, and a
       // per-stone weight makes some stones bigger than their neighbours.
-      const distance =
-        Math.sqrt(Math.sqrt(dx ** 4 + dy ** 4)) -
-        hash2(c + 7919, r) * STONE_GROWTH;
+      const distance = Math.sqrt(Math.sqrt(dx2 * dx2 + dy2 * dy2)) - stones.growth[offset + c];
       if (distance < best) {
         best = distance;
         id = Math.imul(c, 73856093) ^ Math.imul(r, 19349663);
@@ -485,24 +533,23 @@ function stoneCellAt(column, row) {
 
 /**
  * `stoneCellAt`, remembered for the pixels of one chunk and a margin of two,
- * since every pixel's shade looks at the stones around it.
+ * since every pixel's shade looks at the stones around it. Only those pixels
+ * may be asked for.
  */
 function cachedStoneCells(column0, row0, width, height) {
   const span = width + 4;
   let cells = null,
-    known = null;
+    known = null,
+    stones = null;
   return (column, row) => {
-    const x = column - column0 + 2,
-      y = row - row0 + 2;
-    if (x < 0 || x >= span || y < 0 || y >= height + 4)
-      return stoneCellAt(column, row);
     if (!cells) {
       cells = new Int32Array(span * (height + 4));
       known = new Uint8Array(cells.length);
+      stones = stoneGrid(column0 - 2, row0 - 2, span, height + 4);
     }
-    const index = y * span + x;
+    const index = (row - row0 + 2) * span + column - column0 + 2;
     if (!known[index]) {
-      cells[index] = stoneCellAt(column, row);
+      cells[index] = stoneCellAt(stones, column, row);
       known[index] = 1;
     }
     return cells[index];
@@ -926,8 +973,10 @@ export function createTerrainRenderer({ backWalls = false } = {}) {
       lastColumn = Math.floor((viewX + width) / CHUNK_SIZE);
     const firstRow = Math.floor(viewY / CHUNK_SIZE),
       lastRow = Math.floor((viewY + height) / CHUNK_SIZE);
+    let ready = true;
     for (let row = firstRow; row <= lastRow; row++) {
       for (let column = firstColumn; column <= lastColumn; column++) {
+        ready &&= chunks.has(column + "," + row);
         const image = chunk(column, row);
         if (image)
           ctx.drawImage(
@@ -939,8 +988,24 @@ export function createTerrainRenderer({ backWalls = false } = {}) {
           );
       }
     }
+    // When every chunk in view was ready, one more just outside it, so the
+    // rider rarely comes on a chunk still to draw, and never on several at
+    // once: drawing a few in one frame stalled it.
+    if (ready) drawAhead(firstColumn - 1, lastColumn + 1, firstRow - 1, lastRow + 1);
     const sign = startSign(trail);
     if (sign) drawStartSign(ctx, trail, sign, time, weather ?? resolveWeather(trail.weather));
+  }
+
+  /** Draws the first missing chunk on the border of these columns and rows, if any. */
+  function drawAhead(firstColumn, lastColumn, firstRow, lastRow) {
+    for (let row = firstRow; row <= lastRow; row++)
+      for (let column = firstColumn; column <= lastColumn; column++) {
+        const border = row === firstRow || row === lastRow || column === firstColumn || column === lastColumn;
+        if (border && !chunks.has(column + "," + row)) {
+          chunk(column, row);
+          return;
+        }
+      }
   }
 
   function refresh(trail) {

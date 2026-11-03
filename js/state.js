@@ -96,6 +96,12 @@ export const leaderboardTrails = () => [...officialTrailEntries, ...bonusTrailEn
 /** Shipped trails: their times are save bests and go to the online board. */
 export const isRankedSource = source => source === 'official' || source === 'bonus';
 
+// Hashing a trail reads all of it, and progressOf keys every official trail
+// for each flip and jump the rider lands, mid-ride; that stalled the frame.
+// Shipped trails never change while the game runs, so each is hashed once.
+// A custom trail can be edited in place, so it is hashed every time.
+const shippedHashes = new WeakMap();
+
 /**
  * Leaderboard, ghost and best-time key for a trail. It includes a hash of
  * everything that decides a run, so an edit that changes the ride starts fresh
@@ -103,8 +109,10 @@ export const isRankedSource = source => source === 'official' || source === 'bon
  * their id in front, so the online board can tell which trail it is.
  */
 export function trailKey(entry) {
-  const hash = trailHash(entry.trail);
-  return isRankedSource(entry.source) ? `${entry.id}@${hash}` : 'trail:' + hash;
+  if (!isRankedSource(entry.source)) return 'trail:' + trailHash(entry.trail);
+  let hash = shippedHashes.get(entry.trail);
+  if (hash === undefined) shippedHashes.set(entry.trail, (hash = trailHash(entry.trail)));
+  return `${entry.id}@${hash}`;
 }
 
 /**

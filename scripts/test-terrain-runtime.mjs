@@ -1,7 +1,8 @@
 // The runtime half of the terrain: the compiled geometry that physics
 // and surface queries read, covering the plan's Runtime acceptance criteria.
+import { isDeepStrictEqual } from "node:util";
 import {
-  compileTerrain, terrainContacts, terrainSweep, terrainSurfaceBelow, terrainSurfaceNear,
+  compileTerrain, removeTerrainBodies, terrainContacts, terrainSweep, terrainSurfaceBelow, terrainSurfaceNear,
   terrainSolidAt, terrainShadowSamples, terrainSurfaces, terrainRaycast,
 } from "../js/terrain-runtime.js";
 import { rectangleBlock, cutBlock, normalizeBlock, setBoundaryEdge } from "../js/terrain-geometry.js";
@@ -244,6 +245,32 @@ const R = 12;
   block.layer = "back";
   updateTerrain(moving, new Set([block]));
   check("and moved back, it is a back wall again", walls() === 1 && terrainGeometry(moving).bodies.length === 1);
+}
+
+// Breaking glass takes its pane out of the compiled terrain in place: the
+// result must be exactly what compiling again without it gives, pane after
+// pane, and the terrain it started from, shared by every ride, is unchanged.
+{
+  // Everything compiled is compared, so a field added to compileTerrain later
+  // that removeTerrainBodies doesn't keep up fails here. Only `update`, which
+  // tells the renderer what changed, differs by design.
+  const same = (a, b) => isDeepStrictEqual({ ...a, update: undefined }, { ...b, update: undefined });
+  for (const { id, trail: catalogTrail } of ['official', 'bonus'].flatMap(source => loadCatalogTrails(source))) {
+    const blocks = trailTerrainBlocks(catalogTrail);
+    const panes = blocks.filter(block => block.material === 'glass').map(block => String(block.id));
+    if (!panes.length) continue;
+    const source = compileTerrain(trail(blocks));
+    const before = structuredClone(source);
+    const broken = new Set();
+    let current = source, matches = true;
+    for (const pane of panes) {
+      broken.add(pane);
+      current = removeTerrainBodies(current, new Set([pane]));
+      matches &&= same(current, compileTerrain({ terrainBlocks: blocks, brokenBlocks: broken }));
+    }
+    check(`${id}: breaking each pane in place matches compiling again`, matches);
+    check(`${id}: and leaves the trail's own terrain as it was`, same(source, before));
+  }
 }
 
 console.log(failures ? `\n${failures} failing` : "\nTerrain runtime tests passed.");
