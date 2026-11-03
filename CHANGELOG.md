@@ -2,6 +2,17 @@
 
 Player-facing release notes. The game shows them under **What's new**, and each GitHub Release uses its section.
 
+## 0.6.1 — 2026-11-03
+
+### New
+- Gold runs now end with a short da-DAA flourish on the win jingle, and your phone or gamepad buzzes in step with it.
+
+### Improved
+- The Trails menu opens much faster, since trail thumbnails now draw only the part of the terrain you can see.
+
+### Fixed
+- Fixed brief stalls while riding, most noticeably when landing a flip or jump, breaking a glass pane, or when new terrain is drawn.
+
 ## 0.6.0 — 2026-11-02
 
 ### Heads up
