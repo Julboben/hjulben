@@ -17,7 +17,7 @@ let scene = null;
 function shared() {
   if (!scene) {
     const canvas = document.createElement('canvas');
-    scene = { canvas, renderer: createRenderer(canvas), effects: createEffects() };
+    scene = { canvas, renderer: createRenderer(canvas, { still: true }), effects: createEffects() };
   }
   return scene;
 }

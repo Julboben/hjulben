@@ -269,13 +269,17 @@ const APPLE_HINT_VISIBLE = 12;
 const APPLE_HINT_COLOR = "#fff3be";
 const APPLE_HINT_OUTLINE = "#182321";
 
-/** @param {HTMLCanvasElement} canvas */
-export function createRenderer(canvas) {
+/**
+ * @param {HTMLCanvasElement} canvas
+ * @param {{ still?: boolean }} [options]  `still` for scenes drawn once, such
+ *   as the menu's: see createTerrainRenderer.
+ */
+export function createRenderer(canvas, { still = false } = {}) {
   const ctx = canvas.getContext("2d");
   const { pixelRect, pixelPath, drawPixelText } = createDrawingTools(ctx);
   const gameArt = createGameArt(ctx);
-  const terrainRenderer = createTerrainRenderer();
-  const backWallRenderer = createTerrainRenderer({ backWalls: true });
+  const terrainRenderer = createTerrainRenderer({ still });
+  const backWallRenderer = createTerrainRenderer({ backWalls: true, still });
   const lighting = createLighting();
   // Whether the bike's lamps are on: lit lenses in the art, and their light.
   let headlights = true;

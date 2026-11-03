@@ -896,32 +896,21 @@ function shadeBackWall(data) {
 
 /**
  * Draws a trail's terrain blocks in cached chunks, or with `backWalls` its
- * back-layer blocks instead, darkened and without the start sign.
+ * back-layer blocks instead, darkened and without the start sign. With
+ * `still`, for scenes drawn once, it draws exactly the view instead.
  */
-export function createTerrainRenderer({ backWalls = false } = {}) {
+export function createTerrainRenderer({ backWalls = false, still = false } = {}) {
   const geometryOf = backWalls ? backWallGeometry : terrainGeometry;
   let currentTrail = null;
   let currentGeometry = null;
   let chunks = new Map();
 
-  function buildBlockChunk(geometry, originX, originY) {
-    const raster = rasterizeTerrainChunk(
-      geometry,
-      originX,
-      originY,
-      CHUNK_PIXELS,
-      CHUNK_PIXELS,
-    );
+  function buildBlockImage(geometry, originX, originY, columns, rows) {
+    const raster = rasterizeTerrainChunk(geometry, originX, originY, columns, rows);
     if (!raster.opaque) return null;
     if (backWalls) shadeBackWall(raster.data);
-    const canvas = createCanvas(CHUNK_PIXELS, CHUNK_PIXELS);
-    canvas
-      .getContext("2d")
-      .putImageData(
-        new ImageData(raster.data, CHUNK_PIXELS, CHUNK_PIXELS),
-        0,
-        0,
-      );
+    const canvas = createCanvas(columns, rows);
+    canvas.getContext("2d").putImageData(new ImageData(raster.data, columns, rows), 0, 0);
     return canvas;
   }
 
@@ -950,7 +939,7 @@ export function createTerrainRenderer({ backWalls = false } = {}) {
     const originX = column * CHUNK_SIZE,
       originY = row * CHUNK_SIZE;
     const built = currentGeometry
-      ? buildBlockChunk(currentGeometry, originX, originY)
+      ? buildBlockImage(currentGeometry, originX, originY, CHUNK_PIXELS, CHUNK_PIXELS)
       : null;
     chunks.set(key, built);
     if (chunks.size > CHUNK_LIMIT) chunks.delete(chunks.keys().next().value);
@@ -969,6 +958,24 @@ export function createTerrainRenderer({ backWalls = false } = {}) {
     if ((trail?.terrainSource || trail) !== currentTrail) invalidate(trail);
     else refresh(trail);
     if (!currentGeometry) return;
+    if (still) drawView(ctx, viewX, viewY, width, height);
+    else drawChunks(ctx, viewX, viewY, width, height);
+    const sign = startSign(trail);
+    if (sign) drawStartSign(ctx, trail, sign, time, weather ?? resolveWeather(trail.weather));
+  }
+
+  // A thumbnail shows a small part of a few chunks, and drawing them whole
+  // was most of what a menu scene cost. The same art grid, so the same pixels.
+  function drawView(ctx, viewX, viewY, width, height) {
+    const left = Math.floor(viewX / ART_PIXEL) * ART_PIXEL,
+      top = Math.floor(viewY / ART_PIXEL) * ART_PIXEL;
+    const columns = Math.floor((viewX + width - left) / ART_PIXEL) + 1,
+      rows = Math.floor((viewY + height - top) / ART_PIXEL) + 1;
+    const image = buildBlockImage(currentGeometry, left, top, columns, rows);
+    if (image) ctx.drawImage(image, left, top, columns * ART_PIXEL, rows * ART_PIXEL);
+  }
+
+  function drawChunks(ctx, viewX, viewY, width, height) {
     const firstColumn = Math.floor(viewX / CHUNK_SIZE),
       lastColumn = Math.floor((viewX + width) / CHUNK_SIZE);
     const firstRow = Math.floor(viewY / CHUNK_SIZE),
@@ -992,8 +999,6 @@ export function createTerrainRenderer({ backWalls = false } = {}) {
     // rider rarely comes on a chunk still to draw, and never on several at
     // once: drawing a few in one frame stalled it.
     if (ready) drawAhead(firstColumn - 1, lastColumn + 1, firstRow - 1, lastRow + 1);
-    const sign = startSign(trail);
-    if (sign) drawStartSign(ctx, trail, sign, time, weather ?? resolveWeather(trail.weather));
   }
 
   /** Draws the first missing chunk on the border of these columns and rows, if any. */
