@@ -2,6 +2,24 @@
 /** @type {{ version: string, date: string, changes: { type: 'new' | 'improved' | 'fixed', text: string }[] }[]} */
 export const RELEASES = [
   {
+    "version": "0.6.1",
+    "date": "2026-11-03",
+    "changes": [
+      {
+        "type": "new",
+        "text": "Gold runs now end with a short da-DAA flourish on the win jingle, and your phone or gamepad buzzes in step with it."
+      },
+      {
+        "type": "improved",
+        "text": "The Trails menu opens much faster, since trail thumbnails now draw only the part of the terrain you can see."
+      },
+      {
+        "type": "fixed",
+        "text": "Fixed brief stalls while riding, most noticeably when landing a flip or jump, breaking a glass pane, or when new terrain is drawn."
+      }
+    ]
+  },
+  {
     "version": "0.6.0",
     "date": "2026-11-02",
     "changes": [
