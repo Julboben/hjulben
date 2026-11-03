@@ -740,8 +740,14 @@ export function createAudio(getSnapshot) {
       roll.connect(rollHighpass); rollHighpass.connect(rollLowpass); rollLowpass.connect(rollGain); rollGain.connect(out);
       roll.start(start, Math.random() * 5); roll.stop(start + duration + .1);
     },
-    win() {
+    /** The finish jingle; a gold time adds a short da-DAA on the end. */
+    win(gold = false) {
       [523, 659, 784, 1047].forEach((note, index) => playTone(note, .18, 'square', .055, index * .1, note));
+      if (!gold) return;
+      playTone(784, .1, 'square', .05, .44);
+      playTone(1047, .42, 'square', .055, .54);
+      // A softer third above the last note makes it ring like a chord.
+      playTone(1319, .42, 'triangle', .04, .54);
     },
     /**
      * A firework going up: the soft puff of the lift charge, then the rush of

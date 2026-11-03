@@ -1024,7 +1024,7 @@ export function startGame({ shared = null } = {}) {
       case 'win': {
         const mx = (ride.rear.x + ride.front.x) / 2, my = (ride.rear.y + ride.front.y) / 2;
         effects.burst(mx, my - 55, '#e8964f', 25);
-        sounds.win();
+        sounds.win(medalFor(session.trail.medals, ride.elapsed) === 'gold');
         if (replay) finishReplay();
         else finishRun(ride);
         break;
