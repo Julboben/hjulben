@@ -38,6 +38,16 @@ const KINDS = {
     phone: [20, 40, 20, 40, 60],
     pad: [{ duration: 60, strong: 0.2, weak: 0.6, gap: 60 }, { duration: 60, strong: 0.2, weak: 0.6, gap: 60 }, { duration: 140, strong: 0.4, weak: 0.7 }]
   }),
+  // A gold time: the cheer, then a short and a long pulse in step with the
+  // da-DAA the win jingle adds for gold.
+  gold: () => ({
+    phone: [20, 40, 20, 40, 60, 260, 40, 60, 200],
+    pad: [
+      { duration: 60, strong: 0.2, weak: 0.6, gap: 60 }, { duration: 60, strong: 0.2, weak: 0.6, gap: 60 },
+      { duration: 140, strong: 0.4, weak: 0.7, gap: 60 },
+      { duration: 40, strong: 0.3, weak: 0.7, gap: 60 }, { duration: 220, strong: 0.6, weak: 0.9 }
+    ]
+  }),
 };
 
 // A landing and the suspension bottoming out are usually the same moment, so

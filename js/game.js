@@ -907,7 +907,7 @@ export function startGame({ shared = null } = {}) {
       });
     }
     setState('won');
-    haptics.play('cheer');
+    haptics.play(medalFor(medals, time) === 'gold' ? 'gold' : 'cheer');
   }
 
   /** Fireworks over the trail, for a run the world board has just put first. */
