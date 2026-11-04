@@ -484,6 +484,11 @@ export function startGame({ shared = null } = {}) {
     ghost = { ride, inputs, index: lead, data, look };
   }
 
+  /** Whether the ghost is still on its way to the finish, with inputs left to play. */
+  function ghostRiding() {
+    return ghost !== null && ghost.ride.status === 'running' && ghost.index < ghost.inputs.length;
+  }
+
   function initializeTrail(trail, marker) {
     kick = openingTrail && !replay ? 0 : null;
     if (openingTrail) attempts = 0;
@@ -1111,17 +1116,26 @@ export function startGame({ shared = null } = {}) {
         // Measured from the rider setting off, as waiting at the line is free.
         if (ride.started && state === 'running') { simulatedTime += steps * STEP; passedTime += elapsed; }
         if (kick !== null) kick = ride.started || kick + dt >= KICK_SECONDS ? null : kick + dt;
+      } else if (state === 'won' && ghostRiding()) {
+        // A ghost the player beat rides on to the finish while all else stays frozen.
+        accumulator += dt;
+        for (let steps = 0; accumulator >= STEP && steps < MAX_STEPS_PER_FRAME && ghostRiding(); steps++) {
+          stepRide(ghost.ride, ghost.inputs[ghost.index++]);
+          accumulator -= STEP;
+        }
+        accumulator = Math.min(accumulator, STEP);
       } else accumulator = 0;
       const stepping = session.state === 'running' || session.state === 'ragdoll';
       const alpha = stepping ? accumulator / STEP : 1;
+      const ghostAlpha = stepping || ghostRiding() ? accumulator / STEP : 1;
       overlay.setTimer(ride.elapsed);
-      const still = session.state === 'paused' || (session.state === 'won' && renderer.settled() && !fireworks.active());
+      const still = session.state === 'paused' || (session.state === 'won' && renderer.settled() && !fireworks.active() && !ghostRiding());
       if (!still || redraw) {
         redraw = false;
         const restore = interpolateRide(ride, alpha);
         const ghostRide = ghost?.ride;
         // A finished ghost is no longer stepped: hold it where it stopped.
-        const restoreGhost = ghostRide ? interpolateRide(ghostRide, ghostRide.status === 'won' ? 1 : alpha) : null;
+        const restoreGhost = ghostRide ? interpolateRide(ghostRide, ghostRide.status === 'won' ? 1 : ghostAlpha) : null;
         renderer.draw({
           ride, ghost: ghostRide, camera, effects, look: replay?.look ?? session.look, ghostLook: ghost?.look, state: session.state,
           full: session.preferences.scenery === 'full', dt, debug: debugEnabled, fireworks,
