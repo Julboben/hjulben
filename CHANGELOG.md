@@ -2,6 +2,15 @@
 
 Player-facing release notes. The game shows them under **What's new**, and each GitHub Release uses its section.
 
+## 0.6.2 — 2026-11-05
+
+### New
+- Each bike now has its own engine sound. The Elasto keeps its two-stroke, while the Scrambler gets a deeper four-stroke single that thumps, lopes and barks. Only the sound changes, and every bike still rides the same.
+- The Pocket Classic is a bicycle, so it now has no engine, kick-start or backfires. It rings a bell where a kick-start would catch, its chain whirs while the rider pedals, and its freewheel ticks while the wheel runs on.
+
+### Improved
+- When you reach the flower ahead of your ghost, the ghost now keeps riding to the finish instead of freezing in place.
+
 ## 0.6.1 — 2026-11-03
 
 ### New
