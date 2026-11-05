@@ -40,6 +40,7 @@ It runs in the browser with no build step and no runtime dependencies, built wit
 - Pixel lighting at every time of day: ground stays bright by day and sinks into darkness at night, caves closed off by a back wall are dark at any hour while open hollows let the sky through, a headlight you can switch off that stays on the bike through flips and loops, lanterns, lamps, glowing mushrooms, and lightning light the way
 - Terrain-colored wheel spray, brake lights, and fading ground skid marks
 - Procedural engine, braking, wheel-landing, aerial trick, collectible, crash, flip, finish, dashboard, and rain sound effects
+- Procedural chiptune music: a theme for the dashboard, and a mood for each world (a folk polka in the orchards, a shuffle in the woods, a darbuka beat in the desert, a drone underground, a funky groove in the city), with every trail growing its own tune from it; off by default, switched on under Settings
 - Collectibles, finish gates, timers, and best times
 - Persisted settings and trail progression
 - A career of progressively longer and harder trails with gaps, caves, water, and floating blocks to ride across
@@ -158,7 +159,7 @@ The dashboard's Settings view includes:
 
 - Full or reduced scenery
 - Visible or hidden on-screen controls
-- Sound effects on or off, and master volume
+- Sound on or off, music on or off, and master volume
 - Screen shake (off by default when the system prefers reduced motion)
 - Vibration on landings and crashes (on devices that support it)
 - Ghost: your best run, the world's best (falls back to yours offline, and races whichever is faster), or off

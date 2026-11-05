@@ -150,6 +150,14 @@ const GHOST_ALPHA = 0.38;
 // Setting off from a standstill, the rider's toe presses the gear lever into
 // first this fast.
 const GEAR_TAP_SECONDS = 0.15;
+// Pedalling the Pocket Classic: the driven wheel turns this many times for
+// each turn of the cranks, which the rider keeps between a push on a stalled
+// climb and a spin they could hold, in turns per second.
+const CRANK_GEARING = 1.6,
+  CRANK_TURNS_MIN = 0.6,
+  CRANK_TURNS_MAX = 2.2;
+// Coasting, the rider brings the cranks level to stand on, at this rate.
+const CRANK_LEVEL_RATE = 8;
 // World units around the hair root that the ghost's hair and cape can reach.
 const GHOST_HAIR_REACH = 56;
 // Where a front prop hides the rider, the hidden part shows as a silhouette.
@@ -1191,17 +1199,28 @@ export function createRenderer(canvas, { still = false } = {}) {
 
   /**
    * Steps the foot of the rider on `ride`: a tap on the gear lever as the bike
-   * sets off from standing at the start. `kick` is how far through
-   * kick-starting the engine the rider is, 0 to 1, or null. Drawing only:
-   * nothing here feeds the simulation.
+   * sets off from standing at the start, and the cranks a pedalled bike turns
+   * (`crank`, in radians, 0 level with the near pedal forward). `kick` is how
+   * far through kick-starting the engine the rider is, 0 to 1, or null.
+   * Drawing only: nothing here feeds the simulation.
    */
   function stepFoot(ride, dt, kick = null) {
     const standing =
       !ride.started && !ride.ragdoll && ride.rear.grounded && ride.front.grounded;
     let foot = feet.get(ride);
     if (!foot) {
-      foot = { standing, kick: null, tap: null };
+      foot = { standing, kick: null, tap: null, crank: 0 };
       feet.set(ride, foot);
+    }
+    // On the gas the cranks follow the driven wheel, which is the front one
+    // facing left; off it the freewheel lets the wheel run on under still feet.
+    const driven = ride.facing > 0 ? ride.rear : ride.front;
+    if (ride.throttle > 0.05 && !ride.ragdoll) {
+      const turns = clamp((ride.facing * driven.angularVelocity) / TAU / CRANK_GEARING, CRANK_TURNS_MIN, CRANK_TURNS_MAX);
+      foot.crank = (foot.crank + turns * TAU * dt) % TAU;
+    } else {
+      const level = Math.round(foot.crank / Math.PI) * Math.PI;
+      foot.crank += (level - foot.crank) * (1 - Math.exp(-CRANK_LEVEL_RATE * dt));
     }
     if (foot.standing && ride.started && !ride.ragdoll) foot.tap = 0;
     else if (foot.tap !== null) {
@@ -2017,10 +2036,14 @@ export function createRenderer(canvas, { still = false } = {}) {
     if (state === "won") effects.weather.time += animationDt;
     sceneClock += animationDt * 1000;
     const now = sceneClock;
-    // Posed scenes for the menu ("ready") hold the rider still.
+    // A ghost the player beat rides on to the finish at full speed while the
+    // rest of the scene settles, and stops once it gets there.
+    const ghostDt = paused || ghost?.status === "won" ? 0 : state === "won" ? dt : animationDt;
+    // Posed scenes for the menu ("ready") hold the rider still, and the
+    // rider's feet stop on the pedals at the finish, as the hair does.
     if (state !== "ready") {
-      stepFoot(ride, animationDt, kick);
-      if (ghost) stepFoot(ghost, animationDt);
+      stepFoot(ride, ride.status === "won" ? 0 : animationDt, kick);
+      if (ghost) stepFoot(ghost, ghostDt);
     }
     const focus = focusOf(ride);
     // The ride is already interpolated for this frame, and nothing here feeds
@@ -2099,7 +2122,7 @@ export function createRenderer(canvas, { still = false } = {}) {
     drawApples(ride);
     drawNisseInRide(ride);
     if (fog) drawFog(fog, focus, ride.facing);
-    drawGhost(ghost, ghostLook ?? look, animationDt);
+    drawGhost(ghost, ghostLook ?? look, ghostDt);
     hair = updateHair(hair, ride, look, ride.status === "won" ? 0 : animationDt);
     if (hair) hair.draw(pixelPath, currentHairRoot(ride, false, flipVisual, look));
     drawBike(ride, look, flipVisual, ride.ragdoll ? "ragdoll" : state);

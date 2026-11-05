@@ -53,6 +53,7 @@ Development needs Node.js 24 (the version CI uses) and npm. The game itself has 
 │   ├── editor/         # Trail editor modules (main.js is the entry, state.js the shared state)
 │   ├── trail-schema.js # Trail defaults, normalization, and validation
 │   ├── audio.js        # Procedural Web Audio effects
+│   ├── music.js        # Procedural chiptune music, a mood per world and a tune per trail
 │   ├── config.js       # Shared constants and math helpers
 │   ├── drawing.js      # Shared canvas primitives and reusable game-art renderers
 │   ├── trails.js       # Terrain materials and generated-catalog loader

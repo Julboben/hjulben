@@ -2424,12 +2424,28 @@ const RIDER_HAND = [16, -28];
 const RIDER_PEG = [-2, -3];
 const RIDER_KICK_TOP = [-8, -10];
 const RIDER_KICK_BOTTOM = [-6, 0];
+// The Pocket Classic's cranks: the bottom bracket, the arm's length, and
+// where the ankle sits over the pedal, so the foot rides it round.
+const CLASSIC_CRANK = [-3, -1];
+const CLASSIC_CRANK_ARM = 6;
+const CLASSIC_ANKLE_OVER_PEDAL = [-3, -7];
+const classicPedal = (crank) => [
+  CLASSIC_CRANK[0] + Math.cos(crank) * CLASSIC_CRANK_ARM,
+  CLASSIC_CRANK[1] + Math.sin(crank) * CLASSIC_CRANK_ARM,
+];
 
 const easeInOut = (t) => t * t * (3 - 2 * t);
 const towards = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
 
-/** The rider's ankle for `foot` (see drawBike): on the peg, or kicking. */
-function riderAnkle(foot) {
+/**
+ * The rider's ankle for `foot` (see drawBike): on the peg, or kicking, or on
+ * a pedalled bike on the near pedal, wherever the cranks are.
+ */
+function riderAnkle(foot, pedalled = false) {
+  if (pedalled) {
+    const pedal = classicPedal(foot?.crank ?? 0);
+    return [pedal[0] + CLASSIC_ANKLE_OVER_PEDAL[0], pedal[1] + CLASSIC_ANKLE_OVER_PEDAL[1]];
+  }
   if (!foot) return RIDER_PEG;
   let ankle = RIDER_PEG;
   const kick = foot.kick;
@@ -6646,6 +6662,7 @@ export function createGameArt(ctx) {
     bodyPoint,
     bodyRows,
     bodyPath,
+    crank = 0,
   }) {
     const c = CLASSIC_COLORS;
     const colors = {
@@ -6660,7 +6677,7 @@ export function createGameArt(ctx) {
     };
     const backMount = bodyPoint(-9, -15),
       frontMount = bodyPoint(12, -23);
-    const crank = bodyPoint(-3, -1);
+    const bracket = bodyPoint(...CLASSIC_CRANK);
     const seat = bodyPoint(-8, -19),
       head = bodyPoint(13, -18);
 
@@ -6697,38 +6714,30 @@ export function createGameArt(ctx) {
 
     // The diamond frame: stays to the rear axle, then the seat, top and down
     // tubes, each lit along its top and shaded under.
-    path([[-half, 2], [crank[0], crank[1] + 2]], paint.dark, 1);
-    path([[-half, 0], crank], paint.base, 2);
+    path([[-half, 2], [bracket[0], bracket[1] + 2]], paint.dark, 1);
+    path([[-half, 0], bracket], paint.base, 2);
     path([[-half, 0], seat], paint.shade, 2);
     path([[-half, 0], backMount], c.steelDark, 2);
     path([[-half, -1], [backMount[0], backMount[1] - 1]], c.steel, 1);
     spring(-half, 0, backMount[0], backMount[1], c.gold);
-    path([[head[0], head[1] + 2], [crank[0] + 1, crank[1] + 1]], paint.dark, 1);
-    path([head, crank], paint.base, 2);
-    path([crank, bodyPoint(-8, -20)], paint.base, 2);
-    path([[crank[0] - 1, crank[1]], bodyPoint(-9, -20)], paint.light, 1);
+    path([[head[0], head[1] + 2], [bracket[0] + 1, bracket[1] + 1]], paint.dark, 1);
+    path([head, bracket], paint.base, 2);
+    path([bracket, bodyPoint(-8, -20)], paint.base, 2);
+    path([[bracket[0] - 1, bracket[1]], bodyPoint(-9, -20)], paint.light, 1);
     path([seat, head], paint.base, 2);
     path([bodyPoint(-8, -20), bodyPoint(13, -19)], paint.light, 1);
 
     bodyRows(-17, -24, CLASSIC_SADDLE, colors);
+    // Crank arms and pedals, turned by the rider (see riderAnkle): the far
+    // one behind the chainring, the near one in front under the rider's foot.
+    const crankArm = (angle, color) => {
+      const pedal = classicPedal(angle);
+      bodyPath([CLASSIC_CRANK, pedal], color, 2);
+      bodyPath([[pedal[0] - 1, pedal[1] + 1], [pedal[0] + 1, pedal[1] + 1]], c.black, 2);
+    };
+    crankArm(crank + Math.PI, c.chain);
     bodyRows(-10, -8, CLASSIC_CHAINRING, colors);
-    // Crank arm and pedal, under the rider's foot.
-    bodyPath(
-      [
-        [-3, -1],
-        [1, 4],
-      ],
-      c.steelDark,
-      2,
-    );
-    bodyPath(
-      [
-        [1, 5],
-        [3, 5],
-      ],
-      c.black,
-      2,
-    );
+    crankArm(crank, c.steelDark);
 
     // Fork: a steel leg lit along its front, inside the coil spring.
     path([[half, 0], frontMount], c.steelDark, 2);
@@ -7062,6 +7071,7 @@ export function createGameArt(ctx) {
       );
     };
     model.frame({
+      crank: foot?.crank ?? 0,
       paint: parts.bikeColors,
       path,
       spring,
@@ -7083,7 +7093,7 @@ export function createGameArt(ctx) {
 
       const hip = [-11 + shift, -26];
       const pegKnee = [2 + shift * 0.45, -16];
-      const ankle = riderAnkle(foot);
+      const ankle = riderAnkle(foot, modelId === "classic");
       const knee = ankle === RIDER_PEG
         ? pegKnee
         : riderKnee(

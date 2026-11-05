@@ -3,7 +3,7 @@
 // ride and the state machine; the menu changes saves and preferences.
 import { trails, officialTrailEntries, bonusTrailEntries, customTrailEntries } from './trails.js';
 import { trailHash } from './trail-hash.js';
-import { DEFAULT_LOOK, ownedLook, ownsWith } from './cosmetics.js';
+import { DEFAULT_LOOK, lookItem, ownedLook, ownsWith } from './cosmetics.js';
 import { lookUnlock, trailUnlock, unlockStatus } from './unlocks.js';
 import { hasAchievement } from './achievements.js';
 
@@ -35,6 +35,7 @@ export const DEFAULT_PREFERENCES = {
   scenery: 'full',
   controls: 'show',
   sound: 'on',
+  music: 'off',
   volume: 80,
   shake: reducedMotion ? 'off' : 'on',
   haptics: 'off',
@@ -46,7 +47,7 @@ export const DEFAULT_PREFERENCES = {
 };
 
 const CHOICES = {
-  scenery: ['full', 'reduced'], controls: ['show', 'hide'], sound: ['on', 'off'],
+  scenery: ['full', 'reduced'], controls: ['show', 'hide'], sound: ['on', 'off'], music: ['on', 'off'],
   shake: ['on', 'off'], haptics: ['on', 'off'], rumble: ['on', 'off'], ghost: ['on', 'world', 'off'],
   headlight: ['on', 'off']
 };
@@ -135,6 +136,9 @@ export function currentTrailEntry() {
  * }} Progress
  */
 
+/** Whether the page was opened with ?debug=1, which turns on every debugging aid. */
+const debugMode = () => new URLSearchParams(globalThis.location?.search ?? '').get('debug') === '1';
+
 /**
  * The furthest official trail a save has open, by its place in the career.
  * Worked out from the trails it has finished, by id, rather than kept as a
@@ -146,7 +150,7 @@ export function currentTrailEntry() {
 export function unlockedOf(save) {
   // ?debug=1 opens every trail, to try any of them while building the career;
   // only the trails open, nothing counts as finished.
-  if (new URLSearchParams(globalThis.location?.search ?? '').get('debug') === '1') return officialTrailEntries.length - 1;
+  if (debugMode()) return officialTrailEntries.length - 1;
   const keys = Object.keys(save?.bestTimes || {});
   let open = 0;
   officialTrailEntries.forEach((entry, index) => {
@@ -187,8 +191,12 @@ export function progressOf(save) {
   return { ...career, finished, stats, has: id => hasAchievement(id, achievements, stats, career) };
 }
 
-/** Which rider items a save may wear. */
-export const lookOwner = save => ownsWith(progressOf(save));
+/**
+ * Which rider items a save may wear. ?debug=1 opens every item, to try any of
+ * it in the Garage; as with the trails, nothing counts as won, so a look saved
+ * there rides in its starter items again without the flag.
+ */
+export const lookOwner = save => (debugMode() ? (slot, id) => Boolean(lookItem(slot, id)) : ownsWith(progressOf(save)));
 
 /** The look a save rides in: its own, with any item it hasn't unlocked swapped for a starter one. */
 export const riderLook = (save = session.saveGame) => (save ? ownedLook(save.look, lookOwner(save)) : DEFAULT_LOOK);

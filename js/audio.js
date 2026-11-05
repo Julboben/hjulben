@@ -1,4 +1,5 @@
 import { STEP, TAU, ENGINE, XPBD_MOTOR_ANGULAR_ACCELERATION, clamp } from './config.js';
+import { createMusic, trailMood } from './music.js';
 
 /**
  * The physics engine has one gear, so on the ground it spends most of a run
@@ -27,22 +28,81 @@ const SKID_VOICES = {
 };
 
 /**
- * One cycle of exhaust pressure: a sharp spike as the port opens, the
- * suction dip behind it, and a small reflection back from the pipe.
+ * How each bike model's engine sounds, over the same revs from the physics.
+ * `pulse` shapes one exhaust firing (see exhaustPulseWave); `idle` and `span`
+ * set the firing note in Hz from idle to redline; the pipe resonance peaks at
+ * `pipe` of the revs, sweeps from `pipeAt[0]` by `pipeAt[1]` Hz and lifts by
+ * up to `pipeBoost`; `muffler` is the exhaust's cutoff in Hz; and `rasp`,
+ * `lope`, `pops` and `level` scale the combustion noise, the uneven idle, the
+ * chance of a backfire off the gas and the loudness. A bike without an entry
+ * has no engine, like the pedalled Pocket Classic.
  */
-function exhaustPulseWave(context) {
-  const harmonics = 40, samples = 2048;
+const ENGINE_VOICES = {
+  // A two-stroke single: a high, ringing note that comes on the expansion
+  // chamber at the top of the revs.
+  elasto: {
+    pulse: { spike: .045, dip: .55, dipWidth: .1, echo: .1 },
+    idle: 30, span: 153, pipe: .8, pipeAt: [280, 420], pipeBoost: 5, muffler: 1600,
+    rasp: 1, lope: 1, pops: .7, level: 1,
+  },
+  // A four-stroke single through an open chrome pipe: it fires every other
+  // turn, so it thumps lower and lopes, and barks rather than screams.
+  scrambler: {
+    pulse: { spike: .07, dip: .3, dipWidth: .14, echo: .2 },
+    idle: 22, span: 104, pipe: .5, pipeAt: [200, 300], pipeBoost: 2.5, muffler: 1300,
+    rasp: 1.3, lope: 1.7, pops: .85, level: 1.1,
+  },
+};
+
+/**
+ * How a tyre rolling on each surface sounds, on every bike: a band of noise
+ * (`band` Hz, `q`, `level`) that rises a little with speed. Loose ground
+ * crunches and hisses; hard ground hums low.
+ */
+const ROLL_VOICES = {
+  grass: { band: 340, q: .5, level: .7 },
+  dirt: { band: 520, q: .6, level: .9 },
+  sand: { band: 1700, q: .4, level: .6 },
+  snow: { band: 950, q: .9, level: .7 },
+  concrete: { band: 230, q: 1.2, level: .55 },
+  brick: { band: 380, q: .8, level: .75 },
+  stone: { band: 650, q: 1, level: .65 },
+  wood: { band: 260, q: 1.6, level: .85 },
+  glass: { band: 1900, q: 2, level: .3 },
+};
+/** Ground speed, in px/s, at which the rolling is at its loudest. */
+const FULL_ROLL_SPEED = 320;
+/** Knobs round the tread, and how deeply each one passing throbs the rolling. */
+const TREAD_KNOBS = 16, TREAD_THROB = .35;
+/** Teeth on a pedalled bike's freewheel ratchet: ticks per turn of the wheel. */
+const FREEWHEEL_TEETH = 18;
+
+/**
+ * A periodic wave whose one cycle is `shape(t)` for t from 0 to 1, made of
+ * its first `harmonics` partials.
+ */
+function periodicWave(context, shape, harmonics = 40) {
+  const samples = 2048;
   const real = new Float32Array(harmonics), imag = new Float32Array(harmonics);
-  const bump = (t, at, width) => Math.exp(-(((t - at) / width) ** 2));
   for (let index = 0; index < samples; index++) {
     const t = index / samples;
-    const pressure = bump(t, .05, .045) - .55 * bump(t, .22, .1) + .1 * bump(t, .48, .08);
+    const value = shape(t);
     for (let n = 1; n < harmonics; n++) {
-      real[n] += pressure * Math.cos(TAU * n * t) * 2 / samples;
-      imag[n] += pressure * Math.sin(TAU * n * t) * 2 / samples;
+      real[n] += value * Math.cos(TAU * n * t) * 2 / samples;
+      imag[n] += value * Math.sin(TAU * n * t) * 2 / samples;
     }
   }
   return context.createPeriodicWave(real, imag);
+}
+
+/**
+ * One cycle of exhaust pressure: a sharp spike as the port opens, the
+ * suction dip behind it, and a small reflection back from the pipe.
+ * @param {{ spike: number, dip: number, dipWidth: number, echo: number }} pulse
+ */
+function exhaustPulseWave(context, { spike, dip, dipWidth, echo }) {
+  const bump = (t, at, width) => Math.exp(-(((t - at) / width) ** 2));
+  return periodicWave(context, t => bump(t, .05, spike) - dip * bump(t, .22, dipWidth) + echo * bump(t, .48, .08));
 }
 
 function shaperCurve(shape, points = 1024) {
@@ -68,7 +128,7 @@ export function skidAmount({ state, rear, front, brakePressure }) {
 
 export function createAudio(getSnapshot) {
   let audio = null;
-  let enabled = true, volume = 1;
+  let enabled = true, musicOn = false, volume = 1;
   const motor = { revs: 0, time: 0, liftedAt: -1, lastThrottle: 0, nextPop: 0, grip: 0, phase: 'off', startedAt: -10, stalledAt: 0 };
 
   /**
@@ -126,11 +186,11 @@ export function createAudio(getSnapshot) {
     const noiseData = noiseBuffer.getChannelData(0);
     for (let i = 0; i < noiseData.length; i++) noiseData[i] = Math.random() * 2 - 1;
 
-    // Engine: a single-cylinder two-stroke. Each firing is an exhaust pulse,
-    // lightly saturated, shaped by a resonant expansion chamber and a muffler
-    // and roughened by combustion noise that bursts with each pulse.
+    // Engine: a single cylinder. Each firing is an exhaust pulse, lightly
+    // saturated, shaped by a resonant pipe and a muffler and roughened by
+    // combustion noise that bursts with each pulse. The bike's voice in
+    // ENGINE_VOICES tunes it; see setVoice.
     const engine = context.createOscillator();
-    engine.setPeriodicWave(exhaustPulseWave(context));
     engine.frequency.value = 30;
     const engineDrive = context.createGain();
     const engineShaper = context.createWaveShaper();
@@ -194,6 +254,44 @@ export function createAudio(getSnapshot) {
     squealFilter.type = 'bandpass'; squealFilter.frequency.value = 1250; squealFilter.Q.value = 14;
     squealGain.gain.value = 0;
     skid.connect(squealFilter); squealFilter.connect(squealGain); squealGain.connect(master);
+    // Rolling: the tyres on the ground, a band of noise that sounds like the
+    // surface, throbbing with the knobs of the tread as the wheel turns.
+    const rollFilter = context.createBiquadFilter();
+    const rollGain = context.createGain();
+    const rollTread = context.createGain();
+    const tread = context.createOscillator();
+    const treadDepth = context.createGain();
+    rollFilter.type = 'bandpass'; rollFilter.frequency.value = 500; rollFilter.Q.value = .6;
+    rollGain.gain.value = 0;
+    rollTread.gain.value = 1 - TREAD_THROB;
+    treadDepth.gain.value = TREAD_THROB;
+    tread.frequency.value = 10;
+    tread.connect(treadDepth); treadDepth.connect(rollTread.gain);
+    skid.connect(rollFilter); rollFilter.connect(rollGain); rollGain.connect(rollTread); rollTread.connect(master);
+    tread.start();
+    // A pedalled bike's freewheel: the pawls ticking over the ratchet while
+    // the wheel runs on under still pedals. Each tick is a burst of bright
+    // noise, gated by a pulse that fires once per tooth.
+    const ratchet = context.createOscillator();
+    ratchet.setPeriodicWave(periodicWave(context, t => Math.exp(-(((t - .5) / .03) ** 2)), 64));
+    ratchet.frequency.value = 10;
+    const ratchetShape = context.createWaveShaper();
+    ratchetShape.curve = shaperCurve((x) => (x > 0 ? x ** 3 : 0));
+    const tickFilter = context.createBiquadFilter();
+    const tickPulse = context.createGain();
+    const tickGain = context.createGain();
+    tickFilter.type = 'bandpass'; tickFilter.frequency.value = 3400; tickFilter.Q.value = 1.4;
+    tickPulse.gain.value = 0;
+    tickGain.gain.value = 0;
+    ratchet.connect(ratchetShape); ratchetShape.connect(tickPulse.gain);
+    skid.connect(tickFilter); tickFilter.connect(tickPulse); tickPulse.connect(tickGain); tickGain.connect(master);
+    ratchet.start();
+    // Pedalling, the chain whirs softly over the sprockets instead.
+    const chainFilter = context.createBiquadFilter();
+    const chainGain = context.createGain();
+    chainFilter.type = 'bandpass'; chainFilter.frequency.value = 1900; chainFilter.Q.value = 2.2;
+    chainGain.gain.value = 0;
+    skid.connect(chainFilter); chainFilter.connect(chainGain); chainGain.connect(master);
 
     const rainBuffer = context.createBuffer(1, context.sampleRate * 4, context.sampleRate);
     const rainData = rainBuffer.getChannelData(0);
@@ -247,16 +345,34 @@ export function createAudio(getSnapshot) {
     }
     echo.buffer = impulse;
     echo.connect(master);
+    const music = createMusic(context, master, noiseBuffer);
     audio = {
-      context, master, engine, engineDrive, engineFilter, enginePipe, engineGain, raspFilter, raspLevel,
+      context, master, engine, engineDrive, engineFilter, enginePipe, engineMuffler, engineGain, raspFilter, raspLevel,
       pitchDrift, levelDrift, noiseBuffer, skidFilter, skidGain, squealFilter, squealGain, rainGain,
-      windFilter, windGain, brownBuffer: windBuffer, echo,
+      windFilter, windGain, brownBuffer: windBuffer, echo, music,
+      rollFilter, rollGain, tread, ratchet, tickGain, chainFilter, chainGain,
+      // The engine voice the oscillator and muffler are tuned to (see setVoice).
+      voice: null,
+      // The ignition last frame, to catch the moment the kick-start catches.
+      lastIgnition: 'on',
       // Whether the context is suspended for the pause screen (see update),
       // or for a hidden tab (see suspend), and whether a resume is pending.
       paused: false,
       hidden: false,
       resuming: false,
     };
+    setVoice(ENGINE_VOICES.elasto);
+  }
+
+  /**
+   * Tunes the engine to a bike's voice. Only the parts that hold still through
+   * a run are set here; updateEngine scales the rest every frame.
+   */
+  function setVoice(voice) {
+    if (voice === audio.voice) return;
+    audio.voice = voice;
+    audio.engine.setPeriodicWave(exhaustPulseWave(audio.context, voice.pulse));
+    audio.engineMuffler.frequency.value = voice.muffler;
   }
 
   function masterLevel() { return enabled ? .45 * volume * volume : 0; }
@@ -264,6 +380,20 @@ export function createAudio(getSnapshot) {
   function setEnabled(nextEnabled) {
     enabled = nextEnabled;
     if (audio) audio.master.gain.setTargetAtTime(masterLevel(), audio.context.currentTime, .015);
+  }
+
+  function setMusic(on) { musicOn = on; }
+
+  /**
+   * The song for the moment: the menu's tune on the dashboard, the trail's
+   * world's while riding, quieter so the engine stays on top, and none at
+   * the finish, where the jingle plays.
+   */
+  function musicTarget(state, trail) {
+    if (!enabled || !musicOn) return null;
+    if (state === 'menu') return { key: 'menu', mood: 'menu', seed: 'menu', night: false, level: 1 };
+    const { mood, night, seed } = trailMood(trail);
+    return { key: `${seed}:${night}`, mood, seed, night, level: state === 'won' ? 0 : .6 };
   }
 
   /** @param {number} level 0 … 1; squared so the slider feels even. */
@@ -315,21 +445,81 @@ export function createAudio(getSnapshot) {
   }
 
   /**
+   * A bicycle bell, rung twice with the thumb: each strike a bright dome
+   * whose two near partials beat as it rings out, over a tick of the hammer.
+   */
+  function bell() {
+    for (const delay of [0, .17]) {
+      playNoise(.012, .02, 6500, delay);
+      playTone(2350, .7, 'sine', .035, delay);
+      playTone(2378, .7, 'sine', .022, delay);
+      playTone(6480, .2, 'sine', .01, delay);
+    }
+  }
+
+  /**
+   * The tyres rolling on the ground, on every bike: louder with speed, in
+   * the voice of the surface under them, and throbbing with the tread.
+   */
+  function updateRolling(state, rear, front, speed) {
+    const { context, rollFilter, rollGain, tread } = audio;
+    const time = context.currentTime;
+    const wheel = rear?.grounded ? rear : front?.grounded ? front : null;
+    const voice = ROLL_VOICES[wheel?.material] || ROLL_VOICES.dirt;
+    const pace = clamp(speed / FULL_ROLL_SPEED, 0, 1);
+    // The physics stops at the finish, so its last speed would roll on forever.
+    const rolling = wheel && state !== 'menu' && state !== 'won';
+    const level = rolling ? pace ** .7 * (rear.grounded && front.grounded ? 1 : .75) * .05 * voice.level : 0;
+    rollFilter.frequency.setTargetAtTime(voice.band * (.8 + pace * .5), time, .05);
+    rollFilter.Q.setTargetAtTime(voice.q, time, .05);
+    rollGain.gain.setTargetAtTime(level, time, .04);
+    tread.frequency.setTargetAtTime(clamp(Math.abs(wheel?.angularVelocity || 0) / TAU * TREAD_KNOBS, 1, 220), time, .03);
+  }
+
+  /**
+   * A pedalled bike's own sounds, in place of the engine: the bell as the
+   * rider sets off where a kick-start would catch, the chain whirring while
+   * they pedal, and the freewheel ticking while the wheel runs on without them.
+   */
+  function updatePedals(state, rear, front, facing, gas, ignition, fresh, bike) {
+    const { context, ratchet, tickGain, chainFilter, chainGain } = audio;
+    const time = context.currentTime;
+    const pedalled = bike !== undefined && !ENGINE_VOICES[bike];
+    if (pedalled && fresh && audio.lastIgnition === 'off' && ignition === 'kicked') bell();
+    audio.lastIgnition = ignition;
+    // The driven wheel is the one behind the rider, the front facing left.
+    const driven = facing < 0 ? front : rear;
+    const turning = Math.abs(driven?.angularVelocity || 0);
+    const riding = pedalled && (state === 'running' || state === 'ragdoll');
+    const pedalling = riding && gas && state === 'running';
+    const coasting = riding && !pedalling && turning > 1;
+    ratchet.frequency.setTargetAtTime(clamp(turning / TAU * FREEWHEEL_TEETH, 1, 180), time, .03);
+    // Slow ticks are distinct and carry; fast ones blur into a softer buzz.
+    tickGain.gain.setTargetAtTime(coasting ? .05 * clamp(turning / 4, 0, 1) * (1 - .4 * clamp(turning / 40, 0, 1)) : 0, time, .03);
+    chainFilter.frequency.setTargetAtTime(1600 + turning * 15, time, .05);
+    chainGain.gain.setTargetAtTime(pedalling ? .015 * clamp(turning / 30, .3, 1) : 0, time, .05);
+  }
+
+  /**
    * The engine runs while riding. A new run starts it with a couple of
    * blips, after the rider's kick when a trail is opened; a crash stalls it
    * and the finish switches it off. It plays the physics engine: its revs
-   * and how hard its clutch pulls on the wheel.
+   * and how hard its clutch pulls on the wheel. A bike with no voice in
+   * ENGINE_VOICES is pedalled and stays silent.
    * @param {{ rev: number, clutchTorque?: number } | undefined} bikeEngine
    * @param {boolean} fresh the run has not begun moving yet
    * @param {'on' | 'off' | 'kicked'} ignition 'off' until the kick catches
+   * @param {string | undefined} bike the ridden bike's model
    */
-  function updateEngine(state, bikeEngine, gas, fresh, ignition) {
+  function updateEngine(state, bikeEngine, gas, fresh, ignition, bike) {
     const { context, engine, engineDrive, engineFilter, enginePipe, engineGain, raspFilter, raspLevel, pitchDrift, levelDrift } = audio;
     const time = context.currentTime;
     const dt = clamp(time - motor.time, 0, .1);
     motor.time = time;
-    const on = state === 'running' && bikeEngine && ignition !== 'off';
+    const bikeVoice = ENGINE_VOICES[bike];
+    const on = state === 'running' && bikeEngine && bikeVoice && ignition !== 'off';
     if (on && motor.phase !== 'on') {
+      setVoice(bikeVoice);
       if (fresh && ignition === 'kicked') kickStart();
       Object.assign(motor, { phase: 'on', startedAt: fresh ? time : -10, revs: 0, grip: 0, lastThrottle: 0, liftedAt: -1 });
     } else if (state === 'ragdoll' && motor.phase === 'on') {
@@ -342,6 +532,7 @@ export function createAudio(getSnapshot) {
       engineGain.gain.setTargetAtTime(0, time, state === 'won' ? .12 : .045);
       return;
     }
+    const { voice } = audio;
     // After the kick it catches with a sharp blip, settles and blips again.
     const sinceStart = time - motor.startedAt;
     const bump = (at, width) => Math.exp(-(((sinceStart - at) / width) ** 2));
@@ -375,33 +566,33 @@ export function createAudio(getSnapshot) {
       motor.nextPop = time + .04 + Math.random() * .08;
     }
     if (easing && time - motor.liftedAt < .9 && time >= motor.nextPop) {
-      if (Math.random() < .7) backfire(clamp(revs * 1.3, .4, 1));
+      if (Math.random() < voice.pops) backfire(clamp(revs * 1.3, .4, 1));
       motor.nextPop = time + .05 + Math.random() * .17;
     }
     motor.lastThrottle = throttle;
 
-    // The expansion chamber is tuned to the top of the rev range: there the
-    // engine comes on the pipe and screams.
-    const powerband = clamp(1 - Math.abs(revs - .8) / .32, 0, 1);
+    // The pipe is tuned to one part of the rev range: there the engine comes
+    // on the pipe and screams.
+    const powerband = clamp(1 - Math.abs(revs - voice.pipe) / .32, 0, 1);
     // A stalling engine sputters down below idle before it dies.
-    engine.frequency.setTargetAtTime((30 + revs * 153) * (1 - stall * .55), time, .03);
-    pitchDrift.gain.setTargetAtTime(900 * (1.2 - revs) * (1 - load * .4) * (1 + stall * 2), time, .1);
-    levelDrift.gain.setTargetAtTime(4 * (1.1 - revs * .8), time, .1);
+    engine.frequency.setTargetAtTime((voice.idle + revs * voice.span) * (1 - stall * .55), time, .03);
+    pitchDrift.gain.setTargetAtTime(900 * voice.lope * (1.2 - revs) * (1 - load * .4) * (1 + stall * 2), time, .1);
+    levelDrift.gain.setTargetAtTime(4 * voice.lope * (1.1 - revs * .8), time, .1);
     engineDrive.gain.setTargetAtTime(.8 + load * .9, time, .03);
     // At idle the filter stays open enough that small speakers, which cannot
     // play the deep firing note, still carry its upper harmonics.
     engineFilter.frequency.setTargetAtTime(650 + load * (300 + revs * 650) + revs * 100, time, .04);
-    enginePipe.frequency.setTargetAtTime(280 + revs * 420, time, .05);
-    enginePipe.gain.setTargetAtTime(1 + powerband * load * 5, time, .05);
+    enginePipe.frequency.setTargetAtTime(voice.pipeAt[0] + revs * voice.pipeAt[1], time, .05);
+    enginePipe.gain.setTargetAtTime(1 + powerband * load * voice.pipeBoost, time, .05);
     raspFilter.frequency.setTargetAtTime(450 + load * revs * 650, time, .05);
-    raspLevel.gain.setTargetAtTime(.5 + load * .9, time, .05);
-    const level = .06 + load * (.02 + revs * .025 + powerband * .01) + revs * .006;
+    raspLevel.gain.setTargetAtTime((.5 + load * .9) * voice.rasp, time, .05);
+    const level = (.06 + load * (.02 + revs * .025 + powerband * .01) + revs * .006) * voice.level;
     engineGain.gain.setTargetAtTime(level * (1 - cut * .6) * caught * (1 - stall) ** 1.5, time, cut ? .012 : .03);
   }
 
   function update() {
     if (!audio) return;
-    const { state, rear, front, engine, gas, started, ignition = 'on', brakePressure, weather } = getSnapshot();
+    const { state, rear, front, facing, engine, gas, started, ignition = 'on', brakePressure, weather, trail, bike } = getSnapshot();
     const { context, skidFilter, skidGain, squealFilter, squealGain, rainGain, windFilter, windGain } = audio;
     // Pausing freezes every sound where it is (rain, wind, a rolling thunder
     // clap, the engine) by suspending the whole context; resuming carries on.
@@ -416,7 +607,10 @@ export function createAudio(getSnapshot) {
     audio.hidden = false;
     if (context.state !== 'running') resumeContext();
     const speed = rideSpeed(rear, front);
-    updateEngine(state, engine, Boolean(gas), !started, ignition);
+    updateEngine(state, engine, Boolean(gas), !started, ignition, bike);
+    updatePedals(state, rear, front, facing, Boolean(gas), ignition, !started, bike);
+    updateRolling(state, rear, front, speed);
+    audio.music.update(musicTarget(state, trail));
     const skidLevel = skidAmount({ state, rear, front, brakePressure }) * .16;
     // The skid sounds like the ground under the tyre doing it: the rear when
     // it is down, else the front.
@@ -462,6 +656,7 @@ export function createAudio(getSnapshot) {
     suspend,
     isRunning,
     setEnabled,
+    setMusic,
     setVolume,
     update,
     // The gear lever clicking into first: a short, hard metal knock.

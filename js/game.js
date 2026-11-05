@@ -62,9 +62,11 @@ export function startGame({ shared = null } = {}) {
   const sounds = createAudio(() => {
     const ride = session.ride;
     return {
-      state: session.state, rear: ride?.rear, front: ride?.front, engine: ride?.vehicle.engine, gas: gasHeld && session.state === 'running', started: ride?.started ?? false,
+      state: session.state, rear: ride?.rear, front: ride?.front, facing: ride?.facing, engine: ride?.vehicle.engine, gas: gasHeld && session.state === 'running', started: ride?.started ?? false,
       ignition: kick === null ? 'on' : kick < KICK_CATCHES ? 'off' : 'kicked',
-      brakePressure: ride?.brakePressure ?? 0, weather: session.trail?.weather,
+      brakePressure: ride?.brakePressure ?? 0, weather: session.trail?.weather, trail: session.trail,
+      // A replay sounds like the bike it was ridden on.
+      bike: ride ? lookParts(replay?.look ?? session.look).bike : undefined,
     };
   });
   const input = createInput({
@@ -307,6 +309,7 @@ export function startGame({ shared = null } = {}) {
     session.look = riderLook();
     $('control-area').hidden = preferences.controls === 'hide';
     sounds.setVolume(preferences.volume / 100);
+    sounds.setMusic(preferences.music === 'on');
     syncSound();
     input.setBindings(preferences.bindings);
     renderer.setInteractKey(preferences.bindings.interact?.[0] ? keyLabel(preferences.bindings.interact[0]) : '');
