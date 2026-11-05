@@ -136,8 +136,21 @@ export function currentTrailEntry() {
  * }} Progress
  */
 
-/** Whether the page was opened with ?debug=1, which turns on every debugging aid. */
-const debugMode = () => new URLSearchParams(globalThis.location?.search ?? '').get('debug') === '1';
+/**
+ * Whether the page was opened with ?debug=1 on a developer's own machine or
+ * network, which turns on every debugging aid. It never works on a public
+ * address, whatever the site is called, so players can't open trails and
+ * gear early or reach the online board with them.
+ */
+export const debugMode = () =>
+  isDevHost(globalThis.location?.hostname ?? '') &&
+  new URLSearchParams(globalThis.location?.search ?? '').get('debug') === '1';
+
+/** This computer, or a private network address such as a phone testing over Wi-Fi. */
+const isDevHost = host =>
+  ['localhost', '127.0.0.1', '[::1]'].includes(host) ||
+  (/^\d+\.\d+\.\d+\.\d+$/.test(host) && /^(10|127)\.|^192\.168\.|^172\.(1[6-9]|2\d|3[01])\./.test(host)) ||
+  host.endsWith('.local');
 
 /**
  * The furthest official trail a save has open, by its place in the career.

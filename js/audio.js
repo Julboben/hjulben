@@ -76,6 +76,8 @@ const FULL_ROLL_SPEED = 320;
 const TREAD_KNOBS = 16, TREAD_THROB = .35;
 /** Teeth on a pedalled bike's freewheel ratchet: ticks per turn of the wheel. */
 const FREEWHEEL_TEETH = 18;
+/** Seconds a bike picked in the Garage revs for, from the blip to idling out. */
+const REV_PREVIEW_SECONDS = 1.3;
 
 /**
  * A periodic wave whose one cycle is `shape(t)` for t from 0 to 1, made of
@@ -129,7 +131,7 @@ export function skidAmount({ state, rear, front, brakePressure }) {
 export function createAudio(getSnapshot) {
   let audio = null;
   let enabled = true, musicOn = false, volume = 1;
-  const motor = { revs: 0, time: 0, liftedAt: -1, lastThrottle: 0, nextPop: 0, grip: 0, phase: 'off', startedAt: -10, stalledAt: 0 };
+  const motor = { revs: 0, time: 0, liftedAt: -1, lastThrottle: 0, nextPop: 0, grip: 0, phase: 'off', startedAt: -10, stalledAt: 0, previewAt: -10 };
 
   /**
    * Wakes the context when something other than the pause screen stopped it:
@@ -458,6 +460,22 @@ export function createAudio(getSnapshot) {
   }
 
   /**
+   * Lets a bike picked in the Garage be heard: an engine blips its throttle
+   * once (see updateEngine), and a pedalled bike rings its bell.
+   * @param {string} bike the bike's model
+   */
+  function revBike(bike) {
+    if (!audio || !enabled) return;
+    const voice = ENGINE_VOICES[bike];
+    if (!voice) {
+      bell();
+      return;
+    }
+    setVoice(voice);
+    Object.assign(motor, { phase: 'on', startedAt: -10, previewAt: audio.context.currentTime, revs: 0, grip: 0, lastThrottle: 0, liftedAt: -1 });
+  }
+
+  /**
    * The tyres rolling on the ground, on every bike: louder with speed, in
    * the voice of the surface under them, and throbbing with the tread.
    */
@@ -516,15 +534,24 @@ export function createAudio(getSnapshot) {
     const time = context.currentTime;
     const dt = clamp(time - motor.time, 0, .1);
     motor.time = time;
+    // A bike picked in the Garage (see revBike) blips its throttle once: the
+    // grip snaps open and shut, and the revs flare and fall back to idle.
+    const previewAge = time - motor.previewAt;
+    const previewing = state === 'menu' && previewAge < REV_PREVIEW_SECONDS;
+    if (previewing) {
+      gas = previewAge > .1 && previewAge < .38;
+      const flare = Math.exp(-(((previewAge - .36) / .15) ** 2));
+      bikeEngine = { rev: ENGINE.idle + (ENGINE.redline - ENGINE.idle) * (.08 + .72 * flare), clutchTorque: 0 };
+    }
     const bikeVoice = ENGINE_VOICES[bike];
-    const on = state === 'running' && bikeEngine && bikeVoice && ignition !== 'off';
+    const on = previewing || (state === 'running' && bikeEngine && bikeVoice && ignition !== 'off');
     if (on && motor.phase !== 'on') {
       setVoice(bikeVoice);
       if (fresh && ignition === 'kicked') kickStart();
       Object.assign(motor, { phase: 'on', startedAt: fresh ? time : -10, revs: 0, grip: 0, lastThrottle: 0, liftedAt: -1 });
     } else if (state === 'ragdoll' && motor.phase === 'on') {
       Object.assign(motor, { phase: 'stalling', stalledAt: time });
-    } else if (state === 'menu' || state === 'won') motor.phase = 'off';
+    } else if ((state === 'menu' && !previewing) || state === 'won') motor.phase = 'off';
     const stall = motor.phase === 'stalling' ? clamp((time - motor.stalledAt) / .8, 0, 1) : 0;
     if (stall >= 1) motor.phase = 'off';
     if (!(on || motor.phase === 'stalling') || !bikeEngine || state === 'paused') {
@@ -587,7 +614,9 @@ export function createAudio(getSnapshot) {
     raspFilter.frequency.setTargetAtTime(450 + load * revs * 650, time, .05);
     raspLevel.gain.setTargetAtTime((.5 + load * .9) * voice.rasp, time, .05);
     const level = (.06 + load * (.02 + revs * .025 + powerband * .01) + revs * .006) * voice.level;
-    engineGain.gain.setTargetAtTime(level * (1 - cut * .6) * caught * (1 - stall) ** 1.5, time, cut ? .012 : .03);
+    // The Garage's rev idles out rather than cutting off.
+    const idleOut = previewing ? clamp((REV_PREVIEW_SECONDS - previewAge) / .4, 0, 1) : 1;
+    engineGain.gain.setTargetAtTime(level * (1 - cut * .6) * caught * idleOut * (1 - stall) ** 1.5, time, cut ? .012 : .03);
   }
 
   function update() {
@@ -684,6 +713,7 @@ export function createAudio(getSnapshot) {
       playTone(1975, .05, 'square', volume * .35, 0, 1480);
       playTone(2960, .04, 'triangle', volume * .25, .03, 2490);
     },
+    revBike,
     menuMove: () => playTone(420, .035, 'square', .018, 0, 470),
     menuSelect: () => playTone(520, .07, 'square', .035, 0, 680),
     menuBack: () => playTone(360, .08, 'triangle', .035, 0, 240),

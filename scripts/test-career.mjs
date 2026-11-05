@@ -58,9 +58,15 @@ assert.equal(unlockedOf({ ...finished(0), unlocked: 9 }), 1, 'the stored place i
 assert.equal(progressOf({ ...finished(0, 1), unlocked: 9, achievements: {}, stats: {} }).trails, 2, 'progress counts the trails finished, not the stored place');
 
 // ?debug=1 opens every trail, without counting any as finished.
-globalThis.location = /** @type {any} */ ({ search: '?debug=1' });
+globalThis.location = /** @type {any} */ ({ hostname: 'localhost', search: '?debug=1' });
 assert.equal(unlockedOf(finished()), last, 'debug mode opens every trail');
 assert.equal(progressOf({ ...finished(0), achievements: {}, stats: {} }).trails, 1, 'and counts only what was finished');
+globalThis.location = /** @type {any} */ ({ hostname: '192.168.1.20', search: '?debug=1' });
+assert.equal(unlockedOf(finished()), last, 'and works on the local network, for testing on a phone');
+for (const hostname of ['example.com', 'deploy-preview-1--example.netlify.app', '10.example.com']) {
+  globalThis.location = /** @type {any} */ ({ hostname, search: '?debug=1' });
+  assert.equal(unlockedOf(finished()), 0, `but never on a public address such as ${hostname}`);
+}
 delete globalThis.location;
 
 console.log('Career tests passed.');

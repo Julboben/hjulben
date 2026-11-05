@@ -31,7 +31,7 @@ import { gearCard, legacyRider, lookOf, lookParts, newlyUnlockedItems } from './
 import { createOverlay } from './ui/overlay.js';
 import { keyChoices, keyTextNodes } from './ui/key-text.js';
 import { createMenu, loadStoredState } from './ui/menu.js';
-import { $, session, currentTrailEntry, trailKey, nisseKey, timeText, isRankedSource, bonusUnlock, riderLook, progressOf } from './state.js';
+import { $, session, currentTrailEntry, trailKey, nisseKey, timeText, isRankedSource, bonusUnlock, riderLook, progressOf, debugMode } from './state.js';
 import { isNight } from './time-of-day.js';
 
 const LANDING_SOUND_IMPACT = 45;
@@ -92,10 +92,10 @@ export function startGame({ shared = null } = {}) {
     onRiderChange: () => { claimEditorFeats(); flushPendingRuns(tokenFor); }
   });
 
-  const params = new URLSearchParams(window.location.search);
-  // ?debug=1 turns on every debugging aid: the frame-rate meter, the readout
-  // of the ride, the physics overlay and traces, and the console tools.
-  const debugEnabled = params.get('debug') === '1';
+  // ?debug=1 turns on every debugging aid, on a developer's machine only (see
+  // debugMode): the frame-rate meter, the readout of the ride, the physics
+  // overlay and traces, and the console tools.
+  const debugEnabled = debugMode();
   const viewport = /** @type {Element} */ (document.querySelector('.viewport'));
   const fpsMeter = debugEnabled ? createFpsMeter(viewport) : null;
   const debugHud = debugEnabled ? createDebugHud(viewport) : null;

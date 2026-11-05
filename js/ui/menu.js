@@ -8,7 +8,7 @@ import {
   readLeaderboard, LEADERBOARD_SIZE, loadPreferences, savePreferences, cleanRiderName,
   restoreOnlineSave, linkSave, readGhost, saveLook, loadSeenVersion, saveSeenVersion, loadSeenHowTo, saveSeenHowTo, applyCloudSave, clearSaveToken, hasNisse
 } from '../storage.js';
-import { DEFAULT_LOOK, itemsForSlot, keepIdentity, lookKey, randomLook, sameLook, starterLook } from '../cosmetics.js';
+import { DEFAULT_LOOK, itemsForSlot, keepIdentity, lookKey, lookParts, randomLook, sameLook, starterLook } from '../cosmetics.js';
 import { createCustomizer, createIdentityPicker, drawLook } from './customizer.js';
 import { ONLINE_LEADERBOARD_EVENT, boardStatus, isOnlineBoardLoading, isOnlineTrail, fetchWorldGhost, settledWorldGhost, refreshOnlineBoard, queuePendingRun, flushPendingRuns, dropPendingRuns } from '../online-leaderboard.js';
 import { registerRider, loginRider, deleteRider, accountErrorText, passkeysSupported, queueSaveSync, fetchCloudSave } from '../account.js';
@@ -296,8 +296,10 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
   });
   // The Garage offers what the active rider has unlocked, checked when it opens.
   let garageOwns = lookOwner(null);
+  // The bike the Garage shows, so a newly picked one can be heard.
+  let garageBike = null;
   const garage = createCustomizer($('garage-look'), {
-    ...customizerHooks, onChange: syncGarage, owns: (slot, id) => garageOwns(slot, id)
+    ...customizerHooks, onChange: changeGarage, owns: (slot, id) => garageOwns(slot, id)
   });
   garage.actions.append($('save-look'));
 
@@ -324,6 +326,15 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     $('save-look').disabled = !session.saveGame || sameLook(garage.look(), session.look);
   }
 
+  /** A change in the Garage: a different bike revs, or rings its bell. */
+  function changeGarage(look) {
+    if (look.bike !== garageBike) {
+      garageBike = look.bike;
+      sounds.revBike(lookParts(look).bike);
+    }
+    syncGarage();
+  }
+
   function openGarage() {
     if (!session.saveGame) return;
     // The rider's name, then their gender, in the rider list's symbols.
@@ -343,6 +354,7 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     garageOwns = lookOwner(session.saveGame);
     // Opens on the tab the rider was last on.
     garage.setLook(session.look);
+    garageBike = session.look.bike;
     syncGarage();
     showView('look');
   }
