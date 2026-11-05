@@ -2257,13 +2257,16 @@ function drawHeadwear(rect, shape, colors) {
  */
 function drawRiderHead(rect, parts, colors, { bare = !parts.helmet, loose = false } = {}) {
   const shape = parts.shapes.helmet;
-  if (bare) drawBareHead(rect, colors, parts.hair);
-  else if (shape === "mx") drawMxHelmet(rect, colors);
+  if (bare) {
+    drawBareHead(rect, colors, parts.hair);
+    drawEyewear(rect, parts.eyewear);
+  } else if (shape === "mx") drawMxHelmet(rect, colors);
   else if (isHeadwear(shape)) {
     if (!loose) {
       const { extra } = parts.hair;
       const hair = extra && !HAIR_UNDER_HEADWEAR.has(extra) ? { ...parts.hair, extra: null } : parts.hair;
       drawBareHead(rect, colors, hair);
+      drawEyewear(rect, parts.eyewear);
     }
     drawHeadwear(rect, shape, colors);
   } else drawHelmetShell(rect, colors);
@@ -2381,6 +2384,33 @@ const BEARDS = {
   full: ["", "", "", "", "  Hh   ", "  HHHmH", " OHHbHH", "  OOOOO"],
   lumberjack: ["", "", "", "", "  Hh   ", "  HHHmH", " OHhHHH", "  OHHbHO", "   OHHO", "    OO "],
 };
+
+// Eyewear over BARE_HEAD, as rows over it: F the frame (or patch) in the
+// accessory colour, f its highlight, S its shade, L a clear lens, D a dark
+// one and g its glint. Glasses leave the eye showing behind the lens; a
+// patch covers it, its strap running up over the crown.
+const EYEWEAR = {
+  glasses: ["", "", "", "  SF L"],
+  sunglasses: ["", "", "", "  SFDg"],
+  eyepatch: ["", " S", "  S", "   Ff", "    S"],
+};
+
+/** Eyewear from lookParts().eyewear over the bare head, in drawBareHead's units. */
+function drawEyewear(rect, eyewear) {
+  const rows = eyewear && EYEWEAR[eyewear.shape];
+  if (!rows) return;
+  drawPixelRows(rect, -6, -8, rows, {
+    F: eyewear.base,
+    f: eyewear.light,
+    S: eyewear.shade,
+    L: "#c4e2dc",
+    D: "#1d2023",
+    g: "#5d6468",
+  });
+}
+
+/** Whether an eyewear shape has art (see EYEWEAR). */
+export const hasEyewearArt = (shape) => Object.hasOwn(EYEWEAR, shape);
 
 /** Whether a beard shape has art (see BEARDS). */
 export const hasBeardArt = (shape) => Object.hasOwn(BEARDS, shape);
@@ -7211,6 +7241,13 @@ export function createGameArt(ctx) {
       const torsoKeys = { O: outline, J: colors.jacket, j: colors.jacketLight, d: colors.jacketShade, P: colors.panel };
       for (const [key, color] of Object.entries(style.keys)) torsoKeys[key] = colors[color];
       bodyRows(-16 + shift, style.torsoY, style.torso, torsoKeys);
+      // A scarf worn as an accessory wraps the neck above the collar, the
+      // way the puffer's does; its loose end trails from there.
+      if (parts.accessory?.wrap) {
+        bodyRect(-6 + shift, style.torsoY - 2, 8, 2, parts.accessory.shade);
+        bodyRect(-6 + shift, style.torsoY, 8, 2, parts.accessory.fill);
+        bodyRect(-2 + shift, style.torsoY, 2, 2, parts.accessory.light);
+      }
 
       // Arm sloping down to the raised handlebar, bent at a dropped elbow.
       const sleeve = colors[style.sleeveColor];

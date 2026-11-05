@@ -25,7 +25,8 @@ import { RELEASES } from '../changelog.js';
 import { ACHIEVEMENTS, ACHIEVEMENT_GROUPS, statProgressText } from '../achievements.js';
 import {
   $, session, reducedMotion, DEFAULT_BINDINGS, DEFAULT_PREFERENCES, sanitizePreferences,
-  leaderboardTrails, trailKey, nisseKey, trailMarker, runTimeText, bonusUnlock, lookOwner, riderLook, lookItemHint, progressOf, unlockedOf
+  leaderboardTrails, trailKey, nisseKey, trailMarker, runTimeText, bonusUnlock, lookOwner, riderLook, lookItemHint, progressOf, unlockedOf,
+  lookItemProgress, unseenGear, markGearSeen, garageRoom
 } from '../state.js';
 
 // Runs made without a savegame have no name.
@@ -294,12 +295,21 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     ...customizerHooks,
     onChange: look => { creatorTouched = !sameLook(look, creatorStart); }
   });
-  // The Garage offers what the active rider has unlocked, checked when it opens.
+  // The Garage offers what the active rider has unlocked, checked when it opens,
+  // with what they have won since they last looked tagged NEW for the visit.
   let garageOwns = lookOwner(null);
+  let garageProgress = null;
+  let garageFresh = new Set();
   // The bike the Garage shows, so a newly picked one can be heard.
   let garageBike = null;
   const garage = createCustomizer($('garage-look'), {
-    ...customizerHooks, onChange: changeGarage, owns: (slot, id) => garageOwns(slot, id)
+    ...customizerHooks, onChange: changeGarage, owns: (slot, id) => garageOwns(slot, id),
+    // A locked item says how close the rider is, too.
+    hint: item => [lookItemHint(item), lookItemProgress(item, garageProgress)].filter(Boolean).join(' · '),
+    isNew: (slot, id) => garageFresh.has(slot + ':' + id),
+    onSeen: keys => markGearSeen(session.saveGame, keys),
+    room: () => garageRoom(session.saveGame),
+    onPet: () => sounds.woof()
   });
   garage.actions.append($('save-look'));
 
@@ -352,6 +362,8 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     name.textContent = session.saveGame.name;
     $('garage-rider').replaceChildren(name, genderText, genderMark);
     garageOwns = lookOwner(session.saveGame);
+    garageProgress = progressOf(session.saveGame);
+    garageFresh = new Set(unseenGear(session.saveGame));
     // Opens on the tab the rider was last on.
     garage.setLook(session.look);
     garageBike = session.look.bike;
@@ -710,6 +722,7 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     $('menu-first-ride').classList.toggle('menu-action-primary', !resumable);
     $('menu-riders').hidden = !hasSave;
     $('menu-garage').hidden = !hasSave;
+    $('garage-new-badge').hidden = !hasSave || !unseenGear(session.saveGame).length;
     $('menu-achievements').hidden = !hasSave;
     if (hasSave) $('menu-achievements-detail').textContent = earnedCount(progressOf(session.saveGame)) + ' / ' + ACHIEVEMENTS.length + ' earned';
     buildSaveSlots();

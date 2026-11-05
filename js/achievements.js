@@ -48,12 +48,15 @@ import { WHEELBASE } from './config.js';
  *   name: string, blurb: import('./ui/key-text.js').KeyText, icon: string,
  *   secret?: boolean, hint?: string,
  *   career?: (progress: CareerProgress) => boolean,
+ *   tally?: (progress: CareerProgress) => [number, number],
  *   stat?: string, goal?: number, unit?: 'tenths',
  *   event?: (event: any) => boolean,
  *   finish?: (run: FinishedRun) => boolean,
  *   interact?: string, egg?: string, editor?: 'publish' | 'share' | 'playtest'
  * }} Achievement
  *   `hint` is shown in place of the blurb while a secret is still hidden.
+ *   `tally` counts a career goal as done and needed, for the Garage to show
+ *   how close a rider is to the item it wins.
  */
 
 /** The achievement groups, in the order the menu lists them. */
@@ -75,7 +78,8 @@ export const ACHIEVEMENTS = /** @type {readonly Achievement[]} */ (Object.freeze
   },
   {
     id: 'career-rider', group: 'career', name: 'Career Rider', icon: 'flag',
-    blurb: 'Finish every official trail.', career: p => everyTrail(p.trails, p.officialTotal)
+    blurb: 'Finish every official trail.', career: p => everyTrail(p.trails, p.officialTotal),
+    tally: p => [p.trails, p.officialTotal]
   },
   {
     id: 'golden-touch', group: 'career', name: 'Golden Touch', icon: 'trophy',
@@ -83,7 +87,8 @@ export const ACHIEVEMENTS = /** @type {readonly Achievement[]} */ (Object.freeze
   },
   {
     id: 'gold-rush', group: 'career', name: 'Gold Rush', icon: 'pickaxe',
-    blurb: 'Win gold on every official trail.', career: p => everyTrail(p.golds, p.officialTotal)
+    blurb: 'Win gold on every official trail.', career: p => everyTrail(p.golds, p.officialTotal),
+    tally: p => [p.golds, p.officialTotal]
   },
   {
     id: 'off-the-beaten-path', group: 'career', name: 'Off the Beaten Path', icon: 'tree',
@@ -110,7 +115,8 @@ export const ACHIEVEMENTS = /** @type {readonly Achievement[]} */ (Object.freeze
   {
     id: 'nisse-hunter', group: 'career', name: 'Nisse Hunter', icon: 'nisse',
     blurb: 'Find the nisse on every official trail that hides one.',
-    career: p => everyTrail(p.nisseFound ?? 0, p.nisseTotal ?? 0)
+    career: p => everyTrail(p.nisseFound ?? 0, p.nisseTotal ?? 0),
+    tally: p => [p.nisseFound ?? 0, p.nisseTotal ?? 0]
   },
 
   {

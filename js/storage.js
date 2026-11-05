@@ -13,6 +13,7 @@ const ACTIVE_SLOT_KEY = 'hjulben-active-slot-v1';
 const LEADERBOARD_KEY = 'hjulben-leaderboard-v1';
 const SEEN_VERSION_KEY = 'hjulben-seen-version-v1';
 const SEEN_HOW_TO_KEY = 'hjulben-seen-how-to-v1';
+const SEEN_GEAR_KEY = 'hjulben-seen-gear-v1';
 const SLOT_COUNT = 3;
 export const LEADERBOARD_SIZE = 10;
 export { STORAGE_FAILED_EVENT };
@@ -145,6 +146,26 @@ export function loadSeenHowTo() {
 
 export function saveSeenHowTo() {
   writeJson(SEEN_HOW_TO_KEY, true);
+}
+
+/**
+ * The won rider items each rider has seen in the Garage on this device, by
+ * player id, as 'slot:id' keys; null for a rider with no record yet. Kept
+ * apart from the saves, as a NEW badge only matters on the device showing it.
+ * @returns {string[] | null}
+ */
+export function loadSeenGear(playerId) {
+  const seen = readJson(SEEN_GEAR_KEY, {})?.[playerId];
+  return Array.isArray(seen) ? seen.filter(key => typeof key === 'string') : null;
+}
+
+/** @param {string[] | null} keys  null forgets the rider */
+export function saveSeenGear(playerId, keys) {
+  const stored = readJson(SEEN_GEAR_KEY, {});
+  const next = { ...(stored && typeof stored === 'object' && !Array.isArray(stored) ? stored : {}) };
+  if (keys) next[playerId] = [...new Set(keys)];
+  else delete next[playerId];
+  writeJson(SEEN_GEAR_KEY, next);
 }
 
 export function loadPreferences(defaults) {
@@ -345,6 +366,8 @@ export function applyCloudSave(slotIndex, trailCount, { player, save: cloud }) {
 
 export function deleteSave(slotIndex, trailCount) {
   const next = [...slots(trailCount)];
+  const playerId = next[clamp(slotIndex, 0, SLOT_COUNT - 1)]?.playerId;
+  if (playerId) saveSeenGear(playerId, null);
   next[clamp(slotIndex, 0, SLOT_COUNT - 1)] = null;
   persistSlots(trailCount, next);
 }

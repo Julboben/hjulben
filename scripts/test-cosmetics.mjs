@@ -5,11 +5,12 @@ import assert from 'node:assert/strict';
 import {
   LOOK_SLOTS, IDENTITY_SLOTS, LOOK_PARTS, SLOT_LABELS, LOOK_ITEMS, DEFAULT_LOOK, STARTER_LOOKS, lookItem, itemsForSlot,
   isDefaultItem, starterLook, legacyLook, legacyRider, normalizeLook, keepIdentity, lookOf, isCompleteLook, lookKey,
-  sameLook, isColorless, partName, randomLook, lookParts, ownsWith, ownedLook, shownItemsForSlot, newlyUnlockedItems, gearCard
+  sameLook, isColorless, partName, randomLook, lookParts, ownsWith, ownedLook, shownItemsForSlot, newlyUnlockedItems, gearCard,
+  accessoryHiddenBy
 } from '../js/cosmetics.js';
 import { lookUnlock } from '../js/unlocks.js';
 import { readFileSync } from 'node:fs';
-import { BIKE_MODELS, hasBeardArt, hasOutfitStyle, isHeadwear } from '../js/drawing.js';
+import { BIKE_MODELS, hasBeardArt, hasEyewearArt, hasOutfitStyle, isHeadwear } from '../js/drawing.js';
 import { BIKE_LAMPS } from '../js/bike-lamps.js';
 import { createRagdoll } from '../js/ragdoll.js';
 
@@ -234,9 +235,12 @@ const random = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
 {
   const look = {
     gender: 'female', skin: 'deep', hair: 'bob', hairColor: 'blonde', beard: 'none', helmet: 'none', helmetColor: 'teal',
-    outfit: 'street', outfitColor: 'yellow', bike: 'classic', bikeColor: 'blue'
+    outfit: 'street', outfitColor: 'yellow', bike: 'classic', bikeColor: 'blue', accessory: 'glasses', accessoryColor: 'red'
   };
   assert.deepEqual(normalizeLook(look), look);
+  // A look from before accessories wears none.
+  const { accessory: _accessory, accessoryColor: _accessoryColor, ...older } = look;
+  assert.equal(normalizeLook(older).accessory, 'none', 'looks from before accessories wear none');
   assert.ok(isCompleteLook(look));
   assert.ok(!isCompleteLook({ ...look, bike: 'rocket' }));
   assert.deepEqual(normalizeLook(null), DEFAULT_LOOK);
@@ -254,11 +258,29 @@ const random = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
   assert.deepEqual(worn, { ...look, hair: starter.hair, outfitColor: starter.outfitColor, bike: starter.bike });
   assert.ok(!Object.hasOwn(normalizeLook({ ...look, extra: 1 }), 'extra'));
 
+  // Eyewear shows on a bare head or under headwear; a full-face helmet hides
+  // it. A scarf trails, unless the outfit trails its own cape or scarf.
+  const glasses = { ...look, accessory: 'glasses' };
+  assert.equal(accessoryHiddenBy(glasses), null);
+  assert.equal(accessoryHiddenBy({ ...glasses, helmet: 'cap' }), null);
+  assert.equal(accessoryHiddenBy({ ...glasses, helmet: 'mx' })?.id, 'mx');
+  assert.equal(lookParts(glasses).eyewear?.shape, 'glasses');
+  assert.equal(lookParts(glasses).eyewear?.base, lookItem('accessoryColor', 'red').colors.base, 'eyewear takes the accessory colour');
+  const scarf = { ...look, accessory: 'scarf' };
+  assert.equal(accessoryHiddenBy(scarf), null);
+  assert.equal(lookParts(scarf).accessory?.shape, 'scarf');
+  assert.ok(lookParts(scarf).accessory?.wrap, 'a worn scarf wraps the neck');
+  assert.equal(accessoryHiddenBy({ ...scarf, outfit: 'superhero' })?.id, 'superhero');
+  assert.equal(lookParts({ ...scarf, outfit: 'superhero' }).accessory?.shape, 'cape', 'the outfit\'s cape wins');
+  for (const item of itemsForSlot('accessory')) {
+    if (item.eyewear) assert.ok(hasEyewearArt(item.eyewear), `${item.id} has eyewear art`);
+  }
+
   assert.deepEqual(lookOf({ rider: 'female' }), legacyLook('female'), 'old records keep their rider');
   assert.deepEqual(lookOf({ rider: 'female', look }), look, 'a look wins over the old rider');
   assert.deepEqual(lookOf({}), legacyLook('male'));
 
-  assert.equal(lookKey(look), 'female.deep.bob.blonde.none.none.teal.street.yellow.classic.blue');
+  assert.equal(lookKey(look), 'female.deep.bob.blonde.none.none.teal.street.yellow.classic.blue.glasses.red');
   assert.ok(sameLook(look, { ...look }));
   assert.ok(!sameLook(look, DEFAULT_LOOK));
   assert.equal(lookParts(look), lookParts({ ...look }), 'equal looks share their parts');

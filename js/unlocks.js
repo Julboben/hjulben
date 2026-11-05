@@ -54,6 +54,10 @@ export const UNLOCKS = Object.freeze({
 
   'look:hair:big-curls': { trail: 'bonus:the-bonny-tyler' },
   'look:helmet:dunce': { achievement: 'i-saw-that' },
+
+  // Accessories, each with the achievement it suits.
+  'look:accessory:sunglasses': { achievement: 'show-off' },
+  'look:accessory:eyepatch': { achievement: 'here-be-kraken' }, // Secret: a pirate's
 });
 
 /**
