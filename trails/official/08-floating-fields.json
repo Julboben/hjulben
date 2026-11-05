@@ -2741,6 +2741,18 @@
       "y": 55,
       "type": "tree",
       "layer": "back"
+    },
+    {
+      "x": 5317.143335061968,
+      "y": 297.5659296166116,
+      "type": "hanging-roots",
+      "layer": "back"
+    },
+    {
+      "x": 1235.5420141694035,
+      "y": 303.0987295845666,
+      "type": "hanging-roots",
+      "layer": "back"
     }
   ],
   "spikes": [],

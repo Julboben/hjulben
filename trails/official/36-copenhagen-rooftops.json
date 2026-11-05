@@ -5,9 +5,6 @@
     "y": -122
   },
   "description": "The one where you climb a scaffold off a sunny Copenhagen street, ride the roofs past the spire of Vor Frelsers Kirke and break through a glass courtyard roof to get back down.\nRoute: 1 Street: the kerbs of a side street, a cafe terrace with two steps up and a ramp down. 2 Scaffold: plank ramps up a house under renovation, a pallet of bricks to hop, a missing plank to jump, a long top lift for speed and a kicker to the first roof's gutter (come up short and you hang from it by the front wheel). 3 Roofs: two chimneys to hop, the slate kicker over the gap in front of the church tower, a dormer over a tall chimney, a second dormer up to a balcony, the steep slate above it, a gap down to a roof terrace, and a tall tiled roof to climb on momentum. 4 Courtyard: roll off its gutter onto the glass roof; it breaks and drops you on the loft, and galleries step down to the yard. 5 Out through the carriage arch and up three steps to the flower above the terrace.\nApples in order: 1 under the cafe awning (pop the steps). 2 over the missing plank (jump, don't drop in). 3 on the tall chimney (launch off the dormer). 4 on the balcony (a short, precise hop: too long hits the wall, too short lands back on the roof). 5 high over the terrace pergola: ride up the tiled roof, roll back, turn and launch left off the hump (needs the turn; checked with --without turn). 6 in the courtyard under the loft: only reached from above, so turn back for it once down.\nRecovery: a fall off the scaffold lands on the street, ride up again. Missing the balcony or apple 5 costs time on the roof, not the run. Only the gaps between roofs end it.\nLook: the street is back walls with glass windows cut in, shops, awnings, balconies and flower boxes; the houses you ride are terrain facades; a second row and the spire rise behind.",
-  "lesson": "The City, all at once: kerbs and steps, a scaffold to climb, hops and gaps across the roofs, and a glass roof that breaks under you. A long run where only the gaps between roofs end it.",
-  "alsoNew": "A sunny Copenhagen street drawn from terrain, the spire of Vor Frelsers Kirke and a glass courtyard roof.",
-  "world": "The City",
   "start": {
     "x": 110,
     "y": null,
@@ -422892,10 +422889,17 @@
     "windDirection": "left"
   },
   "timeOfDay": 10,
+  "lesson": "The City, all at once: kerbs and steps, a scaffold to climb, hops and gaps across the roofs, and a glass roof that breaks under you. A long run where only the gaps between roofs end it.",
+  "alsoNew": "A sunny Copenhagen street drawn from terrain, the spire of Vor Frelsers Kirke and a glass courtyard roof.",
+  "world": "The City",
   "medals": {
     "gold": 56,
     "silver": 73,
     "bronze": 98
   },
-  "backdrop": "city"
+  "backdrop": "city",
+  "preview": {
+    "x": 3436,
+    "y": -1193
+  }
 }

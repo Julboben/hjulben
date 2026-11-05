@@ -651,8 +651,11 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     const bounds = backgroundCanvas.getBoundingClientRect();
     if (!bounds.width || !bounds.height) return;
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    backgroundCanvas.width = Math.round(bounds.width * dpr);
-    backgroundCanvas.height = Math.round(bounds.height * dpr);
+    // Resizing clears and reallocates the canvas, so it is only done when the
+    // size changes, not on every frame of the drifting clouds.
+    const width = Math.round(bounds.width * dpr), height = Math.round(bounds.height * dpr);
+    if (backgroundCanvas.width !== width) backgroundCanvas.width = width;
+    if (backgroundCanvas.height !== height) backgroundCanvas.height = height;
     const backgroundContext = backgroundCanvas.getContext('2d');
     backgroundContext.setTransform(dpr, 0, 0, dpr, 0, 0);
     backgroundContext.imageSmoothingEnabled = false;
@@ -660,8 +663,26 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
       width: bounds.width, height: bounds.height,
       palette: trails[session.saveGame?.trail || 0],
       cameraX: 260, cameraY: 0,
-      full: session.preferences.scenery === 'full'
+      full: session.preferences.scenery === 'full',
+      // Moves land on device pixels rather than art pixels, as in the game,
+      // so the drifting clouds glide instead of stepping.
+      smooth: true,
+      sceneTime: reducedMotion ? 0 : performance.now() / 1000
     });
+  }
+
+  // The clouds drift in the trail's wind while the menu is open. The browser
+  // holds animation frames in a hidden tab, so the loop pauses there too.
+  let backgroundFrame = 0;
+  function animateBackground() {
+    if (backgroundFrame || reducedMotion) return;
+    const step = () => {
+      backgroundFrame = 0;
+      if (!isOpen() || reducedMotion) return;
+      drawBackground();
+      backgroundFrame = requestAnimationFrame(step);
+    };
+    backgroundFrame = requestAnimationFrame(step);
   }
 
   function updateDashboard() {
@@ -822,6 +843,7 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     syncWhatsNew();
     updateDashboard();
     showView('home');
+    animateBackground();
     requestAnimationFrame(() => selectControl($(canResume() || session.saveGame ? 'menu-continue' : 'menu-first-ride')));
     refreshCloudSave();
   }

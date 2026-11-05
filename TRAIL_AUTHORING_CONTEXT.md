@@ -8482,7 +8482,7 @@ Example trail: hard.
           {
             "id": "n26tt8",
             "x": -5500,
-            "y": -1013.8975095967725,
+            "y": -1013.8975,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -10686,8 +10686,8 @@ Example trail: hard.
   ],
   "weather": {
     "sun": 0,
-    "clouds": 0,
-    "fog": 0,
+    "clouds": 1,
+    "fog": 0.3,
     "rain": 0.2,
     "snow": 1,
     "lightning": 1,
@@ -10696,6 +10696,10 @@ Example trail: hard.
   },
   "timeOfDay": 0,
   "author": "Nikolaj Gunge",
-  "backdrop": "mountains"
+  "backdrop": "mountains",
+  "preview": {
+    "x": 343,
+    "y": -315
+  }
 }
 ```

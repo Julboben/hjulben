@@ -46,7 +46,7 @@ It runs in the browser with no build step and no runtime dependencies, built wit
 - A career of progressively longer and harder trails with gaps, caves, water, and floating blocks to ride across
 - Bonus trails outside the career, often made by other riders, with their own best times and world boards, some unlocked by finishing trails or winning gold medals
 - Grass, dirt, sand, concrete, stone, snow, brick, wood, and glass terrain materials
-- Per-trail weather: sun, clouds, fog, rain, snow (together for sleet), lightning, and a wind with its own strength and direction that blows the rain, snow and props the same way, with procedural rain and wind ambience and distance-aware thunder
+- Per-trail weather: sun, clouds, fog, rain, snow (together for sleet), lightning, and a wind with its own strength and direction that blows the clouds, rain, snow and props the same way, with procedural rain and wind ambience and distance-aware thunder
 - Water you can ride through: shallow fords drag the bike and slow it down, deeper water wipes the rider out, and the ragdoll floats on the surface with splashes, wakes and sound; water lilies, reeds, seaweed, fish that dart off and ducks that take off when you come close
 - Squirrels that run to the nearest tree, climb it and hide in the crown when you come close
 - Coda the corgi, who trots over to greet you with a woof, and sits and pants when you press `E`

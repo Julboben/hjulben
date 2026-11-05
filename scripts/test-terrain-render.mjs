@@ -312,6 +312,72 @@ const drawCalls = (renderer, trail, x, y, w, h) => {
   globalThis.OffscreenCanvas = Offscreen;
 }
 
+// The clouds drift downwind on the scene's clock, as far as the wind's
+// strength takes them, and stand still in still air.
+{
+  const { createGameArt } = await import('../js/drawing.js');
+  // Each canvas keeps its own fills, as the cloud layers are cached and drawn
+  // again on later frames.
+  const recorder = () => {
+    const target = { fillStyle: '#000', fills: [], images: [] };
+    return new Proxy(target, {
+      get(object, property) {
+        if (property in object) return object[property];
+        if (property === 'fillRect') return (...args) => object.fills.push(args);
+        if (property === 'drawImage') return (...args) => object.images.push(args);
+        if (property === 'getTransform') return () => ({ a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 });
+        if (property === 'createLinearGradient' || property === 'createRadialGradient') return () => ({ addColorStop() {} });
+        return () => {};
+      },
+      set(object, property, value) { object[property] = value; return true; },
+    });
+  };
+  const Offscreen = globalThis.OffscreenCanvas;
+  globalThis.OffscreenCanvas = class {
+    constructor(width, height) { this.width = width; this.height = height; this.context = recorder(); }
+    getContext() { return this.context; }
+  };
+  const view = recorder();
+  const art = createGameArt(view);
+  const cell = 4;
+  // Every cloud cell on screen, as "x,y", from the one-cell-wide spans the
+  // cloud layer is painted with. With no sun there is no glow over them.
+  const cloudsAt = (sceneTime, wind, windDirection = 'right') => {
+    view.images.length = 0;
+    art.drawBackground({
+      width: 800, height: 400, full: false, sceneTime,
+      palette: { timeOfDay: 12, weather: { sun: 0, clouds: 0.4, wind, windDirection } },
+    });
+    const [[layer, left, top]] = view.images.filter(([image]) => image.context);
+    const cells = new Set();
+    for (const [column, row, width, height] of layer.context.fills)
+      if (width === 1)
+        for (let r = row; r < row + height; r++) cells.add(`${left + column * cell},${top + r * cell}`);
+    return cells;
+  };
+  // Of the cells in the middle of the view that are cloud before or after
+  // (`shift` along), the share that are cloud both times.
+  const moved = (before, after, shift) => {
+    let both = 0, either = 0;
+    for (let x = 200; x < 600; x += cell)
+      for (let y = 0; y < 400; y += cell) {
+        const was = before.has(`${x},${y}`), is = after.has(`${x + shift},${y}`);
+        if (was || is) either++;
+        if (was && is) both++;
+      }
+    return either ? both / either : 1;
+  };
+  const still = cloudsAt(0, 1);
+  check('there are clouds to drift', moved(still, new Set(), 0) === 0);
+  check('a gale blows the clouds right, 24 units a second', moved(still, cloudsAt(5, 1), 120) === 1);
+  check('and left when it blows the other way', moved(cloudsAt(0, 1, 'left'), cloudsAt(5, 1, 'left'), -120) === 1);
+  check('a lighter wind moves them in proportion', moved(cloudsAt(0, 0.5), cloudsAt(5, 0.5), 60) === 1);
+  check('the clouds stand still in still air', moved(cloudsAt(0, 0), cloudsAt(5, 0), 0) === 1);
+  // The banks sit in regular slots, so some still overlap where they were.
+  check('the clouds really moved', moved(still, cloudsAt(5, 1), 0) < 0.9);
+  globalThis.OffscreenCanvas = Offscreen;
+}
+
 dom.restore();
 console.log(failures ? `\n${failures} failing` : '\nTerrain render tests passed.');
 process.exit(failures ? 1 : 0);

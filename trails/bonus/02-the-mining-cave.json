@@ -3282,5 +3282,9 @@
   },
   "timeOfDay": 7,
   "backdrop": "forest",
-  "author": "Nikolaj Gunge"
+  "author": "Nikolaj Gunge",
+  "preview": {
+    "x": 207,
+    "y": 224
+  }
 }

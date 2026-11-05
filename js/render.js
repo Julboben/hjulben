@@ -2097,6 +2097,7 @@ export function createRenderer(canvas, { still = false } = {}) {
       cameraY,
       full,
       smooth: true,
+      sceneTime: propScene.time,
     });
     ctx.save();
     ctx.translate(-cameraX, -cameraY);

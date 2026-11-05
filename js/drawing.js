@@ -497,6 +497,9 @@ const CLOUD_ROW_SPACING = 180;
 const CLOUD_CELL = 4;
 // Each row of cloud banks has one bank, or none, per slot this wide.
 const CLOUD_SLOT = 170;
+// How fast, in world units a second, the clouds drift across the sky in a
+// gale; a lighter wind moves them in proportion, and still air not at all.
+const CLOUD_DRIFT = 24;
 const cloudLayers = new Map();
 
 /**
@@ -5062,6 +5065,8 @@ export function createGameArt(ctx) {
     cameraY = 0,
     full = true,
     smooth = false,
+    // Seconds on the scene's clock, for the clouds drifting in the wind.
+    sceneTime = 0,
   }) {
     // Offsets land on whole device pixels so pixel rows never blend at their seams.
     const deviceScale = smooth ? ctx.getTransform().a : 1 / ART_PIXEL;
@@ -5167,7 +5172,9 @@ export function createGameArt(ctx) {
       ctx.restore();
     }
     if (cloudiness > 0) {
-      const scrollX = cameraX * 0.07;
+      // The clouds drift downwind, so the view moves through them upwind.
+      const drift = resolveWeather(weather);
+      const scrollX = cameraX * 0.07 - windSign(drift) * drift.wind * CLOUD_DRIFT * sceneTime;
       // Rows above the first only come into view once the camera climbs.
       const cloudShift = -cameraY * 0.08;
       const overcast = Math.max(0, (cloudiness - 0.8) / 0.2);
