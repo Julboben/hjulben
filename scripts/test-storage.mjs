@@ -104,4 +104,46 @@ const ghost = (time, physics = RIDE_VERSION) => ({ time, splits: [], startStep: 
   assert.equal(storage.loadSaveSlots(TRAILS)[0].bestTimes['official:e@6666'], 9, 'its time still counts as a best');
 }
 
+// --- The ghost a rider races -------------------------------------------------
+
+{
+  const look = { gender: 'male', skin: 'fair' };
+  const id = '0a1b2c3d-2222-4222-8333-444455556666';
+  const player = { id, name: 'Søren', look };
+  const online = storage.createSave(1, look, TRAILS, 'Søren', { playerId: id, token: 'aaa.bbb' }, 'world');
+  assert.equal(online.ghost, 'world', 'a new rider keeps the ghost picked when it was created');
+  assert.ok(online.ghostUpdatedAt > 0);
+  const offline = storage.createSave(2, look, TRAILS, 'Offline');
+  assert.equal(offline.ghost, null, 'one created without a pick goes by the device\'s setting');
+
+  // A choice made before the setting moved into saves is copied, stamped as old as can be.
+  assert.deepEqual(storage.adoptGhostSetting(TRAILS, 'on', 'on'), [], 'the default is not copied');
+  assert.deepEqual(storage.adoptGhostSetting(TRAILS, 'off', 'on'), [0, 2], 'a changed setting goes to saves without a choice');
+  assert.equal(storage.loadSaveSlots(TRAILS)[2].ghost, 'off');
+  assert.equal(storage.loadSaveSlots(TRAILS)[2].ghostUpdatedAt, 1);
+  assert.equal(storage.loadSaveSlots(TRAILS)[1].ghost, 'world', 'a rider\'s own choice stays');
+
+  // The choice made last wins when the cloud copy arrives, and on a tie the cloud's.
+  const localAt = storage.loadSaveSlots(TRAILS)[1].ghostUpdatedAt;
+  const synced = { lookUpdatedAt: online.lookUpdatedAt };
+  let applied = storage.applyCloudSave(1, TRAILS, { player, save: { ...synced, ghost: 'off', ghostUpdatedAt: localAt - 1 } });
+  assert.equal(applied.save.ghost, 'world', 'a choice made here after the cloud\'s stays');
+  assert.equal(applied.ahead, true, 'and is uploaded');
+  applied = storage.applyCloudSave(1, TRAILS, { player, save: { ...synced, ghost: 'world', ghostUpdatedAt: 0 } });
+  assert.equal(applied.ahead, false, 'a cloud that already has it is not sent it again');
+  applied = storage.applyCloudSave(1, TRAILS, { player, save: { ...synced, ghost: 'off', ghostUpdatedAt: localAt } });
+  assert.equal(applied.save.ghost, 'off', 'a tie goes to the cloud');
+  assert.equal(applied.ahead, false);
+  applied = storage.applyCloudSave(1, TRAILS, { player, save: synced });
+  assert.equal(applied.save.ghost, 'off', 'a cloud copy without a choice keeps this one');
+  assert.equal(applied.ahead, true);
+
+  // Logging in on a new device brings the rider's choice along.
+  storage.deleteSave(1, TRAILS);
+  const index = storage.restoreOnlineSave(TRAILS, { token: 'ccc.ddd', player, save: { ghost: 'world', ghostUpdatedAt: 5 }, runs: [] });
+  assert.equal(storage.loadSaveSlots(TRAILS)[index].ghost, 'world');
+  assert.equal(storage.saveGhostMode(index, TRAILS, 'sideways'), null, 'an unknown ghost is refused');
+  assert.equal(storage.saveGhostMode(index, TRAILS, 'off').ghost, 'off');
+}
+
 console.log('Storage tests passed.');

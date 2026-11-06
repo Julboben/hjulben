@@ -31,7 +31,7 @@ import { gearCard, legacyRider, lookOf, lookParts, newlyUnlockedItems } from './
 import { createOverlay } from './ui/overlay.js';
 import { keyChoices, keyTextNodes } from './ui/key-text.js';
 import { createMenu, loadStoredState } from './ui/menu.js';
-import { $, session, currentTrailEntry, trailKey, nisseKey, timeText, isRankedSource, bonusUnlock, riderLook, progressOf, debugMode } from './state.js';
+import { $, session, currentTrailEntry, trailKey, nisseKey, timeText, isRankedSource, bonusUnlock, riderLook, progressOf, debugMode, ghostMode } from './state.js';
 import { isNight } from './time-of-day.js';
 
 const LANDING_SOUND_IMPACT = 45;
@@ -313,7 +313,7 @@ export function startGame({ shared = null } = {}) {
     syncSound();
     input.setBindings(preferences.bindings);
     renderer.setInteractKey(preferences.bindings.interact?.[0] ? keyLabel(preferences.bindings.interact[0]) : '');
-    if (preferences.ghost === 'off') ghost = null;
+    if (ghostMode() === 'off') ghost = null;
     syncHeadlight();
   }
 
@@ -462,14 +462,14 @@ export function startGame({ shared = null } = {}) {
   /** 'on' races your own best run; 'world' the fastest of that and the world's best. */
   function loadGhost(trail) {
     ghost = null;
-    const mode = session.preferences.ghost;
+    const mode = ghostMode();
     if (mode === 'off') return;
     useGhost(trail, session.trailSource === 'playtest' ? playtestBest : readGhost(trailKey(currentTrailEntry())));
     if (mode !== 'world' || !isRankedSource(session.trailSource)) return;
     const ride = session.ride;
     fetchWorldGhost(trailKey(currentTrailEntry())).then(world => {
       // The player may have restarted, switched trail or changed the setting meanwhile.
-      if (!world || session.ride !== ride || session.preferences.ghost !== 'world') return;
+      if (!world || session.ride !== ride || ghostMode() !== 'world') return;
       if (ghost && ghost.data.time <= world.time) return;
       // Steps the ghost would already have taken alongside the player.
       useGhost(trail, world, ride.started ? recorded.length - startStep : 0);

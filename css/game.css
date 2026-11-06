@@ -3368,6 +3368,11 @@ kbd {
         line-height: 1.5;
     }
 }
+.save-ghost {
+    display: grid;
+    gap: 6px;
+    margin-top: 10px;
+}
 .account-status {
     margin: 10px 0 0;
     color: var(--color-text-muted);

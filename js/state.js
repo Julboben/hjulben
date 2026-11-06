@@ -6,7 +6,7 @@ import { trailHash } from './trail-hash.js';
 import { DEFAULT_LOOK, LOOK_ITEMS, lookItem, ownedLook, ownsWith } from './cosmetics.js';
 import { lookUnlock, trailUnlock, unlockStatus } from './unlocks.js';
 import { achievement, hasAchievement, statProgressText } from './achievements.js';
-import { loadSeenGear, saveSeenGear } from './storage.js';
+import { GHOST_MODES, loadSeenGear, saveSeenGear } from './storage.js';
 import { isNight } from './time-of-day.js';
 
 /** @typedef {import('./types.js').Ride} Ride */
@@ -50,7 +50,7 @@ export const DEFAULT_PREFERENCES = {
 
 const CHOICES = {
   scenery: ['full', 'reduced'], controls: ['show', 'hide'], sound: ['on', 'off'], music: ['on', 'off'],
-  shake: ['on', 'off'], haptics: ['on', 'off'], rumble: ['on', 'off'], ghost: ['on', 'world', 'off'],
+  shake: ['on', 'off'], haptics: ['on', 'off'], rumble: ['on', 'off'], ghost: GHOST_MODES,
   headlight: ['on', 'off']
 };
 
@@ -92,6 +92,12 @@ export const session = {
   /** Save the current ride belongs to, so a slot switch can't resume it. */
   /** @type {number | null} */ rideSaveId: null
 };
+
+/**
+ * The ghost the rider races: the active rider's own choice, which follows
+ * them to other devices, or else this device's setting.
+ */
+export const ghostMode = () => session.saveGame?.ghost ?? session.preferences.ghost;
 
 export const officialTrailIds = officialTrailEntries.map(entry => entry.id);
 export const leaderboardTrails = () => [...officialTrailEntries, ...bonusTrailEntries, ...customTrailEntries];
