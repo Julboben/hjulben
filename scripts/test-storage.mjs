@@ -130,6 +130,8 @@ const ghost = (time, physics = RIDE_VERSION) => ({ time, splits: [], startStep: 
   assert.equal(applied.save.ghost, 'world', 'a choice made here after the cloud\'s stays');
   assert.equal(applied.ahead, true, 'and is uploaded');
   applied = storage.applyCloudSave(1, TRAILS, { player, save: { ...synced, ghost: 'world', ghostUpdatedAt: 0 } });
+  assert.equal(applied.ahead, true, 'the same choice made again is sent, so its newer time outvotes older ones');
+  applied = storage.applyCloudSave(1, TRAILS, { player, save: { ...synced, ghost: 'world', ghostUpdatedAt: localAt } });
   assert.equal(applied.ahead, false, 'a cloud that already has it is not sent it again');
   applied = storage.applyCloudSave(1, TRAILS, { player, save: { ...synced, ghost: 'off', ghostUpdatedAt: localAt } });
   assert.equal(applied.save.ghost, 'off', 'a tie goes to the cloud');

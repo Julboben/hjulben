@@ -406,8 +406,9 @@ export function applyCloudSave(slotIndex, trailCount, { player, save: cloud }) {
   const ahead = cloudUnlocked < merged.unlocked
     // A look changed here (in the Garage, maybe offline) that the cloud hasn't got.
     || merged.lookUpdatedAt > (Number(cloud?.lookUpdatedAt) || 0)
-    // A ghost choice made here that the cloud hasn't got.
-    || Boolean(merged.ghost) && merged.ghost !== cloud?.ghost
+    // A ghost choice made here that the cloud hasn't got, or made again
+    // since: its newer time must reach the cloud to outvote older choices.
+    || Boolean(merged.ghost) && (merged.ghost !== cloud?.ghost || merged.ghostUpdatedAt > (Number(cloud?.ghostUpdatedAt) || 0))
     || Object.entries(merged.bestTimes).some(([key, time]) => !(Number(cloudBest[key]) <= time))
     || aheadOf(merged, cloud)
     // An official or bonus trail's nisse found here and not yet in the cloud.

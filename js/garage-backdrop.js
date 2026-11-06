@@ -91,22 +91,15 @@ const COLORS = {
  */
 
 // Where Coda sits on his bed, from the bike's midpoint and the floor, and the
-// area a click pets him in.
+// area the customizer's Pet Coda button covers.
 const CODA_X = -64;
-const CODA_AREA = { left: -96, right: -36, top: -40, bottom: 2 };
+export const CODA_AREA = { left: -96, right: -36, top: -40, bottom: 2 };
 // How long a pat keeps him panting and wagging, in seconds.
 export const CODA_HAPPY = 3;
 
 // Where the light switch is, the middle of its plate, from the bike's
 // midpoint and the floor: on the wall right of the door.
 export const LIGHT_SWITCH = { dx: 61, dy: -67 };
-
-/**
- * Whether a point in world units, from the bike's midpoint and the floor
- * under it, is on Coda, for petting him.
- */
-export const codaAt = (dx, dy) =>
-  dx >= CODA_AREA.left && dx <= CODA_AREA.right && dy >= CODA_AREA.top && dy <= CODA_AREA.bottom;
 
 /**
  * @param {CanvasRenderingContext2D} ctx  in world units

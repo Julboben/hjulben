@@ -8,7 +8,7 @@
 import { trails } from '../trails.js';
 import { RADIUS } from '../config.js';
 import { drawFigure, posedRide } from '../scene-preview.js';
-import { CODA_HAPPY, LIGHT_SWITCH, codaAt, drawGarage } from '../garage-backdrop.js';
+import { CODA_AREA, CODA_HAPPY, LIGHT_SWITCH, drawGarage } from '../garage-backdrop.js';
 import {
   DEFAULT_LOOK, LOOK_PARTS, SLOT_LABELS, extraHiddenBy, isColorless, isDefaultItem, itemsForSlot, lookItem, lookKey,
   normalizeLook, partName, randomLook, sameLook, shownItemsForSlot, starterLook
@@ -62,19 +62,9 @@ function posed() {
 }
 
 /**
- * Where a point on the big preview, as fractions of its width and height,
- * is in the garage: from the bike's midpoint and the floor under it.
+ * Where a point in the garage, from the bike's midpoint and the floor under
+ * it, is on the big preview, as fractions of its width and height.
  */
-function previewSpot(fx, fy) {
-  const { x, y, ride } = posed();
-  const frame = SWATCH_VIEWS.full;
-  return {
-    dx: frame.dx * ride.facing + (fx - 0.5) * frame.width,
-    dy: y + frame.dy + (fy - 0.5) * frame.height - (y + RADIUS),
-  };
-}
-
-/** Where a point in the garage is on the big preview, as fractions of its width and height (see previewSpot). */
 function previewPlace(dx, dy) {
   const { ride } = posed();
   const frame = SWATCH_VIEWS.full;
@@ -221,7 +211,18 @@ export function createCustomizer(root, {
   const switchAt = previewPlace(LIGHT_SWITCH.dx, LIGHT_SWITCH.dy);
   lightSwitch.style.left = `${switchAt.fx * 100}%`;
   lightSwitch.style.top = `${switchAt.fy * 100}%`;
-  stage.append(preview, lightSwitch);
+  // Pets Coda: an unseen button over him, so a click, a key or a gamepad all reach him.
+  const coda = element('button', 'look-coda');
+  coda.type = 'button';
+  coda.setAttribute('aria-label', 'Pet Coda');
+  coda.title = 'Pet Coda';
+  coda.hidden = true;
+  const codaFrom = previewPlace(CODA_AREA.left, CODA_AREA.top), codaTo = previewPlace(CODA_AREA.right, CODA_AREA.bottom);
+  coda.style.left = `${Math.min(codaFrom.fx, codaTo.fx) * 100}%`;
+  coda.style.top = `${codaFrom.fy * 100}%`;
+  coda.style.width = `${Math.abs(codaTo.fx - codaFrom.fx) * 100}%`;
+  coda.style.height = `${(codaTo.fy - codaFrom.fy) * 100}%`;
+  stage.append(preview, lightSwitch, coda);
 
   const top = element('div', 'look-top');
   top.append(tabs, stage);
@@ -359,19 +360,7 @@ export function createCustomizer(root, {
     frameRequest = requestAnimationFrame(animate);
   }
 
-  /** Where a pointer event is on the big preview, in the garage (see previewSpot). */
-  function spotOf(event) {
-    const box = preview.getBoundingClientRect();
-    return previewSpot((event.clientX - box.left) / box.width, (event.clientY - box.top) / box.height);
-  }
-  const onCoda = event => {
-    if (!furnished?.coda) return false;
-    const { dx, dy } = spotOf(event);
-    return codaAt(dx, dy);
-  };
-  preview.addEventListener('pointermove', event => { preview.style.cursor = onCoda(event) ? 'pointer' : ''; });
-  preview.addEventListener('click', event => {
-    if (!onCoda(event)) return;
+  coda.addEventListener('click', () => {
     pettedAt = performance.now();
     onPet();
     drawPreview(pettedAt);
@@ -409,6 +398,8 @@ export function createCustomizer(root, {
     options.replaceChildren(...items.map(item => {
       const locked = !owns(slot, item.id);
       const option = radio('look-option', look[slot] === item.id, lockedLabel(item, locked));
+      option.dataset.lookSlot = slot;
+      option.dataset.lookItem = item.id;
       option.setAttribute('aria-disabled', String(locked));
       option.classList.toggle('locked', locked);
       const swatch = element('canvas');
@@ -439,6 +430,8 @@ export function createCustomizer(root, {
     chips.replaceChildren(...itemsForSlot(slot).map(item => {
       const locked = !owns(slot, item.id);
       const option = radio('look-chip', look[slot] === item.id, lockedLabel(item, locked));
+      option.dataset.lookSlot = slot;
+      option.dataset.lookItem = item.id;
       option.disabled = locked || colorless;
       option.classList.toggle('locked', locked);
       option.append(chip(item));
@@ -450,7 +443,12 @@ export function createCustomizer(root, {
   }
 
   function render() {
+    // Rebuilding the options replaces the one with focus, so focus moves to
+    // its replacement: keyboard and gamepad riders keep their place, and
+    // the undo shortcuts keep working.
+    const focused = root.contains(document.activeElement) ? /** @type {HTMLElement} */ (document.activeElement) : null;
     furnished = room();
+    coda.hidden = !furnished?.coda;
     if (!visited.has(part.id)) {
       visited.add(part.id);
       const seen = newItems(part);
@@ -481,6 +479,19 @@ export function createCustomizer(root, {
     undo.hidden = redo.hidden = !past.length && !future.length;
     undo.disabled = !past.length;
     redo.disabled = !future.length;
+    if (focused) keepFocus(focused);
+  }
+
+  /** Puts focus back on `focused`'s replacement, or on the next history button when it was undo or redo and has run out. */
+  function keepFocus(focused) {
+    let target = focused;
+    if (!focused.isConnected) {
+      const { lookSlot, lookItem: item } = focused.dataset;
+      target = root.querySelector(`[data-look-slot="${lookSlot}"][data-look-item="${item}"]`);
+    } else if (focused === undo || focused === redo) {
+      target = [focused, focused === undo ? redo : undo, shuffle].find(button => !button.disabled && !button.hidden);
+    }
+    if (target && target !== document.activeElement) target.focus({ preventScroll: true });
   }
 
   return {
