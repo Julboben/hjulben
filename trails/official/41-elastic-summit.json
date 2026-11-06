@@ -1676,5 +1676,10 @@
     "wind": 0.65,
     "windDirection": "left"
   },
-  "timeOfDay": 0
+  "timeOfDay": 0,
+  "medals": {
+    "gold": 30,
+    "silver": 39,
+    "bronze": 53
+  }
 }

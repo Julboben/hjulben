@@ -8,19 +8,19 @@ Written by `scripts/generate-trails-overview.mjs` from the trail files, so don't
 
 *Grass, `hills` backdrop, the orchard and the farm around it, noon, clear skies. Teaches the controls.*
 
-- **01. The Orchard:** Gas, lean and gentle rollers. *Also new:* Farm props, collecting apples. (gold 11 s, bot 11.8 s)
+- **01. The Orchard:** Gas, lean and gentle rollers. *Also new:* Farm props, collecting apples. (gold 8 s, bot 11.8 s)
 
   > Learn the rhythm: build speed on gentle rollers, lean forward on climbs, and settle the bike before each landing.
 
-- **02. Apple Valley:** Momentum. Rollers grow from small to large, then a deep dip in front of a big hill shows that a run-up carries you up. The flower hangs over the dip past a small kicker, so the trail ends with a first little hop. *Also new:* The scarecrow, beehive, ladder and tyre. (gold 14 s, bot 13.5 s)
+- **02. Apple Valley:** Momentum. Rollers grow from small to large, then a deep dip in front of a big hill shows that a run-up carries you up. The flower hangs over the dip past a small kicker, so the trail ends with a first little hop. *Also new:* The scarecrow, beehive, ladder and tyre. (gold 12 s, bot 13.5 s)
 
   > Let the hills do the work: roll into each dip with speed and it carries you up the next rise. The big hill goes easily with a run-up, and slowly without one. The flower hangs over the dip past the last kicker, so arrive with speed and hop to it.
 
-- **03. Windfall:** Turning around. Ride up, roll back, turn and drive down to reach an apple you passed. *Also new:* Windfall apples in the grass, hay bales. (gold 32 s, bot 24.9 s)
+- **03. Windfall:** Turning around. Ride up, roll back, turn and drive down to reach an apple you passed. *Also new:* Windfall apples in the grass, hay bales. (gold 20 s, bot 24.9 s)
 
   > Turn around (Space) to go the other way. The first apple floats too high to reach from the slope below it: ride down into the bowl and up the long ramp, turn, and come back down fast enough for the kicker to throw you up to it. The last apple waits at the hay bales, and the flower hangs over the dip behind the kicker you passed, so turn once more and hop to it.
 
-- **04. Hay Lane:** Braking. A downhill run to a fence, with a `SLOW` sign before a drop. *Also new:* Signs, tyre barriers. (gold 18 s, bot 21.9 s)
+- **04. Hay Lane:** Braking. A downhill run to a fence, with a `SLOW` sign before a drop. *Also new:* Signs, tyre barriers. (gold 12 s, bot 21.9 s)
 
   > Brake (hold back) before the drops. The SLOW signs mark each descent and the ! marks the lip. The small step on the first hill is a warm-up with a long, flat runout. The apple waiting at the foot of each drop is only caught by rolling off it slowly, so a rider who flies off sails over it. The last descent is long and fast: brake hard before the lip, roll down onto the landing for the apple, and stop before the tyre wall at the end of the lane.
 
@@ -52,19 +52,19 @@ Written by `scripts/generate-trails-overview.mjs` from the trail files, so don't
 
   > Momentum is your friend. Carry speed through valleys, ease over crests, and lean forward when the front wheel gets light.
 
-- **11. Kickback:** Wheelies. Steep faces lift the front wheel, and leaning controls it. *Also new:* Evening light. (gold 17 s, bot 27.9 s)
+- **11. Kickback:** Wheelies. Steep faces lift the front wheel, and leaning controls it. *Also new:* Evening light. (gold 15 s, bot 27.9 s)
 
   > Steep faces kick the front wheel up. Lean forward to keep it down, or ease off and let it rise into a wheelie and ride it up. The faces get steeper as the evening draws in: 47°, then 52°, a two-step at 50° and 58°, and the last at 60°. If you stall, roll back, take a longer run-up and try again.
 
-- **12. Stoppie Slope:** Steep descents of 45° or more, leaning back so you don't go over the bars. *Also new:* Vines over cliffs. (gold 16 s, bot 7.8 s)
+- **12. Stoppie Slope:** Steep descents of 45° or more, leaning back so you don't go over the bars. *Also new:* Vines over cliffs. (gold 9 s, bot 7.8 s)
 
   > Every drop-in is steeper than the last: 40°, 45°, 50° and a long 55° chute. Roll in slowly, lean back (hold the brake and lean away from the slope) so the rear wheel stays planted and you don't go over the bars, then ride it out at the bottom. Speed is the enemy here; the apples at the foot of each slope wait for a rider who arrives in one piece.
 
-- **13. Stump Drops:** Small drops and step-downs, landing rear wheel first. *Also new:* The squirrel, stone dike props. (gold 15 s, bot 14.2 s)
+- **13. Stump Drops:** Small drops and step-downs, landing rear wheel first. *Also new:* The squirrel, stone dike props. (gold 10 s, bot 14.2 s)
 
   > Drops and step-downs, from a 40 unit stump ledge to a 90 unit stone dike. Come to each lip slowly, lean back as the front wheel goes over so the bike lands rear wheel first, then let the front come down and ride away down the landing. The steps in the middle are a staircase: roll them one by one. Watch the squirrel at the start.
 
-- **14. Switchback:** Turn around again and again to climb to a tree house, zig-zagging up between ramps. Combines wheelies, steep descents, drops and turning around. *Also new:* Light rain, a tree house at the top. (gold 38 s, bot 35.5 s)
+- **14. Switchback:** Turn around again and again to climb to a tree house, zig-zagging up between ramps. Combines wheelies, steep descents, drops and turning around. *Also new:* Light rain, a tree house at the top. (gold 10 s, bot 35.5 s)
 
   > Drop in, then climb to the tree house the only way there is: back and forth across the hollow. Each ledge on the west wall is higher than the last, and the faces between them are too steep to climb from a standstill. Ride up the east ramp as high as you can, let the bike roll back, turn (Space) and drive down into the hollow; the speed carries you up and over the next lip. Lean forward on the faces so the wheelie doesn't flip you, and lean back when you ride down them again. Up top, ride the plank onto the tree house.
 
@@ -72,7 +72,7 @@ Written by `scripts/generate-trails-overview.mjs` from the trail files, so don't
 
 *Sand, `desert` backdrop, bright noon with sun glare. Teaches air.*
 
-- **15. Dune Hopper:** First air off rounded crests, and using lean to level the bike in the air. *Also new:* Sun glare, cacti. (gold 16 s, bot 29.2 s)
+- **15. Dune Hopper:** First air off rounded crests, and using lean to level the bike in the air. *Also new:* Sun glare, cacti. (gold 11 s, bot 29.2 s)
 
   > First air. Each dune is taller than the last, and with speed its rounded crest lifts you off the ground. In the air, lean to level the bike: lean back if the nose drops, forward if it rises, and land with both wheels on the far slope. The apples float just past the crests, where the bike flies.
 
@@ -80,7 +80,7 @@ Written by `scripts/generate-trails-overview.mjs` from the trail files, so don't
 
   > Commit to the jumps. Build speed before each lip, stay calm in the air, and line both wheels up with the far-side slope.
 
-- **17. Sandpit:** Pits with a floor. A short jump is costly but you can recover. *Also new:* Pebbles, the skull and car wreck props. (gold 17 s, bot 8.3 s)
+- **17. Sandpit:** Pits with a floor. A short jump is costly but you can recover. *Also new:* Pebbles, the skull and car wreck props. (gold 10 s, bot 8.3 s)
 
   > Three sand pits, each wider than the last: 120, 150 and 180 units. Hit the kicker with speed and fly to the far lip. Come up short and you land in the pit, which has a floor: ride up the ramp on the far side and carry on, at the cost of time. The apples float over the pits, so only a clean jump gets them on the first try.
 
@@ -88,7 +88,7 @@ Written by `scripts/generate-trails-overview.mjs` from the trail files, so don't
 
   > The first open gaps: 80, 90 and 100 units wide, and falling in ends the run. The tyre walls and signs mark each lip. Ride at the kicker with steady speed, keep the bike level in the air and land on the downslope beyond. Each landing sits a little lower than the takeoff, so speed is enough; don't brake on the lip.
 
-- **19. Mirage:** Apples floating over gaps, and a floating island to jump onto and off. *Also new:* Heat haze. (gold 19 s, bot 21.6 s)
+- **19. Mirage:** Apples floating over gaps, and a floating island to jump onto and off. *Also new:* Heat haze. (gold 10 s, bot 21.6 s)
 
   > The desert finale. Hop the dune for the first apple, then clear the gaps: the apples float in the air above them, so jump high as well as far. The kicker throws you onto a floating island: land on its back slope, collect the apple, and ride off its far edge across a 100 unit gap. The sand pit at the end has a floor, but coming up short costs time.
 
@@ -96,15 +96,15 @@ Written by `scripts/generate-trails-overview.mjs` from the trail files, so don't
 
 *Grass and dirt, `hills` and `mountains` backdrops, morning, rain. Teaches water, and turning around in the air.*
 
-- **20. Wet Feet:** Shallow fords that drag on the bike and slow it down. *Also new:* Reeds, lilies. (gold 15 s, bot 10.9 s)
+- **20. Wet Feet:** Shallow fords that drag on the bike and slow it down. *Also new:* Reeds, lilies. (gold 11 s, bot 10.9 s)
 
   > Shallow fords. The water drags on the wheels and slows the bike, so carry speed in and keep the throttle on all the way across. Each ford is wider than the last. If you stop in the middle, just ride on out: shallow water won't hurt you.
 
-- **21. Deep End:** Deep water wipes you out. The first pool has a dry way round, and the second must be cleared with a small hop. *Also new:* Ducks, fish, the floating rider after a crash. (gold 13 s, bot 7.6 s)
+- **21. Deep End:** Deep water wipes you out. The first pool has a dry way round, and the second must be cleared with a small hop. *Also new:* Ducks, fish, the floating rider after a crash. (gold 9 s, bot 7.6 s)
 
   > Deep water wipes you out. The first pool has a dry way round: ride up and over the stone arch, and whatever you do, stay out of the water under it. The second pool is narrow, but it has no way round: hit the little kicker with speed and hop it.
 
-- **22. Jetty Jump:** Jumping over wide deep water. *Also new:* Moderate rain, jetty and rowing boat props. (gold 14 s, bot 11.2 s)
+- **22. Jetty Jump:** Jumping over wide deep water. *Also new:* Moderate rain, jetty and rowing boat props. (gold 12 s, bot 11.2 s)
 
   > Wide, deep water and three jetties to launch from. The open water grows from 150 to 190 and then 230 units, and each far bank sits a little lower than the jetty. Build speed on the bank, stay on the throttle to the end of the planks, and keep the bike level in the air so you land on both wheels on the far bank. Coming up short means a swim.
 
@@ -120,15 +120,15 @@ Written by `scripts/generate-trails-overview.mjs` from the trail files, so don't
 
 *Rock, back walls, darkness. Teaches tight spaces.*
 
-- **25. Low Bridge:** Overhangs and low ceilings. Keep your head down and don't bounce. *Also new:* Hanging roots, stalactites. (gold 14 s, bot 9.3 s)
+- **25. Low Bridge:** Overhangs and low ceilings. Keep your head down and don't bounce. *Also new:* Hanging roots, stalactites. (gold 8 s, bot 9.3 s)
 
   > Into the hillside. The ceiling drops lower the further in you ride: a hanging overhang, a run of rollers under a low roof, a step down with the rock right above the landing, and a long crawl at the end. Keep your head down, don't wheelie, and don't bounce: ride smoothly and lean forward under the low parts. Hit the rock with your head and the run is over.
 
-- **26. Lantern Mine:** The first dark cave, closed off by a back wall. Ride by the headlight and lanterns. *Also new:* The headlight, minecarts, beams, drips. (gold 13 s, bot 6.4 s)
+- **26. Lantern Mine:** The first dark cave, closed off by a back wall. Ride by the headlight and lanterns. *Also new:* The headlight, minecarts, beams, drips. (gold 8 s, bot 6.4 s)
 
   > The first dark cave. Past the mine mouth the back wall shuts out the daylight, and you ride by your headlight and the lanterns. Take the ramp down, roll off the ledge, ride past the minecarts and climb into the lit chamber at the end. Slow down where it's dark: you can't see what's coming.
 
-- **27. Sinkhole:** Drop from the surface into a cave and climb out of a second exit. The trail has two levels. *Also new:* Bats, glowing mushrooms. (gold 13 s, bot 12.3 s)
+- **27. Sinkhole:** Drop from the surface into a cave and climb out of a second exit. The trail has two levels. *Also new:* Bats, glowing mushrooms. (gold 11 s, bot 12.3 s)
 
   > Two levels. Ride off the edge of the sinkhole and drop into the cave below: land rear wheel first on the slope and roll away under the roof. Ride through the dark past the bats and the glowing mushrooms, then climb the long ramp up through the second opening and back into daylight. The finish is on the surface.
 
@@ -148,11 +148,11 @@ Written by `scripts/generate-trails-overview.mjs` from the trail files, so don't
 
   > Step-ups. Every kerb and stair has a vertical face, so you can't just roll up it: just before the face, lean back and give it a burst of throttle to pop the front wheel up, then lean forward as the rear wheel hits so it climbs over. The kerbs come first, then a flight of three 24 unit stairs, a drop back to the street, and finally four 30 unit stairs up to the plaza.
 
-- **31. Killer Street:** Spikes. First a still spike well off the route, then still spikes on the route with plenty of room. *Also new:* Dumpsters, pigeons. (gold 14 s, bot 12.8 s)
+- **31. Killer Street:** Spikes. First a still spike well off the route, then still spikes on the route with plenty of room. *Also new:* Dumpsters, pigeons. (gold 13 s, bot 12.8 s)
 
   > Spikes: touch one and the run is over. The first one hangs well above the street, out of your way, so take a look at it. Further on they sit on the route with plenty of room between them: pop the kerb, keep your speed steady, and hop or roll through the gaps. Don't rush.
 
-- **32. Spin Cycle:** Spinning spikes, and spikes hanging under ledges, so you must control how high you go. *Also new:* Scaffolding in front of the rider. (gold 16 s, bot 13.2 s)
+- **32. Spin Cycle:** Spinning spikes, and spikes hanging under ledges, so you must control how high you go. *Also new:* Scaffolding in front of the rider. (gold 15 s, bot 13.2 s)
 
   > Spinning spikes and spikes hanging under ledges: this time it's how high you go that matters. Under the ledges, stay low: no wheelies and no big hops. Pop the kerbs gently. Off the ramp, the spinning spikes hang above the landing, so jump long and flat, not high. Time your run past the spinners.
 
@@ -164,7 +164,7 @@ Written by `scripts/generate-trails-overview.mjs` from the trail files, so don't
 
   > Speed alone will not solve this trail. Brake before steep drops, lean back to resist stoppies, and accelerate cleanly out of bowls.
 
-- **35. Rooftops:** Gaps between buildings, with spikes and night. *Also new:* Sponsor banners, the halfway flag. (gold 19 s, bot 20.4 s)
+- **35. Rooftops:** Gaps between buildings, with spikes and night. *Also new:* Sponsor banners, the halfway flag. (gold 18 s, bot 20.4 s)
 
   > The City finale, at night across the rooftops. Fly the gaps between buildings off the low parapets: 90, 100, 100 and 100 units across. Pop up the box on the third roof, mind the spikes and keep away from the spinner above the last gap: jump long, not high. The flag halfway along saves your progress.
 
@@ -180,19 +180,19 @@ Written by `scripts/generate-trails-overview.mjs` from the trail files, so don't
 
   > Link everything together across a long climb: preserve momentum, control wheelies, and recover your balance without losing speed.
 
-- **38. Whiteout:** Fog limits how far ahead you can see, so signs and props mark the route. *Also new:* Heavier snow, the ski lift. (gold 19 s, bot 41.4 s)
+- **38. Whiteout:** Fog limits how far ahead you can see, so signs and props mark the route. *Also new:* Heavier snow, the ski lift. (gold 15 s, bot 41.4 s)
 
   > The fog closes in and you can't see far ahead. Trust the markers: the ski lift pylons run along the route, cairns mark the safe line, and the signs warn of what's coming before you can see it. A drop, a gully, a kicker and a step-up are hidden in the white. Ride at a speed that lets you react.
 
-- **39. Big Air:** Big kickers and gaps of 120–160 units. Air flips are optional, for gold times. *Also new:* A clear high-altitude sky. (gold 11 s, bot 10.0 s)
+- **39. Big Air:** Big kickers and gaps of 120–160 units. Air flips are optional, for gold times. *Also new:* A clear high-altitude sky. (gold 10 s, bot 10.0 s)
 
   > Big kickers and big gaps: 120, 140 and 160 units across, under a clear sky high up the mountain. Roll down the start slope to build speed, keep the throttle on up every kicker and level the bike in the air to land on the downslope. Want gold? Throw an air flip off a kicker: lean hard and come round in time to land on both wheels.
 
-- **40. Thunderhead:** A night storm where lightning lights up the route between flashes. *Also new:* Lightning, heavy rain. (gold 16 s, bot 13.2 s)
+- **40. Thunderhead:** A night storm where lightning lights up the route between flashes. *Also new:* Lightning, heavy rain. (gold 11 s, bot 13.2 s)
 
   > A night storm on the ridge. It's pitch dark between the lightning flashes: each flash lights up the whole route for a moment, so watch what's ahead and remember it. Pop the rock step, hit the kicker over the 100 unit gap with speed, climb the ridge and roll off the ledge on the far side. The rain makes the rock slippery: go easy on the throttle on the climbs.
 
-- **41. Elastic Summit:** The final exam, with something from every world. *Also new:* The summit flag and a full storm. (bot 34.9 s)
+- **41. Elastic Summit:** The final exam, with something from every world. *Also new:* The summit flag and a full storm. (gold 30 s, bot 34.9 s)
 
   > The final exam: rolling speed, precise braking, steep climbs, controlled airtime, and enough patience to finish in one piece.
 

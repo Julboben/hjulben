@@ -2503,9 +2503,9 @@ Example trail: easy.
   "alsoNew": "Farm props, collecting apples.",
   "world": "First Rides",
   "medals": {
-    "gold": 11,
-    "silver": 14.5,
-    "bronze": 19
+    "gold": 8,
+    "silver": 10,
+    "bronze": 14
   },
   "preview": {
     "x": 787,

@@ -1242,9 +1242,9 @@
   "alsoNew": "The scarecrow, beehive, ladder and tyre.",
   "world": "First Rides",
   "medals": {
-    "gold": 14,
-    "silver": 18.5,
-    "bronze": 24.5
+    "gold": 12,
+    "silver": 16,
+    "bronze": 21
   },
   "nisse": {
     "x": -672.9821078698342,

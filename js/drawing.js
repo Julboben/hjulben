@@ -2257,13 +2257,16 @@ function drawHeadwear(rect, shape, colors) {
  */
 function drawRiderHead(rect, parts, colors, { bare = !parts.helmet, loose = false } = {}) {
   const shape = parts.shapes.helmet;
-  if (bare) drawBareHead(rect, colors, parts.hair);
-  else if (shape === "mx") drawMxHelmet(rect, colors);
+  if (bare) {
+    drawBareHead(rect, colors, parts.hair);
+    drawFaceWear(rect, parts.faceWear);
+  } else if (shape === "mx") drawMxHelmet(rect, colors);
   else if (isHeadwear(shape)) {
     if (!loose) {
       const { extra } = parts.hair;
       const hair = extra && !HAIR_UNDER_HEADWEAR.has(extra) ? { ...parts.hair, extra: null } : parts.hair;
       drawBareHead(rect, colors, hair);
+      drawFaceWear(rect, parts.faceWear);
     }
     drawHeadwear(rect, shape, colors);
   } else drawHelmetShell(rect, colors);
@@ -2381,6 +2384,47 @@ const BEARDS = {
   full: ["", "", "", "", "  Hh   ", "  HHHmH", " OHHbHH", "  OOOOO"],
   lumberjack: ["", "", "", "", "  Hh   ", "  HHHmH", " OHhHHH", "  OHHbHO", "   OHHO", "    OO "],
 };
+
+// Face wear over BARE_HEAD, as rows over it, moved `x` and `y` art pixels
+// from its top left where it reaches past the head: F the piece in its
+// colour, f its highlight, S its shade, L a clear lens, D a dark one, g a
+// glint, o a ski lens, r and c the 3D glasses' red and cyan, W white and N
+// a clown's red. Glasses leave the eye showing behind the lens; a patch
+// covers it, its strap running up over the crown.
+const FACE_WEAR = {
+  glasses: { rows: ["", "", "", "  SF L"] },
+  sunglasses: { rows: ["", "", "", "  SFDg"] },
+  "ski-goggles": { rows: ["", "", "    FFF", "SSSSoog", "    FFF"] },
+  bandana: { rows: ["", "", "", "", "SFFfFFF", "SFFFFfF", " SFFFS"] },
+  monocle: { rows: ["", "", "", "   FLF", "   f", "  f", "  f"] },
+  "3d-glasses": { rows: ["", "", "", "  WWcr"] },
+  headphones: { rows: [" SFFFS", "F", "FF", "Ff", "SF"] },
+  snorkel: { x: -1, y: -3, rows: ["f", "F", "F", "F", "F", "F   FLF", "F", "F", "FFFFFF"] },
+  "clown-nose": { rows: ["", "", "", "", "      NW", "      NN"] },
+  eyepatch: { rows: ["", " S", "  S", "   Ff", "    S"] },
+};
+
+/** Face wear from lookParts().faceWear over the bare head, in drawBareHead's units. */
+function drawFaceWear(rect, wear) {
+  const art = wear && FACE_WEAR[wear.shape];
+  if (!art) return;
+  drawPixelRows(rect, -6 + (art.x ?? 0) * 2, -8 + (art.y ?? 0) * 2, art.rows, {
+    F: wear.base,
+    f: wear.light,
+    S: wear.shade,
+    L: "#c4e2dc",
+    D: "#1d2023",
+    g: "#5d6468",
+    o: "#e8a33a",
+    r: "#d64a3a",
+    c: "#4fc3d0",
+    W: "#fff8e7",
+    N: "#d63b2c",
+  });
+}
+
+/** Whether a face wear shape has art (see FACE_WEAR). */
+export const hasFaceWearArt = (shape) => Object.hasOwn(FACE_WEAR, shape);
 
 /** Whether a beard shape has art (see BEARDS). */
 export const hasBeardArt = (shape) => Object.hasOwn(BEARDS, shape);
@@ -7211,6 +7255,13 @@ export function createGameArt(ctx) {
       const torsoKeys = { O: outline, J: colors.jacket, j: colors.jacketLight, d: colors.jacketShade, P: colors.panel };
       for (const [key, color] of Object.entries(style.keys)) torsoKeys[key] = colors[color];
       bodyRows(-16 + shift, style.torsoY, style.torso, torsoKeys);
+      // A scarf worn as an accessory wraps the neck above the collar, the
+      // way the puffer's does; its loose end trails from there.
+      if (parts.accessory?.wrap) {
+        bodyRect(-6 + shift, style.torsoY - 2, 8, 2, parts.accessory.shade);
+        bodyRect(-6 + shift, style.torsoY, 8, 2, parts.accessory.fill);
+        bodyRect(-2 + shift, style.torsoY, 2, 2, parts.accessory.light);
+      }
 
       // Arm sloping down to the raised handlebar, bent at a dropped elbow.
       const sleeve = colors[style.sleeveColor];

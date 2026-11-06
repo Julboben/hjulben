@@ -185,8 +185,8 @@ function sendSave(save, keepalive = false) {
   const token = save.token;
   if (!token) return;
   // Exactly the fields the server keeps (sanitizeSave in account.mjs).
-  const { look, lookUpdatedAt, rider, createdAt, trail, unlocked, bestTimes, achievements, stats, nisse } = save;
-  const body = JSON.stringify({ save: { look, lookUpdatedAt, rider, createdAt, trail, unlocked, bestTimes, achievements, stats, nisse } });
+  const { look, lookUpdatedAt, ghost, ghostUpdatedAt, rider, createdAt, trail, unlocked, bestTimes, achievements, stats, nisse } = save;
+  const body = JSON.stringify({ save: { look, lookUpdatedAt, ghost, ghostUpdatedAt, rider, createdAt, trail, unlocked, bestTimes, achievements, stats, nisse } });
   if (lastSent.get(token) === body) return;
   lastSent.set(token, body);
   sending.set(token, (sending.get(token) ?? 0) + 1);

@@ -3,9 +3,11 @@
 // ride and the state machine; the menu changes saves and preferences.
 import { trails, officialTrailEntries, bonusTrailEntries, customTrailEntries } from './trails.js';
 import { trailHash } from './trail-hash.js';
-import { DEFAULT_LOOK, lookItem, ownedLook, ownsWith } from './cosmetics.js';
+import { DEFAULT_LOOK, LOOK_ITEMS, lookItem, ownedLook, ownsWith } from './cosmetics.js';
 import { lookUnlock, trailUnlock, unlockStatus } from './unlocks.js';
-import { hasAchievement } from './achievements.js';
+import { achievement, hasAchievement, statProgressText } from './achievements.js';
+import { GHOST_MODES, loadSeenGear, saveSeenGear } from './storage.js';
+import { isNight } from './time-of-day.js';
 
 /** @typedef {import('./types.js').Ride} Ride */
 /** @typedef {'menu' | 'running' | 'paused' | 'ragdoll' | 'won'} GameState */
@@ -48,7 +50,7 @@ export const DEFAULT_PREFERENCES = {
 
 const CHOICES = {
   scenery: ['full', 'reduced'], controls: ['show', 'hide'], sound: ['on', 'off'], music: ['on', 'off'],
-  shake: ['on', 'off'], haptics: ['on', 'off'], rumble: ['on', 'off'], ghost: ['on', 'world', 'off'],
+  shake: ['on', 'off'], haptics: ['on', 'off'], rumble: ['on', 'off'], ghost: GHOST_MODES,
   headlight: ['on', 'off']
 };
 
@@ -90,6 +92,12 @@ export const session = {
   /** Save the current ride belongs to, so a slot switch can't resume it. */
   /** @type {number | null} */ rideSaveId: null
 };
+
+/**
+ * The ghost the rider races: the active rider's own choice, which follows
+ * them to other devices, or else this device's setting.
+ */
+export const ghostMode = () => session.saveGame?.ghost ?? session.preferences.ghost;
 
 export const officialTrailIds = officialTrailEntries.map(entry => entry.id);
 export const leaderboardTrails = () => [...officialTrailEntries, ...bonusTrailEntries, ...customTrailEntries];
@@ -187,6 +195,7 @@ export function progressOf(save) {
   const keys = Object.keys(save.bestTimes || {});
   const finished = trailId => keys.some(key => key.startsWith(trailId + '@'));
   let trails = 0, golds = 0;
+  const nightTrails = officialTrailEntries.filter(entry => isNight(entry.trail.timeOfDay));
   for (const entry of officialTrailEntries) {
     if (finished(entry.id)) trails++;
     const best = save.bestTimes?.[trailKey(entry)];
@@ -198,6 +207,9 @@ export function progressOf(save) {
     // The official trails with a nisse, and how many of those it was found on.
     nisseTotal: officialTrailEntries.filter(entry => entry.trail.nisse).length,
     nisseFound: officialTrailEntries.filter(entry => entry.trail.nisse && save.nisse?.[nisseKey(entry)]).length,
+    // The official trails at night, and how many of those it has finished.
+    nightTotal: nightTrails.length,
+    nightFinished: nightTrails.filter(entry => finished(entry.id)).length,
   };
   const achievements = { ...save.achievements };
   const stats = { ...save.stats };
@@ -224,6 +236,66 @@ const shippedTrailName = trailId =>
  * @param {import('./cosmetics.js').LookItem} item
  */
 export const lookItemHint = item => unlockStatus(lookUnlock(item.slot, item.id), null, shippedTrailName).hint;
+
+/**
+ * How far a career has got towards a locked rider item, e.g. 137 / 500 for an
+ * achievement that counts apples, or '' when there is nothing to count.
+ * Secret achievements keep their goal to themselves.
+ * @param {import('./cosmetics.js').LookItem} item
+ */
+export function lookItemProgress(item, progress) {
+  const rule = lookUnlock(item.slot, item.id);
+  if (!rule || !progress) return '';
+  const tally = (have, need) => Math.min(have, need) + ' / ' + need;
+  const parts = [];
+  if (rule.trails) parts.push(tally(progress.trails, rule.trails));
+  if (rule.golds) parts.push(tally(progress.golds, rule.golds));
+  const wanted = rule.achievement ? achievement(rule.achievement) : null;
+  if (wanted && !wanted.secret) {
+    if (wanted.stat) parts.push(statProgressText(wanted, progress.stats[wanted.stat] || 0));
+    else if (wanted.tally) parts.push(tally(...wanted.tally(progress)));
+  }
+  return parts.join(' · ');
+}
+
+/**
+ * The won items (as 'slot:id' keys) a save's rider has yet to see in the
+ * Garage on this device. Won by its real progress, so ?debug=1 opening every
+ * item doesn't count them as seen. A rider with no record yet, such as one
+ * from before the badges, has seen everything won so far.
+ */
+export function unseenGear(save) {
+  if (!save) return [];
+  const owns = ownsWith(progressOf(save));
+  const won = LOOK_ITEMS.filter(item => !item.hidden && lookUnlock(item.slot, item.id) && owns(item.slot, item.id))
+    .map(item => item.slot + ':' + item.id);
+  const seen = loadSeenGear(save.playerId);
+  if (!seen) { saveSeenGear(save.playerId, won); return []; }
+  return won.filter(key => !seen.includes(key));
+}
+
+/** Records the items (as 'slot:id' keys) as seen in the Garage. */
+export function markGearSeen(save, keys) {
+  if (!save || !keys.length) return;
+  const seen = loadSeenGear(save.playerId) ?? [];
+  if (keys.every(key => seen.includes(key))) return;
+  saveSeenGear(save.playerId, [...seen, ...keys]);
+}
+
+/**
+ * What a save's career has put in the Garage (see drawGarage).
+ * @returns {import('./garage-backdrop.js').GarageRoom | null}
+ */
+export function garageRoom(save) {
+  const progress = progressOf(save);
+  if (!progress) return null;
+  return {
+    route: progress.officialTotal ? Math.min(1, progress.trails / progress.officialTotal) : 0,
+    cups: ['golden-touch', 'hat-trick', 'black-tie', 'gold-rush'].filter(id => progress.has(id)).length,
+    nisse: (progress.nisseFound ?? 0) > 0,
+    coda: progress.has('pet-coda'),
+  };
+}
 
 /** Whether a bonus trail is open for this save, and what opens it if not. */
 export const bonusUnlock = (entry, save = session.saveGame) =>

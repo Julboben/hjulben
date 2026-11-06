@@ -13,7 +13,11 @@ const ACTIVE_SLOT_KEY = 'hjulben-active-slot-v1';
 const LEADERBOARD_KEY = 'hjulben-leaderboard-v1';
 const SEEN_VERSION_KEY = 'hjulben-seen-version-v1';
 const SEEN_HOW_TO_KEY = 'hjulben-seen-how-to-v1';
+const SEEN_GEAR_KEY = 'hjulben-seen-gear-v1';
 const SLOT_COUNT = 3;
+// The ghost a rider races (see the Ghost setting): their own best, the faster
+// of that and the world's best, or none.
+export const GHOST_MODES = ['on', 'world', 'off'];
 export const LEADERBOARD_SIZE = 10;
 export { STORAGE_FAILED_EVENT };
 
@@ -95,6 +99,10 @@ function normalizeSave(save, trailCount) {
     look, rider: legacyRider(look), createdAt: Number(save.createdAt) || Date.now(), trail, unlocked, bestTimes,
     // When the look was last changed in the Garage; the newer of two copies wins when they merge.
     lookUpdatedAt: Math.max(0, Math.floor(Number(save.lookUpdatedAt)) || 0),
+    // The ghost the rider races, kept with the rider so it follows them to
+    // other devices; null until they pick one, and the device's setting applies.
+    ghost: GHOST_MODES.includes(save.ghost) ? save.ghost : null,
+    ghostUpdatedAt: Math.max(0, Math.floor(Number(save.ghostUpdatedAt)) || 0),
     // Earned achievements (id -> time) and lifetime stats; see achievements.js.
     achievements: cleanAchievements(save.achievements), stats: cleanStats(save.stats),
     // Where the rider has found a trail's nisse: trail key -> time (see nisse.js).
@@ -147,6 +155,26 @@ export function saveSeenHowTo() {
   writeJson(SEEN_HOW_TO_KEY, true);
 }
 
+/**
+ * The won rider items each rider has seen in the Garage on this device, by
+ * player id, as 'slot:id' keys; null for a rider with no record yet. Kept
+ * apart from the saves, as a NEW badge only matters on the device showing it.
+ * @returns {string[] | null}
+ */
+export function loadSeenGear(playerId) {
+  const seen = readJson(SEEN_GEAR_KEY, {})?.[playerId];
+  return Array.isArray(seen) ? seen.filter(key => typeof key === 'string') : null;
+}
+
+/** @param {string[] | null} keys  null forgets the rider */
+export function saveSeenGear(playerId, keys) {
+  const stored = readJson(SEEN_GEAR_KEY, {});
+  const next = { ...(stored && typeof stored === 'object' && !Array.isArray(stored) ? stored : {}) };
+  if (keys) next[playerId] = [...new Set(keys)];
+  else delete next[playerId];
+  writeJson(SEEN_GEAR_KEY, next);
+}
+
 export function loadPreferences(defaults) {
   const stored = readJson(SETTINGS_KEY, null);
   const merged = { ...defaults };
@@ -170,8 +198,9 @@ export function saveActiveSlot(slotIndex) {
 
 /**
  * @param {{ playerId: string, token: string } | null} [account] the online rider, or null for an offline save
+ * @param {string | null} [ghost] the ghost the rider races, or null to go by the device's setting
  */
-export function createSave(slotIndex, look, trailCount, name, account = null) {
+export function createSave(slotIndex, look, trailCount, name, account = null, ghost = null) {
   const next = [...slots(trailCount)];
   const index = clamp(slotIndex, 0, SLOT_COUNT - 1);
   const cleanName = cleanRiderName(name);
@@ -189,6 +218,8 @@ export function createSave(slotIndex, look, trailCount, name, account = null) {
     achievements: {},
     stats: {},
     nisse: {},
+    ghost: GHOST_MODES.includes(ghost) ? ghost : null,
+    ghostUpdatedAt: GHOST_MODES.includes(ghost) ? Date.now() : 0,
     name: cleanName,
     playerId: account?.playerId ?? newPlayerId(),
     token: account?.token ?? null,
@@ -213,6 +244,33 @@ export function saveLook(slotIndex, trailCount, look, owns) {
     save.lookUpdatedAt = Date.now();
   });
   return cloneSave(slots(trailCount)[slotIndex]);
+}
+
+/**
+ * Sets the ghost a save's rider races. `at` is when it was picked: the newer
+ * of two copies' choices wins when they merge (see newerGhost).
+ */
+export function saveGhostMode(slotIndex, trailCount, ghost, at = Date.now()) {
+  if (!GHOST_MODES.includes(ghost)) return null;
+  updateSave(slotIndex, trailCount, save => {
+    save.ghost = ghost;
+    save.ghostUpdatedAt = at;
+  });
+  return cloneSave(slots(trailCount)[slotIndex]);
+}
+
+/**
+ * Copies the device's Ghost setting into the saves without one of their own,
+ * from before the setting moved into saves. Only a setting the player changed
+ * is copied, stamped as old as can be: a device left on the default must not
+ * outvote a choice another device already synced.
+ * @returns {number[]} the slots that changed
+ */
+export function adoptGhostSetting(trailCount, ghost, defaultGhost) {
+  if (ghost === defaultGhost || !GHOST_MODES.includes(ghost)) return [];
+  const changed = slots(trailCount).flatMap((save, index) => (save && !save.ghost ? [index] : []));
+  for (const index of changed) saveGhostMode(index, trailCount, ghost, 1);
+  return changed;
 }
 
 /** Turns an offline save into the online rider that was just created for it. */
@@ -273,6 +331,7 @@ export function restoreOnlineSave(trailCount, { token, player, save: cloud, runs
   const look = newerLook(local, cloud, player);
   next[index] = normalizeSave({
     ...look,
+    ...newerGhost(local, cloud),
     rider: player.rider,
     createdAt: local?.createdAt ?? cloud?.createdAt ?? Date.now(),
     trail: local?.trail ?? cloud?.trail ?? 0,
@@ -301,6 +360,18 @@ function newerLook(local, cloud, player) {
 }
 
 /**
+ * The ghost choice to keep of a device's copy and the cloud's: the one made
+ * last, and on a tie (or without a choice here) the cloud's, like the look.
+ * @returns {{ ghost: string | null, ghostUpdatedAt: number }}
+ */
+function newerGhost(local, cloud) {
+  const localAt = Number(local?.ghostUpdatedAt) || 0, cloudAt = Number(cloud?.ghostUpdatedAt) || 0;
+  const cloudGhost = GHOST_MODES.includes(cloud?.ghost) ? cloud.ghost : null;
+  if (local?.ghost && (localAt > cloudAt || !cloudGhost)) return { ghost: local.ghost, ghostUpdatedAt: localAt };
+  return { ghost: cloudGhost ?? local?.ghost ?? null, ghostUpdatedAt: cloudGhost ? cloudAt : localAt };
+}
+
+/**
  * Catches a signed-in save up with its cloud copy, fetched without logging in
  * again. The look changed last wins (see newerLook); best times, unlocked
  * trails, achievements and stats keep the best of both, so neither device
@@ -323,6 +394,7 @@ export function applyCloudSave(slotIndex, trailCount, { player, save: cloud }) {
   const merged = normalizeSave({
     ...local,
     ...newerLook(local, cloud, player),
+    ...newerGhost(local, cloud),
     unlocked: Math.max(Number(local.unlocked) || 0, cloudUnlocked),
     bestTimes,
     achievements: mergeAchievements(local.achievements, cloud?.achievements),
@@ -334,6 +406,9 @@ export function applyCloudSave(slotIndex, trailCount, { player, save: cloud }) {
   const ahead = cloudUnlocked < merged.unlocked
     // A look changed here (in the Garage, maybe offline) that the cloud hasn't got.
     || merged.lookUpdatedAt > (Number(cloud?.lookUpdatedAt) || 0)
+    // A ghost choice made here that the cloud hasn't got, or made again
+    // since: its newer time must reach the cloud to outvote older choices.
+    || Boolean(merged.ghost) && (merged.ghost !== cloud?.ghost || merged.ghostUpdatedAt > (Number(cloud?.ghostUpdatedAt) || 0))
     || Object.entries(merged.bestTimes).some(([key, time]) => !(Number(cloudBest[key]) <= time))
     || aheadOf(merged, cloud)
     // An official or bonus trail's nisse found here and not yet in the cloud.
@@ -345,6 +420,8 @@ export function applyCloudSave(slotIndex, trailCount, { player, save: cloud }) {
 
 export function deleteSave(slotIndex, trailCount) {
   const next = [...slots(trailCount)];
+  const playerId = next[clamp(slotIndex, 0, SLOT_COUNT - 1)]?.playerId;
+  if (playerId) saveSeenGear(playerId, null);
   next[clamp(slotIndex, 0, SLOT_COUNT - 1)] = null;
   persistSlots(trailCount, next);
 }

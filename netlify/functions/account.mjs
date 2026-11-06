@@ -24,6 +24,10 @@ import { rateLimit, clientAddress } from '../lib/rate-limit.mjs';
 import { cleanAchievements, cleanStats, mergeAchievements, mergeStats } from '../../js/achievements.js';
 import { cleanNisseFinds, mergeNisseFinds } from '../../js/nisse.js';
 
+// The Ghost setting's choices, as GHOST_MODES in js/storage.js (which this
+// can't import: it reads the browser's storage).
+const GHOST_MODES = ['on', 'world', 'off'];
+
 const RP_NAME = 'Hjulben';
 // Passkey ceremonies per address a minute: enough for retries, not for guessing names.
 const CEREMONIES_PER_MINUTE = 20;
@@ -194,6 +198,9 @@ function sanitizeSave(save) {
     look,
     // When the look was last changed in the Garage, so the newest one wins (see mergeSaves).
     lookUpdatedAt: int(save.lookUpdatedAt, Number.MAX_SAFE_INTEGER),
+    // The ghost the rider races and when they picked it; null until they do.
+    ghost: GHOST_MODES.includes(save.ghost) ? save.ghost : null,
+    ghostUpdatedAt: int(save.ghostUpdatedAt, Number.MAX_SAFE_INTEGER),
     rider: legacyRider(look),
     createdAt: int(save.createdAt, Number.MAX_SAFE_INTEGER),
     trail: int(save.trail, 999),
@@ -211,8 +218,8 @@ function sanitizeSave(save) {
  * keep the faster, progress and lifetime stats the higher, achievements and
  * nisse finds the union. So a device that uploads a stale copy, because it
  * played before its download finished or offline, never wipes out what
- * another device saved. The look is whichever was changed last, and the
- * current trail is the one sent.
+ * another device saved. The look and the ghost choice are whichever was
+ * changed last, and the current trail is the one sent.
  */
 function mergeSaves(cloud, save) {
   if (!cloud || typeof cloud !== 'object') return save;
@@ -223,8 +230,13 @@ function mergeSaves(cloud, save) {
   }
   const cloudLookAt = Math.floor(Number(cloud.lookUpdatedAt)) || 0;
   const newerLook = cloudLookAt > save.lookUpdatedAt && cloud.look && typeof cloud.look === 'object';
+  // The ghost choice too, and a save from a client that doesn't send one keeps the cloud's.
+  const cloudGhostAt = Math.floor(Number(cloud.ghostUpdatedAt)) || 0;
+  const cloudGhost = GHOST_MODES.includes(cloud.ghost) && (!save.ghost || cloudGhostAt >= save.ghostUpdatedAt);
   return {
     ...save,
+    ghost: cloudGhost ? cloud.ghost : save.ghost,
+    ghostUpdatedAt: cloudGhost ? cloudGhostAt : save.ghostUpdatedAt,
     look: newerLook ? lookOf(cloud) : save.look,
     lookUpdatedAt: newerLook ? cloudLookAt : save.lookUpdatedAt,
     createdAt: Math.min(save.createdAt || Infinity, Number(cloud.createdAt) || Infinity) || save.createdAt,

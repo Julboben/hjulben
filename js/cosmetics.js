@@ -12,7 +12,8 @@ import { lookUnlock, unlockStatus } from './unlocks.js';
 
 export const LOOK_SLOTS = /** @type {const} */ ([
   'gender', 'skin',
-  'hair', 'hairColor', 'beard', 'helmet', 'helmetColor', 'outfit', 'outfitColor', 'bike', 'bikeColor'
+  'hair', 'hairColor', 'beard', 'helmet', 'helmetColor', 'outfit', 'outfitColor', 'bike', 'bikeColor',
+  'faceWear', 'faceWearColor', 'trail', 'trailColor'
 ]);
 
 /** Slots chosen once, when a rider is created, and kept for good. */
@@ -20,7 +21,10 @@ export const IDENTITY_SLOTS = /** @type {const} */ (['gender', 'skin']);
 
 /**
  * The parts a rider can change in the Garage, in tab order: a style slot, its
- * colour slot, and the pixel icon (icons/pixel-icons.mjs) for its tab.
+ * colour slot, and the pixel icon (icons/pixel-icons.mjs) for its tab, which
+ * is named after the style slot unless it has a `tab` of its own. An `extra`
+ * slot gets a section of its own on the tab, in the part's colour unless it
+ * has an `extraColor` slot too.
  */
 export const LOOK_PARTS = Object.freeze([
   // A beard is picked on the hair tab, under the cut, and takes the hair colour.
@@ -28,6 +32,11 @@ export const LOOK_PARTS = Object.freeze([
   { id: 'helmet', style: 'helmet', color: 'helmetColor', icon: 'helmet', blurb: 'Protection' },
   { id: 'outfit', style: 'outfit', color: 'outfitColor', icon: 'jacket', blurb: 'Gear' },
   { id: 'bike', style: 'bike', color: 'bikeColor', icon: 'bike', blurb: 'Machine' },
+  // Something on the face, and something trailing behind, each in its own colour.
+  {
+    id: 'extras', style: 'faceWear', color: 'faceWearColor', extra: 'trail', extraColor: 'trailColor',
+    icon: 'glasses', blurb: 'Extras', tab: 'Extras'
+  },
 ].map(part => Object.freeze(part)));
 
 export const SLOT_LABELS = Object.freeze({
@@ -36,6 +45,7 @@ export const SLOT_LABELS = Object.freeze({
   helmet: 'Helmet', helmetColor: 'Helmet colour',
   outfit: 'Outfit', outfitColor: 'Outfit colour',
   bike: 'Bike', bikeColor: 'Bike colour',
+  faceWear: 'Face', faceWearColor: 'Face colour', trail: 'Trailing', trailColor: 'Trailing colour',
 });
 
 /**
@@ -49,7 +59,8 @@ export const LOOK_ART = 'pocket';
  * @typedef {{
  *   gender: string, skin: string,
  *   hair: string, hairColor: string, beard: string, helmet: string, helmetColor: string,
- *   outfit: string, outfitColor: string, bike: string, bikeColor: string
+ *   outfit: string, outfitColor: string, bike: string, bikeColor: string,
+ *   faceWear: string, faceWearColor: string, trail: string, trailColor: string
  * }} Look
  * @typedef {{
  *   id: string, slot: string, name: string,
@@ -93,6 +104,29 @@ const outfit = (id, name, shape, blurb, colors, extra = {}) =>
 // Outfit colour: the jacket, and the panel that trims it.
 const outfitColor = (id, name, [jacket, jacketLight, jacketShade], panel, lean) =>
   ({ id, slot: 'outfitColor', name, lean, chip: [jacket, panel], colors: { jacket, jacketLight, jacketShade, panel } });
+
+// Extras. Face wear is drawn over the bare head by drawFaceWear in
+// drawing.js, so a full-face helmet hides it; a trail streams behind the
+// rider (ACCESSORIES in rider-hair.js), and an outfit's own cape or scarf
+// wins over it. Each `shape` is drawn in its own colour slot.
+const faceWear = (id, name, blurb, extra = {}) => ({ id, slot: 'faceWear', name, blurb, shape: id, ...extra });
+const trail = (id, name, blurb, extra = {}) => ({ id, slot: 'trail', name, blurb, shape: id, ...extra });
+
+// Extras' colours, the same choice for the face and the trail: a base, its
+// highlight and its shadow.
+const EXTRA_COLORS = [
+  ['black', 'Black', ['#2c3133', '#4a5154', '#1b1f20']],
+  ['brown', 'Tortoiseshell', ['#7a5034', '#9a6a48', '#5a3a26']],
+  ['red', 'Red', ['#c9433a', '#ec7b62', '#8f2c26']],
+  ['orange', 'Fox', ['#d9783a', '#f2a066', '#9c4f24']],
+  ['gold', 'Gold', ['#e0b040', '#f7d878', '#a8822a']],
+  ['white', 'White', ['#e8e5d9', '#fff8e7', '#b5bcae']],
+  ['blue', 'Blue', ['#3f6fc0', '#7ea6e6', '#2a4c88'], 'male'],
+  ['pink', 'Pink', ['#e07a9a', '#f7b0c6', '#a8506e'], 'female'],
+  ['teal', 'Teal', ['#4f9a8c', '#86cfc0', '#336b61'], 'female'],
+];
+const extraColors = slot => EXTRA_COLORS.map(([id, name, [base, light, shade], lean]) =>
+  ({ id, slot, name, lean, chip: [base, shade], colors: { base, light, shade } }));
 
 // Bike colour: the plastics, their highlight and shadow, and the frame.
 const bikeColor = (id, name, [base, light, dark], shade, lean) =>
@@ -248,6 +282,26 @@ export const LOOK_ITEMS = /** @type {LookItem[]} */ ([
   bikeColor('black', 'Black', ['#3a4144', '#646d70', '#1b2124'], '#2c3234', 'male'),
   bikeColor('pink', 'Pink', ['#e07a9a', '#f7b0c6', '#a8506e'], '#c8607f', 'female'),
   bikeColor('purple', 'Purple', ['#7b5cc0', '#a98be6', '#53398a'], '#674aa6', 'female'),
+
+  faceWear('none', 'Nothing', 'Just your face.', { colorless: true }),
+  faceWear('glasses', 'Glasses', 'See every rock coming.'),
+  faceWear('sunglasses', 'Sunglasses', 'Too cool for the desert glare.'),
+  faceWear('ski-goggles', 'Ski goggles', 'Orange lenses for the white-out.'),
+  faceWear('bandana', 'Bandana mask', 'Keeps the dust out. Looks like trouble.'),
+  faceWear('monocle', 'Monocle', 'On a chain, naturally.'),
+  faceWear('3d-glasses', '3D glasses', 'The jumps really pop.', { colorless: true }),
+  faceWear('headphones', 'Headphones', 'Your own soundtrack.'),
+  faceWear('snorkel', 'Snorkel', 'For the deep end.'),
+  faceWear('clown-nose', 'Clown nose', 'Honk.', { colorless: true }),
+  faceWear('eyepatch', 'Eye patch', 'Arr. Half the view, twice the nerve.', { secret: true }),
+  ...extraColors('faceWearColor'),
+
+  trail('none', 'Nothing', 'Nothing streaming behind.', { colorless: true }),
+  trail('scarf', 'Scarf', 'Streams out behind you on the fast bits.'),
+  trail('ribbon', 'Ribbon', 'A long streamer from the shoulder.'),
+  trail('balloon', 'Balloon', 'Tied to your back. It wants to go up.'),
+  trail('corgi-tail', 'Corgi tail', "Bushy, with a white tip, just like Coda's."),
+  ...extraColors('trailColor'),
 ].map(item => Object.freeze(item)));
 
 const ITEMS_BY_ID = new Map(LOOK_ITEMS.map(item => [`${item.slot}:${item.id}`, item]));
@@ -286,7 +340,7 @@ export const newlyUnlockedItems = (before, after) => LOOK_ITEMS.filter(item => {
 
 /** How the game announces a won item: its name, a line about it and its part's icon. */
 export function gearCard(item) {
-  const part = LOOK_PARTS.find(entry => entry.style === item.slot || entry.color === item.slot);
+  const part = LOOK_PARTS.find(entry => [entry.style, entry.color, entry.extra, entry.extraColor].includes(item.slot));
   return {
     name: item.name,
     blurb: item.blurb ?? `New ${SLOT_LABELS[item.slot].toLowerCase()} in the Garage.`,
@@ -302,12 +356,14 @@ export const STARTER_LOOKS = Object.freeze({
   female: Object.freeze({
     gender: 'female', skin: 'light',
     hair: 'ponytail', hairColor: 'auburn', beard: 'none', helmet: 'mx', helmetColor: 'teal',
-    outfit: 'street', outfitColor: 'pink', bike: 'elasto', bikeColor: 'green'
+    outfit: 'street', outfitColor: 'pink', bike: 'elasto', bikeColor: 'green',
+    faceWear: 'none', faceWearColor: 'black', trail: 'none', trailColor: 'red'
   }),
   male: Object.freeze({
     gender: 'male', skin: 'light',
     hair: 'short', hairColor: 'brown', beard: 'none', helmet: 'mx', helmetColor: 'orange',
-    outfit: 'street', outfitColor: 'white', bike: 'elasto', bikeColor: 'green'
+    outfit: 'street', outfitColor: 'white', bike: 'elasto', bikeColor: 'green',
+    faceWear: 'none', faceWearColor: 'black', trail: 'none', trailColor: 'red'
   }),
 });
 
@@ -392,6 +448,22 @@ export const hasBeard = look => Boolean(lookItem('gender', look?.gender)?.face.b
 export const isColorless = (look, part) => Boolean(lookItem(part.style, look?.[part.style])?.colorless)
   && !(part.extra === 'beard' && hasBeard(look));
 
+/**
+ * The item that hides `look`'s extra in `slot`, or null when it shows: a
+ * helmet over the face hides face wear, and an outfit's own cape or scarf
+ * trails instead of a trail.
+ * @returns {LookItem | null}
+ */
+export function extraHiddenBy(look, slot) {
+  const worn = lookItem(slot, look?.[slot]);
+  if (!worn || worn.id === 'none') return null;
+  const helmet = lookItem('helmet', look?.helmet);
+  if (slot === 'faceWear' && helmet && !helmet.bare && !helmet.showsHead) return helmet;
+  const outfit = lookItem('outfit', look?.outfit);
+  if (slot === 'trail' && outfit?.accessory) return outfit;
+  return null;
+}
+
 /** How a part reads in a list: "Auburn ponytail", "Bald", "Teal motocross", "Brown short, full beard". */
 export function partName(look, part) {
   const style = lookItem(part.style, look?.[part.style]);
@@ -399,6 +471,10 @@ export function partName(look, part) {
   if (!style) return '';
   const name = style.colorless || !color ? style.name : `${color.name} ${style.name.toLowerCase()}`;
   if (part.extra === 'beard' && hasBeard(look)) return `${name}, ${lookItem('beard', look.beard).name.toLowerCase()}`;
+  if (part.extraColor) {
+    const extra = lookItem(part.extra, look?.[part.extra]), extraColor = lookItem(part.extraColor, look?.[part.extraColor]);
+    if (extra && extra.id !== 'none') return `${name}, ${(extra.colorless || !extraColor ? extra.name : `${extraColor.name} ${extra.name}`).toLowerCase()}`;
+  }
   return name;
 }
 
@@ -411,7 +487,7 @@ export function randomLook(identity = DEFAULT_LOOK, { random = Math.random, owns
   const look = /** @type {Look} */ ({ ...normalizeLook(identity, { owns: () => true }) });
   const face = lookItem('gender', look.gender)?.face;
   for (const part of LOOK_PARTS) {
-    for (const slot of [part.style, part.color, part.extra]) {
+    for (const slot of [part.style, part.color, part.extra, part.extraColor]) {
       if (!slot) continue;
       // Only riders who can grow a beard get one; anyone else stays clean shaven.
       if (slot === 'beard' && !face?.beard) { look[slot] = 'none'; continue; }
@@ -435,7 +511,8 @@ export function randomLook(identity = DEFAULT_LOOK, { random = Math.random, owns
  *   shapes: { hair: string, beard: string, helmet: string, outfit: string, accessory: string | null, bike: string },
  *   face: { lips: boolean },
  *   hair: { cap: string, ponytail: boolean, beard: string | null, strands: string[], outline: string, shine: string },
- *   accessory: { shape: string, fill: string, light: string, shade: string, outline: string } | null,
+ *   accessory: { shape: string, fill: string, light: string, shade: string, outline: string, wrap?: boolean } | null,
+ *   faceWear: { shape: string, base: string, light: string, shade: string } | null,
  *   helmet: boolean,
  *   bareHead: boolean,
  *   bike: string,
@@ -487,11 +564,16 @@ export function lookParts(look) {
   const outfitColors = { ...item('outfitColor').colors, ...outfitItem.colors };
   for (const [key, from] of Object.entries(outfitItem.match ?? {})) outfitColors[key] = outfitColors[from];
   const beardShape = hasBeard(valid) ? item('beard').shape : null;
-  // What trails behind the rider, in the outfit's panel colour.
-  const accessory = outfitItem.accessory ? Object.freeze({
-    shape: outfitItem.accessory, fill: outfitColors.panel, light: mix(outfitColors.panel, '#fff8e7', 0.3),
-    shade: mix(outfitColors.panel, OUTLINE, 0.35), outline: OUTLINE
+  // What trails behind the rider: the outfit's own piece in its panel
+  // colour, or else the look's trail in its colour.
+  const trailItem = item('trail'), faceItem = item('faceWear');
+  // A worn scarf also `wrap`s the neck, as an outfit's own scarf is drawn into it.
+  const trailing = outfitItem.accessory ? { shape: outfitItem.accessory, fill: outfitColors.panel }
+    : trailItem.id !== 'none' ? { shape: trailItem.shape, fill: item('trailColor').colors.base, wrap: trailItem.shape === 'scarf' } : null;
+  const accessory = trailing ? Object.freeze({
+    ...trailing, light: mix(trailing.fill, '#fff8e7', 0.3), shade: mix(trailing.fill, OUTLINE, 0.35), outline: OUTLINE
   }) : null;
+  const faceWear = faceItem.id !== 'none' ? Object.freeze({ shape: faceItem.shape, ...item('faceWearColor').colors }) : null;
   const bikeColors = item('bikeColor').colors;
   const bare = Boolean(helmetItem.bare);
   const { hair, hairLight, hairShade, hairDark } = hairColors;
@@ -528,6 +610,7 @@ export function lookParts(look) {
     face: Object.freeze({ ...face }),
     hair: Object.freeze({ ...hairStyleItem.style, beard: beardShape, strands: [hairShade, hairShade, hair], outline: hairDark, shine: hairLight }),
     accessory,
+    faceWear,
     helmet: !bare,
     // Whether the face and hair show, with no helmet or under one that leaves them.
     bareHead: bare || Boolean(helmetItem.showsHead),

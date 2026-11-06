@@ -1,5 +1,5 @@
 /* Generated from icons/pixel-icons.mjs by scripts/generate-icons.mjs; do not edit.
-   Icons: logo, arrow-right, arrow-left, arrow-up, arrow-down, chevron-down, search, rotate-right, rotate-left, swap, retry, undo, redo, exit, phone, menu, clock, apple, nisse, headlight, headlight-off, sound, sound-off, male, female, medal, cursor, pan, block, scissors, spike, tree, water, play, flag, picture, plus, minus, more, duplicate, save, publish, share, pencil, download, upload, keyboard, trash, helmet, hair, jacket, bike, check, lock, unlock, caret-right, caret-down, garage, trophy, gear, book, ghost, snowflake, cloud, rain, wheelie, stoppie, shatter, crash, wrench, camera, snail, star, moon, chest, paw, footprints, halfway, crown, medals, pickaxe, bolt, tent, washer, shades, plane, satellite, unicycle, hourglass, basket, terminal, dummy, kraken, no-entry, bag, fast-forward. */
+   Icons: logo, arrow-right, arrow-left, arrow-up, arrow-down, chevron-down, search, rotate-right, rotate-left, dice, swap, retry, undo, redo, exit, phone, menu, clock, apple, nisse, headlight, headlight-off, sound, sound-off, male, female, medal, cursor, pan, block, scissors, spike, tree, water, play, flag, picture, plus, minus, more, duplicate, save, publish, share, pencil, download, upload, keyboard, trash, helmet, hair, jacket, bike, check, lock, unlock, caret-right, caret-down, garage, trophy, gear, book, ghost, snowflake, cloud, rain, wheelie, stoppie, shatter, crash, wrench, camera, snail, star, moon, chest, paw, footprints, halfway, crown, medals, pickaxe, bolt, tent, washer, shades, glasses, plane, satellite, unicycle, hourglass, basket, terminal, dummy, kraken, no-entry, bag, fast-forward. */
 :root {
     --icon-logo: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' shape-rendering='crispEdges'%3E%3Cpath fill='%23353c41' d='M12 0h2v1H12zM15 0h2v1H15zM18 0h2v1H18zM9 1h2v1H9zM12 1h8v1H12zM21 1h2v1H21zM7 2h1v1H7zM9 2h14v1H9zM24 2h1v1H24zM7 3h18v1H7zM5 4h1v1H5zM7 4h7v1H7zM18 4h7v1H18zM26 4h1v1H26zM4 5h7v1H4zM21 5h7v1H21zM5 6h4v1H5zM23 6h4v1H23zM2 7h6v1H2zM24 7h6v1H24zM3 8h4v1H3zM25 8h4v1H25zM1 9h5v1H1zM26 9h5v1H26zM1 10h5v1H1zM26 10h5v1H26zM2 11h3v1H2zM27 11h3v1H27zM0 12h5v1H0zM27 12h5v1H27zM0 13h5v1H0zM27 13h5v1H27zM1 14h3v1H1zM28 14h3v1H28zM0 15h4v1H0zM28 15h4v1H28zM0 16h4v1H0zM28 16h4v1H28zM1 17h3v1H1zM28 17h3v1H28zM0 18h5v1H0zM27 18h5v1H27zM0 19h5v1H0zM27 19h5v1H27zM2 20h3v1H2zM27 20h3v1H27zM1 21h5v1H1zM26 21h5v1H26zM1 22h5v1H1zM26 22h5v1H26zM3 23h4v1H3zM25 23h4v1H25zM2 24h6v1H2zM24 24h6v1H24zM5 25h4v1H5zM23 25h4v1H23zM4 26h7v1H4zM21 26h7v1H21zM5 27h1v1H5zM7 27h7v1H7zM18 27h7v1H18zM26 27h1v1H26zM7 28h18v1H7zM7 29h1v1H7zM9 29h14v1H9zM24 29h1v1H24zM9 30h2v1H9zM12 30h8v1H12zM21 30h2v1H21zM12 31h2v1H12zM15 31h2v1H15zM18 31h2v1H18z'/%3E%3Cpath fill='%23ff6a00' d='M14 4h4v1H14zM11 5h10v1H11zM9 6h3v1H9zM20 6h3v1H20zM8 7h2v1H8zM22 7h2v1H22zM7 8h2v1H7zM23 8h2v1H23zM6 9h2v1H6zM24 9h2v1H24zM6 10h1v1H6zM25 10h1v1H25zM5 11h2v1H5zM25 11h2v1H25zM5 12h1v1H5zM26 12h1v1H26zM5 13h1v1H5zM14 13h4v1H14zM26 13h1v1H26zM4 14h2v1H4zM13 14h6v1H13zM26 14h2v1H26zM4 15h2v1H4zM13 15h2v1H13zM17 15h2v1H17zM26 15h2v1H26zM4 16h2v1H4zM13 16h2v1H13zM17 16h2v1H17zM26 16h2v1H26zM4 17h2v1H4zM13 17h6v1H13zM26 17h2v1H26zM5 18h1v1H5zM14 18h4v1H14zM26 18h1v1H26zM5 19h1v1H5zM26 19h1v1H26zM5 20h2v1H5zM25 20h2v1H25zM6 21h1v1H6zM25 21h1v1H25zM6 22h2v1H6zM24 22h2v1H24zM7 23h2v1H7zM23 23h2v1H23zM8 24h2v1H8zM22 24h2v1H22zM9 25h3v1H9zM20 25h3v1H20zM11 26h10v1H11zM14 27h4v1H14z'/%3E%3Cpath fill='%23c9ced6' d='M15 6h2v1H15zM15 7h2v1H15zM9 8h1v1H9zM15 8h2v1H15zM22 8h1v1H22zM8 9h3v1H8zM15 9h2v1H15zM21 9h3v1H21zM9 10h3v1H9zM15 10h2v1H15zM20 10h3v1H20zM10 11h3v1H10zM15 11h2v1H15zM19 11h3v1H19zM11 12h3v1H11zM15 12h2v1H15zM18 12h3v1H18zM12 13h2v1H12zM18 13h2v1H18zM6 15h7v1H6zM19 15h7v1H19zM6 16h7v1H6zM19 16h7v1H19zM12 18h2v1H12zM18 18h2v1H18zM11 19h3v1H11zM15 19h2v1H15zM18 19h3v1H18zM10 20h3v1H10zM15 20h2v1H15zM19 20h3v1H19zM9 21h3v1H9zM15 21h2v1H15zM20 21h3v1H20zM8 22h3v1H8zM15 22h2v1H15zM21 22h3v1H21zM9 23h1v1H9zM15 23h2v1H15zM22 23h1v1H22zM15 24h2v1H15zM15 25h2v1H15z'/%3E%3Cpath fill='%23141b1e' d='M15 15h2v1H15zM15 16h2v1H15z'/%3E%3C/svg%3E");
     --icon-arrow-right: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 7 5' shape-rendering='crispEdges'%3E%3Cpath d='M4 0h1v1H4zM4 1h2v1H4zM0 2h7v1H0zM4 3h2v1H4zM4 4h1v1H4z'/%3E%3C/svg%3E");
@@ -10,6 +10,7 @@
     --icon-search: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 7 7' shape-rendering='crispEdges'%3E%3Cpath fill='%23f5f1df' d='M1 0h3v1H1zM0 1h1v1H0zM4 1h1v1H4zM0 2h1v1H0zM4 2h1v1H4zM0 3h1v1H0zM4 3h1v1H4zM1 4h3v1H1zM4 5h2v1H4zM5 6h2v1H5z'/%3E%3C/svg%3E");
     --icon-rotate-right: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 9 9' shape-rendering='crispEdges'%3E%3Cpath d='M2 1h3v1H2zM1 2h1v1H1zM5 2h1v1H5zM0 3h1v1H0zM6 3h1v1H6zM0 4h1v1H0zM4 4h1v1H4zM6 4h1v1H6zM8 4h1v1H8zM0 5h1v1H0zM5 5h3v1H5zM6 6h1v1H6z'/%3E%3C/svg%3E");
     --icon-rotate-left: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 9 9' shape-rendering='crispEdges'%3E%3Cpath d='M4 1h3v1H4zM3 2h1v1H3zM7 2h1v1H7zM2 3h1v1H2zM8 3h1v1H8zM0 4h1v1H0zM2 4h1v1H2zM4 4h1v1H4zM8 4h1v1H8zM1 5h3v1H1zM8 5h1v1H8zM2 6h1v1H2z'/%3E%3C/svg%3E");
+    --icon-dice: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 9 9' shape-rendering='crispEdges'%3E%3Cpath d='M1 0h7v1H1zM0 1h9v1H0zM0 2h2v1H0zM3 2h3v1H3zM7 2h2v1H7zM0 3h9v1H0zM0 4h4v1H0zM5 4h4v1H5zM0 5h9v1H0zM0 6h2v1H0zM3 6h3v1H3zM7 6h2v1H7zM0 7h9v1H0zM1 8h7v1H1z'/%3E%3C/svg%3E");
     --icon-swap: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 9 9' shape-rendering='crispEdges'%3E%3Cpath d='M6 0h1v1H6zM6 1h2v1H6zM2 2h7v1H2zM6 3h2v1H6zM2 4h1v1H2zM6 4h1v1H6zM1 5h2v1H1zM0 6h7v1H0zM1 7h2v1H1zM2 8h1v1H2z'/%3E%3C/svg%3E");
     --icon-retry: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 9 9' shape-rendering='crispEdges'%3E%3Cpath d='M2 0h4v1H2zM7 0h1v1H7zM1 1h1v1H1zM6 1h2v1H6zM0 2h1v1H0zM5 2h3v1H5zM0 3h1v1H0zM0 4h1v1H0zM8 4h1v1H8zM0 5h1v1H0zM8 5h1v1H8zM0 6h1v1H0zM8 6h1v1H8zM1 7h1v1H1zM7 7h1v1H7zM2 8h5v1H2z'/%3E%3C/svg%3E");
     --icon-undo: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 9' shape-rendering='crispEdges'%3E%3Cpath d='M2 0h1v1H2zM1 1h2v1H1zM0 2h7v1H0zM1 3h2v1H1zM7 3h1v1H7zM2 4h1v1H2zM7 4h1v1H7zM7 5h1v1H7zM7 6h1v1H7zM6 7h1v1H6zM1 8h5v1H1z'/%3E%3C/svg%3E");
@@ -86,6 +87,7 @@
     --icon-tent: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 9 10' shape-rendering='crispEdges'%3E%3Cpath d='M4 0h2v1H4zM4 1h1v1H4zM3 2h3v1H3zM2 3h1v1H2zM4 3h1v1H4zM6 3h1v1H6zM1 4h2v1H1zM4 4h1v1H4zM6 4h2v1H6zM0 5h1v1H0zM2 5h1v1H2zM4 5h1v1H4zM6 5h1v1H6zM8 5h1v1H8zM0 6h9v1H0zM1 7h1v1H1zM4 7h1v1H4zM7 7h1v1H7zM1 8h1v1H1zM3 8h3v1H3zM7 8h1v1H7zM1 9h1v1H1zM3 9h3v1H3zM7 9h1v1H7z'/%3E%3C/svg%3E");
     --icon-washer: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 9 9' shape-rendering='crispEdges'%3E%3Cpath d='M0 0h9v1H0zM0 1h1v1H0zM2 1h1v1H2zM8 1h1v1H8zM0 2h9v1H0zM0 3h1v1H0zM3 3h3v1H3zM8 3h1v1H8zM0 4h1v1H0zM2 4h1v1H2zM6 4h1v1H6zM8 4h1v1H8zM0 5h1v1H0zM2 5h1v1H2zM4 5h1v1H4zM6 5h1v1H6zM8 5h1v1H8zM0 6h1v1H0zM2 6h1v1H2zM6 6h1v1H6zM8 6h1v1H8zM0 7h1v1H0zM3 7h3v1H3zM8 7h1v1H8zM0 8h9v1H0z'/%3E%3C/svg%3E");
     --icon-shades: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 11 4' shape-rendering='crispEdges'%3E%3Cpath d='M0 0h11v1H0zM0 1h1v1H0zM2 1h3v1H2zM6 1h3v1H6zM10 1h1v1H10zM2 2h3v1H2zM6 2h3v1H6zM3 3h1v1H3zM7 3h1v1H7z'/%3E%3C/svg%3E");
+    --icon-glasses: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 11 9' shape-rendering='crispEdges'%3E%3Cpath d='M0 2h11v1H0zM0 3h1v1H0zM2 3h3v1H2zM6 3h3v1H6zM10 3h1v1H10zM2 4h3v1H2zM6 4h3v1H6zM3 5h1v1H3zM7 5h1v1H7z'/%3E%3C/svg%3E");
     --icon-plane: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 9 8' shape-rendering='crispEdges'%3E%3Cpath d='M4 0h1v1H4zM3 1h3v1H3zM3 2h3v1H3zM1 3h7v1H1zM0 4h9v1H0zM3 5h3v1H3zM3 6h3v1H3zM2 7h5v1H2z'/%3E%3C/svg%3E");
     --icon-satellite: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 11 7' shape-rendering='crispEdges'%3E%3Cpath d='M0 0h3v1H0zM8 0h3v1H8zM0 1h3v1H0zM4 1h3v1H4zM8 1h3v1H8zM0 2h11v1H0zM0 3h3v1H0zM4 3h3v1H4zM8 3h3v1H8zM0 4h3v1H0zM8 4h3v1H8zM5 5h1v1H5zM4 6h3v1H4z'/%3E%3C/svg%3E");
     --icon-unicycle: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 7 10' shape-rendering='crispEdges'%3E%3Cpath d='M1 0h5v1H1zM3 1h1v1H3zM3 2h1v1H3zM2 3h3v1H2zM1 4h1v1H1zM5 4h1v1H5zM0 5h1v1H0zM3 5h1v1H3zM6 5h1v1H6zM0 6h1v1H0zM2 6h3v1H2zM6 6h1v1H6zM0 7h1v1H0zM3 7h1v1H3zM6 7h1v1H6zM1 8h1v1H1zM5 8h1v1H5zM2 9h3v1H2z'/%3E%3C/svg%3E");
@@ -187,6 +189,13 @@
 [data-icon-before="rotate-left"]::before,
 [data-icon-after="rotate-left"]::after {
     --icon: var(--icon-rotate-left);
+    --icon-w: 9;
+    --icon-h: 9;
+}
+[data-icon="dice"],
+[data-icon-before="dice"]::before,
+[data-icon-after="dice"]::after {
+    --icon: var(--icon-dice);
     --icon-w: 9;
     --icon-h: 9;
 }
@@ -727,6 +736,13 @@
     --icon: var(--icon-shades);
     --icon-w: 11;
     --icon-h: 4;
+}
+[data-icon="glasses"],
+[data-icon-before="glasses"]::before,
+[data-icon-after="glasses"]::after {
+    --icon: var(--icon-glasses);
+    --icon-w: 11;
+    --icon-h: 9;
 }
 [data-icon="plane"],
 [data-icon-before="plane"]::before,

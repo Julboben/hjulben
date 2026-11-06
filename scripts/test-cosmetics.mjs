@@ -5,11 +5,13 @@ import assert from 'node:assert/strict';
 import {
   LOOK_SLOTS, IDENTITY_SLOTS, LOOK_PARTS, SLOT_LABELS, LOOK_ITEMS, DEFAULT_LOOK, STARTER_LOOKS, lookItem, itemsForSlot,
   isDefaultItem, starterLook, legacyLook, legacyRider, normalizeLook, keepIdentity, lookOf, isCompleteLook, lookKey,
-  sameLook, isColorless, partName, randomLook, lookParts, ownsWith, ownedLook, shownItemsForSlot, newlyUnlockedItems, gearCard
+  sameLook, isColorless, partName, randomLook, lookParts, ownsWith, ownedLook, shownItemsForSlot, newlyUnlockedItems, gearCard,
+  extraHiddenBy
 } from '../js/cosmetics.js';
+import { hasTrailArt } from '../js/rider-hair.js';
 import { lookUnlock } from '../js/unlocks.js';
 import { readFileSync } from 'node:fs';
-import { BIKE_MODELS, hasBeardArt, hasOutfitStyle, isHeadwear } from '../js/drawing.js';
+import { BIKE_MODELS, hasBeardArt, hasFaceWearArt, hasOutfitStyle, isHeadwear } from '../js/drawing.js';
 import { BIKE_LAMPS } from '../js/bike-lamps.js';
 import { createRagdoll } from '../js/ragdoll.js';
 
@@ -36,15 +38,16 @@ const random = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
     for (const look of Object.values(STARTER_LOOKS)) assert.ok(isDefaultItem(slot, look[slot]), `the starter ${slot} is everyone's`);
   }
   // Every tab is a style plus its colour (and maybe an extra style, like the
-  // beard), and together with identity they cover every slot.
+  // beard, with maybe its own colour), and together with identity they cover every slot.
   const covered = new Set(IDENTITY_SLOTS);
   for (const part of LOOK_PARTS) {
     assert.ok(LOOK_SLOTS.includes(part.style) && LOOK_SLOTS.includes(part.color), `${part.id} is made of slots`);
     covered.add(part.style).add(part.color);
     if (part.extra) assert.ok(LOOK_SLOTS.includes(part.extra), `${part.id}'s extra is a slot`), covered.add(part.extra);
+    if (part.extraColor) assert.ok(LOOK_SLOTS.includes(part.extraColor), `${part.id}'s extra colour is a slot`), covered.add(part.extraColor);
   }
   assert.deepEqual([...covered].sort(), [...LOOK_SLOTS].sort());
-  for (const slot of [...LOOK_PARTS.map(part => part.color), 'skin']) {
+  for (const slot of [...LOOK_PARTS.flatMap(part => [part.color, part.extraColor]).filter(Boolean), 'skin']) {
     for (const item of itemsForSlot(slot)) assert.equal(item.chip?.length, 2, `${slot}:${item.id} has a colour chip`);
   }
   assert.ok(lookItem('helmet', 'none')?.colorless, 'riding without a helmet is an option, with no colour');
@@ -205,7 +208,7 @@ const random = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
 
   // What a step of progress won, for the game's New Gear card.
   const won = newlyUnlockedItems(progress(0), progress(0, ['official:mirage'], ['career-rider']));
-  assert.deepEqual(won.map(item => `${item.slot}:${item.id}`).sort(), ['bike:classic', 'helmet:bike', 'helmet:cowboy', 'outfit:western']);
+  assert.deepEqual(won.map(item => `${item.slot}:${item.id}`).sort(), ['bike:classic', 'faceWear:bandana', 'helmet:bike', 'helmet:cowboy', 'outfit:western']);
   assert.deepEqual(newlyUnlockedItems(progress(0), progress(0)), [], 'nothing new, nothing announced');
   assert.deepEqual(gearCard(lookItem('helmet', 'cowboy')), { name: 'Cowboy hat', blurb: 'Rides out of the desert at sundown.', icon: 'helmet' });
   assert.deepEqual(gearCard(lookItem('outfitColor', 'yellow')), { name: 'Hi-vis', blurb: 'New outfit colour in the Garage.', icon: 'jacket' });
@@ -234,9 +237,14 @@ const random = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
 {
   const look = {
     gender: 'female', skin: 'deep', hair: 'bob', hairColor: 'blonde', beard: 'none', helmet: 'none', helmetColor: 'teal',
-    outfit: 'street', outfitColor: 'yellow', bike: 'classic', bikeColor: 'blue'
+    outfit: 'street', outfitColor: 'yellow', bike: 'classic', bikeColor: 'blue',
+    faceWear: 'glasses', faceWearColor: 'red', trail: 'ribbon', trailColor: 'blue'
   };
   assert.deepEqual(normalizeLook(look), look);
+  // A look from before extras wears none.
+  const { faceWear: _face, faceWearColor: _faceColor, trail: _trail, trailColor: _trailColor, ...older } = look;
+  assert.equal(normalizeLook(older).faceWear, 'none', 'looks from before extras wear nothing on the face');
+  assert.equal(normalizeLook(older).trail, 'none', 'or behind');
   assert.ok(isCompleteLook(look));
   assert.ok(!isCompleteLook({ ...look, bike: 'rocket' }));
   assert.deepEqual(normalizeLook(null), DEFAULT_LOOK);
@@ -254,11 +262,36 @@ const random = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
   assert.deepEqual(worn, { ...look, hair: starter.hair, outfitColor: starter.outfitColor, bike: starter.bike });
   assert.ok(!Object.hasOwn(normalizeLook({ ...look, extra: 1 }), 'extra'));
 
+  // Face wear shows on a bare head or under headwear; a full-face helmet
+  // hides it. A trail streams behind, unless the outfit trails its own cape
+  // or scarf. Each takes its own colour, and both can be worn together.
+  assert.equal(extraHiddenBy(look, 'faceWear'), null);
+  assert.equal(extraHiddenBy({ ...look, helmet: 'cap' }, 'faceWear'), null);
+  assert.equal(extraHiddenBy({ ...look, helmet: 'mx' }, 'faceWear')?.id, 'mx');
+  assert.equal(extraHiddenBy({ ...look, helmet: 'mx' }, 'trail'), null, 'a helmet leaves the trail alone');
+  assert.equal(lookParts(look).faceWear?.shape, 'glasses');
+  assert.equal(lookParts(look).faceWear?.base, lookItem('faceWearColor', 'red').colors.base, 'face wear takes the face colour');
+  assert.equal(lookParts(look).accessory?.shape, 'ribbon');
+  assert.equal(lookParts(look).accessory?.fill, lookItem('trailColor', 'blue').colors.base, 'a trail takes the trailing colour');
+  const scarf = { ...look, trail: 'scarf' };
+  assert.ok(lookParts(scarf).accessory?.wrap, 'a worn scarf wraps the neck');
+  assert.ok(!lookParts(look).accessory?.wrap, 'a ribbon does not');
+  assert.equal(extraHiddenBy({ ...scarf, outfit: 'superhero' }, 'trail')?.id, 'superhero');
+  assert.equal(lookParts({ ...scarf, outfit: 'superhero' }).accessory?.shape, 'cape', 'the outfit\'s cape wins');
+  assert.equal(lookParts({ ...look, faceWear: 'none', trail: 'none' }).faceWear, null);
+  assert.equal(lookParts({ ...look, faceWear: 'none', trail: 'none' }).accessory, null);
+  for (const item of itemsForSlot('faceWear')) {
+    if (item.id !== 'none') assert.ok(hasFaceWearArt(item.shape), `${item.id} has face art`);
+  }
+  for (const item of itemsForSlot('trail')) {
+    if (item.id !== 'none') assert.ok(hasTrailArt(item.shape), `${item.id} has a trail`);
+  }
+
   assert.deepEqual(lookOf({ rider: 'female' }), legacyLook('female'), 'old records keep their rider');
   assert.deepEqual(lookOf({ rider: 'female', look }), look, 'a look wins over the old rider');
   assert.deepEqual(lookOf({}), legacyLook('male'));
 
-  assert.equal(lookKey(look), 'female.deep.bob.blonde.none.none.teal.street.yellow.classic.blue');
+  assert.equal(lookKey(look), 'female.deep.bob.blonde.none.none.teal.street.yellow.classic.blue.glasses.red.ribbon.blue');
   assert.ok(sameLook(look, { ...look }));
   assert.ok(!sameLook(look, DEFAULT_LOOK));
   assert.equal(lookParts(look), lookParts({ ...look }), 'equal looks share their parts');

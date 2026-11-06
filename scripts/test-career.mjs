@@ -69,4 +69,35 @@ for (const hostname of ['example.com', 'deploy-preview-1--example.netlify.app', 
 }
 delete globalThis.location;
 
+// --- Gear in the Garage ----------------------------------------------------------
+
+const { lookItem } = await import('../js/cosmetics.js');
+const { lookItemProgress, markGearSeen, unseenGear } = await import('../js/state.js');
+const rider = (save = {}) => ({ playerId: 'rider-1', ...finished(), achievements: {}, stats: {}, ...save });
+const gearProgress = (slot, id, save) => lookItemProgress(lookItem(slot, id), progressOf(rider(save)));
+assert.equal(gearProgress('outfit', 'dungarees', { stats: { apples: 137 } }), '137 / 500', 'a locked item counts towards its lifetime goal');
+assert.equal(gearProgress('bike', 'classic', finished(0, 1)), '2 / ' + officialTrailEntries.length, 'and towards a career goal');
+assert.equal(gearProgress('outfit', 'prisoner', {}), '', 'a secret achievement keeps its goal to itself');
+assert.equal(gearProgress('outfit', 'street', {}), '', 'an item everyone has counts nothing');
+
+// A rider with no record has seen what they had won; what they win after is new until seen.
+assert.deepEqual(unseenGear(rider()), [], 'a rider from before the badges starts with nothing new');
+const won = rider(finished(0, 1, 2));
+// Three trails win the hoodie. Times of 10 seconds win gold on two of them,
+// which is far from the ten golds the tuxedo asks for.
+assert.deepEqual(unseenGear(won), ['outfit:hoodie'], 'gear is new once won');
+assert.equal(gearProgress('outfit', 'tuxedo', finished(0, 1, 2)), '2 / 10', 'a gold goal counts golds');
+markGearSeen(won, ['outfit:hoodie']);
+assert.deepEqual(unseenGear(won), [], 'and stops being new once seen');
+
+// The Garage fills up with the career: a cup per gold achievement, Coda once petted.
+const { garageRoom } = await import('../js/state.js');
+assert.equal(garageRoom(null), null, 'without a rider the garage stays bare');
+assert.deepEqual(garageRoom(rider()), { route: 0, cups: 0, nisse: false, coda: false }, 'a new rider has an empty garage');
+// Apple Valley's gold is above the helper's time of 10 seconds.
+const busy = garageRoom(rider({ ...finished(1), achievements: { 'pet-coda': 1 } }));
+assert.equal(busy.route, 1 / officialTrailEntries.length, 'the map shows the route so far');
+assert.equal(busy.cups, 1, 'a first gold puts a cup on the shelf');
+assert.ok(busy.coda, 'Coda moves in once petted');
+
 console.log('Career tests passed.');

@@ -15,15 +15,30 @@ const HAIR_STRANDS = [
 ];
 const DEFAULT_COLORS = { strands: ['#54362d', '#54362d', '#684438'], outline: '#2e1d19', shine: '#8c5d48' };
 
-// What an outfit's accessory trails behind the rider (see lookParts().accessory):
-// where it leaves the body and the way it hangs, in body coordinates as
-// HAIR_ROOT and HAIR_REST, its links' lengths, and its width from the root
-// to the tip. A cape hangs from the shoulders and flares out; a scarf's
-// loose end streams from the neck.
+// What trails behind the rider (see lookParts().accessory): where it leaves
+// the body and the way it hangs, in body coordinates as HAIR_ROOT and
+// HAIR_REST, its links' lengths, and its width from the root to the tip. A
+// cape hangs from the shoulders and flares out; a scarf's loose end streams
+// from the neck, and a ribbon from the shoulder. `gravity` scales the pull
+// down: a balloon's string, below zero, floats up, with the balloon drawn
+// at its end. A `tip` is the share of the length, from the end, in white,
+// like a corgi's tail.
 const ACCESSORIES = {
   cape: { root: [-9, -37], rest: [-.8, .6], lengths: [5, 5, 5, 5, 5, 5], width: [3, 8], ragdoll: 2 },
   scarf: { root: [-6, -38], rest: [-.9, .25], lengths: [3, 3, 3, 3, 3], width: [2, 2], ragdoll: 0 },
+  ribbon: { root: [-7, -37], rest: [-.95, .15], lengths: [4, 4, 4, 4, 4, 4, 4], width: [2, 2], ragdoll: 0 },
+  balloon: { root: [-10, -34], rest: [-.45, -.9], lengths: [4, 4, 4, 4], width: [1, 1], ragdoll: 0, gravity: -.6, balloon: true },
+  'corgi-tail': { root: [-14, -28], rest: [-.85, -.45], lengths: [5, 5, 5, 5], width: [2, 3], ragdoll: 4, tip: .25, gravity: .35 },
 };
+/** Whether a trailing shape has art and a chain (see ACCESSORIES). */
+export const hasTrailArt = shape => Object.hasOwn(ACCESSORIES, shape);
+
+// The balloon's rows from the top down to its knot, as half widths in art
+// pixels either side of the string's end.
+const BALLOON_ROWS = [1, 2, 2, 2, 2, 1.5, 1, .5];
+const BALLOON_SHINE = '#fff8e7';
+const TAIL_TIP = '#fff8e7';
+const STRING = '#e8e5d9';
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 const lerp = (a, b, t) => a + (b - a) * t;
@@ -139,14 +154,14 @@ export function freeAccessoryRestDirection(facing, shape) {
  * gravity and blown back by their speed, and kept off their back and the
  * ground: the simulation under the ponytail and the accessories.
  */
-function createChain(root, rest, lengths) {
+function createChain(root, rest, lengths, pull = 1) {
   let { x, y } = root;
   const hair = {
     accumulator: 0,
     root: { ...root },
     points: lengths.map(length => {
       x += rest.x * length;
-      y += rest.y * length + length * .3;
+      y += rest.y * length + length * .3 * pull;
       return { x, y, px: x, py: y };
     })
   };
@@ -157,7 +172,7 @@ function createChain(root, rest, lengths) {
     hair.root = anchor;
     const follow = 1 - Math.exp(-12 * h);
     const wind = 3.5 * h;
-    const gravity = 620 * h * h;
+    const gravity = 620 * h * h * pull;
     const points = hair.points;
     let parent = anchor, parentDirection = rest;
     points.forEach((point, index) => {
@@ -274,13 +289,14 @@ export function createRiderHair(root, rest, colors = DEFAULT_COLORS) {
 }
 
 /**
- * An outfit's accessory, as in lookParts().accessory: a cloth ribbon on a
- * chain, widening from the root to the tip, with a shaded edge.
+ * What trails behind the rider, as in lookParts().accessory: a cloth ribbon
+ * on a chain, widening from the root to the tip, with a shaded edge, or a
+ * balloon on its string.
  * @param {{ shape: string, fill: string, light: string, shade: string, outline: string }} accessory
  */
 export function createRiderAccessory(root, rest, accessory) {
-  const { lengths, width: [rootWidth, tipWidth] } = ACCESSORIES[accessory.shape];
-  const chain = createChain(root, rest, lengths);
+  const { lengths, width: [rootWidth, tipWidth], gravity = 1, balloon = false, tip = 0 } = ACCESSORIES[accessory.shape];
+  const chain = createChain(root, rest, lengths, gravity);
   return {
     get root() { return chain.root; },
     update: chain.update,
@@ -288,15 +304,35 @@ export function createRiderAccessory(root, rest, accessory) {
     draw(pixelPath, drawnRoot) {
       const spine = chain.spine(drawnRoot);
       const last = spine.length - 1;
+      if (balloon) {
+        // The string, then the balloon round its end, outlined, shaded low
+        // and lit from the top right.
+        pixelPath(spine, STRING, 1, 2);
+        const [x, y] = spine[last];
+        const top = y - BALLOON_ROWS.length * 2;
+        BALLOON_ROWS.forEach((half, row) => {
+          const rowY = top + row * 2;
+          const span = [[x - half * 2, rowY], [x + half * 2, rowY]];
+          pixelPath(span, accessory.outline, 4, 2);
+        });
+        BALLOON_ROWS.forEach((half, row) => {
+          const rowY = top + row * 2;
+          const color = row >= BALLOON_ROWS.length - 3 ? accessory.shade : accessory.fill;
+          pixelPath([[x - half * 2 + 1, rowY], [x + half * 2 - 1, rowY]], color, 2, 2);
+        });
+        pixelPath([[x + 2, top + 4], [x + 2, top + 4]], BALLOON_SHINE, 2, 2);
+        return;
+      }
       const width = index => Math.round(lerp(rootWidth, tipWidth, index / last));
+      const tipFrom = tip ? Math.round(last * (1 - tip)) : last + 1;
       for (const [pass, extra] of [['outline', 1], ['fill', 0]]) {
         for (let i = 1; i <= last; i++) {
-          const color = pass === 'outline' ? accessory.outline : accessory.fill;
+          const color = pass === 'outline' ? accessory.outline : i > tipFrom ? TAIL_TIP : accessory.fill;
           pixelPath([spine[i - 1], spine[i]], color, width(i) + extra, 2);
         }
       }
       // The underside in shade along the lower edge, and a lit fold along the top.
-      for (let i = 2; i <= last; i++) {
+      for (let i = 2; i <= Math.min(last, tipFrom); i++) {
         const [ax, ay] = spine[i - 1], [bx, by] = spine[i];
         const length = Math.hypot(bx - ax, by - ay) || 1;
         const side = Math.max(0, width(i) - 2) / 2;

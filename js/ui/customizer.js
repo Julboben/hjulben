@@ -1,5 +1,5 @@
 // The rider customizer, used when creating a rider and in the Garage: a tab
-// per part (hair, helmet, outfit, bike) with an icon, a live preview of the
+// per part (hair, helmet, outfit, bike, extras) with an icon, a live preview of the
 // rider on their bike, the part's styles, and its colours in their own panel.
 // Every style swatch is the real rider, drawn by
 // the game's renderer with that one item swapped in, so it matches the ride.
@@ -8,10 +8,10 @@
 import { trails } from '../trails.js';
 import { RADIUS } from '../config.js';
 import { drawFigure, posedRide } from '../scene-preview.js';
-import { drawGarage } from '../garage-backdrop.js';
+import { CODA_AREA, CODA_HAPPY, LIGHT_SWITCH, drawGarage } from '../garage-backdrop.js';
 import {
-  DEFAULT_LOOK, LOOK_PARTS, SLOT_LABELS, isColorless, isDefaultItem, itemsForSlot, lookItem, lookKey,
-  normalizeLook, partName, sameLook, shownItemsForSlot, starterLook
+  DEFAULT_LOOK, LOOK_PARTS, SLOT_LABELS, extraHiddenBy, isColorless, isDefaultItem, itemsForSlot, lookItem, lookKey,
+  normalizeLook, partName, randomLook, sameLook, shownItemsForSlot, starterLook
 } from '../cosmetics.js';
 
 // What each view frames, in world units around the bike's axles.
@@ -20,15 +20,30 @@ const SWATCH_VIEWS = {
   // show at the same size as the rest, their tops cropped.
   head: { dx: -2, dy: -44, width: 30, height: 30 },
   outfit: { dx: -8, dy: -30, width: 44, height: 44 },
+  // The head and shoulders, for what is worn on the face.
+  neck: { dx: -7, dy: -40, width: 34, height: 34 },
+  // The rider's back, with room for a trail above and behind it.
+  trail: { dx: -14, dy: -42, width: 52, height: 52 },
   bike: { dx: 0, dy: -22, width: 88, height: 70 },
-  // The big preview: the whole rider and bike, wheels and floor included.
-  full: { dx: 0, dy: -20, width: 176, height: 88 }
+  // The big preview: the whole rider and bike, wheels and floor included,
+  // and the walls either side with what the career has put on them.
+  full: { dx: 0, dy: -26, width: 220, height: 110 }
 };
 
-// Which view each part's style swatches use. Hair hides under a helmet, so
-// its swatches show the head bare.
-const PART_VIEWS = { hair: 'head', helmet: 'head', outfit: 'outfit', bike: 'bike' };
-const BARE_PARTS = new Set(['hair']);
+// Which view each part's style swatches use (a slot of SLOT_VIEWS its own),
+// and what their swatches take off so the item shows: hair and face wear
+// hide under a helmet, and a trail behind an outfit's own cape or scarf.
+const PART_VIEWS = { hair: 'head', helmet: 'head', outfit: 'outfit', bike: 'bike', extras: 'neck' };
+const SLOT_VIEWS = { trail: 'trail' };
+const SWATCH_CLEAR = {
+  hair: () => ({ helmet: 'none' }),
+  extras: look => ({ helmet: 'none', ...(lookItem('outfit', look.outfit)?.accessory ? { outfit: 'street' } : {}) }),
+};
+
+// How often the big preview moves on, about ten frames a second, which
+// suits the pixel art and costs little.
+const FRAME_MS = 100;
+const still = matchMedia('(prefers-reduced-motion: reduce)');
 
 let pose = null;
 /** The rider at the first trail's start, which every preview and swatch shows. */
@@ -41,25 +56,43 @@ function posed() {
     ride.rear.y = ride.front.y = axle;
     const x = (ride.rear.x + ride.front.x) / 2;
     const floor = axle + RADIUS;
-    pose = { trail, ride, x, y: axle, backdrop: (ctx, view) => drawGarage(ctx, view, { x, floor }) };
+    pose = { trail, ride, x, y: axle, backdrop: (room, time, lightsOff) => (ctx, view) => drawGarage(ctx, view, { x, floor, room, time, lightsOff }) };
   }
   return pose;
 }
 
 /**
+ * Where a point in the garage, from the bike's midpoint and the floor under
+ * it, is on the big preview, as fractions of its width and height.
+ */
+function previewPlace(dx, dy) {
+  const { ride } = posed();
+  const frame = SWATCH_VIEWS.full;
+  return {
+    fx: 0.5 + (dx - frame.dx * ride.facing) / frame.width,
+    fy: 0.5 + (dy + RADIUS - frame.dy) / frame.height,
+  };
+}
+
+/**
  * Paints `look`'s rider in the garage into `target`, framed by `view`:
  * 'head', 'outfit', 'bike' or 'full' (the big preview). `dark` turns the
- * garage lights off, to show the bike's lights.
+ * garage lights off, to show the bike's lights, `room` is what the
+ * rider's career has put in the garage (see garageRoom in state.js), and
+ * `time` brings it to life at that moment (see drawGarage).
  * @param {HTMLCanvasElement} target
  * @param {any} look
  * @param {string} [view]
- * @param {{ dark?: boolean }} [options]
+ * @param {{
+ *   dark?: boolean, room?: import('../garage-backdrop.js').GarageRoom | null,
+ *   time?: import('../garage-backdrop.js').GarageTime | null
+ * }} [options]
  */
-export function drawLook(target, look, view = 'full', { dark = false } = {}) {
+export function drawLook(target, look, view = 'full', { dark = false, room = null, time = null } = {}) {
   const { ride, x, y, backdrop } = posed();
   const frame = SWATCH_VIEWS[view] ?? SWATCH_VIEWS.full;
   return drawFigure(target, {
-    ride, look, backdrop, dark,
+    ride, look, backdrop: backdrop(room, time, dark), dark,
     width: frame.width, height: frame.height,
     focus: { x: x + frame.dx * ride.facing, y: y + frame.dy }, anchor: [0.5, 0.5]
   });
@@ -120,17 +153,30 @@ function radio(className, checked, label) {
  * @param {PaintHooks & {
  *   onChange?: (look: any) => void,
  *   owns?: (slot: string, id: string) => boolean,
- *   hint?: (item: any) => string
+ *   hint?: (item: any) => string,
+ *   isNew?: (slot: string, id: string) => boolean,
+ *   onSeen?: (keys: string[]) => void,
+ *   room?: () => import('../garage-backdrop.js').GarageRoom | null,
+ *   onPet?: () => void
  * }} hooks  `owns` says which items the rider may wear; locked items are
  *   shown but cannot be picked, with `hint` saying what unlocks them.
+ *   `isNew` marks items just won with a NEW tag, and their part's tab with a
+ *   dot until it is opened; `onSeen` gets the new items ('slot:id') of each
+ *   part as it is shown. `room` furnishes the garage in the big preview,
+ *   and `onPet` hears Coda being petted there, to woof.
  */
-export function createCustomizer(root, { paint, previewKey, onChange = () => {}, owns = isDefaultItem, hint = () => '' }) {
+export function createCustomizer(root, {
+  paint, previewKey, onChange = () => {}, owns = isDefaultItem, hint = () => '', isNew = () => false, onSeen = () => {},
+  room = () => null, onPet = () => {}
+}) {
   let look = { ...DEFAULT_LOOK };
-  // The look the customizer was opened with, which Revert goes back to.
-  let original = look;
+  // The looks to step back and forward through, since the customizer opened.
+  let past = [], future = [];
   let part = LOOK_PARTS[0];
   // Whether the big preview has the garage lights off, to show the bike's lights.
   let dark = false;
+  // The parts shown since the customizer opened: their tabs lose the new-item dot.
+  const visited = new Set();
 
   root.classList.add('look-editor');
 
@@ -144,8 +190,12 @@ export function createCustomizer(root, { paint, previewKey, onChange = () => {},
     tab.setAttribute('role', 'tab');
     tab.dataset.lookPart = entry.id;
     const text = element('span', 'look-tab-text');
-    text.append(element('b', '', SLOT_LABELS[entry.style].toUpperCase()), element('small'));
-    tab.append(icon(entry.icon), text);
+    text.append(element('b', '', (entry.tab ?? SLOT_LABELS[entry.style]).toUpperCase()));
+    // Read out with the tab's name while it shows.
+    const dot = element('span', 'look-tab-new');
+    dot.append(element('span', 'sr-only', ', new items'));
+    dot.hidden = true;
+    tab.append(icon(entry.icon), text, dot);
     tab.addEventListener('click', () => { part = entry; render(); });
     return tab;
   });
@@ -154,12 +204,25 @@ export function createCustomizer(root, { paint, previewKey, onChange = () => {},
   const stage = element('div', 'look-stage');
   const preview = element('canvas', 'look-preview');
   preview.setAttribute('role', 'img');
-  const previous = stepButton('arrow-left', -1);
-  const next = stepButton('arrow-right', 1);
   const lightSwitch = element('button', 'look-light');
   lightSwitch.type = 'button';
   lightSwitch.addEventListener('click', () => { dark = !dark; renderPreview(); });
-  stage.append(preview, previous, next, lightSwitch);
+  // Over the switch drawn on the wall, which shows whether the lights are on.
+  const switchAt = previewPlace(LIGHT_SWITCH.dx, LIGHT_SWITCH.dy);
+  lightSwitch.style.left = `${switchAt.fx * 100}%`;
+  lightSwitch.style.top = `${switchAt.fy * 100}%`;
+  // Pets Coda: an unseen button over him, so a click, a key or a gamepad all reach him.
+  const coda = element('button', 'look-coda');
+  coda.type = 'button';
+  coda.setAttribute('aria-label', 'Pet Coda');
+  coda.title = 'Pet Coda';
+  coda.hidden = true;
+  const codaFrom = previewPlace(CODA_AREA.left, CODA_AREA.top), codaTo = previewPlace(CODA_AREA.right, CODA_AREA.bottom);
+  coda.style.left = `${Math.min(codaFrom.fx, codaTo.fx) * 100}%`;
+  coda.style.top = `${codaFrom.fy * 100}%`;
+  coda.style.width = `${Math.abs(codaTo.fx - codaFrom.fx) * 100}%`;
+  coda.style.height = `${(codaTo.fy - codaFrom.fy) * 100}%`;
+  stage.append(preview, lightSwitch, coda);
 
   const top = element('div', 'look-top');
   top.append(tabs, stage);
@@ -170,22 +233,66 @@ export function createCustomizer(root, { paint, previewKey, onChange = () => {},
   const extras = styleSection();
 
   // The part's colours, in their own panel.
-  const colors = element('section', 'look-section look-colors');
-  const colorHead = sectionHead();
-  const chips = element('div', 'look-chips');
-  chips.setAttribute('role', 'radiogroup');
-  colors.append(colorHead.head, chips);
+  // The part's colours, and its extra slot's when it has its own, each in a panel.
+  const colors = colorSection();
+  const extraColors = colorSection();
 
   const actions = element('div', 'look-actions');
-  const revert = element('button', 'menu-back look-revert', 'REVERT');
-  revert.type = 'button';
-  revert.disabled = true;
-  revert.dataset.iconBefore = 'undo';
-  revert.title = 'Undo every change since this screen opened';
-  revert.addEventListener('click', () => set(original));
-  actions.append(revert);
+  const shuffle = element('button', 'menu-back look-random');
+  shuffle.type = 'button';
+  shuffle.dataset.iconBefore = 'dice';
+  shuffle.append(element('span', 'look-random-text', 'RANDOM'));
+  shuffle.title = 'A random look from what you have unlocked';
+  shuffle.setAttribute('aria-label', shuffle.title);
+  shuffle.addEventListener('click', () => {
+    // A few tries, so the button never seems to do nothing.
+    let rolled = look;
+    for (let tries = 0; tries < 8 && sameLook(rolled, look); tries++) rolled = randomLook(look, { owns });
+    set(rolled);
+  });
+  const undo = historyButton('undo', 'Undo', () => step(past, future));
+  const redo = historyButton('redo', 'Redo', () => step(future, past));
+  actions.append(shuffle, undo, redo);
+  // The usual shortcuts, while anything in the customizer has focus.
+  root.addEventListener('keydown', event => {
+    if (!(event.ctrlKey || event.metaKey) || event.altKey) return;
+    const back = event.code === 'KeyZ' && !event.shiftKey;
+    const forward = (event.code === 'KeyZ' && event.shiftKey) || (event.code === 'KeyY' && !event.shiftKey);
+    if (!back && !forward) return;
+    event.preventDefault();
+    if (back) step(past, future);
+    else step(future, past);
+  });
 
-  root.replaceChildren(top, styles.section, extras.section, colors, actions);
+  function historyButton(name, label, onClick) {
+    const button = element('button', 'menu-back look-history');
+    button.type = 'button';
+    button.append(icon(name));
+    button.title = label;
+    button.setAttribute('aria-label', label);
+    button.addEventListener('click', onClick);
+    return button;
+  }
+
+  /** Undo or redo: the last look of `from` comes back, and the shown one goes to `to`. */
+  function step(from, to) {
+    if (!from.length) return;
+    to.push(look);
+    look = from.pop();
+    render();
+    onChange({ ...look });
+  }
+
+  root.replaceChildren(top, styles.section, extras.section, colors.section, extraColors.section, actions);
+
+  function colorSection() {
+    const section = element('section', 'look-section look-colors');
+    const head = sectionHead();
+    const chips = element('div', 'look-chips');
+    chips.setAttribute('role', 'radiogroup');
+    section.append(head.head, chips);
+    return { section, head, chips };
+  }
 
   function styleSection() {
     const section = element('section', 'look-section');
@@ -200,41 +307,74 @@ export function createCustomizer(root, { paint, previewKey, onChange = () => {},
     return { section, head, name, blurb, options };
   }
 
-  function stepButton(iconName, step) {
-    const button = element('button', `look-step ${step < 0 ? 'look-step-previous' : 'look-step-next'}`);
-    button.type = 'button';
-    button.append(icon(iconName));
-    button.setAttribute('aria-label', step < 0 ? 'Previous style' : 'Next style');
-    button.addEventListener('click', () => {
-      const items = itemsForSlot(part.style).filter(item => owns(part.style, item.id));
-      if (!items.length) return;
-      const index = items.findIndex(item => item.id === look[part.style]);
-      set({ ...look, [part.style]: items[(index + step + items.length) % items.length].id });
-    });
-    return button;
-  }
-
   function lockedLabel(item, locked) {
-    if (!locked) return item.name;
+    if (!locked) return isNew(item.slot, item.id) ? `${item.name} (new)` : item.name;
     const how = hint(item);
     return how ? `${item.name} (locked: ${how.toLowerCase()})` : `${item.name} (locked)`;
   }
 
+  /** The new items among `entry`'s styles and colours, as 'slot:id' keys. */
+  function newItems(entry) {
+    return [entry.style, entry.color, entry.extra, entry.extraColor].filter(Boolean)
+      .flatMap(slot => itemsForSlot(slot).filter(item => isNew(slot, item.id)).map(item => slot + ':' + item.id));
+  }
+
   function set(nextLook) {
-    look = normalizeLook(nextLook, { fallback: look, owns });
+    const next = normalizeLook(nextLook, { fallback: look, owns });
+    if (sameLook(next, look)) return;
+    past.push(look);
+    future = [];
+    look = next;
     render();
     onChange({ ...look });
   }
 
-  function paintLook(target, shown, view, { dark = false } = {}) {
-    const key = previewKey('look', view, lookKey(shown), dark ? 'dark' : 'lit');
-    paint(target, key, image => drawLook(image, shown, view, { dark }));
+  function paintLook(target, shown, view) {
+    paint(target, previewKey('look', view, lookKey(shown)), image => drawLook(image, shown, view));
   }
 
+  // The big preview is drawn live rather than from the cache, so the room
+  // moves (see drawGarage): a frame every FRAME_MS while it is on screen.
+  // With reduced motion it is drawn still, and once more as a pat wears off.
+  // `pettedAt` is when Coda was last petted.
+  let furnished = null, shownAt = 0, drawnAt = -Infinity, frameRequest = 0, pettedAt = null, settleTimer = 0;
+
+  function drawPreview(stamp) {
+    drawnAt = stamp;
+    const petted = pettedAt === null || stamp - pettedAt > CODA_HAPPY * 1000 ? null : still.matches ? 0 : (stamp - pettedAt) / 1000;
+    const seconds = still.matches ? 0 : (stamp - shownAt) / 1000;
+    drawLook(preview, look, 'full', { dark, room: furnished, time: { seconds, petted } });
+  }
+
+  function animate(stamp) {
+    frameRequest = 0;
+    // Hidden (another view, the creator's other step) or in a background tab: stop until shown again.
+    if (document.hidden || !preview.checkVisibility()) return;
+    if (stamp - drawnAt >= FRAME_MS) drawPreview(stamp);
+    frameRequest = requestAnimationFrame(animate);
+  }
+
+  function startPreview() {
+    if (frameRequest || still.matches) return;
+    shownAt ||= performance.now();
+    frameRequest = requestAnimationFrame(animate);
+  }
+
+  coda.addEventListener('click', () => {
+    pettedAt = performance.now();
+    onPet();
+    drawPreview(pettedAt);
+    if (still.matches) {
+      clearTimeout(settleTimer);
+      settleTimer = setTimeout(() => drawPreview(performance.now()), CODA_HAPPY * 1000 + 50);
+    }
+  });
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) startPreview(); });
+
   function renderPreview() {
-    paintLook(preview, look, 'full', { dark });
+    drawPreview(performance.now());
+    startPreview();
     const label = dark ? 'Turn the garage lights on' : 'Turn the garage lights off to see the bike\'s lights';
-    lightSwitch.replaceChildren(icon(dark ? 'headlight-off' : 'headlight'));
     lightSwitch.setAttribute('aria-pressed', String(dark));
     lightSwitch.setAttribute('aria-label', label);
     lightSwitch.title = label;
@@ -246,22 +386,29 @@ export function createCustomizer(root, { paint, previewKey, onChange = () => {},
     const items = shownItemsForSlot(slot, owns);
     const selected = lookItem(slot, look[slot]);
     head.title.textContent = SLOT_LABELS[slot].toUpperCase();
-    head.note.textContent = `${items.findIndex(item => item.id === look[slot]) + 1} / ${items.length}`;
+    // Secret items only count once they are shown, so they stay secret.
+    head.note.textContent = `${items.filter(item => owns(slot, item.id)).length} / ${items.length} unlocked`;
     detailName.textContent = selected?.name.toUpperCase() ?? '';
     detailBlurb.textContent = selected?.blurb ?? '';
+    // An extra a helmet or outfit covers is still worn, but says why it doesn't show.
+    const hider = extraHiddenBy(look, slot);
+    if (hider) detailBlurb.textContent = `Your ${hider.name.toLowerCase()} ${SLOT_LABELS[hider.slot].toLowerCase()} hides it.`;
     options.setAttribute('aria-label', SLOT_LABELS[slot]);
-    const view = PART_VIEWS[part.id];
+    const view = SLOT_VIEWS[slot] ?? PART_VIEWS[part.id];
     options.replaceChildren(...items.map(item => {
       const locked = !owns(slot, item.id);
       const option = radio('look-option', look[slot] === item.id, lockedLabel(item, locked));
+      option.dataset.lookSlot = slot;
+      option.dataset.lookItem = item.id;
       option.setAttribute('aria-disabled', String(locked));
       option.classList.toggle('locked', locked);
       const swatch = element('canvas');
       swatch.setAttribute('aria-hidden', 'true');
-      const shown = { ...look, ...(BARE_PARTS.has(part.id) ? { helmet: 'none' } : {}), [slot]: item.id };
+      const shown = { ...look, ...SWATCH_CLEAR[part.id]?.(look), [slot]: item.id };
       paintLook(swatch, shown, view);
       option.append(swatch, element('small', '', item.name));
       if (locked) option.append(icon('lock'));
+      else if (isNew(slot, item.id)) option.append(element('b', 'look-new', 'NEW'));
       // A locked style can't be worn, but tapping it says what unlocks it.
       option.addEventListener('click', () => {
         if (!locked) { set({ ...look, [slot]: item.id }); return; }
@@ -272,27 +419,41 @@ export function createCustomizer(root, { paint, previewKey, onChange = () => {},
     }));
   }
 
-  function renderColors() {
-    const slot = part.color;
-    const colorless = isColorless(look, part);
+  /** Fills `panel` (from colorSection) with `slot`'s colours, for `style`'s item; `colorless` greys them out. */
+  function renderColors(panel, slot, style, colorless) {
+    const { section, head, chips } = panel;
     const selected = lookItem(slot, look[slot]);
-    colorHead.title.textContent = SLOT_LABELS[slot].toUpperCase();
-    colorHead.note.textContent = colorless ? `None for ${lookItem(part.style, look[part.style])?.name.toLowerCase()}` : selected?.name ?? '';
-    colors.classList.toggle('disabled', colorless);
+    head.title.textContent = SLOT_LABELS[slot].toUpperCase();
+    head.note.textContent = colorless ? `None for ${lookItem(style, look[style])?.name.toLowerCase()}` : selected?.name ?? '';
+    section.classList.toggle('disabled', colorless);
     chips.setAttribute('aria-label', SLOT_LABELS[slot]);
     chips.replaceChildren(...itemsForSlot(slot).map(item => {
       const locked = !owns(slot, item.id);
       const option = radio('look-chip', look[slot] === item.id, lockedLabel(item, locked));
+      option.dataset.lookSlot = slot;
+      option.dataset.lookItem = item.id;
       option.disabled = locked || colorless;
       option.classList.toggle('locked', locked);
       option.append(chip(item));
       if (locked) option.append(icon('lock'));
+      else if (isNew(slot, item.id)) option.append(element('span', 'look-new'));
       option.addEventListener('click', () => set({ ...look, [slot]: item.id }));
       return option;
     }));
   }
 
   function render() {
+    // Rebuilding the options replaces the one with focus, so focus moves to
+    // its replacement: keyboard and gamepad riders keep their place, and
+    // the undo shortcuts keep working.
+    const focused = root.contains(document.activeElement) ? /** @type {HTMLElement} */ (document.activeElement) : null;
+    furnished = room();
+    coda.hidden = !furnished?.coda;
+    if (!visited.has(part.id)) {
+      visited.add(part.id);
+      const seen = newItems(part);
+      if (seen.length) onSeen(seen);
+    }
     renderPreview();
     const names = [['gender', look.gender], ['skin', look.skin]].map(([slot, id]) => lookItem(slot, id)?.name)
       .concat(LOOK_PARTS.map(entry => partName(look, entry)));
@@ -300,26 +461,51 @@ export function createCustomizer(root, { paint, previewKey, onChange = () => {},
     for (const tab of tabButtons) {
       const entry = LOOK_PARTS.find(candidate => candidate.id === tab.dataset.lookPart);
       tab.setAttribute('aria-selected', String(entry === part));
-      tab.querySelector('small').textContent = partName(look, entry);
+      tab.querySelector('.look-tab-new').hidden = visited.has(entry.id) || !newItems(entry).length;
     }
     renderStyles(styles, part.style);
     // Beards only for riders who can grow one.
     const extra = part.extra === 'beard' && !lookItem('gender', look.gender)?.face.beard ? null : part.extra;
     extras.section.hidden = !extra;
     if (extra) renderStyles(extras, extra);
-    renderColors();
-    revert.disabled = sameLook(look, original);
+    renderColors(colors, part.color, part.style, isColorless(look, part));
+    // An extra with colours of its own has them under it, and the part's colours under the part's styles.
+    extraColors.section.hidden = !part.extraColor;
+    if (part.extraColor) {
+      renderColors(extraColors, part.extraColor, part.extra, Boolean(lookItem(part.extra, look[part.extra])?.colorless));
+      root.insertBefore(colors.section, extras.section);
+    } else root.insertBefore(colors.section, extraColors.section);
+    // Only there once something has changed.
+    undo.hidden = redo.hidden = !past.length && !future.length;
+    undo.disabled = !past.length;
+    redo.disabled = !future.length;
+    if (focused) keepFocus(focused);
+  }
+
+  /** Puts focus back on `focused`'s replacement, or on the next history button when it was undo or redo and has run out. */
+  function keepFocus(focused) {
+    let target = focused;
+    if (!focused.isConnected) {
+      const { lookSlot, lookItem: item } = focused.dataset;
+      target = root.querySelector(`[data-look-slot="${lookSlot}"][data-look-item="${item}"]`);
+    } else if (focused === undo || focused === redo) {
+      target = [focused, focused === undo ? redo : undo, shuffle].find(button => !button.disabled && !button.hidden);
+    }
+    if (target && target !== document.activeElement) target.focus({ preventScroll: true });
   }
 
   return {
     /** Shows `nextLook` without reporting a change, e.g. when the view opens. */
     setLook(nextLook, { tab = null } = {}) {
-      look = original = normalizeLook(nextLook, { owns });
+      look = normalizeLook(nextLook, { owns });
+      past = [];
+      future = [];
       if (tab) part = LOOK_PARTS.find(entry => entry.id === tab) ?? part;
+      visited.clear();
       render();
     },
     look: () => ({ ...look }),
-    /** Where the host adds its own buttons, beside Revert. */
+    /** Where the host adds its own buttons, after Random, Undo and Redo. */
     actions,
     refresh: render
   };

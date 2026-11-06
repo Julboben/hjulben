@@ -6,7 +6,7 @@ import { drawScene, drawTrailPreview, posedRide, findClimb, findJump, finishScen
 import {
   loadSaveSlots, loadActiveSlot, saveActiveSlot, createSave, deleteSave, readBest,
   readLeaderboard, LEADERBOARD_SIZE, loadPreferences, savePreferences, cleanRiderName,
-  restoreOnlineSave, linkSave, readGhost, saveLook, loadSeenVersion, saveSeenVersion, loadSeenHowTo, saveSeenHowTo, applyCloudSave, clearSaveToken, hasNisse
+  restoreOnlineSave, linkSave, readGhost, saveLook, saveGhostMode, adoptGhostSetting, loadSeenVersion, saveSeenVersion, loadSeenHowTo, saveSeenHowTo, applyCloudSave, clearSaveToken, hasNisse
 } from '../storage.js';
 import { DEFAULT_LOOK, itemsForSlot, keepIdentity, lookKey, lookParts, randomLook, sameLook, starterLook } from '../cosmetics.js';
 import { createCustomizer, createIdentityPicker, drawLook } from './customizer.js';
@@ -25,7 +25,8 @@ import { RELEASES } from '../changelog.js';
 import { ACHIEVEMENTS, ACHIEVEMENT_GROUPS, statProgressText } from '../achievements.js';
 import {
   $, session, reducedMotion, DEFAULT_BINDINGS, DEFAULT_PREFERENCES, sanitizePreferences,
-  leaderboardTrails, trailKey, nisseKey, trailMarker, runTimeText, bonusUnlock, lookOwner, riderLook, lookItemHint, progressOf, unlockedOf
+  leaderboardTrails, trailKey, nisseKey, trailMarker, runTimeText, bonusUnlock, lookOwner, riderLook, lookItemHint, progressOf, unlockedOf,
+  lookItemProgress, unseenGear, markGearSeen, garageRoom, ghostMode
 } from '../state.js';
 
 // Runs made without a savegame have no name.
@@ -34,6 +35,9 @@ const runnerName = name => name || 'RIDER';
 /** Loads saves and preferences into the session. */
 export function loadStoredState() {
   session.preferences = sanitizePreferences(loadPreferences(DEFAULT_PREFERENCES));
+  // The Ghost setting moved into saves, so it follows the rider; a choice
+  // made on this device before that is kept. Synced with the next cloud check.
+  adoptGhostSetting(trails.length, session.preferences.ghost, DEFAULT_PREFERENCES.ghost);
   session.saveSlots = loadSaveSlots(trails.length);
   session.activeSaveSlot = loadActiveSlot();
   session.saveGame = session.saveSlots[session.activeSaveSlot];
@@ -78,6 +82,8 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
   // Sandbox riders are throwaway, so they never get an online account.
   const onlineAvailable = passkeysSupported() && !isSandbox();
   let saveMode = onlineAvailable ? 'online' : 'offline';
+  // The ghost a new online rider races, picked under Online.
+  let newSaveGhost = DEFAULT_PREFERENCES.ghost;
   /** True while a passkey prompt or account request is in flight. */
   let accountBusy = false;
 
@@ -294,12 +300,21 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     ...customizerHooks,
     onChange: look => { creatorTouched = !sameLook(look, creatorStart); }
   });
-  // The Garage offers what the active rider has unlocked, checked when it opens.
+  // The Garage offers what the active rider has unlocked, checked when it opens,
+  // with what they have won since they last looked tagged NEW for the visit.
   let garageOwns = lookOwner(null);
+  let garageProgress = null;
+  let garageFresh = new Set();
   // The bike the Garage shows, so a newly picked one can be heard.
   let garageBike = null;
   const garage = createCustomizer($('garage-look'), {
-    ...customizerHooks, onChange: changeGarage, owns: (slot, id) => garageOwns(slot, id)
+    ...customizerHooks, onChange: changeGarage, owns: (slot, id) => garageOwns(slot, id),
+    // A locked item says how close the rider is, too.
+    hint: item => [lookItemHint(item), lookItemProgress(item, garageProgress)].filter(Boolean).join(' · '),
+    isNew: (slot, id) => garageFresh.has(slot + ':' + id),
+    onSeen: keys => markGearSeen(session.saveGame, keys),
+    room: () => garageRoom(session.saveGame),
+    onPet: () => sounds.woof()
   });
   garage.actions.append($('save-look'));
 
@@ -352,6 +367,8 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     name.textContent = session.saveGame.name;
     $('garage-rider').replaceChildren(name, genderText, genderMark);
     garageOwns = lookOwner(session.saveGame);
+    garageProgress = progressOf(session.saveGame);
+    garageFresh = new Set(unseenGear(session.saveGame));
     // Opens on the tab the rider was last on.
     garage.setLook(session.look);
     garageBike = session.look.bike;
@@ -710,6 +727,7 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     $('menu-first-ride').classList.toggle('menu-action-primary', !resumable);
     $('menu-riders').hidden = !hasSave;
     $('menu-garage').hidden = !hasSave;
+    $('garage-new-badge').hidden = !hasSave || !unseenGear(session.saveGame).length;
     $('menu-achievements').hidden = !hasSave;
     if (hasSave) $('menu-achievements-detail').textContent = earnedCount(progressOf(session.saveGame)) + ' / ' + ACHIEVEMENTS.length + ' earned';
     buildSaveSlots();
@@ -1447,6 +1465,7 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     // backed up; setSaveMode falls back to offline where passkeys aren't
     // available.
     setSaveMode('online');
+    setNewSaveGhost(DEFAULT_PREFERENCES.ghost);
     // The skin tone starts random too; the player can pick another.
     const skins = itemsForSlot('skin');
     const identity = { gender: DEFAULT_LOOK.gender, skin: skins[Math.floor(Math.random() * skins.length)].id };
@@ -1480,10 +1499,19 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     });
     $('save-mode').hidden = !onlineAvailable;
     $('save-login').hidden = !onlineAvailable;
+    // Only online riders are asked: the world's best is what they signed up to chase.
+    $('save-ghost').hidden = !online;
     $('save-mode-help').textContent = online
       ? 'Your name is yours alone on the world leaderboard. Sign in with a passkey (fingerprint, face or device PIN) to back up your progress.'
       : 'Stays in this browser only: no world leaderboard, and clearing site data deletes it. You can take it online later from Riders.';
     $('create-save').textContent = online ? 'Create Passkey & Ride' : 'Create Save & Ride';
+  }
+
+  function setNewSaveGhost(mode) {
+    newSaveGhost = mode;
+    document.querySelectorAll('[data-save-ghost]').forEach(button => {
+      button.setAttribute('aria-pressed', String(button.dataset.saveGhost === mode));
+    });
   }
 
   function useNewSave(index, save) {
@@ -1498,7 +1526,7 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     try {
       const look = creator.look();
       const { token, player } = await registerRider(name, look);
-      const save = createSave(pendingSaveSlot, look, trails.length, player.name, { playerId: player.id, token });
+      const save = createSave(pendingSaveSlot, look, trails.length, player.name, { playerId: player.id, token }, newSaveGhost);
       if (!save) {
         // The passkey exists now, so the rider is not lost: it logs in like any other.
         showView('riders');
@@ -1593,6 +1621,17 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     setImportStatus(text, isError);
   }
 
+  /** Sets the ghost to race, for the active rider (synced to their other devices) and as this device's setting. */
+  function setGhostMode(mode) {
+    session.preferences.ghost = mode;
+    if (!session.saveGame) return;
+    const saved = saveGhostMode(session.activeSaveSlot, trails.length, mode);
+    if (!saved) return;
+    session.saveSlots[session.activeSaveSlot] = saved;
+    session.saveGame = saved;
+    queueSaveSync(saved);
+  }
+
   function persistPreferences() {
     savePreferences(session.preferences);
     onPreferences();
@@ -1653,7 +1692,8 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
   function syncSettings() {
     syncRumbleSetting();
     document.querySelectorAll('[data-setting]').forEach(button => {
-      button.setAttribute('aria-pressed', String(session.preferences[button.dataset.setting] === button.dataset.value));
+      const value = button.dataset.setting === 'ghost' ? ghostMode() : session.preferences[button.dataset.setting];
+      button.setAttribute('aria-pressed', String(value === button.dataset.value));
     });
     $('setting-volume').value = String(session.preferences.volume);
     $('setting-volume-value').textContent = String(session.preferences.volume);
@@ -1769,6 +1809,7 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     setSaveMode(button.dataset.saveMode);
     setStatus('save-status', '');
   }));
+  document.querySelectorAll('[data-save-ghost]').forEach(button => button.addEventListener('click', () => setNewSaveGhost(button.dataset.saveGhost)));
   $('menu-trails').addEventListener('click', () => { buildTrailCards(); showView('trails'); });
   $('import-trail').addEventListener('click', () => $('import-trail-file').click());
   $('import-trail-file').addEventListener('change', async event => {
@@ -1825,7 +1866,8 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
   });
   document.querySelectorAll('[data-setting]').forEach(button => {
     button.addEventListener('click', () => {
-      session.preferences[button.dataset.setting] = button.dataset.value;
+      if (button.dataset.setting === 'ghost') setGhostMode(button.dataset.value);
+      else session.preferences[button.dataset.setting] = button.dataset.value;
       persistPreferences();
       drawBackground();
     });
@@ -1853,6 +1895,7 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     resetArmed = false;
     button.textContent = 'RESET ALL SETTINGS';
     session.preferences = sanitizePreferences({});
+    setGhostMode(session.preferences.ghost);
     persistPreferences();
     drawBackground();
   });

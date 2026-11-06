@@ -14,7 +14,7 @@ import {
   saveProgress as persistProgress, savePreferences, clearSaveToken, renewSaveToken, recordAchievements, recordNisse,
   pruneStaleTrailData, STORAGE_FAILED_EVENT
 } from './storage.js';
-import { bikeBroken, createFeatTracker, editorProgress, eggAchievements, eventAchievements, finishAchievements, interactAchievements, newlyEarned, statGains } from './achievements.js';
+import { bikeBroken, createFeatTracker, editorProgress, eggAchievements, eventAchievements, finishAchievements, finishGains, interactAchievements, newlyEarned, statGains } from './achievements.js';
 import { createLimWatcher, installConsoleCheats } from './easter-eggs.js';
 import { submitOnlineRun, fetchWorldGhost, refreshOnlineBoard, cachedOnlineBoard, queuePendingRun, dropPendingRun, flushPendingRuns } from './online-leaderboard.js';
 import { queueSaveSync, SIGNED_OUT_EVENT, SESSION_RENEWED_EVENT } from './account.js';
@@ -31,7 +31,7 @@ import { gearCard, legacyRider, lookOf, lookParts, newlyUnlockedItems } from './
 import { createOverlay } from './ui/overlay.js';
 import { keyChoices, keyTextNodes } from './ui/key-text.js';
 import { createMenu, loadStoredState } from './ui/menu.js';
-import { $, session, currentTrailEntry, trailKey, nisseKey, timeText, isRankedSource, bonusUnlock, riderLook, progressOf, debugMode } from './state.js';
+import { $, session, currentTrailEntry, trailKey, nisseKey, timeText, isRankedSource, bonusUnlock, riderLook, progressOf, debugMode, ghostMode } from './state.js';
 import { isNight } from './time-of-day.js';
 
 const LANDING_SOUND_IMPACT = 45;
@@ -313,7 +313,7 @@ export function startGame({ shared = null } = {}) {
     syncSound();
     input.setBindings(preferences.bindings);
     renderer.setInteractKey(preferences.bindings.interact?.[0] ? keyLabel(preferences.bindings.interact[0]) : '');
-    if (preferences.ghost === 'off') ghost = null;
+    if (ghostMode() === 'off') ghost = null;
     syncHeadlight();
   }
 
@@ -409,18 +409,19 @@ export function startGame({ shared = null } = {}) {
   }
 
   /**
-   * The achievements a run that just reached the finish earns, given the best
-   * time on the trail before it and the world-best time.
+   * What a run that just reached the finish did (see FinishedRun in
+   * achievements.js), given the best time on the trail before it and the
+   * world-best time.
    */
-  function finishedRunAchievements(ride, previousBest, worldBest) {
+  function finishedRun(ride, previousBest, worldBest) {
     const { medals, weather, timeOfDay } = session.trail;
-    return finishAchievements({
+    return {
       flips, time: ride.elapsed, medal: medalFor(medals, ride.elapsed), gold: medals?.gold ?? null,
       helmet: lookParts(session.look).helmet, bike: session.look.bike,
       night: isNight(timeOfDay), rain: (weather?.rain ?? 0) > 0, snow: (weather?.snow ?? 0) > 0,
       attempts, previousBest, worldBest, custom: session.trailSource === 'custom',
       shared: session.trailSource === 'custom' && currentTrailEntry()?.shared === true
-    });
+    };
   }
 
   function syncSound() {
@@ -461,14 +462,14 @@ export function startGame({ shared = null } = {}) {
   /** 'on' races your own best run; 'world' the fastest of that and the world's best. */
   function loadGhost(trail) {
     ghost = null;
-    const mode = session.preferences.ghost;
+    const mode = ghostMode();
     if (mode === 'off') return;
     useGhost(trail, session.trailSource === 'playtest' ? playtestBest : readGhost(trailKey(currentTrailEntry())));
     if (mode !== 'world' || !isRankedSource(session.trailSource)) return;
     const ride = session.ride;
     fetchWorldGhost(trailKey(currentTrailEntry())).then(world => {
       // The player may have restarted, switched trail or changed the setting meanwhile.
-      if (!world || session.ride !== ride || session.preferences.ghost !== 'world') return;
+      if (!world || session.ride !== ride || ghostMode() !== 'world') return;
       if (ghost && ghost.data.time <= world.time) return;
       // Steps the ghost would already have taken alongside the player.
       useGhost(trail, world, ride.started ? recorded.length - startStep : 0);
@@ -857,7 +858,8 @@ export function startGame({ shared = null } = {}) {
     if (!storedGhost || storedGhost.physics !== RIDE_VERSION || time < storedGhost.time) {
       saveGhost(key, { time, splits: ride.splits.slice(), startStep, seed: ride.seed, inputs, physics: RIDE_VERSION, look: session.look, ...(slowMotion ? { slow: true } : {}) });
     }
-    earn(finishedRunAchievements(ride, previousBest, worldBest), {}, before);
+    const finished = finishedRun(ride, previousBest, worldBest);
+    earn(finishAchievements(finished), finishGains(finished), before);
     const medals = session.trail.medals;
     const last = session.trailIndex === trails.length - 1;
     // Beating the last official trail for the first time ends the career: the

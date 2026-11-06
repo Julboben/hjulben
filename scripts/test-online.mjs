@@ -328,7 +328,7 @@ const run = (replay = firstTrailRun) => ({ inputs: replay.inputs, seed: replay.s
   assert.equal((await api('save', { method: 'PUT', body: { save: { ...save, extra: 'x'.repeat(40_000) } }, token: julianToken })).status, 413);
 
   let { body } = await loginRider(julian);
-  assert.deepEqual(body.save, { look: legacyLook('female'), lookUpdatedAt: 0, rider: 'female', createdAt: 1700000000000, trail: 1, unlocked: 2, bestTimes: { [firstKey]: 8.192 }, achievements: { bonk: 5 }, stats: { flips: 3 }, nisse: {} }, 'only savegame fields are kept');
+  assert.deepEqual(body.save, { look: legacyLook('female'), lookUpdatedAt: 0, ghost: null, ghostUpdatedAt: 0, rider: 'female', createdAt: 1700000000000, trail: 1, unlocked: 2, bestTimes: { [firstKey]: 8.192 }, achievements: { bonk: 5 }, stats: { flips: 3 }, nisse: {} }, 'only savegame fields are kept');
   assert.deepEqual(body.player.look, legacyLook('female'));
 
   // A look changed in the Garage reaches the player and their next login.
@@ -372,6 +372,19 @@ const run = (replay = firstTrailRun) => ({ inputs: replay.inputs, seed: replay.s
   assert.equal((await api('save', { method: 'GET', token: julianToken })).body.player.look.hair, 'mohawk');
   const newest = await api('save', { method: 'PUT', body: { save: { ...older, lookUpdatedAt: 3000 } }, token: julianToken });
   assert.equal(newest.body.save.look.hair, 'ponytail', 'a newer look does');
+
+  // So does the ghost the rider races, and a client that sends none keeps the cloud's.
+  assert.equal(newest.body.save.ghost, null, 'a save without a ghost choice has none');
+  const world = await api('save', { method: 'PUT', body: { save: { ...save, ghost: 'world', ghostUpdatedAt: 2000 } }, token: julianToken });
+  assert.equal(world.body.save.ghost, 'world');
+  const staleGhost = await api('save', { method: 'PUT', body: { save: { ...save, ghost: 'off', ghostUpdatedAt: 1000 } }, token: julianToken });
+  assert.equal(staleGhost.body.save.ghost, 'world', 'an older ghost choice does not replace a newer one');
+  assert.equal((await api('save', { method: 'PUT', body: { save }, token: julianToken })).body.save.ghost, 'world', 'nor does a save without one');
+  const bogus = await api('save', { method: 'PUT', body: { save: { ...save, ghost: 'sideways', ghostUpdatedAt: 9000 } }, token: julianToken });
+  assert.equal(bogus.body.save.ghost, 'world', 'an unknown ghost is dropped');
+  const newestGhost = await api('save', { method: 'PUT', body: { save: { ...save, ghost: 'on', ghostUpdatedAt: 3000 } }, token: julianToken });
+  assert.equal(newestGhost.body.save.ghost, 'on', 'a newer choice does');
+  assert.equal(newestGhost.body.save.ghostUpdatedAt, 3000);
   const { trail, ghost } = body.runs[0];
   assert.equal(trail, firstKey);
   assert.equal(ghost.physics, RIDE_VERSION);

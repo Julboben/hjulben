@@ -109,6 +109,18 @@ export default {
     .........
   `,
   'rotate-left': { mirror: 'rotate-right' },
+  // A die showing five, for a random pick.
+  dice: `
+    .#######.
+    #########
+    ##.###.##
+    #########
+    ####.####
+    #########
+    ##.###.##
+    #########
+    .#######.
+  `,
   swap: `
     ......#..
     ......##.
@@ -902,6 +914,18 @@ export default {
     #.###.###.#
     ..###.###..
     ...#...#...
+  `,
+  // The shades in a square, as tall as the Garage's other tab icons.
+  glasses: `
+    ...........
+    ...........
+    ###########
+    #.###.###.#
+    ..###.###..
+    ...#...#...
+    ...........
+    ...........
+    ...........
   `,
   plane: `
     ....#....
