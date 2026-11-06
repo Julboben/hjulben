@@ -10,7 +10,7 @@ import { RADIUS } from '../config.js';
 import { drawFigure, posedRide } from '../scene-preview.js';
 import { CODA_HAPPY, codaAt, drawGarage } from '../garage-backdrop.js';
 import {
-  DEFAULT_LOOK, LOOK_PARTS, SLOT_LABELS, accessoryHiddenBy, isColorless, isDefaultItem, itemsForSlot, lookItem, lookKey,
+  DEFAULT_LOOK, LOOK_PARTS, SLOT_LABELS, extraHiddenBy, isColorless, isDefaultItem, itemsForSlot, lookItem, lookKey,
   normalizeLook, partName, randomLook, sameLook, shownItemsForSlot, starterLook
 } from '../cosmetics.js';
 
@@ -20,20 +20,23 @@ const SWATCH_VIEWS = {
   // show at the same size as the rest, their tops cropped.
   head: { dx: -2, dy: -44, width: 30, height: 30 },
   outfit: { dx: -8, dy: -30, width: 44, height: 44 },
-  // The head and shoulders, so eyewear shows as well as a scarf trailing back.
+  // The head and shoulders, for what is worn on the face.
   neck: { dx: -7, dy: -40, width: 34, height: 34 },
+  // The rider's back, with room for a trail above and behind it.
+  trail: { dx: -14, dy: -42, width: 52, height: 52 },
   bike: { dx: 0, dy: -22, width: 88, height: 70 },
   // The big preview: the whole rider and bike, wheels and floor included.
   full: { dx: 0, dy: -20, width: 176, height: 88 }
 };
 
-// Which view each part's style swatches use, and what their swatches take
-// off so the item shows: hair and eyewear hide under a helmet, and a scarf
-// behind an outfit's own cape or scarf.
-const PART_VIEWS = { hair: 'head', helmet: 'head', outfit: 'outfit', bike: 'bike', accessory: 'neck' };
+// Which view each part's style swatches use (a slot of SLOT_VIEWS its own),
+// and what their swatches take off so the item shows: hair and face wear
+// hide under a helmet, and a trail behind an outfit's own cape or scarf.
+const PART_VIEWS = { hair: 'head', helmet: 'head', outfit: 'outfit', bike: 'bike', extras: 'neck' };
+const SLOT_VIEWS = { trail: 'trail' };
 const SWATCH_CLEAR = {
   hair: () => ({ helmet: 'none' }),
-  accessory: look => ({ helmet: 'none', ...(lookItem('outfit', look.outfit)?.accessory ? { outfit: 'street' } : {}) }),
+  extras: look => ({ helmet: 'none', ...(lookItem('outfit', look.outfit)?.accessory ? { outfit: 'street' } : {}) }),
 };
 
 // How often the big preview moves on, about ten frames a second, which
@@ -214,11 +217,9 @@ export function createCustomizer(root, {
   const extras = styleSection();
 
   // The part's colours, in their own panel.
-  const colors = element('section', 'look-section look-colors');
-  const colorHead = sectionHead();
-  const chips = element('div', 'look-chips');
-  chips.setAttribute('role', 'radiogroup');
-  colors.append(colorHead.head, chips);
+  // The part's colours, and its extra slot's when it has its own, each in a panel.
+  const colors = colorSection();
+  const extraColors = colorSection();
 
   const actions = element('div', 'look-actions');
   const shuffle = element('button', 'menu-back look-random');
@@ -266,7 +267,16 @@ export function createCustomizer(root, {
     onChange({ ...look });
   }
 
-  root.replaceChildren(top, styles.section, extras.section, colors, actions);
+  root.replaceChildren(top, styles.section, extras.section, colors.section, extraColors.section, actions);
+
+  function colorSection() {
+    const section = element('section', 'look-section look-colors');
+    const head = sectionHead();
+    const chips = element('div', 'look-chips');
+    chips.setAttribute('role', 'radiogroup');
+    section.append(head.head, chips);
+    return { section, head, chips };
+  }
 
   function styleSection() {
     const section = element('section', 'look-section');
@@ -289,7 +299,7 @@ export function createCustomizer(root, {
 
   /** The new items among `entry`'s styles and colours, as 'slot:id' keys. */
   function newItems(entry) {
-    return [entry.style, entry.color, entry.extra].filter(Boolean)
+    return [entry.style, entry.color, entry.extra, entry.extraColor].filter(Boolean)
       .flatMap(slot => itemsForSlot(slot).filter(item => isNew(slot, item.id)).map(item => slot + ':' + item.id));
   }
 
@@ -377,11 +387,11 @@ export function createCustomizer(root, {
     head.note.textContent = `${items.filter(item => owns(slot, item.id)).length} / ${items.length} unlocked`;
     detailName.textContent = selected?.name.toUpperCase() ?? '';
     detailBlurb.textContent = selected?.blurb ?? '';
-    // An accessory a helmet or outfit covers is still worn, but says why it doesn't show.
-    const hider = slot === 'accessory' ? accessoryHiddenBy(look) : null;
+    // An extra a helmet or outfit covers is still worn, but says why it doesn't show.
+    const hider = extraHiddenBy(look, slot);
     if (hider) detailBlurb.textContent = `Your ${hider.name.toLowerCase()} ${SLOT_LABELS[hider.slot].toLowerCase()} hides it.`;
     options.setAttribute('aria-label', SLOT_LABELS[slot]);
-    const view = PART_VIEWS[part.id];
+    const view = SLOT_VIEWS[slot] ?? PART_VIEWS[part.id];
     options.replaceChildren(...items.map(item => {
       const locked = !owns(slot, item.id);
       const option = radio('look-option', look[slot] === item.id, lockedLabel(item, locked));
@@ -404,13 +414,13 @@ export function createCustomizer(root, {
     }));
   }
 
-  function renderColors() {
-    const slot = part.color;
-    const colorless = isColorless(look, part);
+  /** Fills `panel` (from colorSection) with `slot`'s colours, for `style`'s item; `colorless` greys them out. */
+  function renderColors(panel, slot, style, colorless) {
+    const { section, head, chips } = panel;
     const selected = lookItem(slot, look[slot]);
-    colorHead.title.textContent = SLOT_LABELS[slot].toUpperCase();
-    colorHead.note.textContent = colorless ? `None for ${lookItem(part.style, look[part.style])?.name.toLowerCase()}` : selected?.name ?? '';
-    colors.classList.toggle('disabled', colorless);
+    head.title.textContent = SLOT_LABELS[slot].toUpperCase();
+    head.note.textContent = colorless ? `None for ${lookItem(style, look[style])?.name.toLowerCase()}` : selected?.name ?? '';
+    section.classList.toggle('disabled', colorless);
     chips.setAttribute('aria-label', SLOT_LABELS[slot]);
     chips.replaceChildren(...itemsForSlot(slot).map(item => {
       const locked = !owns(slot, item.id);
@@ -446,7 +456,13 @@ export function createCustomizer(root, {
     const extra = part.extra === 'beard' && !lookItem('gender', look.gender)?.face.beard ? null : part.extra;
     extras.section.hidden = !extra;
     if (extra) renderStyles(extras, extra);
-    renderColors();
+    renderColors(colors, part.color, part.style, isColorless(look, part));
+    // An extra with colours of its own has them under it, and the part's colours under the part's styles.
+    extraColors.section.hidden = !part.extraColor;
+    if (part.extraColor) {
+      renderColors(extraColors, part.extraColor, part.extra, Boolean(lookItem(part.extra, look[part.extra])?.colorless));
+      root.insertBefore(colors.section, extras.section);
+    } else root.insertBefore(colors.section, extraColors.section);
     // Only there once something has changed.
     undo.hidden = redo.hidden = !past.length && !future.length;
     undo.disabled = !past.length;

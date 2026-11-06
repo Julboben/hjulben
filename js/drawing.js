@@ -2259,14 +2259,14 @@ function drawRiderHead(rect, parts, colors, { bare = !parts.helmet, loose = fals
   const shape = parts.shapes.helmet;
   if (bare) {
     drawBareHead(rect, colors, parts.hair);
-    drawEyewear(rect, parts.eyewear);
+    drawFaceWear(rect, parts.faceWear);
   } else if (shape === "mx") drawMxHelmet(rect, colors);
   else if (isHeadwear(shape)) {
     if (!loose) {
       const { extra } = parts.hair;
       const hair = extra && !HAIR_UNDER_HEADWEAR.has(extra) ? { ...parts.hair, extra: null } : parts.hair;
       drawBareHead(rect, colors, hair);
-      drawEyewear(rect, parts.eyewear);
+      drawFaceWear(rect, parts.faceWear);
     }
     drawHeadwear(rect, shape, colors);
   } else drawHelmetShell(rect, colors);
@@ -2385,32 +2385,46 @@ const BEARDS = {
   lumberjack: ["", "", "", "", "  Hh   ", "  HHHmH", " OHhHHH", "  OHHbHO", "   OHHO", "    OO "],
 };
 
-// Eyewear over BARE_HEAD, as rows over it: F the frame (or patch) in the
-// accessory colour, f its highlight, S its shade, L a clear lens, D a dark
-// one and g its glint. Glasses leave the eye showing behind the lens; a
-// patch covers it, its strap running up over the crown.
-const EYEWEAR = {
-  glasses: ["", "", "", "  SF L"],
-  sunglasses: ["", "", "", "  SFDg"],
-  eyepatch: ["", " S", "  S", "   Ff", "    S"],
+// Face wear over BARE_HEAD, as rows over it, moved `x` and `y` art pixels
+// from its top left where it reaches past the head: F the piece in its
+// colour, f its highlight, S its shade, L a clear lens, D a dark one, g a
+// glint, o a ski lens, r and c the 3D glasses' red and cyan, W white and N
+// a clown's red. Glasses leave the eye showing behind the lens; a patch
+// covers it, its strap running up over the crown.
+const FACE_WEAR = {
+  glasses: { rows: ["", "", "", "  SF L"] },
+  sunglasses: { rows: ["", "", "", "  SFDg"] },
+  "ski-goggles": { rows: ["", "", "    FFF", "SSSSoog", "    FFF"] },
+  bandana: { rows: ["", "", "", "", "SFFfFFF", "SFFFFfF", " SFFFS"] },
+  monocle: { rows: ["", "", "", "   FLF", "   f", "  f", "  f"] },
+  "3d-glasses": { rows: ["", "", "", "  WWcr"] },
+  headphones: { rows: [" SFFFS", "F", "FF", "Ff", "SF"] },
+  snorkel: { x: -1, y: -3, rows: ["f", "F", "F", "F", "F", "F   FLF", "F", "F", "FFFFFF"] },
+  "clown-nose": { rows: ["", "", "", "", "      NW", "      NN"] },
+  eyepatch: { rows: ["", " S", "  S", "   Ff", "    S"] },
 };
 
-/** Eyewear from lookParts().eyewear over the bare head, in drawBareHead's units. */
-function drawEyewear(rect, eyewear) {
-  const rows = eyewear && EYEWEAR[eyewear.shape];
-  if (!rows) return;
-  drawPixelRows(rect, -6, -8, rows, {
-    F: eyewear.base,
-    f: eyewear.light,
-    S: eyewear.shade,
+/** Face wear from lookParts().faceWear over the bare head, in drawBareHead's units. */
+function drawFaceWear(rect, wear) {
+  const art = wear && FACE_WEAR[wear.shape];
+  if (!art) return;
+  drawPixelRows(rect, -6 + (art.x ?? 0) * 2, -8 + (art.y ?? 0) * 2, art.rows, {
+    F: wear.base,
+    f: wear.light,
+    S: wear.shade,
     L: "#c4e2dc",
     D: "#1d2023",
     g: "#5d6468",
+    o: "#e8a33a",
+    r: "#d64a3a",
+    c: "#4fc3d0",
+    W: "#fff8e7",
+    N: "#d63b2c",
   });
 }
 
-/** Whether an eyewear shape has art (see EYEWEAR). */
-export const hasEyewearArt = (shape) => Object.hasOwn(EYEWEAR, shape);
+/** Whether a face wear shape has art (see FACE_WEAR). */
+export const hasFaceWearArt = (shape) => Object.hasOwn(FACE_WEAR, shape);
 
 /** Whether a beard shape has art (see BEARDS). */
 export const hasBeardArt = (shape) => Object.hasOwn(BEARDS, shape);

@@ -84,8 +84,8 @@ assert.equal(gearProgress('outfit', 'street', {}), '', 'an item everyone has cou
 assert.deepEqual(unseenGear(rider()), [], 'a rider from before the badges starts with nothing new');
 const won = rider(finished(0));
 // Its time of 10 seconds wins gold, too.
-assert.deepEqual(unseenGear(won), ['outfit:hoodie', 'outfit:tuxedo'], 'gear is new once won');
-markGearSeen(won, ['outfit:hoodie', 'outfit:tuxedo']);
+assert.deepEqual(unseenGear(won), ['outfit:hoodie', 'outfit:tuxedo', 'faceWear:monocle'], 'gear is new once won');
+markGearSeen(won, ['outfit:hoodie', 'outfit:tuxedo', 'faceWear:monocle']);
 assert.deepEqual(unseenGear(won), [], 'and stops being new once seen');
 
 // The Garage fills up with the career: a cup per gold achievement, Coda once petted.
