@@ -2700,25 +2700,20 @@ h2 {
     image-rendering: pixelated;
     box-shadow: var(--shadow-pixel);
 }
-.look-light:hover {
-    background: var(--color-surface-hover);
-}
-/* Turns the garage lights off in the preview, to show the bike's lights. */
+/* Turns the garage lights off in the preview, to show the bike's lights:
+   an unseen button over the switch drawn on the wall, placed from the
+   script, which outlines it on hover and focus. */
 .look-light {
     position: absolute;
-    top: 6px;
-    right: 6px;
     width: 28px;
     height: 28px;
     padding: 0;
-    display: grid;
-    place-items: center;
-    border: 1px solid var(--color-border);
-    background: var(--color-shell-translucent);
-    color: var(--color-text);
-    &[aria-pressed="true"] {
-        border-color: var(--color-accent);
-        color: var(--color-accent);
+    translate: -50% -50%;
+    border: 1px solid transparent;
+    background: none;
+    cursor: pointer;
+    &:hover {
+        border-color: var(--color-border);
     }
 }
 /* Each block of the customizer sits on its own dark panel; its buttons

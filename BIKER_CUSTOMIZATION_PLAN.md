@@ -377,6 +377,20 @@ Questions to settle at the start of the reward phase:
 
 ---
 
+## Future: Garage ideas (not planned yet)
+
+Ideas to make the Garage room feel more lived-in, in `js/garage-backdrop.js`:
+
+- **Oil stain** on the floor near the bike: one dark patch.
+- **Helmet hook** by the door, showing the rider's helmet when they ride without one, so the room reacts to the look.
+- **Hanging work lamp** in a top corner: a cable and a shade with a soft cone of light, which could stay faintly lit as a night light when the switch is off.
+- **Small workbench** under the pegboard, with a vice and an oil can. Keep it low, so it doesn't crowd Coda's corner.
+- **A second quiet animation** next to the dust, such as a dripping tap. Only if it stays subtle: a wall clock was tried and didn't fit.
+- **Rolling door:** turning the lights off rolls the door down over a few frames before the room goes dark, and back up when they come on.
+- **More wall rewards:** the left wall has room for another career reward, such as a poster or a framed photo.
+
+---
+
 ## Open questions for this phase
 
 1. Exact starter item list and pixel palettes. This needs a design pass; the tables above are placeholders apart from the two legacy looks.

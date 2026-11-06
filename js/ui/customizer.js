@@ -8,7 +8,7 @@
 import { trails } from '../trails.js';
 import { RADIUS } from '../config.js';
 import { drawFigure, posedRide } from '../scene-preview.js';
-import { CODA_HAPPY, codaAt, drawGarage } from '../garage-backdrop.js';
+import { CODA_HAPPY, LIGHT_SWITCH, codaAt, drawGarage } from '../garage-backdrop.js';
 import {
   DEFAULT_LOOK, LOOK_PARTS, SLOT_LABELS, extraHiddenBy, isColorless, isDefaultItem, itemsForSlot, lookItem, lookKey,
   normalizeLook, partName, randomLook, sameLook, shownItemsForSlot, starterLook
@@ -25,8 +25,9 @@ const SWATCH_VIEWS = {
   // The rider's back, with room for a trail above and behind it.
   trail: { dx: -14, dy: -42, width: 52, height: 52 },
   bike: { dx: 0, dy: -22, width: 88, height: 70 },
-  // The big preview: the whole rider and bike, wheels and floor included.
-  full: { dx: 0, dy: -20, width: 176, height: 88 }
+  // The big preview: the whole rider and bike, wheels and floor included,
+  // and the walls either side with what the career has put on them.
+  full: { dx: 0, dy: -26, width: 220, height: 110 }
 };
 
 // Which view each part's style swatches use (a slot of SLOT_VIEWS its own),
@@ -55,7 +56,7 @@ function posed() {
     ride.rear.y = ride.front.y = axle;
     const x = (ride.rear.x + ride.front.x) / 2;
     const floor = axle + RADIUS;
-    pose = { trail, ride, x, y: axle, backdrop: (room, time) => (ctx, view) => drawGarage(ctx, view, { x, floor, room, time }) };
+    pose = { trail, ride, x, y: axle, backdrop: (room, time, lightsOff) => (ctx, view) => drawGarage(ctx, view, { x, floor, room, time, lightsOff }) };
   }
   return pose;
 }
@@ -70,6 +71,16 @@ function previewSpot(fx, fy) {
   return {
     dx: frame.dx * ride.facing + (fx - 0.5) * frame.width,
     dy: y + frame.dy + (fy - 0.5) * frame.height - (y + RADIUS),
+  };
+}
+
+/** Where a point in the garage is on the big preview, as fractions of its width and height (see previewSpot). */
+function previewPlace(dx, dy) {
+  const { ride } = posed();
+  const frame = SWATCH_VIEWS.full;
+  return {
+    fx: 0.5 + (dx - frame.dx * ride.facing) / frame.width,
+    fy: 0.5 + (dy + RADIUS - frame.dy) / frame.height,
   };
 }
 
@@ -91,7 +102,7 @@ export function drawLook(target, look, view = 'full', { dark = false, room = nul
   const { ride, x, y, backdrop } = posed();
   const frame = SWATCH_VIEWS[view] ?? SWATCH_VIEWS.full;
   return drawFigure(target, {
-    ride, look, backdrop: backdrop(room, time), dark,
+    ride, look, backdrop: backdrop(room, time, dark), dark,
     width: frame.width, height: frame.height,
     focus: { x: x + frame.dx * ride.facing, y: y + frame.dy }, anchor: [0.5, 0.5]
   });
@@ -206,6 +217,10 @@ export function createCustomizer(root, {
   const lightSwitch = element('button', 'look-light');
   lightSwitch.type = 'button';
   lightSwitch.addEventListener('click', () => { dark = !dark; renderPreview(); });
+  // Over the switch drawn on the wall, which shows whether the lights are on.
+  const switchAt = previewPlace(LIGHT_SWITCH.dx, LIGHT_SWITCH.dy);
+  lightSwitch.style.left = `${switchAt.fx * 100}%`;
+  lightSwitch.style.top = `${switchAt.fy * 100}%`;
   stage.append(preview, lightSwitch);
 
   const top = element('div', 'look-top');
@@ -371,7 +386,6 @@ export function createCustomizer(root, {
     drawPreview(performance.now());
     startPreview();
     const label = dark ? 'Turn the garage lights on' : 'Turn the garage lights off to see the bike\'s lights';
-    lightSwitch.replaceChildren(icon(dark ? 'headlight-off' : 'headlight'));
     lightSwitch.setAttribute('aria-pressed', String(dark));
     lightSwitch.setAttribute('aria-label', label);
     lightSwitch.title = label;
