@@ -14,7 +14,7 @@ import {
   saveProgress as persistProgress, savePreferences, clearSaveToken, renewSaveToken, recordAchievements, recordNisse,
   pruneStaleTrailData, STORAGE_FAILED_EVENT
 } from './storage.js';
-import { bikeBroken, createFeatTracker, editorProgress, eggAchievements, eventAchievements, finishAchievements, interactAchievements, newlyEarned, statGains } from './achievements.js';
+import { bikeBroken, createFeatTracker, editorProgress, eggAchievements, eventAchievements, finishAchievements, finishGains, interactAchievements, newlyEarned, statGains } from './achievements.js';
 import { createLimWatcher, installConsoleCheats } from './easter-eggs.js';
 import { submitOnlineRun, fetchWorldGhost, refreshOnlineBoard, cachedOnlineBoard, queuePendingRun, dropPendingRun, flushPendingRuns } from './online-leaderboard.js';
 import { queueSaveSync, SIGNED_OUT_EVENT, SESSION_RENEWED_EVENT } from './account.js';
@@ -409,18 +409,19 @@ export function startGame({ shared = null } = {}) {
   }
 
   /**
-   * The achievements a run that just reached the finish earns, given the best
-   * time on the trail before it and the world-best time.
+   * What a run that just reached the finish did (see FinishedRun in
+   * achievements.js), given the best time on the trail before it and the
+   * world-best time.
    */
-  function finishedRunAchievements(ride, previousBest, worldBest) {
+  function finishedRun(ride, previousBest, worldBest) {
     const { medals, weather, timeOfDay } = session.trail;
-    return finishAchievements({
+    return {
       flips, time: ride.elapsed, medal: medalFor(medals, ride.elapsed), gold: medals?.gold ?? null,
       helmet: lookParts(session.look).helmet, bike: session.look.bike,
       night: isNight(timeOfDay), rain: (weather?.rain ?? 0) > 0, snow: (weather?.snow ?? 0) > 0,
       attempts, previousBest, worldBest, custom: session.trailSource === 'custom',
       shared: session.trailSource === 'custom' && currentTrailEntry()?.shared === true
-    });
+    };
   }
 
   function syncSound() {
@@ -857,7 +858,8 @@ export function startGame({ shared = null } = {}) {
     if (!storedGhost || storedGhost.physics !== RIDE_VERSION || time < storedGhost.time) {
       saveGhost(key, { time, splits: ride.splits.slice(), startStep, seed: ride.seed, inputs, physics: RIDE_VERSION, look: session.look, ...(slowMotion ? { slow: true } : {}) });
     }
-    earn(finishedRunAchievements(ride, previousBest, worldBest), {}, before);
+    const finished = finishedRun(ride, previousBest, worldBest);
+    earn(finishAchievements(finished), finishGains(finished), before);
     const medals = session.trail.medals;
     const last = session.trailIndex === trails.length - 1;
     // Beating the last official trail for the first time ends the career: the

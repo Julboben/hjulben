@@ -7,6 +7,7 @@ import { DEFAULT_LOOK, LOOK_ITEMS, lookItem, ownedLook, ownsWith } from './cosme
 import { lookUnlock, trailUnlock, unlockStatus } from './unlocks.js';
 import { achievement, hasAchievement, statProgressText } from './achievements.js';
 import { loadSeenGear, saveSeenGear } from './storage.js';
+import { isNight } from './time-of-day.js';
 
 /** @typedef {import('./types.js').Ride} Ride */
 /** @typedef {'menu' | 'running' | 'paused' | 'ragdoll' | 'won'} GameState */
@@ -188,6 +189,7 @@ export function progressOf(save) {
   const keys = Object.keys(save.bestTimes || {});
   const finished = trailId => keys.some(key => key.startsWith(trailId + '@'));
   let trails = 0, golds = 0;
+  const nightTrails = officialTrailEntries.filter(entry => isNight(entry.trail.timeOfDay));
   for (const entry of officialTrailEntries) {
     if (finished(entry.id)) trails++;
     const best = save.bestTimes?.[trailKey(entry)];
@@ -199,6 +201,9 @@ export function progressOf(save) {
     // The official trails with a nisse, and how many of those it was found on.
     nisseTotal: officialTrailEntries.filter(entry => entry.trail.nisse).length,
     nisseFound: officialTrailEntries.filter(entry => entry.trail.nisse && save.nisse?.[nisseKey(entry)]).length,
+    // The official trails at night, and how many of those it has finished.
+    nightTotal: nightTrails.length,
+    nightFinished: nightTrails.filter(entry => finished(entry.id)).length,
   };
   const achievements = { ...save.achievements };
   const stats = { ...save.stats };
@@ -280,7 +285,7 @@ export function garageRoom(save) {
   if (!progress) return null;
   return {
     route: progress.officialTotal ? Math.min(1, progress.trails / progress.officialTotal) : 0,
-    cups: ['golden-touch', 'hat-trick', 'gold-rush'].filter(id => progress.has(id)).length,
+    cups: ['golden-touch', 'hat-trick', 'black-tie', 'gold-rush'].filter(id => progress.has(id)).length,
     nisse: (progress.nisseFound ?? 0) > 0,
     coda: progress.has('pet-coda'),
   };

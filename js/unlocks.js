@@ -46,7 +46,7 @@ export const UNLOCKS = Object.freeze({
   'look:outfit:tracksuit': { achievement: 'leaps-and-bounds' },
   'look:outfit:dungarees': { achievement: 'an-apple-a-day' },
   'look:outfit:superhero': { achievement: 'hang-time' },
-  'look:outfit:tuxedo': { achievement: 'golden-touch' },
+  'look:outfit:tuxedo': { achievement: 'black-tie' },
   'look:outfit:dummy': { achievement: 'crash-test-dummy' },
   'look:outfit:nisse': { achievement: 'nisse-hunter' },
   'look:outfit:viking': { achievement: 'gold-rush' }, // With the Viking helmet
@@ -60,7 +60,7 @@ export const UNLOCKS = Object.freeze({
   'look:faceWear:ski-goggles': { trail: 'official:long-way-up' }, // The first snow, with the beanie
   'look:faceWear:bandana': { trail: 'official:mirage' }, // Desert, with the cowboy hat
   'look:faceWear:snorkel': { trail: 'official:out-and-back' }, // Hills and coast, with the wetsuit
-  'look:faceWear:monocle': { achievement: 'golden-touch' }, // With the tuxedo
+  'look:faceWear:monocle': { achievement: 'black-tie' }, // With the tuxedo
   'look:faceWear:clown-nose': { achievement: 'crash-test-dummy' },
   'look:faceWear:eyepatch': { achievement: 'here-be-kraken' }, // Secret: a pirate's
   'look:trail:balloon': { achievement: 'hang-time' },

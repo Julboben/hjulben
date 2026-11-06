@@ -695,9 +695,9 @@
   "timeOfDay": 12,
   "backdrop": "forest",
   "medals": {
-    "gold": 15,
-    "silver": 20,
-    "bronze": 27
+    "gold": 10,
+    "silver": 13,
+    "bronze": 18
   },
   "preview": {
     "x": 1190,

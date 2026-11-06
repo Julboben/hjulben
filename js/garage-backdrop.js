@@ -61,7 +61,7 @@ const COLORS = {
  * @typedef {{ route: number, cups: number, nisse: boolean, coda: boolean }} GarageRoom
  *   `route` is how far through the official trails they are, 0 to 1, and
  *   `cups` how many of the gold medal achievements (first gold, three golds,
- *   gold on every trail) they have earned, 0 to 3.
+ *   ten golds, gold on every trail) they have earned, 0 to 4.
  */
 
 /**
@@ -222,9 +222,11 @@ function drawMap(rect, left, top, route) {
 }
 
 // Where each cup stands on the shelf, in the order they are won: the first
-// gold's and three golds' either side, and gold on every trail's big one in
-// the middle. Each is its bowl's left edge, width and height.
-const CUPS = [[4, 4, 8], [28, 4, 8], [14, 8, 12]];
+// gold's and three golds' at either end, ten golds' taller one beside the
+// first, and gold on every trail's big one next to it. The shelf ends at the
+// edge of the big preview, so the four stand handle to handle. Each is its
+// bowl's left edge, width and height.
+const CUPS = [[2, 4, 8], [28, 4, 8], [10, 4, 10], [18, 6, 12]];
 
 /** A shelf on brackets, with a gold cup for each of the `cups` gold medal achievements earned. */
 function drawShelf(rect, left, top, cups) {

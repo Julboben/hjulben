@@ -655,8 +655,8 @@
   "timeOfDay": 12,
   "backdrop": "mountains",
   "medals": {
-    "gold": 11,
-    "silver": 15.5,
-    "bronze": 21
+    "gold": 10,
+    "silver": 13,
+    "bronze": 18
   }
 }

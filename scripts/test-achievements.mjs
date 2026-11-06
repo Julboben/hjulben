@@ -6,7 +6,7 @@ import { readFileSync } from 'node:fs';
 import {
   ACHIEVEMENTS, ACHIEVEMENT_GROUPS, achievement, statGains, eventAchievements, finishAchievements,
   interactAchievements, eggAchievements, editorAchievements, editorProgress, bikeBroken, hasAchievement, newlyEarned, cleanAchievements, cleanStats, mergeAchievements, mergeStats, aheadOf,
-  createFeatTracker, statProgressText
+  createFeatTracker, statProgressText, finishGains
 } from '../js/achievements.js';
 import { createLimWatcher } from '../js/easter-eggs.js';
 import { UNLOCKS, trailUnlock, lookUnlock, unlockStatus } from '../js/unlocks.js';
@@ -162,14 +162,18 @@ const trailIds = new Set(catalog.trails.map(entry => entry.id));
   const gold = { ...run, time: 19.5, medal: 'gold' };
   assert.deepEqual(finishAchievements(run), [], 'a plain finish earns nothing');
   assert.deepEqual(finishAchievements(gold), [], 'nor does a plain gold');
-  assert.deepEqual(finishAchievements({ ...run, flips: 5 }), ['flip-circus']);
-  assert.deepEqual(finishAchievements({ ...run, flips: 10 }), ['flip-circus', 'show-off']);
+  assert.deepEqual(finishAchievements({ ...run, flips: 3 }), ['flip-circus']);
+  assert.deepEqual(finishAchievements({ ...run, flips: 15 }), ['flip-circus', 'show-off']);
   assert.deepEqual(finishAchievements({ ...run, attempts: 1 }), ['first-try']);
-  assert.deepEqual(finishAchievements({ ...gold, attempts: 1 }), ['first-try', 'natural-talent']);
+  assert.deepEqual(finishAchievements({ ...gold, attempts: 1 }), ['first-try'], 'a gold on the first try is one feat');
+  assert.deepEqual(finishGains(run), {}, 'a plain finish adds no stats');
+  assert.deepEqual(finishGains({ ...run, attempts: 1 }), { 'first-rides': 1 }, 'a first ride counts');
+  assert.deepEqual(finishGains({ ...run, attempts: 1, previousBest: 30 }), {}, 'but not on a trail finished before');
+  assert.deepEqual(finishGains({ ...run, helmet: false }), { bareheaded: 1 });
   assert.deepEqual(finishAchievements({ ...run, helmet: false }), ['wind-in-your-hair']);
-  assert.deepEqual(finishAchievements({ ...gold, helmet: false }), ['wind-in-your-hair', 'nerves-of-steel']);
+  assert.deepEqual(finishAchievements({ ...gold, helmet: false }), ['wind-in-your-hair']);
   assert.deepEqual(finishAchievements({ ...run, night: true }), ['night-rider']);
-  assert.deepEqual(finishAchievements({ ...gold, night: true }), ['night-rider', 'night-owl']);
+  assert.deepEqual(finishAchievements({ ...gold, night: true }), ['night-rider']);
   assert.deepEqual(finishAchievements({ ...gold, bike: 'classic' }), ['old-school']);
   assert.deepEqual(finishAchievements({ ...run, time: 19.95, medal: 'gold' }), ['photo-finish']);
   assert.deepEqual(finishAchievements({ ...run, time: 19.95, medal: 'gold', gold: null }), [], 'photo finish needs a gold time');
@@ -219,7 +223,15 @@ const trailIds = new Set(catalog.trails.map(entry => entry.id));
 
   const career = { trails: 0, golds: 0, officialTotal: 9, bonusFinished: 0, bonusTotal: 2 };
   assert.ok(!hasAchievement('first-steps', {}, {}, career));
-  assert.ok(hasAchievement('first-steps', {}, {}, { ...career, trails: 1 }), 'career achievements come from progress');
+  assert.ok(!hasAchievement('first-steps', {}, {}, { ...career, trails: 2 }));
+  assert.ok(hasAchievement('first-steps', {}, {}, { ...career, trails: 3 }), 'career achievements come from progress');
+  assert.ok(!hasAchievement('black-tie', {}, {}, { ...career, golds: 9 }));
+  assert.ok(hasAchievement('black-tie', {}, {}, { ...career, golds: 10 }));
+  assert.ok(!hasAchievement('night-owl', {}, {}, { ...career, nightFinished: 3, nightTotal: 4 }));
+  assert.ok(hasAchievement('night-owl', {}, {}, { ...career, nightFinished: 4, nightTotal: 4 }));
+  assert.ok(!hasAchievement('night-owl', {}, {}, career), 'no night trails is not every night trail');
+  assert.ok(hasAchievement('natural-talent', {}, { 'first-rides': 5 }, career));
+  assert.ok(hasAchievement('nerves-of-steel', {}, { bareheaded: 10 }, career));
   assert.ok(!hasAchievement('career-rider', {}, {}, { ...career, trails: 8 }));
   assert.ok(hasAchievement('career-rider', {}, {}, { ...career, trails: 9 }));
   assert.ok(!hasAchievement('career-rider', {}, {}, { ...career, officialTotal: 0 }), 'no trails is not every trail');

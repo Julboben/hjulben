@@ -27,7 +27,8 @@ import { WHEELBASE } from './config.js';
  * @typedef {{
  *   trails: number, golds: number, officialTotal: number,
  *   bonusFinished: number, bonusTotal: number,
- *   nisseFound?: number, nisseTotal?: number
+ *   nisseFound?: number, nisseTotal?: number,
+ *   nightFinished?: number, nightTotal?: number
  * }} CareerProgress
  * @typedef {{
  *   flips: number, time: number, medal: string | null, gold: number | null,
@@ -74,7 +75,8 @@ const everyTrail = (finished, total) => total > 0 && finished >= total;
 export const ACHIEVEMENTS = /** @type {readonly Achievement[]} */ (Object.freeze([
   {
     id: 'first-steps', group: 'career', name: 'First Steps', icon: 'footprints',
-    blurb: 'Finish your first official trail.', career: p => p.trails >= 1
+    blurb: 'Finish 3 official trails.', career: p => p.trails >= 3,
+    tally: p => [p.trails, 3]
   },
   {
     id: 'career-rider', group: 'career', name: 'Career Rider', icon: 'flag',
@@ -109,8 +111,19 @@ export const ACHIEVEMENTS = /** @type {readonly Achievement[]} */ (Object.freeze
     blurb: 'Win 3 gold medals.', career: p => p.golds >= 3
   },
   {
+    id: 'black-tie', group: 'career', name: 'Black Tie', icon: 'medal',
+    blurb: 'Win 10 gold medals.', career: p => p.golds >= 10,
+    tally: p => [p.golds, 10]
+  },
+  {
     id: 'treasure-hunter', group: 'career', name: 'Treasure Hunter', icon: 'chest',
     blurb: 'Finish every bonus trail.', career: p => everyTrail(p.bonusFinished, p.bonusTotal)
+  },
+  {
+    id: 'night-owl', group: 'career', name: 'Night Owl', icon: 'moon',
+    blurb: 'Finish every official night trail.',
+    career: p => everyTrail(p.nightFinished ?? 0, p.nightTotal ?? 0),
+    tally: p => [p.nightFinished ?? 0, p.nightTotal ?? 0]
   },
   {
     id: 'nisse-hunter', group: 'career', name: 'Nisse Hunter', icon: 'nisse',
@@ -129,7 +142,7 @@ export const ACHIEVEMENTS = /** @type {readonly Achievement[]} */ (Object.freeze
   },
   {
     id: 'flip-circus', group: 'riding', name: 'Flip Circus', icon: 'tent',
-    blurb: 'Land 5 flips in one run and finish it.', finish: run => run.flips >= 5
+    blurb: 'Land 3 flips in one run and finish it.', finish: run => run.flips >= 3
   },
   {
     id: 'first-try', group: 'riding', name: 'First Try', icon: 'check',
@@ -170,19 +183,15 @@ export const ACHIEVEMENTS = /** @type {readonly Achievement[]} */ (Object.freeze
   },
   {
     id: 'natural-talent', group: 'riding', name: 'Natural Talent', icon: 'star',
-    blurb: 'Win a gold medal on your first attempt.', finish: run => run.attempts === 1 && run.medal === 'gold'
+    blurb: 'Finish 5 trails on your first ride of them.', stat: 'first-rides', goal: 5
   },
   {
     id: 'nerves-of-steel', group: 'riding', name: 'Nerves of Steel', icon: 'hair',
-    blurb: 'Win a gold medal without a helmet.', finish: run => !run.helmet && run.medal === 'gold'
-  },
-  {
-    id: 'night-owl', group: 'riding', name: 'Night Owl', icon: 'moon',
-    blurb: 'Win a gold medal on a night trail.', finish: run => run.night && run.medal === 'gold'
+    blurb: 'Finish 10 runs without a helmet.', stat: 'bareheaded', goal: 10
   },
   {
     id: 'show-off', group: 'riding', name: 'Show-Off', icon: 'shades',
-    blurb: 'Land 10 flips in one run and finish it.', finish: run => run.flips >= 10
+    blurb: 'Land 15 flips in one run and finish it.', finish: run => run.flips >= 15
   },
   {
     id: 'spin-cycle', group: 'riding', name: 'Spin Cycle', icon: 'washer', secret: true,
@@ -371,6 +380,20 @@ const STAT_EVENTS = {
 
 /** @returns {Record<string, number> | null} what a ride event or feat adds to the lifetime stats */
 export const statGains = event => STAT_EVENTS[event.type]?.(event) ?? null;
+
+/**
+ * What a finished run adds to the lifetime stats: a trail finished on its
+ * first ride, the first attempt with no best time before it, so each trail
+ * counts once, and a run finished without a helmet.
+ * @param {FinishedRun} run
+ * @returns {Record<string, number>}
+ */
+export function finishGains(run) {
+  const gains = {};
+  if (run.attempts === 1 && run.previousBest === null) gains['first-rides'] = 1;
+  if (!run.helmet) gains.bareheaded = 1;
+  return gains;
+}
 
 /** A lifetime total and its goal, as the menu shows them: 37 / 1,000, or 2:05 / 10:00 for times. */
 export function statProgressText(achievement, count) {

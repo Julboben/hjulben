@@ -82,17 +82,20 @@ assert.equal(gearProgress('outfit', 'street', {}), '', 'an item everyone has cou
 
 // A rider with no record has seen what they had won; what they win after is new until seen.
 assert.deepEqual(unseenGear(rider()), [], 'a rider from before the badges starts with nothing new');
-const won = rider(finished(0));
-// Its time of 10 seconds wins gold, too.
-assert.deepEqual(unseenGear(won), ['outfit:hoodie', 'outfit:tuxedo', 'faceWear:monocle'], 'gear is new once won');
-markGearSeen(won, ['outfit:hoodie', 'outfit:tuxedo', 'faceWear:monocle']);
+const won = rider(finished(0, 1, 2));
+// Three trails win the hoodie. Times of 10 seconds win gold on two of them,
+// which is far from the ten golds the tuxedo asks for.
+assert.deepEqual(unseenGear(won), ['outfit:hoodie'], 'gear is new once won');
+assert.equal(gearProgress('outfit', 'tuxedo', finished(0, 1, 2)), '2 / 10', 'a gold goal counts golds');
+markGearSeen(won, ['outfit:hoodie']);
 assert.deepEqual(unseenGear(won), [], 'and stops being new once seen');
 
 // The Garage fills up with the career: a cup per gold achievement, Coda once petted.
 const { garageRoom } = await import('../js/state.js');
 assert.equal(garageRoom(null), null, 'without a rider the garage stays bare');
 assert.deepEqual(garageRoom(rider()), { route: 0, cups: 0, nisse: false, coda: false }, 'a new rider has an empty garage');
-const busy = garageRoom(rider({ ...finished(0), achievements: { 'pet-coda': 1 } }));
+// Apple Valley's gold is above the helper's time of 10 seconds.
+const busy = garageRoom(rider({ ...finished(1), achievements: { 'pet-coda': 1 } }));
 assert.equal(busy.route, 1 / officialTrailEntries.length, 'the map shows the route so far');
 assert.equal(busy.cups, 1, 'a first gold puts a cup on the shelf');
 assert.ok(busy.coda, 'Coda moves in once petted');
