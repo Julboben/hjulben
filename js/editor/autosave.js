@@ -4,7 +4,7 @@
 import { trailEntries } from "../trails.js";
 import { onStoreFailure } from "./draft-store.js";
 import { clearAutosave, writeAutosave } from "./drafts.js";
-import { flushInspector } from "./inspector.js";
+import { detailsWaiting, flushInspector } from "./inspector.js";
 import { editor } from "./state.js";
 import { showStatus } from "./status.js";
 
@@ -29,6 +29,9 @@ export function autosaveNow(urgent = false) {
   timer = null;
   const entry = trailEntries[editor.trailIndex];
   if (!entry || !editor.trail || !editor.version) return;
+  // A drag still held waits: letting go brings the inspector up to date and
+  // schedules another autosave. Only the page going stops it from waiting.
+  if (!urgent && detailsWaiting()) return;
   flushInspector();
   const json = latest.trail === editor.trail ? latest.json : JSON.stringify(editor.trail, null, 2);
   // A write as the page goes always runs: an earlier one with the same text

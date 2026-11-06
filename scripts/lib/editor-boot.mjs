@@ -57,7 +57,7 @@ const key = (keyName, extra = {}) => {
   for (const handler of windowListeners.get('keydown') || []) handler({ key: keyName, code: '', preventDefault() {}, ...extra });
   runFrames();
 };
-// Mid-drag the JSON waits for the pointer to pause, so it is flushed first.
+// Mid-drag the JSON waits for the drag to end, so it is flushed first.
 const { flushInspector } = await import('../../js/editor/inspector.js');
 // The trail as the editor holds it. The JSON box is only filled while its
 // dialog is open, so it is not read here.
@@ -92,6 +92,20 @@ if (kind === 'interact') {
   fire('pointerdown', world(400, 450));
   fire('pointerup');
   out.clickLeavesNoUndo = undo.disabled === true;
+
+  // The version chip says "edited" once a drag is let go, not while it is
+  // held, even through a pause longer than the autosave delay. `current()`
+  // would flush it, so it isn't used.
+  const versionLabel = () => document.getElementById('version-label').textContent;
+  out.labelBeforeDrag = versionLabel();
+  fire('pointerdown', world(400, 450));
+  fire('pointermove', world(420, 450));
+  await new Promise(resolve => setTimeout(resolve, 1300));
+  out.labelMidDrag = versionLabel();
+  fire('pointerup');
+  out.labelAfterDrag = versionLabel();
+  undo.click();
+  out.labelAfterUndo = versionLabel();
 
   // A cut straight through the slab splits it into two blocks.
   toolButton('cut').click();
@@ -182,6 +196,24 @@ if (kind === 'interact') {
   fire('pointermove', world(plainFrom.x + 7, plainFrom.y + 3));
   fire('pointerup');
   out.plainExact = ring()[cornerIndex].x === plainFrom.x + 7 && ring()[cornerIndex].y === plainFrom.y + 3;
+  // Pressing Alt mid-drag swaps the block for a copy, and letting go of it
+  // takes the copy away and drags the original again.
+  const altCount = current().terrainBlocks.length;
+  const altBlock = () => current().terrainBlocks[altCount - 1].outer.nodes[0];
+  const altFrom = { ...altBlock() };
+  const altKey = (type, down) => {
+    for (const handler of windowListeners.get(type) || [])
+      handler({ type, key: 'Alt', altKey: down, shiftKey: false, preventDefault() {} });
+  };
+  fire('pointerdown', world(200, 200));
+  fire('pointermove', world(240, 210));
+  altKey('keydown', true);
+  out.altPressCopies = current().terrainBlocks.length === altCount + 1
+    && altBlock().x === altFrom.x && current().terrainBlocks.at(-1).outer.nodes[0].x === altFrom.x + 40;
+  altKey('keyup', false);
+  out.altReleaseRestores = current().terrainBlocks.length === altCount
+    && altBlock().x === altFrom.x + 40 && altBlock().y === altFrom.y + 10;
+  fire('pointerup');
   out.errors = [];
   process.stdout.write(JSON.stringify(out));
   process.exit(0);

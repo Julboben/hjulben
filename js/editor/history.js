@@ -17,11 +17,14 @@ export function pushHistory(state = snapshot()) {
   updateHistoryButtons();
 }
 
-/** Put the trail and selection back as they were in `state`, without an undo step. */
-export function restore(state) {
+/**
+ * Put the trail and selection back as they were in `state`, without an undo
+ * step. `live` is for a drag in progress: see syncInspector.
+ */
+export function restore(state, { live = false } = {}) {
   editor.trail = normalizeTrail(JSON.parse(state.trail));
   editor.selection = state.selection;
-  syncInspector();
+  syncInspector({ live });
   render();
 }
 

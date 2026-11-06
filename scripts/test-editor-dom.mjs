@@ -112,6 +112,10 @@ const reported = (report, label) => {
 {
   const report = await boot('interact');
   check('a click without a drag leaves no undo step', report.clickLeavesNoUndo === true);
+  check('the version chip starts unedited', !/edited/.test(report.labelBeforeDrag || ''), `("${report.labelBeforeDrag}")`);
+  check('it stays unedited while a drag is held', report.labelMidDrag === report.labelBeforeDrag, `("${report.labelMidDrag}")`);
+  check('and says edited once the drag is let go', /edited/.test(report.labelAfterDrag || ''), `("${report.labelAfterDrag}")`);
+  check('undo takes the edited mark away again', report.labelAfterUndo === report.labelBeforeDrag, `("${report.labelAfterUndo}")`);
   check('a cut straight through splits the block into two blocks', JSON.stringify(report.splitBlocks) === '["id,inner,material,outer","id,inner,material,outer"]', `(${JSON.stringify(report.splitBlocks)})`);
   check('clicking one piece selects only that block', !/BLOCKS/.test(report.splitSelectsOne || ''), `("${report.splitSelectsOne}")`);
   check('dragging a corner of the second piece moves that corner', report.rightMoved === true);
@@ -126,6 +130,8 @@ const reported = (report, label) => {
   check('releasing Shift mid-drag restores the exact position', report.releaseExact === true);
   check('pressing Shift mid-drag snaps again', report.repressSnaps === true);
   check('dragging without Shift is not snapped', report.plainExact === true);
+  check('pressing Alt mid-drag moves a copy instead', report.altPressCopies === true);
+  check('letting go of Alt drops the copy and moves the original again', report.altReleaseRestores === true);
 }
 
 // ---------------------------------------------------------------------------

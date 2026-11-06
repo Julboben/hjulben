@@ -146,8 +146,9 @@ const BLOCK_KINDS = [
 
 /**
  * Bring the side panel up to date with the trail. `live` is for a drag in
- * progress: the trail's JSON and validation are expensive on a big trail, so
- * they wait until the pointer pauses or is released.
+ * progress: everything that follows from the trail as a whole (the version
+ * chip, validation, the Objects list and autosave) waits until the drag is
+ * released, so a drag counts as one edit and doesn't stutter on a big trail.
  */
 export function syncInspector({ live = false } = {}) {
   releaseLocked();
@@ -265,14 +266,12 @@ export function syncInspector({ live = false } = {}) {
   if (editor.selection?.kind === "prop") {
     $("selection-prop-text").value = editor.trail.props[editor.selection.index].text || "";
   }
-  if (live) {
-    clearTimeout(pendingDetails);
-    pendingDetails = setTimeout(syncDetails, 200);
-  } else syncDetails();
+  if (live) waiting = true;
+  else syncDetails();
   updateHistoryButtons();
 }
 
-let pendingDetails = null;
+let waiting = false;
 
 const propLayer = (prop) => (prop.layer === "front" ? "front" : "back");
 
@@ -280,8 +279,7 @@ const propLayer = (prop) => (prop.layer === "front" ? "front" : "back");
 const shared = (values) => (new Set(values).size === 1 ? values[0] : "");
 
 function syncDetails() {
-  clearTimeout(pendingDetails);
-  pendingDetails = null;
+  waiting = false;
   const json = JSON.stringify(editor.trail, null, 2);
   // Filling the box is slow on a large trail (a 5 MB one takes over 0.1 s,
   // hidden or not), so it is only kept up to date while its dialog is open.
@@ -347,8 +345,11 @@ export function fillTrailJson() {
 
 /** Finish any JSON and validation a live drag left waiting. */
 export function flushInspector() {
-  if (pendingDetails !== null) syncDetails();
+  if (waiting) syncDetails();
 }
+
+/** Is a live drag holding back the JSON and validation? */
+export const detailsWaiting = () => waiting;
 
 export function updateSelectedPosition(x, y) {
   if (!editor.selection) return;

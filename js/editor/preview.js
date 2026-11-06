@@ -130,7 +130,7 @@ export function movePreviewDrag(point) {
     x: Math.round(point.x - drag.offset.x),
     y: Math.round(point.y - drag.offset.y),
   };
-  // Like any edit, so Save sees the change; live, as the JSON can wait for the drag to pause.
+  // Like any edit, so Save sees the change; live, as the rest waits for the drag to end.
   syncInspector({ live: true });
   renderLater();
   return true;

@@ -141,9 +141,10 @@ let dragOrigin = null;
 
 let lastDragPointer = null;
 
-// A plain drag of something that can be copied, so pressing Alt mid-drag can
-// turn it into a duplicate: the trail before the drag, what was grabbed and
-// where. Null once it has been duplicated, or for drags that can't be.
+// A drag of something that can be copied, so Alt can switch it between moving
+// the original and moving a copy at any point in the drag: the trail before
+// the drag, what was grabbed and where, what the original drag moves, and
+// whether a copy is following the mouse now. Null for drags that can't be.
 let dragCopyable = null;
 
 let pendingKind = null;
@@ -316,20 +317,23 @@ function dragSelectionTo(pointer, shift) {
 }
 
 /**
- * Alt pressed during a plain drag: the original goes back to where it was and
- * a copy follows the mouse instead, the same as an Alt-drag from the start.
- * The drag's single undo step covers it all.
+ * Alt pressed or released mid-drag, as in Illustrator or Figma: the trail goes
+ * back to how it was before the drag, and then either a copy follows the mouse
+ * while the original stays put, or the copy is gone and the original follows
+ * the mouse again. The drag's single undo step covers it all.
  */
-function duplicateMidDrag(shift) {
+function setDragCopying(copying, shift) {
   const copyable = dragCopyable;
-  if (!copyable || !dragging || scaling() || rotating()) return;
-  dragCopyable = null;
-  restore(copyable.before);
-  const copy = duplicateTarget(copyable.hit);
+  if (!copyable || copyable.copying === copying || !dragging || scaling() || rotating())
+    return;
+  restore(copyable.before, { live: true });
+  editor.selection = copyable.original;
+  const copy = copying && duplicateTarget(copyable.hit);
   // Nothing to copy after all: the original goes on following the mouse.
   if (copy) editor.selection = copy;
+  copyable.copying = Boolean(copy);
   dragOrigin = startDragOrigin(copyable.point);
-  // Not moved yet: the copy waits for the first move, which records the undo step.
+  // Not moved yet: the drag waits for the first move, which records the undo step.
   if (lastDragPointer) dragSelectionTo(lastDragPointer, shift);
   else render();
 }
@@ -678,7 +682,13 @@ export function bindInput() {
       const draggedItem = dragged?.kind === "blockEdge" ? { type: "block" } : itemFromHit(dragged);
       // Start, finish and curve handles can't be duplicated, so Alt leaves their drag alone.
       if (draggedItem && draggedItem.type !== "start" && draggedItem.type !== "finish")
-        dragCopyable = { before: dragSnapshot, hit: dragged, point };
+        dragCopyable = {
+          before: dragSnapshot,
+          hit: dragged,
+          point,
+          original: editor.selection,
+          copying: false,
+        };
       canvas.setPointerCapture(event.pointerId);
     }
     syncInspector();
@@ -766,8 +776,12 @@ export function bindInput() {
       if (refuseEdit()) return;
       // One undo step covers both the copy and the move.
       const before = snapshot();
+      // What a plain drag from here would have moved, for when Alt is let go.
+      const pressed = itemFromHit(press.hit);
+      const original = pressed && inGroup(pressed) ? editor.selection : press.hit;
       const copy = duplicateTarget(press.hit);
       if (!copy) return;
+      dragCopyable = { before, hit: press.hit, point: press.point, original, copying: true };
       editor.selection = copy;
       dragSnapshot = before;
       dragOrigin = startDragOrigin(press.point);
@@ -799,20 +813,21 @@ export function bindInput() {
     }
     if (!dragging || !editor.selection || !pastSlop(event)) return;
     lastDragPointer = { clientX: event.clientX, clientY: event.clientY };
-    // Alt went down while the canvas didn't have the key events (or before
-    // the first move): duplicate now.
-    if (event.altKey && dragCopyable) {
-      duplicateMidDrag(event.shiftKey);
+    // Alt went down or up while the window didn't have the key events (or
+    // before the first move): catch up now.
+    if (dragCopyable && Boolean(event.altKey) !== dragCopyable.copying) {
+      setDragCopying(Boolean(event.altKey), event.shiftKey);
       return;
     }
     dragSelectionTo(lastDragPointer, event.shiftKey);
   });
 
-  window.addEventListener("keydown", (event) => {
-    if (event.key !== "Alt" || event.repeat || !dragCopyable) return;
-    event.preventDefault();
-    duplicateMidDrag(event.shiftKey);
-  });
+  for (const type of ["keydown", "keyup"])
+    window.addEventListener(type, (event) => {
+      if (event.key !== "Alt" || event.repeat || !dragCopyable) return;
+      event.preventDefault();
+      setDragCopying(type === "keydown", event.shiftKey);
+    });
 
   window.addEventListener("keydown", onShiftChange);
 
