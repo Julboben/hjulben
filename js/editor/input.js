@@ -986,6 +986,13 @@ export function bindInput() {
     renderView();
   });
 
+  // The shortcuts list names only the modifier this machine uses: ⌘ on an
+  // Apple device, as written in the markup, and Ctrl everywhere else. Some
+  // browsers report an empty platform, so the user agent is asked as well.
+  const nav = /** @type {any} */ (globalThis.navigator);
+  const device = [nav?.userAgentData?.platform, nav?.platform, nav?.userAgent].join(" ");
+  if (!/Mac|iPhone|iPad/.test(device))
+    for (const key of document.querySelectorAll("kbd[data-mod]")) key.textContent = "Ctrl";
   $("show-shortcuts").addEventListener("click", () => shortcuts.showModal());
   $("open-quick-pick").addEventListener("click", openQuickPick);
 

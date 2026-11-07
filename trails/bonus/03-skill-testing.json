@@ -72,6 +72,42 @@
             "edge": "straight"
           },
           {
+            "id": "n4n",
+            "x": 1400,
+            "y": 340,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ncl",
+            "x": 1325,
+            "y": 340,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n1h9",
+            "x": 1325,
+            "y": 425,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nng",
+            "x": 1400,
+            "y": 425,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
             "id": "n5",
             "x": 1400,
             "y": 580,
@@ -240,6 +276,10 @@
     {
       "x": 1018.9644408999808,
       "y": 199.11498066113978
+    },
+    {
+      "x": 1365.799445890631,
+      "y": 384.58119509415883
     }
   ],
   "props": [],
