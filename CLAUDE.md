@@ -5,7 +5,7 @@ A 2D motorcycle trials game in the browser, inspired by Elasto Mania: plain Java
 ## Commands
 
 - `npm run dev`: dev server; it also watches `trails/` and rebuilds the trail catalogs.
-- `npm test`: every check. It fails while a generated file is stale: run `npm run sw` after changing files the game loads, `npm run limits` after changing the physics, `npm run trails` after changing a trail's notes or `trails/worlds.json` (it writes `TRAILS.md`), and `npm run context` after changing `TRAIL_FORMAT.md`, `js/trail-schema.js`, `js/materials.js` or the example trails.
+- `npm test`: every check but the slow ones, side by side (about 10 s); run it while working. `npm run test:slow` runs the playtest tools' checks (a few minutes, as the bot searches on a clock): run it, or `npm run test:all` for both, after changing the physics, the replay bot, `scripts/playtest.mjs` or `scripts/render-trail.mjs`. `npm test` fails while a generated file is stale: run `npm run sw` after changing files the game loads, `npm run limits` after changing the physics, `npm run trails` after changing a trail's notes or `trails/worlds.json` (it writes `TRAILS.md`), and `npm run context` after changing `TRAIL_FORMAT.md`, `js/trail-schema.js`, `js/materials.js` or the example trails.
 - `npm run check` (syntax) and `npm run typecheck` for a quick check.
 
 ## Making trails

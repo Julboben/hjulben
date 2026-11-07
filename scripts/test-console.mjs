@@ -85,11 +85,26 @@ const { session: page, evaluate } = await chrome.openTab();
 // Enabling twice is harmless; awaiting it means nothing the page does is missed.
 await Promise.all(['Network.enable', 'Runtime.enable', 'Log.enable'].map(method => chrome.send(method, {}, page)));
 
+/**
+ * Evaluate, giving up after `ms`. Chrome can leave a question asked just as
+ * the page navigates unanswered for good, which would hang the test.
+ */
+async function evaluateWithin(expression, ms) {
+  let timer;
+  const late = new Promise((_, reject) => { timer = setTimeout(() => reject(new Error(`no answer within ${ms} ms`)), ms); });
+  try {
+    return await Promise.race([evaluate(expression), late]);
+  } finally {
+    // A timer left running would keep the test alive after it has finished.
+    clearTimeout(timer);
+  }
+}
+
 /** Resolves once the page has drawn its first screen (both pages clear `data-booting` then). */
 async function booted(label) {
   const started = Date.now();
   while (Date.now() - started < BOOT_TIMEOUT_MS) {
-    if (await evaluate(`document.readyState === 'complete' && !document.querySelector('[data-booting]')`).catch(() => false)) return;
+    if (await evaluateWithin(`document.readyState === 'complete' && !document.querySelector('[data-booting]')`, 2000).catch(() => false)) return;
     await sleep(100);
   }
   problems.push(`${label}: did not finish booting within ${BOOT_TIMEOUT_MS / 1000} s`);
@@ -104,7 +119,15 @@ async function open(file, label) {
 await open(PAGES[0], PAGES[0]);
 // The service worker installs on the first visit: wait for it, then load
 // again so the page is served from its cache like a return visit.
-const controlled = await evaluate(`navigator.serviceWorker.ready.then(() => new Promise(resolve => setTimeout(resolve, 2000))).then(() => true)`).catch(() => false);
+const installed = () => evaluateWithin(`navigator.serviceWorker.ready.then(() => new Promise(resolve => setTimeout(resolve, 2000))).then(() => true)`, BOOT_TIMEOUT_MS).catch(() => false);
+// Headless Chrome now and then never finishes installing the worker on a
+// first visit while DevTools is attached; a reload sets it going. A worker
+// that is really broken fails both times.
+let controlled = await installed();
+if (!controlled) {
+  await open(PAGES[0], `${PAGES[0]} (reloaded)`);
+  controlled = await installed();
+}
 if (!controlled) problems.push(`${PAGES[0]}: the service worker did not install`);
 await open(PAGES[0], `${PAGES[0]} (cached)`);
 // Production serves the game's own files from the cache; any that still

@@ -48,7 +48,7 @@ jobs:
       - name: Type check
         run: npm run typecheck
       - name: Tests
-        run: npm test
+        run: npm run test:all
       - name: Online API tests
         run: npm run test:online
       - name: Open or update the release pull request

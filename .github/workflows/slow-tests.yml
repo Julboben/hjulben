@@ -1,0 +1,45 @@
+name: Slow tests
+
+# The playtest tools' checks (npm run test:slow) take minutes, because the
+# replay bot searches on a clock. They only run when something the bot, the
+# physics or the trail renderer uses changes; the release workflows run them
+# every time, with everything else.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'js/**'
+      - '!js/editor/**'
+      - 'scripts/playtest.mjs'
+      - 'scripts/render-trail.mjs'
+      - 'scripts/test-playtest.mjs'
+      - 'scripts/run-tests.mjs'
+      - 'scripts/lib/**'
+      - 'package.json'
+      - '.github/workflows/slow-tests.yml'
+  pull_request:
+    paths:
+      - 'js/**'
+      - '!js/editor/**'
+      - 'scripts/playtest.mjs'
+      - 'scripts/render-trail.mjs'
+      - 'scripts/test-playtest.mjs'
+      - 'scripts/run-tests.mjs'
+      - 'scripts/lib/**'
+      - 'package.json'
+      - '.github/workflows/slow-tests.yml'
+
+concurrency:
+  group: slow-tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  playtest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Playtest tools
+        run: npm run test:slow

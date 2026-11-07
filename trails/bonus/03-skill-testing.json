@@ -91,8 +91,35 @@
           },
           {
             "id": "n1h9",
-            "x": 1325,
-            "y": 425,
+            "x": 1325.0000000000002,
+            "y": 420,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n1tn",
+            "x": 1470.0000000000002,
+            "y": 420,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n1hv",
+            "x": 1470,
+            "y": 320,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n2jc",
+            "x": 1550,
+            "y": 320,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -100,16 +127,7 @@
           },
           {
             "id": "nng",
-            "x": 1400,
-            "y": 425,
-            "mode": "corner",
-            "in": null,
-            "out": null,
-            "edge": "straight"
-          },
-          {
-            "id": "n5",
-            "x": 1400,
+            "x": 1550,
             "y": 580,
             "mode": "corner",
             "in": null,
@@ -282,7 +300,22 @@
       "y": 384.58119509415883
     }
   ],
-  "props": [],
+  "props": [
+    {
+      "x": 178.85091505178107,
+      "y": 218.40094807819895,
+      "type": "sign",
+      "layer": "back",
+      "text": "Wall climb"
+    },
+    {
+      "x": 1022.6284683751844,
+      "y": 349.9001975116812,
+      "type": "sign",
+      "layer": "back",
+      "text": "02 - hang"
+    }
+  ],
   "spikes": [],
   "water": [],
   "weather": {

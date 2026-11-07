@@ -55,6 +55,8 @@ export function startStaticServer({ onRequest = () => {}, handle = () => false }
  * @param {{ flags?: string[], onAttached?: (sessionId: string, targetInfo: any) => string[] }} [options]
  */
 const STARTUP_MS = 30_000;
+// How long Chrome gets to quit when asked before it is killed.
+const CLOSE_MS = 5_000;
 
 export async function launchChrome(chromePath, { flags = [], onAttached = () => [] } = {}) {
   const userDataDir = mkdtempSync(path.join(tmpdir(), 'hjulben-chrome-'));
@@ -65,6 +67,11 @@ export async function launchChrome(chromePath, { flags = [], onAttached = () => 
   ];
   if (process.getuid?.() === 0) allFlags.push('--no-sandbox');
   const chrome = spawn(chromePath, [...allFlags, 'about:blank'], { stdio: ['ignore', 'ignore', 'pipe'] });
+  // A script that throws, times out or exits before close() would leave this
+  // Chrome running for good, and leftovers slow every later run until they
+  // hang it. Exit handlers can only do synchronous work, which kill() is.
+  const killOnExit = () => { if (chrome.exitCode === null && chrome.signalCode === null) chrome.kill('SIGKILL'); };
+  process.once('exit', killOnExit);
   // The end of what Chrome says on stderr, to tell why it didn't start.
   let said = '';
   chrome.stderr.on('data', chunk => { said = (said + chunk).slice(-2000); });
@@ -140,13 +147,19 @@ export async function launchChrome(chromePath, { flags = [], onAttached = () => 
       };
       return { session, evaluate };
     },
-    /** Stops Chrome, then removes its profile: Chrome writes to it until it has exited. */
+    /**
+     * Stops Chrome, then removes its profile: Chrome writes to it until it has
+     * exited. A Chrome that ignores the request is killed outright.
+     */
     async close() {
       ws.close();
+      process.removeListener('exit', killOnExit);
       if (chrome.exitCode === null && chrome.signalCode === null) {
         const exited = new Promise(resolve => chrome.once('exit', resolve));
         chrome.kill();
+        const stubborn = setTimeout(() => chrome.kill('SIGKILL'), CLOSE_MS);
         await exited;
+        clearTimeout(stubborn);
       }
       // Leftovers in the temporary directory are no reason to fail.
       rmSync(userDataDir, { recursive: true, force: true, maxRetries: 3 });
