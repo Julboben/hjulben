@@ -728,21 +728,8 @@ export function chimneySmoke(time, phase, wind = 0.25, downwind = -1) {
 // Snowman
 // ---------------------------------------------------------------------------
 
-// How far the rider must be above or below the head before the snowman's
-// eyes look up or down; drawing.js turns them sideways like the scarecrow's.
-const SNOWMAN_LOOK_UP = 70;
+// Where the snowman looks from; riderGaze in drawing.js says where it looks.
 export const SNOWMAN_EYE_HEIGHT = -56;
-
-/**
- * Where the snowman looks: { x, y }, each -1, 0 or 1 art pixel. `side` is the
- * way it turns to watch the rider (-1, 0 or 1) and `dy` the rider's height
- * below its eyes, which may be null.
- */
-export function snowmanGaze(side, dy = null) {
-  const x = Math.sign(side) || 0;
-  const y = !Number.isFinite(dy) ? 0 : dy < -SNOWMAN_LOOK_UP ? -1 : dy > SNOWMAN_LOOK_UP ? 1 : 0;
-  return { x, y };
-}
 
 /**
  * 50 × 76: three balls of snow with a top hat, scarf, stick arms and coal
@@ -784,7 +771,7 @@ export function drawSnowman({ pixelRect, pixelPath, drawPixelDisc }) {
 }
 
 /**
- * The coal eyes, which follow `gaze` (see snowmanGaze), the carrot nose that
+ * The coal eyes, which follow `gaze` (see riderGaze in drawing.js), the carrot nose that
  * points the way they look, and a coal smile.
  */
 export function drawSnowmanFace({ pixelRect }, gaze = { x: 0, y: 0 }) {

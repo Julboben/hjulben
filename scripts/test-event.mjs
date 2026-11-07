@@ -4,9 +4,9 @@
 import assert from 'node:assert/strict';
 import { normalizeTrail, validateTrail } from '../js/trail-schema.js';
 import { rectangle } from './lib/terrain-fixtures.mjs';
-import { PAINTED_PROPS, TEXT_PROPS, canFlip, canRotate, paintedBounds } from '../js/drawing.js';
+import { PAINTED_PROPS, TEXT_PROPS, canFlip, canRotate, paintedBounds, riderGaze } from '../js/drawing.js';
 import {
-  BANNER_BRANDS, BANNER_MAX, HALFWAY_FLASH, SPECTATOR_CHEER, SPECTATOR_DUCK, MARSHAL_WAVE,
+  BANNER_BRANDS, BANNER_MAX, CAMERA_EYE, HALFWAY_FLASH, PERSON_EYES, SPECTATOR_CHEER, SPECTATOR_DUCK, MARSHAL_WAVE,
   bannerLayout, bannerStyle, halfwayFlash, marshalFlag, pitBoardText, spectatorHop, spectatorMood,
   splitText, tapeDroop, tapeTail,
 } from '../js/event-props.js';
@@ -87,6 +87,22 @@ const warningsFor = (props) => validateTrail(trail(props)).filter((m) => m.type 
   assert.equal(spectatorHop(0, 1, 0.3), 0, 'still at time 0');
   const hops = Array.from({ length: 40 }, (_, i) => spectatorHop(0.05 + i * 0.05, 0, 0));
   assert.ok(hops.some((hop) => hop < 0) && hops.every((hop) => hop <= 0 && hop % 2 === 0), 'they jump on the art grid');
+}
+
+// Each spectator turns their head to the rider from where they stand, and
+// looks up at a rider overhead; a rider far off to the side is looked at
+// sideways, even from the top of the camera tower. Mirrored, left is right.
+{
+  const eyes = (sx) => ({ x: sx, y: PERSON_EYES });
+  const scene = { time: 1, riderX: 500, riderY: 280 };
+  assert.deepEqual(riderGaze(scene, 500, 300, false, eyes(0)), { x: 0, y: 0 }, 'straight out at a rider in front');
+  assert.equal(riderGaze({ ...scene, riderX: 430 }, 500, 300, false, eyes(-22)).x, 0, 'the near one still looks out');
+  assert.equal(riderGaze({ ...scene, riderX: 430 }, 500, 300, false, eyes(22)).x, -1, 'the far one turns');
+  assert.deepEqual(riderGaze({ ...scene, riderY: 100 }, 500, 300, false, eyes(0)), { x: 0, y: -1 }, 'up at a jump overhead');
+  assert.deepEqual(riderGaze({ ...scene, riderX: 900 }, 500, 300, true, eyes(0)), { x: -1, y: 0 }, 'mirrored');
+  const tower = (riderX, riderY) => riderGaze({ riderX, riderY }, 500, 300, false, CAMERA_EYE);
+  assert.deepEqual(tower(560, 290), { x: 0, y: 1 }, 'down at the foot of the tower');
+  assert.deepEqual(tower(1100, 290), { x: 1, y: 0 }, 'sideways when far off');
 }
 
 // Marshals wave while the rider is near, and hold the flag up still at time 0.

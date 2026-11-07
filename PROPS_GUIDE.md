@@ -101,7 +101,7 @@ Write functions as `export function drawThing({ pixelRect, pixelPath }, …)` an
 
 | Need | Use |
 |---|---|
-| Something that turns to watch the rider | `riderSide(scene, x, mirrored)` in drawing.js (scarecrow, snowman) |
+| Something that turns to watch the rider | `riderGaze(scene, x, y, mirrored, eye)` in drawing.js: sideways and up or down from `eye` (spectators, marshals, camera crew, scarecrow, snowman) |
 | Water dripping from a point | `drawDrip` in cave-props.js (cave drip, icicles) |
 | Hanging from the rock above | Add the prop to `CEILING_PROPS`; `propWallFit` gives the roof and the drop to the floor |
 | Pine boughs | `PINE_TIERS` and `drawPineTiers` |

@@ -209,3 +209,5 @@ Written by `scripts/generate-trails-overview.mjs` from the trail files, so don't
 - **B02. The Mining Cave:** *What it teaches isn't written yet (`lesson`).*
 
   > Technical rock climbing
+
+- **B03. Skill map:** *What it teaches isn't written yet (`lesson`).*

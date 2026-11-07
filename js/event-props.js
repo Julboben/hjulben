@@ -320,15 +320,21 @@ export function drawBanner(tools, style, groundOffset) {
  * @typedef {{ shirt: any, legs: any, skin: any, hair: string, hat?: any, vest?: boolean }} PersonLook
  */
 
+/** Where a standing person's eyes are, above their feet. */
+export const PERSON_EYES = -42;
+
 /**
  * A person about 48 tall, feet at (0, 0), facing right. `pose` is "idle",
  * "cheer" (arms up), "duck" (crouched, arms over the head), "wince" (hands on
- * the head) or "hold" (right arm left out, for a flag drawn live).
+ * the head) or "hold" (right arm left out, for a flag drawn live). Only the
+ * head turns to `gaze` ({ x, y }, each -1, 0 or 1; see riderGaze in
+ * drawing.js): to either side or out at the viewer, and up or down.
  * @param {any} tools
  * @param {PersonLook} look
  * @param {string} pose
+ * @param {{ x: number, y: number }} [gaze]
  */
-export function drawPerson({ pixelRect }, look, pose = "idle") {
+export function drawPerson({ pixelRect }, look, pose = "idle", gaze = { x: 1, y: 0 }) {
   const { shirt, legs, skin, hair, hat, vest } = look;
   const crouch = pose === "duck" ? 10 : 0;
   if (crouch) {
@@ -371,18 +377,33 @@ export function drawPerson({ pixelRect }, look, pose = "idle") {
     pixelRect(2, shoulder - 2, 2, 12, ORANGE.light, 2);
     pixelRect(-4, shoulder + 6, 8, 2, WHITE.light, 2);
   }
-  // Head, looking right.
+  // Head, lit from the right whichever way it looks. A profile is mirrored
+  // around the head's middle (x = 1); the eyes, and a profile's nose, move up
+  // or down with the gaze.
+  const eye = top + 6 + gaze.y * 2;
+  const across = (x, width) => (gaze.x < 0 ? 2 - x - width : x);
   pixelRect(-4, top + 2, 10, 10, skin.base, 2);
   pixelRect(-4, top + 2, 2, 10, skin.shade, 2);
   pixelRect(4, top + 4, 2, 6, skin.light, 2);
-  pixelRect(6, top + 6, 2, 2, skin.base, 2);
-  pixelRect(2, top + 6, 2, 2, INK, 2);
+  if (gaze.x) {
+    pixelRect(across(6, 2), eye, 2, 2, skin.base, 2);
+    pixelRect(across(2, 2), eye, 2, 2, INK, 2);
+  } else {
+    pixelRect(-2, eye, 2, 2, INK, 2);
+    pixelRect(2, eye, 2, 2, INK, 2);
+    pixelRect(0, eye + 2, 2, 2, skin.shade, 2);
+  }
   pixelRect(-4, top, 10, 4, hair, 2);
-  pixelRect(-6, top + 2, 4, 6, hair, 2);
+  if (gaze.x) pixelRect(across(-6, 4), top + 2, 4, 6, hair, 2);
+  else {
+    pixelRect(-6, top + 2, 2, 4, hair, 2);
+    pixelRect(6, top + 2, 2, 4, hair, 2);
+  }
   if (hat) {
     pixelRect(-4, top - 2, 10, 4, hat.base, 2);
     pixelRect(-4, top - 2, 2, 4, hat.dark, 2);
-    pixelRect(4, top, 6, 2, hat.dark, 2);
+    if (gaze.x) pixelRect(across(4, 6), top, 6, 2, hat.dark, 2);
+    else pixelRect(-6, top, 14, 2, hat.dark, 2);
   }
   // The near arm, in front of the body.
   if (pose === "cheer") {
@@ -563,13 +584,14 @@ const FLAG_PATTERNS = {
 
 /**
  * A marshal and their flag. `flag` is "green" or "checkered", `wave` comes
- * from marshalFlag, and the person's feet are at (0, 0).
+ * from marshalFlag, `gaze` is where they look (see drawPerson), and the
+ * person's feet are at (0, 0).
  */
-export function drawMarshal(tools, type, wave, time = 0) {
+export function drawMarshal(tools, type, wave, time = 0, gaze = { x: 1, y: 0 }) {
   const { pixelPath, pixelRect } = tools;
   const marshal = MARSHALS[type];
   const { look } = marshal;
-  drawPerson(tools, look, "hold");
+  drawPerson(tools, look, "hold", gaze);
   const { hand, tip } = MARSHAL_HOLDS[wave.hold];
   // Arm from the shoulder to the hand, then the pole.
   pixelPath([[6, -34], hand], look.shirt.base, 1, 2);
@@ -596,12 +618,14 @@ export const CAMERA_TOWER_BODY_BOTTOM = -16;
 /** The camera's pan head, and its red tally light (centre). */
 export const CAMERA_HEAD = { x: 10, y: -114 };
 export const CAMERA_TALLY = { x: 10, y: -131 };
+/** Where the camera crew looks from: the camera's lens. */
+export const CAMERA_EYE = { x: CAMERA_HEAD.x, y: CAMERA_HEAD.y - 8 };
 const CAMERA_OPERATOR = { shirt: BLUE, legs: KHAKI, skin: SKIN.light, hair: WOOD.dark, hat: { dark: INK, base: RUBBER.dark } };
 
 /**
- * A scaffold camera tower: braced legs, a railed deck, a camera operator and
- * the tripod. The legs below CAMERA_TOWER_BODY_BOTTOM and the camera itself
- * are drawn live.
+ * A scaffold camera tower: braced legs and the deck. The legs below
+ * CAMERA_TOWER_BODY_BOTTOM, the crew (drawCameraCrew) and the railing in
+ * front of them (drawCameraRail) are drawn live.
  */
 export function drawCameraTower(tools) {
   const { pixelRect, pixelPath } = tools;
@@ -620,18 +644,36 @@ export function drawCameraTower(tools) {
     pixelRect(lx, deck, 4, bottom - deck, shaded ? STEEL.base : STEEL.mid, 2);
     pixelRect(lx + (shaded ? 0 : 2), deck, 2, bottom - deck, shaded ? STEEL.dark : STEEL.light, 2);
   }
-  // Operator behind the camera.
-  drawPersonAt({ pixelRect }, -8, deck, CAMERA_OPERATOR);
-  // Tripod.
-  const { x: hx, y: hy } = CAMERA_HEAD;
-  pixelPath([[hx, hy], [hx - 8, deck]], RUBBER.base, 1, 2);
-  pixelPath([[hx, hy], [hx + 8, deck]], RUBBER.light, 1, 2);
-  pixelRect(hx, hy, 2, deck - hy, RUBBER.dark, 2);
-  // Deck, lit on top, and the railing in front of the crew.
+  // Deck, lit on top.
   pixelRect(-28, deck, 56, 6, WOOD.light, 2);
   pixelRect(-28, deck, 56, 2, WOOD.tip, 2);
   pixelRect(-28, deck + 4, 56, 2, WOOD.dark, 2);
   pixelRect(-28, deck, 2, 6, WOOD.base, 2);
+}
+
+/**
+ * The camera crew on the deck, drawn live: the operator beside the camera,
+ * the tripod and the camera, which point where `gaze` says (see drawPerson
+ * and drawCamera). `tally` lights the camera's tally light.
+ * @param {any} tools
+ * @param {{ x: number, y: number }} gaze
+ * @param {boolean} [tally]
+ */
+export function drawCameraCrew(tools, gaze, tally = true) {
+  const { pixelRect, pixelPath } = tools;
+  const deck = CAMERA_TOWER_DECK;
+  drawPersonAt({ pixelRect }, -8, deck, CAMERA_OPERATOR, gaze);
+  // Tripod, its feet on the deck.
+  const { x: hx, y: hy } = CAMERA_HEAD;
+  pixelPath([[hx, hy], [hx - 8, deck - 2]], RUBBER.base, 1, 2);
+  pixelPath([[hx, hy], [hx + 8, deck - 2]], RUBBER.light, 1, 2);
+  pixelRect(hx, hy, 2, deck - hy, RUBBER.dark, 2);
+  drawCamera(tools, gaze.x, tally, gaze.y);
+}
+
+/** The railing across the front of the camera tower's deck, in front of the crew. */
+export function drawCameraRail({ pixelRect }) {
+  const deck = CAMERA_TOWER_DECK;
   for (const px of [-28, 24]) {
     pixelRect(px, deck - 20, 2, 20, STEEL.base, 2);
     pixelRect(px + 2, deck - 20, 2, 20, STEEL.light, 2);
@@ -642,35 +684,36 @@ export function drawCameraTower(tools) {
 }
 
 // A person stood at (x, y) inside another sprite.
-function drawPersonAt({ pixelRect }, x, y, look) {
-  drawPerson({ pixelRect: (px, py, w, h, color, p) => pixelRect(px + x, py + y, w, h, color, p) }, look, "idle");
+function drawPersonAt({ pixelRect }, x, y, look, gaze) {
+  drawPerson({ pixelRect: (px, py, w, h, color, p) => pixelRect(px + x, py + y, w, h, color, p) }, look, "idle", gaze);
 }
 
 /**
  * The TV camera on its pan head, drawn live at the head so it can follow the
- * rider: `aim` 1 points it right, -1 left and 0 straight out at the viewer.
- * A little play triangle on its side winks at the replays; `tally` lights
- * the red tally light.
+ * rider: `aim` 1 points it right, -1 left and 0 straight out at the viewer,
+ * and `tilt` -1 tips its lens up and 1 down. A little play triangle on its
+ * side winks at the replays; `tally` lights the red tally light.
  */
-export function drawCamera(tools, aim, tally = true) {
+export function drawCamera(tools, aim, tally = true, tilt = 0) {
   const { pixelRect, drawPixelDisc } = tools;
   const { x, y } = CAMERA_HEAD;
   const top = y - 14;
+  const tip = tilt * 2;
   if (!aim) {
     pixelRect(x - 8, top, 18, 12, RUBBER.base, 2);
     pixelRect(x - 8, top, 2, 12, RUBBER.dark, 2);
     pixelRect(x + 8, top, 2, 12, RUBBER.light, 2);
-    drawPixelDisc(x, top + 6, 4, INK, 2);
-    pixelRect(x, top + 4, 2, 2, BLUE.light, 2);
+    drawPixelDisc(x, top + 6 + tip, 4, INK, 2);
+    pixelRect(x, top + 4 + tip, 2, 2, BLUE.light, 2);
   } else {
     const side = (dx, w) => (aim > 0 ? x + dx : x - dx - w);
     pixelRect(side(-10, 20), top, 20, 12, RUBBER.base, 2);
     pixelRect(side(-10, 20), top + 10, 20, 2, RUBBER.dark, 2);
     pixelRect(side(-10, 20), top, 20, 2, RUBBER.light, 2);
-    // Lens hood out front, viewfinder at the back.
-    pixelRect(side(10, 6), top + 2, 6, 8, INK, 2);
-    pixelRect(side(14, 2), top + 4, 2, 4, BLUE.light, 2);
-    pixelRect(side(-14, 4), top + 2, 4, 6, RUBBER.dark, 2);
+    // Lens hood out front, viewfinder at the back, tipped opposite ways.
+    pixelRect(side(10, 6), top + 2 + tip, 6, 8, INK, 2);
+    pixelRect(side(14, 2), top + 4 + tip, 2, 4, BLUE.light, 2);
+    pixelRect(side(-14, 4), top + 2 - tip, 4, 6, RUBBER.dark, 2);
     // Play triangle sticker.
     const px = side(-4, 2);
     pixelRect(px, top + 4, 2, 6, WHITE.light, 2);

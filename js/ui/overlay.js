@@ -5,11 +5,12 @@ import { MEDALS, normalizeAuthor } from "../trail-schema.js";
 import { keyTextNodes, keyTextWords } from "./key-text.js";
 
 /**
- * @param {{ onDismiss?: () => void }} [hooks] onDismiss: the results were
- *   closed by the browser (a second Escape, or a phone's back gesture) rather
- *   than by the game; without it they are simply shown again.
+ * @param {{ onDismiss?: () => void, onCard?: (card: { opens: string }) => void }} [hooks]
+ *   onDismiss: the results were closed by the browser (a second Escape, or a
+ *   phone's back gesture) rather than by the game; without it they are simply
+ *   shown again. onCard: an achievement or gear card came on screen.
  */
-export function createOverlay({ onDismiss } = {}) {
+export function createOverlay({ onDismiss, onCard } = {}) {
   const dialog = /** @type {HTMLDialogElement} */ ($("overlay"));
   const toasts = /** @type {HTMLElement} */ (document.querySelector(".toast-stack"));
   const toastHome = /** @type {HTMLElement} */ (toasts.parentElement);
@@ -206,6 +207,7 @@ export function createOverlay({ onDismiss } = {}) {
     placeAchievement();
     popover.showPopover();
     achievementUntil = now + 4000;
+    onCard?.(earned);
     announce((earned.opens === "garage" ? "New gear: " : "Achievement earned: ") + earned.name + ". " + keyTextWords(earned.blurb));
   }
 

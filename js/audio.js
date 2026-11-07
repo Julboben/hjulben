@@ -131,6 +131,9 @@ export function skidAmount({ state, rear, front, brakePressure }) {
 export function createAudio(getSnapshot) {
   let audio = null;
   let enabled = true, musicOn = false, volume = 1;
+  // When the last reward jingle (an apple, the nisse, the finish) rings out,
+  // in context time, so an achievement or gear sound waits for it.
+  let jingleUntil = 0;
   const motor = { revs: 0, time: 0, liftedAt: -1, lastThrottle: 0, nextPop: 0, grip: 0, phase: 'off', startedAt: -10, stalledAt: 0, previewAt: -10 };
 
   /**
@@ -434,6 +437,15 @@ export function createAudio(getSnapshot) {
     gain.gain.exponentialRampToValueAtTime(.0001, start + duration);
     source.connect(filter); filter.connect(gain); gain.connect(master);
     source.start(start); source.stop(start + duration);
+  }
+
+  function holdJingle(seconds) {
+    if (audio) jingleUntil = Math.max(jingleUntil, audio.context.currentTime + seconds);
+  }
+
+  /** How long (s) until the reward jingles playing now have rung out. */
+  function afterJingles() {
+    return audio ? Math.max(0, jingleUntil - audio.context.currentTime) : 0;
   }
 
   function backfire(strength) {
@@ -843,6 +855,7 @@ export function createAudio(getSnapshot) {
     apple() {
       playTone(620, .1, 'square', .07, 0, 880);
       playTone(880, .13, 'square', .055, .07, 1240);
+      holdJingle(.22);
     },
     // A little sleigh-bell jingle for finding the nisse.
     nisse() {
@@ -850,6 +863,7 @@ export function createAudio(getSnapshot) {
         playTone(note, .09, 'triangle', .06, index * .07, note * 1.02);
       });
       playNoise(.12, .025, 6400);
+      holdJingle(.4);
     },
     crash() {
       playNoise(.35, .18, 700);
@@ -967,12 +981,44 @@ export function createAudio(getSnapshot) {
     },
     /** The finish jingle; a gold time adds a short da-DAA on the end. */
     win(gold = false) {
+      holdJingle(gold ? 1 : .5);
       [523, 659, 784, 1047].forEach((note, index) => playTone(note, .18, 'square', .055, index * .1, note));
       if (!gold) return;
       playTone(784, .1, 'square', .05, .44);
       playTone(1047, .42, 'square', .055, .54);
       // A softer third above the last note makes it ring like a chord.
       playTone(1319, .42, 'triangle', .04, .54);
+    },
+    /**
+     * An achievement earned: a chime struck twice, rising a fourth, each
+     * strike a pair of near partials that shimmer as they ring, like the
+     * bicycle bell but softer. A bell rather than another square-wave tune,
+     * so it stands apart from the apple and finish jingles it often follows.
+     */
+    achievement() {
+      const delay = afterJingles();
+      for (const [note, at] of [[1568, 0], [2093, .13]]) {
+        playNoise(.012, .015, 7000, delay + at);
+        playTone(note, .9, 'sine', .045, delay + at);
+        playTone(note * 1.006, .9, 'sine', .028, delay + at);
+        playTone(note * 2.76, .25, 'sine', .008, delay + at);
+      }
+      holdJingle(delay + 1);
+    },
+    /**
+     * New gear for the Garage: a ratchet tightening it on, its clicks
+     * climbing, then a short square-wave flourish like the apple's.
+     */
+    gear() {
+      const delay = afterJingles();
+      [0, .055, .11, .165].forEach((at, index) => {
+        playNoise(.018, .03, 2600 + index * 700, delay + at);
+        playTone(900 + index * 150, .025, 'square', .015, delay + at, 700 + index * 150);
+      });
+      playTone(784, .1, 'square', .05, delay + .26, 1047);
+      playTone(1047, .32, 'square', .045, delay + .34);
+      playTone(1568, .32, 'triangle', .025, delay + .34);
+      holdJingle(delay + .7);
     },
     /**
      * A firework going up: the soft puff of the lift charge, then the rush of

@@ -331,17 +331,19 @@ export const GIBBET = { chain: 44, height: 58, half: 16 };
 export const GIBBET_HANG = GIBBET.chain + GIBBET.height + 2;
 
 // A skull with its top at (x, y), facing right or, with `look` -1, left.
-function skull({ pixelRect }, x, y, look = 1, jaw = 0) {
+function skull({ pixelRect }, x, y, look = 1, jaw = 0, up = 0) {
   pixelRect(x, y, 10, 8, BONE.base, 2);
   pixelRect(x + 2, y - 2, 6, 2, BONE.base, 2);
   pixelRect(x, y, 2, 8, BONE.shade, 2);
   pixelRect(x + 6, y - 2, 2, 2, BONE.light, 2);
   pixelRect(x + 8, y + 2, 2, 2, BONE.light, 2);
-  // Sockets and nose, set towards where it looks.
+  // Sockets and nose, set towards where it looks; the sockets also look up
+  // or down by `up`.
   const ex = look < 0 ? x + 2 : look > 0 ? x + 4 : x + 2;
-  pixelRect(ex, y + 2, 2, 2, INK, 2);
-  pixelRect(ex + 4, y + 2, 2, 2, look ? IRON.dark : INK, 2);
-  if (!look) pixelRect(x + 6, y + 2, 2, 2, INK, 2);
+  const ey = y + 2 + up * 2;
+  pixelRect(ex, ey, 2, 2, INK, 2);
+  pixelRect(ex + 4, ey, 2, 2, look ? IRON.dark : INK, 2);
+  if (!look) pixelRect(x + 6, ey, 2, 2, INK, 2);
   pixelRect(ex + 2, y + 6, 2, 2, IRON.dark, 2);
   // The jaw, dropped open by `jaw`.
   pixelRect(x + 2, y + 8 + jaw, 8, 2, BONE.base, 2);
@@ -471,6 +473,8 @@ export function drawSkeletonBody({ pixelRect }) {
 
 /** Where the skeleton's skull sits, its top left corner. */
 export const SKELETON_SKULL = { x: -6, y: -34 };
+/** Where the skeleton looks from. */
+export const SKELETON_EYES = { x: SKELETON_SKULL.x + 5, y: SKELETON_SKULL.y + 2 };
 
 /**
  * How far the skeleton's jaw hangs open: 0, or chattering 0 and 2 for a
@@ -487,10 +491,11 @@ export function skeletonJaw(time, landing, x, y) {
 }
 
 /**
- * The skeleton's skull, looking `look` (-1 left, 0 out, 1 right, in its own
- * frame) with its jaw dropped by `jaw`. It tips its head back as it turns.
+ * The skeleton's skull, looking `look` ({ x, y }, each -1, 0 or 1, in its own
+ * frame; see riderGaze in drawing.js) with its jaw dropped by `jaw`. It tips
+ * its head back as it turns.
  */
-export function drawSkeletonSkull({ pixelRect }, look = 0, jaw = 0) {
+export function drawSkeletonSkull({ pixelRect }, look = { x: 0, y: 0 }, jaw = 0) {
   const { x, y } = SKELETON_SKULL;
-  skull({ pixelRect }, x + look * 2, y, look, jaw);
+  skull({ pixelRect }, x + look.x * 2, y, look.x, jaw, look.y);
 }

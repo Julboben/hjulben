@@ -4,10 +4,10 @@
 import assert from 'node:assert/strict';
 import { normalizeTrail, validateTrail } from '../js/trail-schema.js';
 import { rectangle } from './lib/terrain-fixtures.mjs';
-import { canFlip, canRotate, propSpan, propWallFit } from '../js/drawing.js';
+import { canFlip, canRotate, propSpan, propWallFit, riderGaze } from '../js/drawing.js';
 import {
   CABLE_HALF, HUT_CHIMNEY, ICICLE_REACH, SNOW_PINE_REACH, SNOW_PUFF_TIME, chimneySmoke, icicleLengths,
-  liftChair, pineShake, pineSnowFall, pineSway, snowmanGaze,
+  SNOWMAN_EYE_HEIGHT, liftChair, pineShake, pineSnowFall, pineSway,
 } from '../js/mountain-props.js';
 
 const MOUNTAIN_PROPS = ['cairn', 'ski-lift', 'icicles', 'snow-pine', 'hut', 'snowman'];
@@ -61,10 +61,12 @@ const prop = (type, x, extra = {}) => ({ type, x, y: null, layer: 'back', ...ext
 
 // The snowman's eyes follow the rider sideways, and up or down when far off.
 {
-  assert.deepEqual(snowmanGaze(0, null), { x: 0, y: 0 });
-  assert.deepEqual(snowmanGaze(-1, 0), { x: -1, y: 0 });
-  assert.deepEqual(snowmanGaze(1, -200), { x: 1, y: -1 });
-  assert.deepEqual(snowmanGaze(0, 200), { x: 0, y: 1 });
+  const eye = { x: 0, y: SNOWMAN_EYE_HEIGHT };
+  const at = (dx, dy) => riderGaze({ riderX: 500 + dx, riderY: 300 + SNOWMAN_EYE_HEIGHT + dy }, 500, 300, false, eye);
+  assert.deepEqual(riderGaze({ riderX: null, riderY: null }, 500, 300, false, eye), { x: 0, y: 0 });
+  assert.deepEqual(at(-200, 0), { x: -1, y: 0 });
+  assert.deepEqual(at(200, -200), { x: 1, y: -1 });
+  assert.deepEqual(at(0, 200), { x: 0, y: 1 });
 }
 
 // The chair waits on the rope at time 0, and fades out past its ends.

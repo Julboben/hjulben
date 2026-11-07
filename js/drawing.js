@@ -195,10 +195,10 @@ import {
   pineSnowFall,
   pineSnowPuffs,
   pineSway,
-  snowmanGaze,
 } from "./mountain-props.js";
 import {
   BANNER_TOP,
+  CAMERA_EYE,
   CAMERA_TALLY,
   CAMERA_TOWER_BODY_BOTTOM,
   CAMERA_TOWER_LEGS,
@@ -209,6 +209,7 @@ import {
   HAY_BALES_BOUNDS,
   PIT_BOARD,
   PIT_BOARD_BOTTOM,
+  PERSON_EYES,
   SPECTATORS,
   TAPE_STAKES,
   TUTORIAL_BOUNDS,
@@ -218,7 +219,8 @@ import {
   cameraTallyOn,
   drawArrowSign,
   drawBanner,
-  drawCamera,
+  drawCameraCrew,
+  drawCameraRail,
   drawCameraTower,
   drawCourseTape,
   drawHalfwayFlag,
@@ -251,6 +253,7 @@ import {
 } from "./event-props.js";
 import {
   CELL_BUNK,
+  CELL_EYES,
   PRISONER_SKINS,
   PRISON_FENCE_BOUNDS,
   SEARCHLIGHT,
@@ -260,6 +263,7 @@ import {
   WANTED,
   WANTED_POST_TOP,
   WATCHTOWER_BODY_BOTTOM,
+  WATCHTOWER_EYES,
   WATCHTOWER_LEGS,
   cellPrisoner,
   drawBallAndChain,
@@ -275,6 +279,7 @@ import {
   drawTunnelMound,
   drawWantedPoster,
   drawWatchtower,
+  drawWatchtowerGuard,
   searchlightAim,
   searchlightBeam,
   tunnelPeek,
@@ -314,6 +319,7 @@ import {
   drawTorchStand,
   hangingSwing,
   portcullisDrop,
+  SKELETON_EYES,
   skeletonJaw,
   TORCH_TONGUES,
 } from "./dungeon-props.js";
@@ -3974,9 +3980,18 @@ const SCARECROW_FACES = {
   front: [[26, 26], [36, 26], [28, 32], [34, 32]],
   right: [[32, 26], [38, 26], [32, 32], [36, 32]],
 };
+// Where the prisoner peeking out of the escape tunnel looks from.
+const TUNNEL_EYES = { x: 0, y: -22 };
+// Where the scarecrow looks from, in its own frame.
+const SCARECROW_EYES = { x: 0, y: 26 + SCARECROW_OY };
 // How far the rider must be to one side before a watching prop (the
 // scarecrow, the snowman) turns to follow.
 const WATCH_TURN = 60;
+// How far the rider must be above or below a watching prop's eyes before it
+// looks up or down, and how steeply: a rider far off to the side is looked at
+// sideways, even from the top of a tower.
+const WATCH_TILT = 70;
+const WATCH_STEEP = 0.6;
 
 function drawScarecrow(tools) {
   const s = FARM_STRAW;
@@ -4127,13 +4142,23 @@ function propWind(scene, mirrored) {
 }
 
 /**
- * Which way a prop at `x` turns to watch the rider: -1, 0 or 1 in its own
- * frame, so a mirrored prop still looks the right way.
+ * Where a prop at (x, y) looks to watch the rider: { x, y }, each -1, 0 or 1,
+ * in its own frame, so a mirrored prop still looks the right way. `eye` is
+ * where it looks from, in that frame (a spectator's own place in the group,
+ * the head on top of a tower). With no rider it looks straight out.
+ * @param {any} scene
+ * @param {number} x
+ * @param {number} y
+ * @param {boolean} [mirrored]
+ * @param {{ x: number, y: number }} [eye]
  */
-function riderSide(scene, x, mirrored) {
-  if (!Number.isFinite(scene.riderX)) return 0;
-  const dx = (scene.riderX - x) * (mirrored ? -1 : 1);
-  return dx < -WATCH_TURN ? -1 : dx > WATCH_TURN ? 1 : 0;
+export function riderGaze(scene, x, y, mirrored = false, eye = { x: 0, y: 0 }) {
+  if (!Number.isFinite(scene.riderX)) return { x: 0, y: 0 };
+  const dx = (scene.riderX - x) * (mirrored ? -1 : 1) - eye.x;
+  const dy = Number.isFinite(scene.riderY) && Number.isFinite(y) ? scene.riderY - (y + eye.y) : 0;
+  const side = dx < -WATCH_TURN ? -1 : dx > WATCH_TURN ? 1 : 0;
+  const steep = Math.abs(dy) > Math.max(WATCH_TILT, Math.abs(dx) * WATCH_STEEP);
+  return { x: side, y: steep ? Math.sign(dy) : 0 };
 }
 
 // Local bounds [left, top, right, bottom] of each canopy sprite, in world units.
@@ -6090,19 +6115,21 @@ export function createGameArt(ctx) {
       // The post below the body follows the ground, like a tree trunk.
       rectDownTo(-2, SCARECROW_BODY_BOTTOM, 2, FARM_WOOD.base, 2, groundOffset);
       rectDownTo(0, SCARECROW_BODY_BOTTOM, 2, FARM_WOOD.light, 2, groundOffset);
-      // The head watches the rider go by. Only the face moves, so the head's
-      // light and shade stay put.
-      const side = riderSide(scene, x, mirrored);
-      const face = side < 0 ? "left" : side > 0 ? "right" : "front";
-      for (const [fx, fy] of SCARECROW_FACES[face])
+      // The head watches the rider go by, its eyes glancing up or down at
+      // them too. Only the face moves, so the head's light and shade stay put.
+      const gaze = riderGaze(scene, x, y, mirrored, SCARECROW_EYES);
+      const face = gaze.x < 0 ? "left" : gaze.x > 0 ? "right" : "front";
+      SCARECROW_FACES[face].forEach(([fx, fy], index) =>
+        // The first two are the eyes; the mouth stays put.
         pixelRect(
           fx + SCARECROW_OX,
-          fy + SCARECROW_OY,
+          fy + SCARECROW_OY + (index < 2 ? gaze.y * 2 : 0),
           2,
           2,
           FARM_WOOD.dark,
           2,
-        );
+        ),
+      );
     } else if (type === "beehive") {
       drawCanopy(type);
       const time = scene.time || 0;
@@ -6323,8 +6350,7 @@ export function createGameArt(ctx) {
       drawSnowmanDrift({ pixelRect }, groundOffset);
       // The eyes watch the rider go by, like the scarecrow, and glance up or
       // down at them too; the carrot turns with them.
-      const dy = Number.isFinite(scene.riderY) ? scene.riderY - (y + SNOWMAN_EYE_HEIGHT) : null;
-      drawSnowmanFace({ pixelRect }, snowmanGaze(riderSide(scene, x, mirrored), dy));
+      drawSnowmanFace({ pixelRect }, riderGaze(scene, x, y, mirrored, { x: 0, y: SNOWMAN_EYE_HEIGHT }));
     } else if (
       type === "tyre-wall" ||
       type === "hay-bales" ||
@@ -6352,9 +6378,13 @@ export function createGameArt(ctx) {
       const phase = propNoise(x, 15);
       SPECTATORS.forEach(({ x: sx, look }, index) => {
         const hop = mood === "cheer" ? spectatorHop(scene.time || 0, index, phase) : 0;
+        const ground = Math.round(groundOffset(sx) / 2) * 2;
+        // Each one turns their head to follow the rider from where they
+        // stand, so the heads turn one after another as the rider goes by.
+        const gaze = riderGaze(scene, x, y, mirrored, { x: sx, y: ground + PERSON_EYES });
         ctx.save();
-        ctx.translate(sx, Math.round(groundOffset(sx) / 2) * 2 + hop);
-        drawPerson({ pixelRect }, look, mood);
+        ctx.translate(sx, ground + hop);
+        drawPerson({ pixelRect }, look, mood, gaze);
         ctx.restore();
       });
     } else if (type === "pit-board") {
@@ -6365,8 +6395,10 @@ export function createGameArt(ctx) {
       const big = label.length <= 2;
       drawPixelText(label, 0, PIT_BOARD.top + (big ? 4 : 10), "#fffdf4", { pixel: big ? 4 : 2 });
     } else if (type === "marshal-start" || type === "marshal-finish") {
-      ctx.translate(0, Math.round(groundOffset(0) / 2) * 2);
-      drawMarshal({ pixelRect, pixelPath }, type, marshalFlag(scene, x, y, propNoise(x, 17)), scene.time || 0);
+      const ground = Math.round(groundOffset(0) / 2) * 2;
+      ctx.translate(0, ground);
+      const gaze = riderGaze(scene, x, y, mirrored, { x: 0, y: ground + PERSON_EYES });
+      drawMarshal({ pixelRect, pixelPath }, type, marshalFlag(scene, x, y, propNoise(x, 17)), scene.time || 0, gaze);
     } else if (type === "camera-tower") {
       drawCanopy(type);
       for (const [index, lx] of CAMERA_TOWER_LEGS.entries()) {
@@ -6375,8 +6407,11 @@ export function createGameArt(ctx) {
         const foot = Math.round(groundOffset(lx + 2) / 2) * 2;
         pixelRect(lx - 2, foot - 2, 8, 2, STEEL.dark, 2);
       }
-      // The camera follows the rider, its tally light blinking while it rolls.
-      drawCamera({ pixelRect, drawPixelDisc }, riderSide(scene, x, mirrored), cameraTallyOn(scene.time || 0));
+      // The camera and its operator follow the rider, the tally light
+      // blinking while it rolls.
+      const gaze = riderGaze(scene, x, y, mirrored, CAMERA_EYE);
+      drawCameraCrew({ pixelRect, pixelPath, drawPixelDisc }, gaze, cameraTallyOn(scene.time || 0));
+      drawCameraRail({ pixelRect });
     } else if (
       type === "warning-triangle" ||
       type === "warning-bang" ||
@@ -6421,7 +6456,9 @@ export function createGameArt(ctx) {
         pixelRect(lx - 2, foot - 4, 8, 4, "#8b978c", 2);
         pixelRect(lx - 2, foot - 4, 8, 2, "#aeb5a7", 2);
       }
-      // The searchlight sweeps, and swings round to the rider once close.
+      // The guard at the window leans to watch the rider. The searchlight
+      // sweeps, and swings round to the rider once close.
+      drawWatchtowerGuard({ pixelRect }, riderGaze(scene, x, y, mirrored, WATCHTOWER_EYES));
       const angle = searchlightAimAt(scene.time || 0, x, y, scene.riderX, scene.riderY, mirrored);
       drawSearchlight({ pixelRect, pixelPath, drawPixelDisc }, angle, false);
     } else if (type === "jail-cell") {
@@ -6431,7 +6468,7 @@ export function createGameArt(ctx) {
       const tools = { pixelRect };
       const skin = PRISONER_SKINS[Math.floor(propNoise(x, 21) * PRISONER_SKINS.length)];
       const { pose, rattle } = cellPrisoner(scene, x, y);
-      const look = riderSide(scene, x, mirrored);
+      const look = riderGaze(scene, x, y, mirrored, CELL_EYES[pose]);
       ctx.save();
       if (pose === "sit") ctx.translate(CELL_BUNK.x, CELL_BUNK.y);
       else ctx.translate(rattle, -4);
@@ -6456,7 +6493,10 @@ export function createGameArt(ctx) {
         ctx.rect(-40, -80, 80, 76);
         ctx.clip();
         ctx.translate(0, -2 + Math.round(((1 - peek.rise) * TUNNEL_DEPTH) / 2) * 2);
-        drawPrisonerBust({ pixelRect }, skin, mirrored ? -peek.look : peek.look);
+        // Once wary, they eye the rider up or down too.
+        const wary = peek.rise < 1 && Number.isFinite(scene.riderX);
+        const up = wary ? riderGaze(scene, x, y, mirrored, TUNNEL_EYES).y : 0;
+        drawPrisonerBust({ pixelRect }, skin, { x: mirrored ? -peek.look : peek.look, y: up });
         ctx.restore();
       }
       drawTunnelLip({ pixelRect });
@@ -6654,7 +6694,7 @@ export function createGameArt(ctx) {
       // The skull turns to watch the rider, and its jaw chatters after a
       // hard landing nearby.
       drawCanopy(type);
-      drawSkeletonSkull({ pixelRect }, riderSide(scene, x, mirrored), skeletonJaw(scene.time || 0, scene.landing, x, y));
+      drawSkeletonSkull({ pixelRect }, riderGaze(scene, x, y, mirrored, SKELETON_EYES), skeletonJaw(scene.time || 0, scene.landing, x, y));
     } else if (type === "start") {
       // Same pennant as the start line, drawn by the shared function, flying
       // downwind.

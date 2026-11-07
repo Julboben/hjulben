@@ -264,6 +264,12 @@
       "source": "bonus",
       "file": "bonus/02-the-mining-cave.json",
       "name": "The Mining Cave"
+    },
+    {
+      "id": "bonus:skill-testing",
+      "source": "bonus",
+      "file": "bonus/03-skill-testing.json",
+      "name": "Skill map"
     }
   ]
 }

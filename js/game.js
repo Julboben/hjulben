@@ -56,7 +56,13 @@ export function startGame({ shared = null } = {}) {
   const fireworks = createFireworks({ onLaunch: (x, flight) => sounds.fireworkLaunch(x, flight), onBurst: x => sounds.fireworkBurst(x) });
   // Results closed by the browser (a second Escape, a phone's back gesture)
   // go to the menu, where the ride can be picked up again.
-  const overlay = createOverlay({ onDismiss: () => { if (session.state === 'won' && !menu.isOpen()) showMainMenu(); } });
+  const overlay = createOverlay({
+    onDismiss: () => { if (session.state === 'won' && !menu.isOpen()) showMainMenu(); },
+    // A ride event can earn an achievement before its own sound plays (the
+    // nisse, the finish); waiting a microtask lets that jingle start first,
+    // so the card's sound can wait for it to ring out.
+    onCard: card => queueMicrotask(() => card.opens === 'garage' ? sounds.gear() : sounds.achievement()),
+  });
   // The rider's hand on the grip, ahead of the physics' smoothed throttle.
   let gasHeld = false;
   const sounds = createAudio(() => {

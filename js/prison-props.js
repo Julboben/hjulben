@@ -52,16 +52,16 @@ function stripes({ pixelRect }, x, y, width, height) {
   }
 }
 
-// A prisoner's head, looking `look` (-1 left, 0 out, 1 right), its top at
-// (0, top): stubble, a striped cap.
+// A prisoner's head, its top at (0, top): stubble, a striped cap. `look` is
+// where they look, { x, y } each -1, 0 or 1 (see riderGaze in drawing.js).
 function drawPrisonerHead({ pixelRect }, skin, top, look) {
   pixelRect(-4, top + 2, 10, 10, skin.base, 2);
   pixelRect(-4, top + 2, 2, 10, skin.shade, 2);
   pixelRect(4, top + 4, 2, 6, skin.light, 2);
   // Stubble along the jaw.
   pixelRect(-2, top + 10, 8, 2, skin.shade, 2);
-  const eyes = look > 0 ? [4] : look < 0 ? [-2] : [0, 4];
-  for (const ex of eyes) pixelRect(ex, top + 6, 2, 2, INK, 2);
+  const eyes = look.x > 0 ? [4] : look.x < 0 ? [-2] : [0, 4];
+  for (const ex of eyes) pixelRect(ex, top + 6 + look.y * 2, 2, 2, INK, 2);
   // Cap.
   stripes({ pixelRect }, -4, top - 2, 10, 4);
   pixelRect(-6, top + 2, 2, 2, STRIPE.dark, 2);
@@ -72,7 +72,7 @@ function drawPrisonerHead({ pixelRect }, skin, top, look) {
  * their feet are at (0, 0) and their arms reach out to grip bars at x = -12 and 14
  * (see drawPrisonerHands); with "sit" (0, 0) is the seat under them.
  */
-export function drawPrisoner(tools, skin, pose, look = 0) {
+export function drawPrisoner(tools, skin, pose, look = { x: 0, y: 0 }) {
   const { pixelRect } = tools;
   if (pose === "sit") {
     // Thighs along the bunk, shins hanging over its edge.
@@ -166,10 +166,14 @@ export const SEARCHLIGHT_BEAM = { length: 340, spread: 0.12, cell: 4 };
 /** The searchlight's colours, lit and dark. */
 export const SEARCHLIGHT_LIGHT = { beam: "#fff3be", core: "#fffdf4" };
 
+/** Where the guard at the watchtower's window looks from. */
+export const WATCHTOWER_EYES = { x: 2, y: -134 - WATCHTOWER_LIFT };
+
 /**
  * A wooden guard tower: braced legs, a walkway with a railing, and a cabin
- * with a guard at the window under a pitched roof. The legs below
- * WATCHTOWER_BODY_BOTTOM and the searchlight are drawn live.
+ * with a window under a pitched roof. The legs below WATCHTOWER_BODY_BOTTOM,
+ * the guard at the window (drawWatchtowerGuard) and the searchlight are drawn
+ * live.
  */
 export function drawWatchtower(tools) {
   const { pixelRect, pixelPath } = tools;
@@ -194,15 +198,6 @@ export function drawWatchtower(tools) {
   pixelRect(-26, -150 - WATCHTOWER_LIFT, 4, 38, WOOD.dark, 2);
   pixelRect(24, -150 - WATCHTOWER_LIFT, 2, 38, WOOD.tip, 2);
   pixelRect(-20, -144 - WATCHTOWER_LIFT, 40, 16, INK, 2);
-  // The guard watching from the window, cap and shoulders.
-  pixelRect(-4, -138 - WATCHTOWER_LIFT, 10, 10, RUBBER.base, 2);
-  pixelRect(-8, -132 - WATCHTOWER_LIFT, 18, 4, RUBBER.base, 2);
-  pixelRect(-6, -140 - WATCHTOWER_LIFT, 14, 2, RUBBER.light, 2);
-  pixelRect(2, -134 - WATCHTOWER_LIFT, 2, 2, ORANGE.light, 2);
-  // Glass glint and the sill.
-  pixelRect(12, -142 - WATCHTOWER_LIFT, 2, 4, CONCRETE.light, 2);
-  pixelRect(14, -144 - WATCHTOWER_LIFT, 2, 2, CONCRETE.light, 2);
-  pixelRect(-22, -128 - WATCHTOWER_LIFT, 44, 2, WOOD.tip, 2);
   // Roof: eaves, then two steps up to the ridge.
   pixelRect(-32, -156 - WATCHTOWER_LIFT, 64, 6, ROOF.base, 2);
   pixelRect(-32, -152 - WATCHTOWER_LIFT, 64, 2, ROOF.dark, 2);
@@ -219,6 +214,22 @@ export function drawWatchtower(tools) {
   for (const px of [-34, -12, 10, 30]) pixelRect(px, deck - 14, 4, 14, px < 0 ? WOOD.base : WOOD.light, 2);
   pixelRect(-34, deck - 16, 68, 2, WOOD.tip, 2);
   pixelRect(-34, deck - 14, 68, 2, WOOD.base, 2);
+}
+
+/**
+ * The guard watching from the watchtower's window, cap and shoulders, with
+ * the glass's glint and the sill in front. The head leans to `gaze` ({ x, y },
+ * each -1, 0 or 1; see riderGaze in drawing.js), to follow the rider.
+ */
+export function drawWatchtowerGuard({ pixelRect }, gaze = { x: 0, y: 0 }) {
+  const hx = gaze.x * 2, hy = gaze.y * 2 - WATCHTOWER_LIFT;
+  pixelRect(-8, -132 - WATCHTOWER_LIFT, 18, 4, RUBBER.base, 2);
+  pixelRect(-4 + hx, -138 + hy, 10, 10, RUBBER.base, 2);
+  pixelRect(-6 + hx, -140 + hy, 14, 2, RUBBER.light, 2);
+  pixelRect(2 + hx * 2, -134 + hy, 2, 2, ORANGE.light, 2);
+  pixelRect(12, -142 - WATCHTOWER_LIFT, 2, 4, CONCRETE.light, 2);
+  pixelRect(14, -144 - WATCHTOWER_LIFT, 2, 2, CONCRETE.light, 2);
+  pixelRect(-22, -128 - WATCHTOWER_LIFT, 44, 2, WOOD.tip, 2);
 }
 
 /**
@@ -298,6 +309,8 @@ export const CELL = { left: -34, top: -78, right: 34, bottom: -4 };
 export const CELL_BARS = [-26, -12, 14, 28];
 /** The bunk's top, where a sitting prisoner sits, and its middle. */
 export const CELL_BUNK = { x: -18, y: -22 };
+/** Where the prisoner looks from, sitting on the bunk or standing at the bars. */
+export const CELL_EYES = { sit: { x: CELL_BUNK.x + 2, y: CELL_BUNK.y - 30 }, stand: { x: 2, y: -44 } };
 /** How close the rider must be for the prisoner to come to the bars. */
 export const CELL_REACH = { x: 220, y: 160 };
 
@@ -414,7 +427,7 @@ export function drawTunnelLip({ pixelRect }) {
 }
 
 /** The prisoner's head and shoulders, the bottom of their chest at (0, 0), hands on the rim. */
-export function drawPrisonerBust(tools, skin, look = 0) {
+export function drawPrisonerBust(tools, skin, look = { x: 0, y: 0 }) {
   const { pixelRect } = tools;
   stripes(tools, -8, -14, 16, 14);
   pixelRect(-12, -6, 4, 4, skin.shade, 2);
