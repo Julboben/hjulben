@@ -120,6 +120,7 @@ The inspector on the right edits the current selection. The editor supports:
 - Drawing terrain blocks and cutting caves, entrances, and gaps into them, freehand or, holding `Alt`, as rectangles and, holding `Cmd`/`Ctrl`, as circles; `Shift` snaps to the grid
 - Drawing and cutting back walls: the Block and Cut tools have a **Layer** picker (Terrain or Back wall), the inspector switches a selected block between layers, and **Fill caves with back walls** closes off the selected block's caves
 - Dragging block points and curve handles, switching edges between straight and curved, and moving whole blocks (once selected, a block drags from anywhere inside it; `Esc` or `Cmd`/`Ctrl`+`D` deselects, and `Shift`-click adds or removes a block, point or object); holding `Shift` snaps the point or corner you hold to 15° steps and the grid
+- Reshaping only on purpose: an edge can only be dragged once its block is selected (before that, a press on it takes the whole block), a point of an unselected block only from its dot, the point or edge a press would grab is highlighted under the pointer, and `Esc` mid-drag puts everything back
 - Scaling selected blocks with the handles around them: corners keep the proportions, so a circle stays a circle, sides stretch one way, `Alt` scales from the centre and `Shift` snaps to the grid
 - Double-clicking a block edge to insert a point
 - Placing freely positioned apples, start points, props, and finish positions

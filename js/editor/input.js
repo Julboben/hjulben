@@ -12,7 +12,7 @@ import { isCurvedEdge } from "../terrain-geometry.js";
 import { updatePromptOpen } from "../update-prompt.js";
 import { typingInField } from "./clipboard.js";
 import { $, canvas } from "./dom.js";
-import { pushHistory, redo, restore, snapshot, undo } from "./history.js";
+import { pushHistory, redo, restore, snapshot, undo, updateHistoryButtons } from "./history.js";
 import { hitStack, hitTest, sameHit } from "./hit-test.js";
 import {
   endScale,
@@ -196,6 +196,74 @@ function applyRotate(event) {
 
 // An Alt press that becomes a duplicate once the mouse moves.
 let altPress = null;
+
+// The trail, selection and undo history as a drag found them, so Escape can
+// put everything back as if the drag never happened.
+let dragStart = null;
+
+function rememberDragStart(state) {
+  dragStart = { state, history: editor.history.slice(), future: editor.future.slice() };
+}
+
+/**
+ * Escape mid-drag: the trail goes back to how it was when the press began,
+ * and the drag leaves no undo step. The button is still held, but nothing
+ * follows the mouse until the next press.
+ */
+function cancelDrag() {
+  if (!dragStart || !dragging || editor.pendingShape) return false;
+  const start = dragStart;
+  resetPointerState();
+  editor.history = start.history;
+  editor.future = start.future;
+  restore(start.state);
+  updateHistoryButtons();
+  return true;
+}
+
+// Whether Alt, Cmd or Ctrl is held, which change what a press grabs, so the
+// outline under the pointer isn't highlighted.
+let hoverModifiers = false;
+let hoverFrame = null;
+
+/**
+ * Highlight the point, curve handle or edge a press would grab right now, so
+ * an outline is never reshaped by surprise. Worked out once a frame, from the
+ * last pointer position, with the same hit test a press uses.
+ */
+function updateOutlineHover(event) {
+  if (event) hoverModifiers = event.altKey || event.metaKey || event.ctrlKey;
+  hoverFrame ??= requestAnimationFrame(() => {
+    hoverFrame = null;
+    const next = outlineUnderPointer();
+    if (!next && !editor.hoverOutline) return;
+    if (sameHit(next, editor.hoverOutline)) return;
+    editor.hoverOutline = next;
+    renderView();
+  });
+}
+
+function outlineUnderPointer() {
+  if (
+    editor.tool !== "select" ||
+    editor.readOnly ||
+    hoverModifiers ||
+    dragging ||
+    panning ||
+    altPress ||
+    editor.marquee ||
+    editor.pendingShape ||
+    editor.spaceHeld ||
+    editingPreview() ||
+    !editor.pointerClient
+  )
+    return null;
+  const point = pointerWorld(editor.pointerClient);
+  // The scale and rotate handles take a press before any outline does.
+  if (rotateHandleAt(point) || scaleHandleAt(point)) return null;
+  const hit = hitTest(point);
+  return ["blockPoint", "blockHandle", "blockEdge"].includes(hit?.kind) ? hit : null;
+}
 
 // A press on a read-only trail, which would have been a drag: if it moves, the
 // author is told why nothing follows the mouse.
@@ -392,6 +460,7 @@ function resetPointerState() {
   rotatePoint = null;
   pressClient = null;
   cycleNext = null;
+  dragStart = null;
   endScale();
   endRotate();
 }
@@ -552,6 +621,7 @@ export function bindInput() {
     // Only the primary pointer (the first finger, or the mouse) edits.
     if (event.isPrimary === false) return;
     canvas.focus({ preventScroll: true });
+    editor.hoverOutline = null;
     const point = pointerWorld(event);
     if (event.button === 1 || editor.tool === "pan" || editor.spaceHeld) {
       panning = true;
@@ -604,6 +674,7 @@ export function bindInput() {
       return;
     }
     if (rotateHandleAt(point) && startRotate(point, snapshot())) {
+      rememberDragStart(snapshot());
       pressClient = { clientX: event.clientX, clientY: event.clientY };
       dragging = true;
       canvas.style.cursor = "grabbing";
@@ -612,6 +683,7 @@ export function bindInput() {
     }
     const scaleHandle = scaleHandleAt(point);
     if (scaleHandle && startScale(scaleHandle, point, snapshot())) {
+      rememberDragStart(snapshot());
       pressClient = { clientX: event.clientX, clientY: event.clientY };
       dragging = true;
       canvas.setPointerCapture(event.pointerId);
@@ -686,6 +758,7 @@ export function bindInput() {
     } else if (editor.selection) {
       pressClient = { clientX: event.clientX, clientY: event.clientY };
       dragSnapshot = snapshot();
+      rememberDragStart(dragSnapshot);
       dragOrigin = startDragOrigin(point);
       dragging = true;
       // What is really being dragged: the selection, which may be the next
@@ -716,6 +789,7 @@ export function bindInput() {
     }
     if (event.isPrimary === false || pinchEnded) return;
     editor.pointerClient = { clientX: event.clientX, clientY: event.clientY };
+    updateOutlineHover(event);
     // No button held: the release was missed, so end the drag here.
     if (
       (dragging || panning || editor.marquee || altPress || readOnlyPress || draggingPreview()) &&
@@ -794,6 +868,7 @@ export function bindInput() {
       const copy = duplicateTarget(press.hit);
       if (!copy) return;
       dragCopyable = { before, hit: press.hit, point: press.point, original, copying: true };
+      rememberDragStart(before);
       editor.selection = copy;
       dragSnapshot = before;
       dragOrigin = startDragOrigin(press.point);
@@ -891,7 +966,10 @@ export function bindInput() {
   }
 
   canvas.addEventListener("pointerup", (event) => {
-    if (releasePointer(event)) endPointer();
+    if (!releasePointer(event)) return;
+    endPointer();
+    // What a press would grab may have changed with the selection.
+    updateOutlineHover(event);
   });
 
   // A cancelled gesture discards a half-drawn shape instead of applying it.
@@ -902,8 +980,9 @@ export function bindInput() {
 
   canvas.addEventListener("pointerleave", () => {
     editor.pointerClient = null;
-    if (!editor.hoverPoint) return;
+    if (!editor.hoverPoint && !editor.hoverOutline) return;
     editor.hoverPoint = null;
+    editor.hoverOutline = null;
     renderView();
   });
 
@@ -917,9 +996,18 @@ export function bindInput() {
 
   shortcuts.addEventListener("close", () => canvas.focus({ preventScroll: true }));
 
+  // A key can change what a press would grab: a modifier, or Escape or
+  // undo changing the selection under a pointer that hasn't moved.
+  for (const type of ["keydown", "keyup"])
+    window.addEventListener(type, (event) => updateOutlineHover(event));
+
   window.addEventListener("keydown", (event) => {
     // The reload for a new release comes first; the trail is kept for it.
     if (updatePromptOpen()) return;
+    if (event.key === "Escape" && cancelDrag()) {
+      event.preventDefault();
+      return;
+    }
     // Cmd/Ctrl+P opens the quick pick in place of printing, which the editor has no use for.
     if ((event.metaKey || event.ctrlKey) && event.code === "KeyP" && !event.shiftKey && !event.altKey) {
       event.preventDefault();

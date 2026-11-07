@@ -132,6 +132,13 @@ const reported = (report, label) => {
   check('dragging without Shift is not snapped', report.plainExact === true);
   check('pressing Alt mid-drag moves a copy instead', report.altPressCopies === true);
   check('letting go of Alt drops the copy and moves the original again', report.altReleaseRestores === true);
+  check('a press on the edge of an unselected block moves the whole block', report.closedEdgeMovesBlock === true);
+  check('on a selected block it moves only that edge', report.openEdgeMovesEdge === true);
+  check('an unselected block\'s point is only grabbed on its dot', report.pointNeedsDot === true);
+  check('Escape mid-drag puts everything back without an undo step', report.escapeCancelsDrag === true);
+  check('hovering a point highlights it', report.hoverPoint === 'blockPoint', `(${report.hoverPoint})`);
+  check('an unselected block\'s edge is not highlighted', report.hoverClosedEdge === null, `(${report.hoverClosedEdge})`);
+  check('a selected block\'s edge is highlighted', report.hoverOpenEdge === 'blockEdge', `(${report.hoverOpenEdge})`);
 }
 
 // ---------------------------------------------------------------------------

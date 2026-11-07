@@ -214,6 +214,55 @@ if (kind === 'interact') {
   out.altReleaseRestores = current().terrainBlocks.length === altCount
     && altBlock().x === altFrom.x + 40 && altBlock().y === altFrom.y + 10;
   fire('pointerup');
+
+  // Outlines are only reshaped on purpose. A fresh square, away from the rest.
+  toolButton('block').click();
+  drag([2000, 100], [2200, 300], { altKey: true });
+  toolButton('select').click();
+  const square = () => current().terrainBlocks.at(-1).outer.nodes.map(node => [node.x, node.y]);
+  const top = () => Math.min(...square().map(([, y]) => y));
+  const left = () => Math.min(...square().map(([x]) => x));
+  const deselect = () => { fire('pointerdown', world(2600, 900)); fire('pointerup'); };
+  const shifted = (before, dy, moved) => square().every(([x, y], index) =>
+    x === before[index][0] && y === before[index][1] + (moved(before[index]) ? dy : 0));
+  // A press just outside an edge of a block that isn't selected takes the whole block.
+  deselect();
+  let held = square();
+  drag([2100, top() - 4], [2100, top() - 24]);
+  out.closedEdgeMovesBlock = shifted(held, -20, () => true);
+  // Once it is selected, the same press takes the edge.
+  held = square();
+  const edgeY = top();
+  drag([2100, edgeY - 4], [2100, edgeY - 24]);
+  out.openEdgeMovesEdge = shifted(held, -20, ([, y]) => y === edgeY);
+  // On a block that isn't selected, a point is only grabbed on its dot.
+  deselect();
+  held = square();
+  drag([left() + 8, top() + 6], [left() + 8, top() + 26]);
+  out.pointNeedsDot = shifted(held, 20, () => true);
+  // Escape mid-drag puts it all back and leaves no undo step.
+  const undoSteps = editorState.history.length;
+  held = square();
+  fire('pointerdown', world(left() + 100, top() + 100));
+  fire('pointermove', world(left() + 160, top() + 140));
+  key('Escape');
+  fire('pointermove', world(left() + 200, top() + 200));
+  fire('pointerup');
+  out.escapeCancelsDrag = JSON.stringify(square()) === JSON.stringify(held)
+    && editorState.history.length === undoSteps;
+  // The point or edge a press would grab is highlighted, and nothing else.
+  deselect();
+  fire('pointermove', world(left(), top()));
+  runFrames();
+  out.hoverPoint = editorState.hoverOutline?.kind;
+  fire('pointermove', world(left() + 100, top() - 4));
+  runFrames();
+  out.hoverClosedEdge = editorState.hoverOutline?.kind ?? null;
+  fire('pointerdown', world(left() + 100, top() + 100));
+  fire('pointerup');
+  fire('pointermove', world(left() + 100, top() - 4));
+  runFrames();
+  out.hoverOpenEdge = editorState.hoverOutline?.kind;
   out.errors = [];
   process.stdout.write(JSON.stringify(out));
   process.exit(0);

@@ -13,7 +13,7 @@ import { SPIKE_TIP } from "../spike.js";
 import { store } from "../local-store.js";
 import { fallLine, invalidateTerrain, terrainGeometry, updateTerrain } from "../terrain.js";
 import { terrainColumnSpans } from "../terrain-runtime.js";
-import { regionBounds } from "../terrain-geometry.js";
+import { edgeCurve, regionBounds } from "../terrain-geometry.js";
 import { finishFlower, finishHeight, surfaceBelow } from "../trail-schema.js";
 import { terrainMaterials } from "../trails.js";
 import { normalizeWater, waterColumns } from "../water.js";
@@ -741,7 +741,9 @@ export function render() {
   drawPropGlows(
     art.drawTimeTint(editor.trail, editor.cameraX, editor.cameraY, width / editor.zoom, height / editor.zoom),
   );
+  drawOutlineHover();
   drawHandles();
+  drawOutlineHoverRing();
   drawScaleFrame();
   drawRotateHandle();
   drawSnapGuide();
@@ -749,6 +751,47 @@ export function render() {
   drawSizeTag();
   drawPreviewFrame();
   ctx.restore();
+}
+
+/** The node and the edge leaving it that a hover names, or null. */
+function hoveredOutline() {
+  const hover = editor.hoverOutline;
+  const block = blocks()[hover?.blockIndex];
+  const boundary = block && boundaryEntries(block)[hover.boundaryIndex]?.boundary;
+  const node = boundary?.nodes[hover.index];
+  if (!node) return null;
+  return { hover, node, next: boundary.nodes[(hover.index + 1) % boundary.nodes.length] };
+}
+
+/** A broad glow along the edge a press would grab, under the points. */
+function drawOutlineHover() {
+  const found = hoveredOutline();
+  if (found?.hover.kind !== "blockEdge") return;
+  const { node, next } = found;
+  // A straight edge comes back as a curve with its controls on its ends.
+  const [, a, b, end] = edgeCurve(node, next);
+  ctx.beginPath();
+  ctx.moveTo(node.x, node.y);
+  ctx.bezierCurveTo(a[0], a[1], b[0], b[1], end[0], end[1]);
+  ctx.strokeStyle = "#fff3becc";
+  ctx.lineWidth = 7 / editor.zoom;
+  ctx.lineCap = "round";
+  ctx.stroke();
+  ctx.lineCap = "butt";
+}
+
+/** A ring round the point or curve handle a press would grab, over its dot. */
+function drawOutlineHoverRing() {
+  const found = hoveredOutline();
+  if (!found || found.hover.kind === "blockEdge") return;
+  const { hover, node } = found;
+  const at = hover.kind === "blockHandle" ? node[hover.side] : [node.x, node.y];
+  if (!at) return;
+  ctx.beginPath();
+  ctx.arc(at[0], at[1], 9 / editor.zoom, 0, Math.PI * 2);
+  ctx.strokeStyle = "#fff3be";
+  ctx.lineWidth = 2 / editor.zoom;
+  ctx.stroke();
 }
 
 /** The box around selected blocks, with the handles that scale them. */

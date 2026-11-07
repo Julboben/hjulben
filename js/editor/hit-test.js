@@ -30,13 +30,18 @@ import { NISSE_GROUND_LIFT } from "../nisse.js";
  * and edges lose a tie to the terrain's, and their bodies are only hit where
  * no terrain is. A selected back wall is grabbed like terrain.
  *
- * Edges are only grabbed within EDGE_REACH. Inside a selected block, the
- * block itself wins over any edge and over points away from their dots, so a
- * selected block can be dragged from anywhere inside it. `preferEdges` turns
- * that off, for a double-click that adds a point to an edge.
+ * Edges are only grabbed within EDGE_REACH, and only on a block whose outline
+ * is being worked on (see outlineOpen): on any other block a press on its
+ * edge takes the whole block, so a sloppy click can't reshape something that
+ * was only meant to be picked up. Points are drawn on every block, so they
+ * can always be grabbed, but on a block that isn't open only on their dots.
+ * Inside a selected block, the block itself wins over any edge and over
+ * points away from their dots, so a selected block can be dragged from
+ * anywhere inside it. `preferEdges` turns all of that off, for a double-click
+ * that adds a point to an edge.
  */
 export function hitTest(point, { wholeBoundary = false, preferEdges = false } = {}) {
-  const hits = collectHits(point, wholeBoundary);
+  const hits = collectHits(point, wholeBoundary, preferEdges);
   // A lower rank wins outright; within a rank the nearer one, then the first.
   let best = null;
   for (const hit of hits)
@@ -90,21 +95,39 @@ export function sameHit(a, b) {
   );
 }
 
+/**
+ * Is this block's outline being worked on: the block, or a point, edge, curve
+ * handle or ring of it, is selected? Only then can its edges be grabbed.
+ */
+export function outlineOpen(blockIndex) {
+  const selection = editor.selection;
+  if (!selection) return false;
+  if (selection.kind === "items")
+    return selection.items.some(
+      (item) => (item.type === "block" ? item.index : item.blockIndex) === blockIndex &&
+        (item.type === "block" || item.type === "point"),
+    );
+  if (selection.kind === "block") return blockSelected(blockIndex);
+  return selection.blockIndex === blockIndex;
+}
+
 /** Everything grabbable near a point, with its distance and priority rank. */
-function collectHits(point, wholeBoundary) {
+function collectHits(point, wholeBoundary, preferEdges = false) {
   syncTerrain();
   const threshold = HIT_REACH / editor.zoom;
+  const dotReach = DOT_REACH / editor.zoom;
   const edgeReach = EDGE_REACH / editor.zoom;
   const hits = [];
-  const consider = (value, x, y, rank) => {
+  const consider = (value, x, y, rank, reach = threshold) => {
     if (isHitLocked(value)) return;
     const distance = Math.hypot(point.x - x, point.y - y);
-    if (distance <= threshold) hits.push({ selection: value, distance, rank });
+    if (distance <= reach) hits.push({ selection: value, distance, rank });
   };
 
   for (const [blockIndex, block] of blocks().entries()) {
     if (isBlockLocked(blockIndex)) continue;
     const behind = isBackWall(block) && !blockSelected(blockIndex) ? 0.5 : 0;
+    const open = preferEdges || outlineOpen(blockIndex);
     boundaryEntries(block).forEach(
       ({ boundary }, boundaryIndex) => {
         boundary.nodes.forEach((node, index) => {
@@ -132,12 +155,25 @@ function collectHits(point, wholeBoundary) {
                 );
             }
           }
-          consider({ ...base, kind: "blockPoint" }, node.x, node.y, 1 + behind);
+          consider(
+            { ...base, kind: "blockPoint" },
+            node.x,
+            node.y,
+            1 + behind,
+            open ? threshold : dotReach,
+          );
           // The edge leaving this node, so a double-click can insert into it.
+          // On a closed outline the edge stands for the block, so a press
+          // just outside the block still takes it.
           const next = boundary.nodes[(index + 1) % boundary.nodes.length];
           const hit = edgeHit(node, next, point);
           if (hit.distance <= edgeReach)
-            consider({ ...base, kind: "blockEdge", t: hit.t }, hit.x, hit.y, 2 + behind);
+            consider(
+              open ? { ...base, kind: "blockEdge", t: hit.t } : { kind: "block", blockIndex },
+              hit.x,
+              hit.y,
+              2 + behind,
+            );
         });
       },
     );

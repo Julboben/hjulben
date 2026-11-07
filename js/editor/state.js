@@ -45,6 +45,8 @@ export const editor = {
   // The Select tool's selection box while it is being dragged.
   marquee: null,
   hoverPoint: null,
+  // The point, curve handle or edge a press would grab, highlighted.
+  hoverOutline: null,
   // The editor opens on the start, placed a little below the middle so the
   // ground and the sky above it are both in view.
   focusPending: true,
