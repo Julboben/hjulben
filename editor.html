@@ -525,8 +525,8 @@
                         ><strong id="selection-title">NOTHING SELECTED</strong>
                     </div>
                     <p class="tool-hint" id="selection-empty">
-                        Select an object on the canvas to edit it. Trail-wide
-                        settings are in the TRAIL tab.
+                        Select something to edit it. Trail settings are in
+                        TRAIL.
                     </p>
                     <ul
                         class="selection-issues"
@@ -758,11 +758,11 @@
                                     autocomplete="off"
                             /></label>
                             <label id="selection-layer-row" hidden
-                                >Prop layer
+                                >Position
                                 <select id="selection-layer">
                                     <option value="" hidden>Mixed</option>
-                                    <option value="back">Back</option>
-                                    <option value="front">Front</option>
+                                    <option value="back">Behind terrain</option>
+                                    <option value="front">In front of rider</option>
                                 </select></label
                             >
                             <label id="selection-flip-row" hidden
@@ -799,7 +799,7 @@
                                     step="1"
                             /></label>
                             <label id="selection-spin-row" hidden
-                                >Spin (turns/s, negative = counter-clockwise)
+                                >Spin (turns/s, − for ↺)
                                 <input
                                     id="selection-spin"
                                     type="number"
@@ -831,10 +831,7 @@
                                 id="selection-nisse-hint"
                                 hidden
                             >
-                                The trail's hidden nisse. Riders don't need it
-                                to finish and nothing points to it, so put it
-                                off the main line, where it takes some skill
-                                to reach.
+                                Optional. Hide it off the main line.
                             </p>
                             <button class="danger" id="delete-selection">
                                 DELETE SELECTION
@@ -1021,7 +1018,7 @@
                     <h3>EDIT</h3>
                     <dl>
                         <dt>Drag</dt>
-                        <dd>Move the selection</dd>
+                        <dd>Move the selection; a selected block drags from anywhere inside it</dd>
                         <dt><kbd>←</kbd> <kbd>→</kbd> <kbd>↑</kbd> <kbd>↓</kbd></dt>
                         <dd>Nudge; <kbd>Shift</kbd> for ×10</dd>
                         <dt><kbd>Shift</kbd> drag</dt>
@@ -1067,7 +1064,9 @@
                         <dt><kbd>⌘/Ctrl</kbd></dt>
                         <dd>Circle</dd>
                         <dt><kbd>Shift</kbd></dt>
-                        <dd>Snap to the grid</dd>
+                        <dd>Snap to the grid; all three switch mid-drag</dd>
+                        <dt>Cut</dt>
+                        <dd>Cuts only the chosen layer: the selected block, or else the topmost one it touches</dd>
                     </dl>
                 </section>
                 <section>

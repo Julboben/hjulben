@@ -2,9 +2,8 @@
 // their handle sits. A body is grabbed and moved by the middle of its surface.
 import { WATER_SIZE, WATER_WIPEOUT_DEPTH, deepWater } from "../water.js";
 import { editor, waters } from "./state.js";
-import { toolSettings } from "./tools.js";
 
-/** Screen pixels a Water drag must cover to draw a body rather than click one in. */
+/** Screen pixels a Water drag must cover to draw a body rather than count as a click. */
 const CLICK_SIZE = 6;
 
 /** The handle of a body: the middle of its surface. */
@@ -28,33 +27,28 @@ export function waterSize(value, key) {
 }
 
 /**
- * Add a body from a finished Water drag: the dragged rectangle, or for a
- * click, a body of the tool's size whose surface is centred on the click.
- * Selects the new body.
+ * Add a body from a finished Water drag, the dragged rectangle, and select
+ * it. A click adds nothing, so it returns null.
  */
 export function commitWater(shape) {
   const [sx, sy] = shape.points[0];
   const [ex, ey] = shape.points[2];
-  const clicked =
+  if (
     Math.abs(ex - sx) * editor.zoom < CLICK_SIZE &&
-    Math.abs(ey - sy) * editor.zoom < CLICK_SIZE;
-  const width = clicked
-    ? waterSize(toolSettings.water.width, "width")
-    : waterSize(Math.abs(ex - sx), "width");
-  const depth = clicked
-    ? waterSize(toolSettings.water.depth, "depth")
-    : waterSize(Math.abs(ey - sy), "depth");
-  const body = clicked
-    ? { x: tidy(sx - width / 2), y: tidy(sy), width, depth }
-    : { x: tidy(Math.min(sx, ex)), y: tidy(Math.min(sy, ey)), width, depth };
+    Math.abs(ey - sy) * editor.zoom < CLICK_SIZE
+  )
+    return null;
+  const width = waterSize(Math.abs(ex - sx), "width");
+  const depth = waterSize(Math.abs(ey - sy), "depth");
+  const body = { x: tidy(Math.min(sx, ex)), y: tidy(Math.min(sy, ey)), width, depth };
   waters().push(body);
   editor.selection = { kind: "water", index: waters().length - 1 };
   return body;
 }
 
-/** What a body of this depth does to a rider, for the inspector and tool panel. */
+/** What a body of this depth does to a rider, for the inspector. */
 export function waterDepthHint(depth) {
   return deepWater(depth)
-    ? `Deep: deeper than ${WATER_WIPEOUT_DEPTH}, so riding in wipes the rider out and leaves them floating.`
-    : `Shallow: up to ${WATER_WIPEOUT_DEPTH} deep, a ford the bike can ride through, slowed down.`;
+    ? `Deep (over ${WATER_WIPEOUT_DEPTH}): wipes the rider out.`
+    : `Shallow (up to ${WATER_WIPEOUT_DEPTH}): the bike rides through, slowed.`;
 }

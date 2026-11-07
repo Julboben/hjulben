@@ -230,13 +230,14 @@ const reported = (report, label) => {
   check('a Water drag draws the dragged rectangle', same(report.drawn, { x: 1000, y: 200, width: 200, depth: 60 }), `(${JSON.stringify(report.drawn)})`);
   check('the new body is selected', report.drawnSelected === true);
   check('the inspector shows its depth', report.depthRowShown === true);
-  check('a Water click drops a default body centred on the click', same(report.clicked, { x: 280, y: 250, width: 240, depth: 32 }), `(${JSON.stringify(report.clicked)})`);
+  check('a Water click adds no body', report.afterClick === 1, `(${report.afterClick})`);
   check('a body is dragged by the middle of its surface', report.moved?.x === 1050 && report.moved?.y === 180, `(${JSON.stringify(report.moved)})`);
   check('clicking open water selects the body', report.clickSelects === true);
   check('changing the depth keeps the surface', report.deepened?.depth === 120 && report.deepened?.y === 250, `(${JSON.stringify(report.deepened)})`);
   check('the hint says deep water wipes the rider out', /wipes the rider out/.test(report.deepHint || ''), `("${report.deepHint}")`);
   check('Delete removes the body and undo brings it back', report.afterDelete === 1 && report.afterUndo === 2, `(${report.afterDelete}, ${report.afterUndo})`);
   check('water editing raises no errors', report.errors.length === 0);
+  check('a shortcut works after a tool button is clicked', report.toolAfterButton === 'cut', `(${report.toolAfterButton})`);
 }
 
 // ---------------------------------------------------------------------------

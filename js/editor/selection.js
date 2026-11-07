@@ -541,7 +541,7 @@ function removesLastTerrain(indices) {
 function refuseLastTerrain() {
   showStatus(
     "warning",
-    "A trail needs at least one terrain block, so the last one can't be deleted. Draw another block first.",
+    "A trail needs at least one terrain block.",
   );
 }
 
@@ -581,7 +581,7 @@ export function deleteSelection() {
     if (boundary.nodes.length <= 3) {
       showStatus(
         "warning",
-        "A ring needs at least three points. Delete the whole ring instead (Alt-click it).",
+        "A ring needs at least three points. Alt-click to select the whole ring.",
       );
       return;
     }

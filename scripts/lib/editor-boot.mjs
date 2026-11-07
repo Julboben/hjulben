@@ -301,9 +301,10 @@ if (kind === 'water') {
   out.drawn = water()[0];
   out.drawnSelected = /WATER/i.test(document.getElementById('selection-title').textContent);
   out.depthRowShown = document.getElementById('selection-water-depth-row').hidden === false;
-  // A click drops a body of the tool's size, its surface centred on the click.
+  // A click adds nothing: water is always drawn.
   drag([400, 250], [400, 250]);
-  out.clicked = water()[1];
+  out.afterClick = water().length;
+  drag([280, 250], [520, 282]);
   // Its handle is the middle of the surface, so Select drags it from there.
   toolButton('select').click();
   drag([1100, 200], [1150, 180]);
@@ -321,6 +322,11 @@ if (kind === 'water') {
   out.afterDelete = water().length;
   document.getElementById('undo').click();
   out.afterUndo = water().length;
+  // A tool picked with its button keeps focus there, and the shortcuts still answer.
+  toolButton('select').click();
+  document.activeElement = toolButton('select');
+  for (const handler of windowListeners.get('keydown') || []) handler({ key: 'c', code: 'KeyC', preventDefault() {} });
+  out.toolAfterButton = editorState.tool;
   process.stdout.write(JSON.stringify(out));
   process.exit(0);
 }

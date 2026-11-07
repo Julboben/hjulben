@@ -1,7 +1,6 @@
 // Tool definitions, keyboard letters, and the per-tool settings panel.
 import { store } from "../local-store.js";
 import { SPIKE_RADIUS } from "../trail-schema.js";
-import { WATER_SIZE, WATER_WIPEOUT_DEPTH } from "../water.js";
 import { terrainMaterials } from "../trails.js";
 import { $, canvas } from "./dom.js";
 import { renderObjects } from "./objects.js";
@@ -43,15 +42,15 @@ const LAYER_FIELD = {
 export const TOOL_INFO = {
   select: {
     title: "Select",
-    hint: "Click a block, a point on its edge, or an object to select it, and drag to move it; a selected block drags from anywhere inside it, and Esc or Cmd/Ctrl+D deselects. Where points and objects overlap, click again to select the next one. Hold Shift to snap the point or corner you hold to 15° and the grid. A selected point shows its curve handles. Drag from empty space to box-select, and Shift-click to add or remove a block, point or object. Alt-click selects a whole ring or cave. Empty cave space selects nothing, so a cave never picks the block around it. The square handles around selected blocks scale them: corners keep the shape, sides stretch it, and Alt scales from the centre. The round handle above them rotates the selection, Shift snaps it to 15°, and R or Shift+R turns it 15° at a time. Press ? for every shortcut.",
+    hint: "Click to select, drag to move. Press ? for all shortcuts.",
   },
   pan: {
     title: "Pan",
-    hint: "Drag to move the view. Hold Space or use the middle mouse button to pan with any tool.",
+    hint: "Drag to move the view.",
   },
   block: {
     title: "Block",
-    hint: "Drag an outline to draw a new block in that shape: solid terrain, or a back wall, which is scenery behind the terrain that keeps a cave dark. Hold Alt for a rectangle, Cmd/Ctrl for a circle and Shift to snap to the grid; all can be switched mid-drag. It can be drawn anywhere, including inside another block's cave. The tool stays active; Esc returns to Select.",
+    hint: "Drag an outline to draw a block.",
     fields: [
       {
         key: "material",
@@ -66,12 +65,12 @@ export const TOOL_INFO = {
   },
   cut: {
     title: "Cut",
-    hint: "Drag an outline over a block to remove that shape from it. Hold Alt for a rectangle, Cmd/Ctrl for a circle and Shift to snap to the grid. Inside solid terrain it makes a cave, across an edge it opens an entrance, and all the way through it splits the block in two. It only cuts blocks on the chosen layer: the selected block, or else the topmost one it touches. The tool stays active; Esc returns to Select.",
+    hint: "Drag an outline over a block to cut a cave or a hole.",
     fields: [LAYER_FIELD],
   },
   apple: {
     title: "Apple",
-    hint: "Click to place an apple exactly where you click. Every apple must be collected to finish. Switch Place to Nisse to hide the trail's one optional nisse instead: riders don't need it to finish, and placing it again moves it. The tool stays active; Esc returns to Select.",
+    hint: "Click to place. Riders must collect every apple to finish. The nisse is optional.",
     fields: [
       {
         key: "kind",
@@ -86,7 +85,7 @@ export const TOOL_INFO = {
   },
   spike: {
     title: "Spike",
-    hint: "Click to place a spinning spike. Touching it with the wheels or rider is fatal. The tool stays active; Esc returns to Select.",
+    hint: "Click to place a spike. Touching it kills the rider.",
     fields: [
       {
         key: "radius",
@@ -98,7 +97,7 @@ export const TOOL_INFO = {
       },
       {
         key: "spin",
-        label: "Spin (turns/s, negative = counter-clockwise)",
+        label: "Spin (turns/s, − for ↺)",
         type: "number",
         step: 0.1,
       },
@@ -106,27 +105,11 @@ export const TOOL_INFO = {
   },
   water: {
     title: "Water",
-    hint: `Drag a rectangle to fill it with water, or click to drop a body of the size below with its surface where you click. Water fills the open air inside the rectangle and terrain stays dry, so a rectangle drawn over a pit fills the pit. Up to ${WATER_WIPEOUT_DEPTH} deep is a ford the bike rides through, slowed down; deeper water wipes the rider out and leaves them floating. Hold Shift to snap to the grid. Select a body to resize it with its handles or set its width and depth. The tool stays active; Esc returns to Select.`,
-    fields: [
-      {
-        key: "width",
-        label: "Width",
-        type: "number",
-        min: WATER_SIZE.minWidth,
-        step: 1,
-      },
-      {
-        key: "depth",
-        label: `Depth (over ${WATER_WIPEOUT_DEPTH} wipes out)`,
-        type: "number",
-        min: WATER_SIZE.minDepth,
-        step: 1,
-      },
-    ],
+    hint: "Drag a rectangle to add water.",
   },
   prop: {
     title: "Prop",
-    hint: "Click to place decorative scenery. Props do not collide. X flips the next prop and R or Shift+R turns it 15°. The tool stays active; Esc returns to Select.",
+    hint: "Click to place scenery. Props don't collide.",
     fields: [
       {
         key: "type",
@@ -137,11 +120,11 @@ export const TOOL_INFO = {
       },
       {
         key: "layer",
-        label: "Layer",
+        label: "Position",
         type: "select",
         options: () => [
-          ["back", "Back"],
-          ["front", "Front"],
+          ["back", "Behind terrain"],
+          ["front", "In front of rider"],
         ],
       },
       {
@@ -165,7 +148,7 @@ export const TOOL_INFO = {
   },
   start: {
     title: "Start",
-    hint: "Click to move the start position. A trail always has exactly one start.",
+    hint: "Click to move the start.",
     fields: [
       {
         key: "facing",
@@ -180,7 +163,7 @@ export const TOOL_INFO = {
   },
   finish: {
     title: "Finish",
-    hint: "Click to move the finish onto the floor under where you click, then drag it up or down to float it in the air. The run ends when the bike touches the flower.",
+    hint: "Click to place the finish, then drag it up or down.",
   },
 };
 
@@ -190,7 +173,6 @@ const DEFAULT_TOOL_SETTINGS = {
   cut: { layer: "terrain" },
   apple: { kind: "apple" },
   spike: { radius: SPIKE_RADIUS.default, spin: 1 },
-  water: { width: WATER_SIZE.width, depth: WATER_SIZE.depth },
   prop: { type: "tree", layer: "back", flip: false, rotation: 0 },
   start: { facing: "1" },
 };
@@ -244,10 +226,6 @@ export async function resolveToolKeyLabels() {
 
 // Tools that place a new object where you click, and show a preview of it.
 export const PLACING_TOOLS = new Set(["apple", "spike", "prop"]);
-
-// Tools that show a preview under the cursor: the placing tools, and Water,
-// whose click drops a body of the tool's size.
-export const PREVIEW_TOOLS = new Set([...PLACING_TOOLS, "water"]);
 
 export const toolSettings = (() => {
   try {

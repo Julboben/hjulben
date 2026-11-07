@@ -111,7 +111,7 @@ Each trail requires collecting every apple before the finish gate will open. Com
 
 Open the visual editor from **Trail Editor** on the main dashboard or navigate directly to `editor.html`. The left column has two tabs:
 
-- **Tools**: tools grouped into Navigate, Terrain, Objects, and Course. Picking a tool shows its settings (for example block material, spike radius and spin, water width and depth, or prop type) before anything is placed. New objects use those settings, which are remembered between sessions. `V` or `Escape` selects, and `H` pans.
+- **Tools**: tools grouped into Navigate, Terrain, Objects, and Course. Picking a tool shows its settings (for example block material, spike radius and spin, or prop type) before anything is placed. New objects use those settings, which are remembered between sessions. `V` or `Escape` selects, and `H` pans.
 - **Trail**: trail name, finish and fall positions, and weather.
 
 The inspector on the right edits the current selection. The editor supports:
@@ -125,7 +125,7 @@ The inspector on the right edits the current selection. The editor supports:
 - Placing freely positioned apples, start points, props, and finish positions
 - Moving or removing props and changing their type and foreground/background layer
 - Placing spinning spike hazards and editing their radius and spin speed
-- Drawing water bodies with the **Water** tool (`W`): drag a rectangle, or click to drop one of the tool's size. Drag a body by the middle of its surface, resize it with the scale handles, and set its width and depth in the inspector, which says whether it is a rideable ford or deep enough to wipe the rider out
+- Drawing water bodies with the **Water** tool (`W`): drag a rectangle. Drag a body by the middle of its surface, resize it with the scale handles, and set its width and depth in the inspector, which says whether it is a rideable ford or deep enough to wipe the rider out
 - Choosing the start position and left/right facing direction
 - Selecting the base and per-block materials
 - Setting the time of day by the hour, with Morning, Noon, Evening and Night help points, and the backdrop

@@ -311,7 +311,7 @@ water: [
 - After a crash the ragdoll floats: buoyancy lifts it to rest at the surface while the water damps its motion. The bike sinks.
 - Riding or falling in splashes, and moving through water leaves a wake.
 
-Use the editor's **Water** tool (`W`): drag a rectangle, or click to drop a body of the tool's size with its surface at the click. Drag a body by the middle of its surface, or click open water to select it. The inspector edits width (keeping the body centred) and depth (keeping the surface), and says whether the body is a ford or deep. The editor warns when water covers the start, or lies entirely inside terrain.
+Use the editor's **Water** tool (`W`): drag a rectangle. Drag a body by the middle of its surface, or click open water to select it. The inspector edits width (keeping the body centred) and depth (keeping the surface), and says whether the body is a ford or deep. The editor warns when water covers the start, or lies entirely inside terrain.
 
 Trails without water may leave the field out. Water is part of the trail hash only when a trail has some.
 

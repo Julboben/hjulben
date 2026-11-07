@@ -1,12 +1,12 @@
 {
-  "name": "Skill map",
+  "name": "Skill testing",
   "finish": {
     "x": 1291.1108688207803,
     "y": 284.1680521865803
   },
   "description": "",
   "start": {
-    "x": 532.3401924495201,
+    "x": 562.3401924495201,
     "y": 308,
     "facing": 1
   },
@@ -27,26 +27,8 @@
             "edge": "straight"
           },
           {
-            "id": "n15u",
-            "x": 750,
-            "y": 320,
-            "mode": "corner",
-            "in": null,
-            "out": null,
-            "edge": "straight"
-          },
-          {
-            "id": "n141",
-            "x": 803.331,
-            "y": 300,
-            "mode": "corner",
-            "in": null,
-            "out": null,
-            "edge": "straight"
-          },
-          {
             "id": "nzi",
-            "x": 803.331,
+            "x": 850,
             "y": 320,
             "mode": "corner",
             "in": null,
@@ -202,6 +184,52 @@
         ]
       },
       "inner": []
+    },
+    {
+      "id": "b1od",
+      "material": "wood",
+      "outer": {
+        "id": "b1oc",
+        "nodes": [
+          {
+            "id": "n1o8",
+            "x": 824.7031,
+            "y": 294.1232,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n1o9",
+            "x": 849.7031,
+            "y": 294.1232,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n1oa",
+            "x": 849.7031,
+            "y": 319.1232,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n1ob",
+            "x": 749.7031,
+            "y": 319.1232,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
     }
   ],
   "apples": [
@@ -227,5 +255,9 @@
     "wind": 0.25,
     "windDirection": "left"
   },
-  "timeOfDay": 12
+  "timeOfDay": 12,
+  "preview": {
+    "x": 1048,
+    "y": 260
+  }
 }

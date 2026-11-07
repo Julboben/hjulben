@@ -59,7 +59,7 @@ import {
 import { gridSpacing, snapToAngleAndGrid } from "./snap.js";
 import { clampZoom, editor } from "./state.js";
 import { refuseEdit, refuseReadOnly, showStatus } from "./status.js";
-import { PREVIEW_TOOLS, TOOL_KEYS, setTool, toolSettings } from "./tools.js";
+import { PLACING_TOOLS, TOOL_KEYS, setTool, toolSettings } from "./tools.js";
 import { groupLabel, isGroupLocked, toolGroup } from "./locks.js";
 import { commitWater } from "./water.js";
 import {
@@ -411,8 +411,8 @@ export const endPointer = () => {
     // cut neither leaves an empty step nor clears the redo history.
     const before = snapshot();
     if (kind === "water") {
-      commitWater(shape);
-      pushHistory(before);
+      if (commitWater(shape)) pushHistory(before);
+      else showStatus("warning", "Drag a rectangle to add water.");
     } else if (
       commitShape(kind, shape.points, shape.closed, shape.alt, shape.circleShape)
     )
@@ -471,6 +471,18 @@ export function cancelPendingShape() {
 }
 
 const shortcuts = /** @type {HTMLDialogElement} */ ($("shortcuts"));
+
+/**
+ * Whether the canvas shortcuts should answer a key. Besides the canvas itself,
+ * that is after a click on one of the editor's buttons, such as a tool or a
+ * tab, which keeps focus and would otherwise swallow V, C and the rest. Text
+ * fields, selects and open dialogs and menus keep their keys.
+ */
+function shortcutsReach() {
+  const active = document.activeElement;
+  if (!active || active === canvas || active === document.body) return true;
+  return active.tagName === "BUTTON" && !active.closest("dialog, [role=menu]");
+}
 
 export function bindInput() {
   canvas.addEventListener(
@@ -727,7 +739,7 @@ export function bindInput() {
     }
     // The frame is all a press does while editing the preview.
     if (editingPreview()) return;
-    if (PREVIEW_TOOLS.has(editor.tool) && !dragging) {
+    if (PLACING_TOOLS.has(editor.tool) && !dragging) {
       editor.hoverPoint = pointerWorld(event);
       renderView();
     }
@@ -992,7 +1004,7 @@ export function bindInput() {
 
     if (
       (event.key === "Delete" || event.key === "Backspace") &&
-      document.activeElement === canvas
+      shortcutsReach()
     ) {
       event.preventDefault();
       deleteSelection();
@@ -1003,7 +1015,7 @@ export function bindInput() {
       editor.spaceHeld = true;
     }
     if (
-      document.activeElement !== canvas ||
+      !shortcutsReach() ||
       event.metaKey ||
       event.ctrlKey ||
       event.altKey

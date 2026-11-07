@@ -201,6 +201,15 @@ $("game-art").addEventListener("click", () => {
   canvas.focus({ preventScroll: true });
 });
 
+// A dropdown keeps focus once a choice is made and would take the next key,
+// so C picks a material starting with C instead of the Cut tool. Hand focus
+// back, as the buttons do. Dialogs keep theirs.
+document.addEventListener("change", (event) => {
+  const target = /** @type {HTMLElement} */ (event.target);
+  if (target.tagName === "SELECT" && !target.closest("dialog"))
+    canvas.focus({ preventScroll: true });
+});
+
 $("save-draft").addEventListener("click", saveDraft);
 
 $("export-json").addEventListener("click", () => {
@@ -227,7 +236,7 @@ $("share-trail").addEventListener("click", async () => {
   if (bytes > MAX_JSON_BYTES) {
     showStatus(
       "error",
-      `This trail is too big to share as a link (${(bytes / (1 << 20)).toFixed(1)} MiB of JSON, the limit is ${MAX_JSON_BYTES >> 20} MiB). Share the exported JSON file instead.`,
+      `Too big to share as a link (${(bytes / (1 << 20)).toFixed(1)} of ${MAX_JSON_BYTES >> 20} MiB). Share the exported file instead.`,
     );
     return;
   }
@@ -250,9 +259,9 @@ $("share-trail").addEventListener("click", async () => {
   if (url.length > DISCORD_LINK_LENGTH) {
     showStatus(
       "info",
-      `Share link copied · ${length} characters is too long for a Discord message, so post it somewhere else, or share the exported JSON file`,
+      `Share link copied, but at ${length} characters it's too long for Discord.`,
     );
-  } else showStatus("info", `Share link copied (${length} characters). Opening it plays the trail and saves it under Custom Trails.`);
+  } else showStatus("info", "Share link copied.");
 });
 
 $("import-json").addEventListener("click", () => {

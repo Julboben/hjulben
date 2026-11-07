@@ -34,7 +34,7 @@ import { rotateHandle, rotationAngle } from "./rotate.js";
 import { gridSpacing } from "./snap.js";
 import { editor, waters } from "./state.js";
 import { PLACING_TOOLS, placingNisse, toolSettings } from "./tools.js";
-import { waterHandle, waterSize } from "./water.js";
+import { waterHandle } from "./water.js";
 import { viewportSize } from "./view.js";
 
 export const GAME_ART_KEY = "hjulben-editor-game-art-v1";
@@ -866,21 +866,6 @@ function drawSizeTag() {
 function drawPlacementPreview() {
   if (!editor.hoverPoint) return;
   const { x, y } = editor.hoverPoint;
-  if (editor.tool === "water" && !editor.pendingShape) {
-    // What a click drops: a body of the tool's size, its surface centred here.
-    const width = waterSize(toolSettings.water.width, "width");
-    const depth = waterSize(toolSettings.water.depth, "depth");
-    ctx.save();
-    ctx.globalAlpha = 0.6;
-    ctx.strokeStyle = "#8fd6e8";
-    ctx.fillStyle = "#3f9fc433";
-    ctx.lineWidth = 1.5 / editor.zoom;
-    ctx.setLineDash([6 / editor.zoom, 4 / editor.zoom]);
-    ctx.fillRect(x - width / 2, y, width, depth);
-    ctx.strokeRect(x - width / 2, y, width, depth);
-    ctx.restore();
-    return;
-  }
   if (!PLACING_TOOLS.has(editor.tool)) return;
   if (editor.tool === "prop") {
     const prop = {

@@ -244,7 +244,7 @@ function copyToClipboard(event, cut) {
   if (!payload) {
     showStatus(
       "warning",
-      "Nothing to copy. Select blocks, apples, props, spikes or water; points, the start and the finish can't be copied.",
+      "Nothing to copy: points, the start and the finish can't be copied.",
     );
     return;
   }
