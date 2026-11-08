@@ -156,7 +156,7 @@ fieldset:disabled :is(input, select, textarea, button) { opacity: .55; cursor: n
 .canvas-help { position: absolute; left: 12px; bottom: 12px; padding: 7px 9px; background: #142126d9; color: var(--color-text-soft); font-size: var(--text-xs); pointer-events: none; }
 /* The mini map takes the bottom-right corner, and the help keeps clear of it. */
 .minimap { position: absolute; right: 12px; bottom: 12px; z-index: 1; display: block; border: 1px solid var(--color-border); background: #142126d9; cursor: pointer; touch-action: none; }
-.canvas-wrap:has(> .minimap:not([hidden])) .canvas-help { max-width: calc(100% - 268px); }
+.canvas-wrap:has(> .minimap:not([hidden])) .canvas-help { max-width: calc(100% - var(--minimap-width, 220px) - 48px); }
 .panel-head { margin-bottom: 14px; display: flex; flex-direction: column; gap: 4px; }
 .panel-head span, .inspector legend { color: var(--color-text-muted); font-size: var(--text-xs); font-weight: var(--weight-heavy); letter-spacing: 1.5px; }
 .panel-head strong { font-size: 18px; }

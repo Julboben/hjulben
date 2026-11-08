@@ -242,6 +242,8 @@ export function installGlobals() {
   set('ImageData', class { constructor(data, width, height) { Object.assign(this, { data, width, height }); } });
   set('Image', class { set src(value) {} });
   set('HTMLElement', Element);
+  // No stylesheets here, so every CSS token reads as unset.
+  set('getComputedStyle', () => ({ getPropertyValue: () => '' }));
   return {
     ids,
     /** True when the element already exists, so its markup state is preserved. */

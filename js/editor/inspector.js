@@ -77,6 +77,7 @@ import { saveToolSettings, toolSettings } from "./tools.js";
 import { moveWaterTo, waterDepthHint, waterHandle, waterSize } from "./water.js";
 import { NISSE_GROUND_LIFT } from "../nisse.js";
 import { syncPreviewControls } from "./preview.js";
+import { setMinimapIssues } from "./minimap.js";
 
 export function selectedPosition() {
   if (!editor.selection) return null;
@@ -419,6 +420,7 @@ function syncDetails() {
     }),
   );
   updateValidationBadge(messages);
+  setMinimapIssues(messages);
   syncSelectionIssues(messages);
 }
 
