@@ -2,6 +2,7 @@
 // controls, and draws the first frame.
 // First, so it listens for a new release while the trails load.
 import { setUpdatePrompt } from "../update-prompt.js";
+import { bindMinimap } from "./minimap.js";
 import { store } from "../local-store.js";
 import {
   cloneTrail,
@@ -174,6 +175,7 @@ $("zoom-in").addEventListener("click", () => zoomAtCenter(1.2));
 $("zoom-out").addEventListener("click", () => zoomAtCenter(1 / 1.2));
 
 bindInput();
+bindMinimap();
 
 bindInspector();
 

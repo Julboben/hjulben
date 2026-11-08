@@ -58,6 +58,17 @@ import {
 } from "./selection.js";
 import { gridSpacing, snapToAngleAndGrid } from "./snap.js";
 import { mirrorSelection, orderSelection } from "./arrange.js";
+import { toggleMinimap } from "./minimap.js";
+import {
+  enterGroup,
+  groupOf,
+  groupSelection,
+  insideGroup,
+  leaveGroup,
+  selectionForHit,
+  ungroupSelection,
+  withWholeGroups,
+} from "./groups.js";
 import { clampZoom, editor } from "./state.js";
 import { refuseEdit, refuseReadOnly, showStatus } from "./status.js";
 import { PLACING_TOOLS, TOOL_KEYS, setTool, toolSettings } from "./tools.js";
@@ -728,12 +739,15 @@ export function bindInput() {
         ? { type: "block", index: hit.blockIndex }
         : hitItem;
     if (event.shiftKey && toggled) {
-      // Shift-click adds a block, point, apple, prop or spike, or takes it back out.
+      // Shift-click adds a block, point, apple, prop or spike, or takes it
+      // back out; a member of a named group brings or takes its whole group.
       const items = selectionItems();
-      const at = items.findIndex((item) => sameItem(item, toggled));
-      if (at >= 0) items.splice(at, 1);
-      else items.push(toggled);
-      editor.selection = makeSelection(items);
+      const group = withWholeGroups([toggled]);
+      if (items.some((item) => sameItem(item, toggled)))
+        editor.selection = makeSelection(
+          items.filter((item) => !group.some((member) => sameItem(member, item))),
+        );
+      else editor.selection = makeSelection([...items, ...group]);
       syncInspector();
       render();
       return;
@@ -745,9 +759,9 @@ export function bindInput() {
     if (stack.length > 1 && current >= 0) {
       cycleNext = stack[(current + 1) % stack.length];
     } else if (!(hitItem && inGroup(hitItem))) {
-      // Pressing something that's part of the group drags the whole group;
-      // anything else selects what was hit.
-      editor.selection = hit;
+      // Pressing something that's part of the selection drags all of it;
+      // anything else selects what was hit, or the named group it is in.
+      editor.selection = selectionForHit(hit);
       if (stack.length > 1 && sameHit(stack[0], hit))
         showStatus("info", `${stack.length} things here. Click again to select the next one.`);
     }
@@ -937,6 +951,13 @@ export function bindInput() {
     if (editor.tool !== "select") return;
     const point = pointerWorld(event);
     const hit = hitTest(point, { preferEdges: true });
+    // A double-click on a group goes into it, selecting the part clicked.
+    if (hit && groupOf(hit) && !insideGroup(groupOf(hit))) {
+      enterGroup(hit);
+      syncInspector();
+      render();
+      return;
+    }
     // A double-click on an edge adds a point to it, keeping the edge's shape.
     if (hit?.kind === "blockEdge") {
       if (refuseEdit()) return;
@@ -1098,6 +1119,14 @@ export function bindInput() {
       return;
     }
 
+    if ((event.metaKey || event.ctrlKey) && event.code === "KeyG" && shortcutsReach()) {
+      event.preventDefault();
+      if (event.shiftKey ? ungroupSelection() : groupSelection()) {
+        syncInspector();
+        render();
+      }
+      return;
+    }
     // By the key's place rather than its character, which Shift changes.
     if (
       (event.metaKey || event.ctrlKey) &&
@@ -1131,6 +1160,11 @@ export function bindInput() {
     if (event.key === "Escape") {
       // Escape backs out one step: an unfinished shape, then the tool, then the selection.
       if (cancelPendingShape()) return;
+      if (editor.tool === "select" && leaveGroup()) {
+        syncInspector();
+        render();
+        return;
+      }
       if (editor.tool === "select" && editor.selection) {
         editor.selection = null;
         syncInspector();
@@ -1165,6 +1199,10 @@ export function bindInput() {
     }
     if (event.code === "KeyY") {
       toggleGameArt();
+      return;
+    }
+    if (event.code === "KeyM") {
+      toggleMinimap();
       return;
     }
     if (event.code === "KeyR") {

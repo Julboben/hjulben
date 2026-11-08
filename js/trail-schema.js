@@ -19,6 +19,7 @@ import { DEFAULT_HOUR, HOURS, normalizeHour } from "./time-of-day.js";
 import { isSeeThrough } from "./materials.js";
 import {
   normalizeBlocks as normalizeTerrainBlocks,
+  normalizeGroupName,
   validateBlocks as validateTerrainBlocks,
   pointInRegion,
   pointInRings,
@@ -315,6 +316,7 @@ export function normalizeTrail(input) {
             : undefined,
         flip: prop.flip === true ? true : undefined,
         rotation: normalizeRotation(prop.rotation),
+        group: normalizeGroupName(prop.group) ?? undefined,
       }))
     : [];
   trail.spikes = Array.isArray(trail.spikes)

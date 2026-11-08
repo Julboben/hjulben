@@ -18,6 +18,7 @@ const check = (name, script) => ({ name, command: [...node(script), '--check'] }
 // The slowest first, so they start before the cores fill with quick ones.
 const FAST = [
   test('replays'),
+  test('groups'),
   test('console'),
   test('editor-dom'),
   test('editor-storage'),

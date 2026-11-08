@@ -521,6 +521,7 @@ export function freshBlockCopy(block) {
       {
         material: block.material,
         ...(isBackWall(block) ? { layer: "back" } : {}),
+        ...(block.group ? { group: block.group } : {}),
         outer: strip(block.outer),
         inner: block.inner.map(strip),
       },

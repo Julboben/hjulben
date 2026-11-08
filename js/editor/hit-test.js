@@ -13,6 +13,7 @@ import { normalizeWater, waterColumns } from "../water.js";
 import { DOT_REACH, EDGE_REACH, HIT_REACH, editor, waters } from "./state.js";
 import { isBlockLocked, isHitLocked, isLocked } from "./locks.js";
 import { waterHandle } from "./water.js";
+import { insideGroup } from "./groups.js";
 import { NISSE_GROUND_LIFT } from "../nisse.js";
 
 /**
@@ -102,6 +103,9 @@ export function sameHit(a, b) {
 export function outlineOpen(blockIndex) {
   const selection = editor.selection;
   if (!selection) return false;
+  // A member of a group opens only once the author has gone into the group.
+  const group = blocks()[blockIndex]?.group;
+  if (group && !insideGroup(group)) return false;
   if (selection.kind === "items")
     return selection.items.some(
       (item) => (item.type === "block" ? item.index : item.blockIndex) === blockIndex &&

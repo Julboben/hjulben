@@ -19,6 +19,7 @@ import {
   withBoundary,
 } from "./blocks.js";
 import { pushHistory } from "./history.js";
+import { regroupCopies, withWholeGroups } from "./groups.js";
 import { isBlockLocked, isHitLocked, isSelectionItemLocked } from "./locks.js";
 import {
   selectedPosition,
@@ -64,18 +65,23 @@ export function nudgeSelection(key, big) {
 function duplicateItems(items) {
   const lists = OBJECT_LISTS();
   const copies = [];
+  // What each copy was made from, for giving copied groups their own names.
+  const originals = [];
   for (const item of items.filter((item) => item.type === "block")) {
     const copy = blocks()[item.index] && freshBlockCopy(blocks()[item.index]);
     if (!copy) continue;
     editor.trail.terrainBlocks = [...blocks(), copy];
     copies.push({ type: "block", index: blocks().length - 1 });
+    originals.push(item);
   }
   for (const item of items) {
     const list = lists[item.type];
     if (!list?.[item.index]) continue;
     list.push(structuredClone(list[item.index]));
     copies.push({ type: item.type, index: list.length - 1 });
+    originals.push(item);
   }
+  regroupCopies(originals, copies);
   // Points, one ring at a time.
   const rings = new Map();
   for (const point of items.filter((item) => item.type === "point")) {
@@ -449,7 +455,8 @@ function itemsInBox(from, to) {
 
 export function finishMarquee() {
   const items = [...editor.marquee.base];
-  for (const item of itemsInBox(editor.marquee.from, editor.marquee.to))
+  // A box takes whole groups, unless it is drawn inside one.
+  for (const item of withWholeGroups(itemsInBox(editor.marquee.from, editor.marquee.to)))
     if (!items.some((other) => sameItem(other, item))) items.push(item);
   editor.selection = makeSelection(items);
 }

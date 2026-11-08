@@ -641,6 +641,67 @@ if (kind === 'group') {
   undo.click();
   undo.click();
   out.orderUndone = JSON.stringify(current().props) === propsBefore;
+
+  // Named groups: Cmd+G makes one of the selected block and props.
+  const groups = await import('../../js/editor/groups.js');
+  const { outlineOpen } = await import('../../js/editor/hit-test.js');
+  const { duplicateTarget } = await import('../../js/editor/selection.js');
+  const { trailHash } = await import('../../js/trail-hash.js');
+  const { normalizeTrail } = await import('../../js/trail-schema.js');
+  // An Alt-drag records the undo step before it copies, so these do too.
+  const { pushHistory } = await import('../../js/editor/history.js');
+  const hashBefore = trailHash(current());
+  const members = [{ type: 'block', index: 0 }, { type: 'prop', index: 0 }, { type: 'prop', index: 1 }];
+  editor.selection = { kind: 'items', items: members };
+  syncInspector();
+  out.groupOffered = [field('group-selection').hidden, field('ungroup-selection').hidden];
+  key('g', { code: 'KeyG', metaKey: true });
+  out.grouped = [current().terrainBlocks[0].group, current().props[0].group, current().props[1].group, current().props[2].group ?? null];
+  out.groupTitle = field('selection-title').textContent;
+  out.groupNameField = [field('selection-group-row').hidden, field('selection-group').value];
+  out.groupHashSame = trailHash(current()) === hashBefore;
+  out.groupOutlineClosed = outlineOpen(0) === false;
+  // A press on any member takes the whole group; a box takes it too.
+  editor.selection = null;
+  editor.selection = groups.selectionForHit({ kind: 'prop', index: 1 });
+  out.pressTakesGroup = groups.selectedGroup();
+  out.boxTakesGroup = groups.withWholeGroups([{ type: 'prop', index: 0 }]).length;
+  // A double-click goes in: one member, its outline open, a hint to get out.
+  groups.enterGroup({ kind: 'block', blockIndex: 0 });
+  syncInspector();
+  out.inside = [editor.selection?.kind, outlineOpen(0), field('selection-title').textContent, field('selection-group-hint').hidden, field('selection-group-row').hidden];
+  // Inside, a press picks a member, not the group.
+  out.insidePress = groups.selectionForHit({ kind: 'prop', index: 0 })?.kind;
+  key('Escape');
+  out.escapeOut = groups.selectedGroup();
+  // Renaming it renames every member.
+  set('selection-group', 'House');
+  out.renamed = [current().terrainBlocks[0].group, current().props[1].group];
+  // A copy of the whole group is a new group; a copy of one member stays in it.
+  pushHistory();
+  duplicateTarget({ kind: 'prop', index: 0 });
+  out.copiedWhole = groups.groupNames();
+  undo.click();
+  groups.enterGroup({ kind: 'prop', index: 0 });
+  pushHistory();
+  duplicateTarget({ kind: 'prop', index: 0 });
+  out.copiedMember = [current().props.at(-1).group, groups.groupNames()];
+  undo.click();
+  // The group survives a save and load, and Cmd+Shift+G breaks it up.
+  const loaded = normalizeTrail(current());
+  out.groupKept = [loaded.terrainBlocks[0].group, loaded.props[0].group];
+  // A click on empty space first, which leaves the group.
+  editor.selection = null;
+  editor.selection = groups.selectionForHit({ kind: 'prop', index: 0 });
+  key('G', { code: 'KeyG', metaKey: true, shiftKey: true });
+  out.ungrouped = groups.groupNames().length === 0 && editor.selection?.items?.length === 3;
+
+  // The mini map shows the trail, and M hides and shows it.
+  out.minimap = [field('minimap').hidden];
+  key('m', { code: 'KeyM' });
+  out.minimap.push(field('minimap').hidden);
+  key('m', { code: 'KeyM' });
+  out.minimap.push(field('minimap').hidden);
   process.stdout.write(JSON.stringify(out));
   process.exit(0);
 }

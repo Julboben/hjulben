@@ -251,6 +251,23 @@ const reported = (report, label) => {
   check('To front draws it last, and the selection follows it', json(report.toFront) === json([true, true]), `(${json(report.toFront)})`);
   check('Cmd+Shift+[ sends it to the back', json(report.toBack) === json([true, true]), `(${json(report.toBack)})`);
   check('and undo puts the order back', report.orderUndone);
+  check('blocks and props can be grouped, not yet ungrouped', json(report.groupOffered) === json([false, true]), `(${json(report.groupOffered)})`);
+  check('Cmd+G puts them in one named group', json(report.grouped) === json(['Group 1', 'Group 1', 'Group 1', null]), `(${json(report.grouped)})`);
+  check('a group is titled by its name', report.groupTitle === 'GROUP 1 · GROUP', `("${report.groupTitle}")`);
+  check('and shows its name to change', json(report.groupNameField) === json([false, 'Group 1']), `(${json(report.groupNameField)})`);
+  check('grouping leaves the trail hash alone', report.groupHashSame);
+  check('a grouped block\'s outline stays closed', report.groupOutlineClosed);
+  check('a press on a member takes the whole group', report.pressTakesGroup === 'Group 1', `(${report.pressTakesGroup})`);
+  check('and so does a box around one member', report.boxTakesGroup === 4, `(${report.boxTakesGroup})`);
+  check('going into a group selects one member with its outline open', json(report.inside) === json(['block', true, 'BLOCK 1 · GRASS', false, true]), `(${json(report.inside)})`);
+  check('inside a group, a press picks a member', report.insidePress === 'prop', `(${report.insidePress})`);
+  check('Escape comes back out to the whole group', report.escapeOut === 'Group 1', `(${report.escapeOut})`);
+  check('renaming a group renames every member', json(report.renamed) === json(['House', 'House']), `(${json(report.renamed)})`);
+  check('a copy of a whole group is a group of its own', json(report.copiedWhole) === json(['House', 'House 2']), `(${json(report.copiedWhole)})`);
+  check('a copy of one member stays in its group', json(report.copiedMember) === json(['House', ['House']]), `(${json(report.copiedMember)})`);
+  check('a group is kept when the trail is loaded', json(report.groupKept) === json(['House', 'House']), `(${json(report.groupKept)})`);
+  check('Cmd+Shift+G breaks it up, leaving its members selected', report.ungrouped);
+  check('the mini map shows, and M hides and shows it', json(report.minimap) === json([false, true, false]), `(${json(report.minimap)})`);
 }
 
 // ---------------------------------------------------------------------------

@@ -337,12 +337,23 @@ export function normalizeRegion(raw) {
   return region;
 }
 
+/**
+ * The name of the editor group a block or prop belongs to, or null. A group
+ * is only a way of working in the editor; the game never reads it.
+ */
+export function normalizeGroupName(value) {
+  const name = typeof value === 'string' ? value.trim().slice(0, 40) : '';
+  return name || null;
+}
+
 export function normalizeBlock(raw, defaultMaterial = 'grass') {
+  const group = normalizeGroupName(raw?.group);
   return {
     id: typeof raw?.id === 'string' && raw.id ? raw.id : nextId('b'),
     material: typeof raw?.material === 'string' && raw.material ? raw.material : defaultMaterial,
     // A back wall is scenery behind the terrain: drawn and lit, never ridden.
     ...(raw?.layer === 'back' ? { layer: 'back' } : {}),
+    ...(group ? { group } : {}),
     ...normalizeRegion(raw),
   };
 }

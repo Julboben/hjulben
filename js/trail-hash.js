@@ -26,9 +26,12 @@ export function canonical(value) {
 export function trailHash(trail) {
   /** @type {Record<string, unknown>} */
   const fields = Object.fromEntries(GAMEPLAY_KEYS.map(key => [key, trail?.[key]]));
-  // Back walls are scenery, so they never change the hash.
+  // Back walls are scenery, so they never change the hash, and nor does the
+  // editor group a block is in.
   if (Array.isArray(fields.terrainBlocks))
-    fields.terrainBlocks = fields.terrainBlocks.filter(block => block?.layer !== 'back');
+    fields.terrainBlocks = fields.terrainBlocks
+      .filter(block => block?.layer !== 'back')
+      .map(block => (block && typeof block === 'object' && 'group' in block ? { ...block, group: undefined } : block));
   // The first block's material, under the key every published hash was made with.
   if (Array.isArray(fields.terrainBlocks)) fields.terrain = fields.terrainBlocks[0]?.material;
   fields.terrainCompiler = TERRAIN_COMPILER_VERSION;

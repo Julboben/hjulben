@@ -486,6 +486,10 @@
                             Anything locked is still drawn, but can't be
                             selected or changed.
                         </p>
+                        <section class="tool-group" id="named-groups-section" hidden>
+                            <h3>GROUPS</h3>
+                            <ul class="object-groups" id="named-groups"></ul>
+                        </section>
                         <ul class="object-groups" id="object-groups"></ul>
                     </div>
 
@@ -504,6 +508,14 @@
                         id="editor-canvas"
                         tabindex="0"
                         aria-label="Editable trail canvas"
+                    ></canvas>
+                    <canvas
+                        class="minimap"
+                        id="minimap"
+                        role="img"
+                        aria-label="The whole trail, with the part on screen framed: click or drag to go there"
+                        title="Click or drag to go there. M hides it."
+                        hidden
                     ></canvas>
                     <div class="canvas-help">
                         DRAG BLOCKS OR POINTS · DOUBLE-CLICK A BLOCK EDGE TO ADD
@@ -538,6 +550,11 @@
                     <div id="selection-fields" hidden>
                         <fieldset id="selection-fieldset">
                             <legend>SELECTION</legend>
+                            <label id="selection-group-row" hidden
+                                >Group name
+                                <input id="selection-group" type="text" maxlength="40" autocomplete="off"
+                            /></label>
+                            <p class="tool-hint" id="selection-group-hint" hidden></p>
                             <div class="field-pair">
                                 <label
                                     >X
@@ -581,6 +598,12 @@
                             </button>
                             <button class="wide-action" id="merge-blocks" hidden>
                                 MERGE BLOCKS
+                            </button>
+                            <button class="wide-action" id="group-selection" hidden title="Select and move these as one (⌘G)">
+                                GROUP
+                            </button>
+                            <button class="wide-action" id="ungroup-selection" hidden title="Break the group up (⌘⇧G)">
+                                UNGROUP
                             </button>
                             <label id="selection-node-row" hidden
                                 >Point
@@ -1035,13 +1058,14 @@
                         <div><dt><span class="gesture">drag</span></dt><dd>Move; a selected block from anywhere</dd></div>
                         <div><dt><kbd>←</kbd> <kbd>→</kbd> <kbd>↑</kbd> <kbd>↓</kbd></dt><dd>Nudge (Shift: ×10)</dd></div>
                         <div><dt><kbd>Shift</kbd> <span class="gesture">drag</span></dt><dd>Snap to 15° and the grid</dd></div>
-                        <div><dt><span class="gesture">double-click</span></dt><dd>Add a point to an edge</dd></div>
+                        <div><dt><span class="gesture">double-click</span></dt><dd>Add a point to an edge; go into a group</dd></div>
                         <div><dt><kbd>Alt</kbd> <span class="gesture">drag</span></dt><dd>Duplicate (Alt mid-drag switches)</dd></div>
                         <div><dt><kbd data-mod>⌘</kbd> <kbd>C</kbd> <kbd>X</kbd> <kbd>V</kbd></dt><dd>Copy, cut, paste</dd></div>
                         <div><dt><kbd>Delete</kbd></dt><dd>Delete</dd></div>
                         <div><dt><kbd>[</kbd> <kbd>]</kbd></dt><dd>Change prop type</dd></div>
                         <div><dt><kbd>X</kbd></dt><dd>Flip (Shift: upside down)</dd></div>
                         <div><dt><kbd data-mod>⌘</kbd> <kbd>Shift</kbd> <kbd>]</kbd> <kbd>[</kbd></dt><dd>To front, to back</dd></div>
+                        <div><dt><kbd data-mod>⌘</kbd> <kbd>G</kbd></dt><dd>Group (Shift: ungroup)</dd></div>
                         <div><dt><kbd>R</kbd></dt><dd>Rotate 15° (Shift: back)</dd></div>
                         <div><dt><kbd data-mod>⌘</kbd> <kbd>Z</kbd></dt><dd>Undo</dd></div>
                         <div><dt><kbd data-mod>⌘</kbd> <kbd>Shift</kbd> <kbd>Z</kbd></dt><dd>Redo</dd></div>
@@ -1054,6 +1078,7 @@
                         <div><dt><kbd data-mod>⌘</kbd> <span class="gesture">scroll</span></dt><dd>Zoom (also pinch)</dd></div>
                         <div><dt><kbd>=</kbd> <kbd>−</kbd> <kbd>0</kbd></dt><dd>Zoom in, out, reset</dd></div>
                         <div><dt><kbd>Y</kbd></dt><dd>Show or hide the game art</dd></div>
+                        <div><dt><kbd>M</kbd></dt><dd>Show or hide the mini map</dd></div>
                         <div><dt><kbd>Home</kbd></dt><dd>Go to the start (Shift: whole trail)</dd></div>
                     </dl>
                 </section>

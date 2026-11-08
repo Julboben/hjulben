@@ -28,6 +28,7 @@ import {
 } from "./blocks.js";
 import { $, art, backWallArt, canvas, ctx, terrainArt, tools } from "./dom.js";
 import { drawPreviewFrame } from "./preview.js";
+import { drawMinimap } from "./minimap.js";
 import { scaleFrame, scaling } from "./scale.js";
 import { selectionBox } from "./selection.js";
 import { rotateHandle, rotationAngle } from "./rotate.js";
@@ -158,6 +159,12 @@ function measureAll() {
       allBox.bottom = Math.max(allBox.bottom, box.bottom);
     }
   }
+}
+
+/** A text that changes whenever any block does, for caches of what the terrain looks like. */
+export function terrainPrint() {
+  if (terrainTrail !== editor.trail || terrainFingerprint === null) syncTerrain();
+  return terrainFingerprint;
 }
 
 /** The box round every block, or null without any. */
@@ -751,6 +758,7 @@ export function render() {
   drawSizeTag();
   drawPreviewFrame();
   ctx.restore();
+  drawMinimap();
 }
 
 /** The node and the edge leaving it that a hover names, or null. */

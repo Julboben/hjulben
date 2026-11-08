@@ -47,6 +47,8 @@ export const editor = {
   hoverPoint: null,
   // The point, curve handle or edge a press would grab, highlighted.
   hoverOutline: null,
+  // The group the author has gone into to work on its members one at a time.
+  openGroup: null,
   // The editor opens on the start, placed a little below the middle so the
   // ground and the sky above it are both in view.
   focusPending: true,

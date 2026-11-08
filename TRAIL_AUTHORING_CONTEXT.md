@@ -189,6 +189,8 @@ Back walls aren't only for caves. Anything the rider should pass in front of can
 
 Draw what you need with terrain rather than looking for a prop that doesn't exist, as long as it makes sense in the setting. `scripts/render-trail.mjs` shows how it looks.
 
+Give the blocks and props of one thing the same `"group"` name, such as `"group": "Church"`, so the editor selects, moves and copies them as one (Cmd+G groups a selection there). The game ignores it, and it doesn't change the trail's hash.
+
 
 Validation reports blocks that enclose no area, cross themselves, or are buried under other blocks so that they have no effect, and objects that are left over open air. A block inside others still shows where it is drawn last in a material different from the one under it, so it is only reported when it is never seen either: inside terrain of its own material, or covered by blocks drawn after it.
 
@@ -632,6 +634,7 @@ import { DEFAULT_HOUR, HOURS, normalizeHour } from "./time-of-day.js";
 import { isSeeThrough } from "./materials.js";
 import {
   normalizeBlocks as normalizeTerrainBlocks,
+  normalizeGroupName,
   validateBlocks as validateTerrainBlocks,
   pointInRegion,
   pointInRings,
@@ -928,6 +931,7 @@ export function normalizeTrail(input) {
             : undefined,
         flip: prop.flip === true ? true : undefined,
         rotation: normalizeRotation(prop.rotation),
+        group: normalizeGroupName(prop.group) ?? undefined,
       }))
     : [];
   trail.spikes = Array.isArray(trail.spikes)

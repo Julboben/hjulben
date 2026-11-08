@@ -1,4 +1,5 @@
 // Copy, cut and paste, including between trails.
+import { groupNames, regroupPasted } from "./groups.js";
 import { moveBlock, normalizeBlock } from "../terrain-geometry.js";
 import { normalizeTrail } from "../trail-schema.js";
 import {
@@ -192,6 +193,7 @@ function pasteClipboard(data) {
   );
   if (!pastedBlocks.length && !pastedObjects.length) return;
   pushHistory();
+  const groups = groupNames();
   const firstBlock = blocks().length;
   editor.trail.terrainBlocks = [...blocks(), ...pastedBlocks];
   const items = pastedBlocks.map((_, i) => ({
@@ -210,6 +212,7 @@ function pasteClipboard(data) {
     list.push(object);
     items.push({ type, index: list.length - 1 });
   }
+  regroupPasted(items, groups);
   editor.selection = makeSelection(items);
   setTool("select");
   syncInspector();

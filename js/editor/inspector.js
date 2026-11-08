@@ -36,6 +36,16 @@ import {
 } from "./blocks.js";
 import { $, canvas } from "./dom.js";
 import { canRotateSelection, rotateSelected } from "./rotate.js";
+import {
+  canGroupSelection,
+  canUngroupSelection,
+  groupOf,
+  groupSelection,
+  insideGroup,
+  renameSelectedGroup,
+  selectedGroup,
+  ungroupSelection,
+} from "./groups.js";
 import { canMirrorSelection, canOrderSelection, mirrorSelection, orderSelection } from "./arrange.js";
 import { pushHistory, snapshot, updateHistoryButtons } from "./history.js";
 import { scheduleAutosave } from "./autosave.js";
@@ -237,14 +247,18 @@ export function syncInspector({ live = false } = {}) {
   $("backdrop").value = editor.trail.backdrop || "hills";
   syncWeather();
   const position = selectedPosition();
+  const group = selectedGroup();
+  syncGroupFields(group);
   $("selection-fields").hidden = !editor.selection;
   $("selection-title").textContent = !editor.selection
     ? "NOTHING SELECTED"
-    : editor.selection.kind === "items"
-      ? groupTitle(editor.selection.items)
-      : BLOCK_KINDS.includes(editor.selection.kind)
-        ? blockTitle(editor.selection)
-        : editor.selection.kind.replace(/([A-Z])/g, " $1").toUpperCase();
+    : group && !insideGroup(group)
+      ? `${group.toUpperCase()} · GROUP`
+      : editor.selection.kind === "items"
+        ? groupTitle(editor.selection.items)
+        : BLOCK_KINDS.includes(editor.selection.kind)
+          ? blockTitle(editor.selection)
+          : editor.selection.kind.replace(/([A-Z])/g, " $1").toUpperCase();
   $("selection-empty").hidden = Boolean(editor.selection);
   if (position) {
     $("selection-x").value = Math.round(position[0]);
@@ -355,6 +369,18 @@ export function syncInspector({ live = false } = {}) {
 }
 
 let waiting = false;
+
+/** The name of a group selected whole, or a hint for a member of one selected alone. */
+function syncGroupFields(group) {
+  const named = group && !insideGroup(group) ? group : null;
+  $("selection-group-row").hidden = !named;
+  if (named && document.activeElement !== $("selection-group")) $("selection-group").value = named;
+  const member = !named && editor.selection ? groupOf(editor.selection) || selectionItems().map(groupOf).find(Boolean) : null;
+  $("selection-group-hint").hidden = !member;
+  if (member) $("selection-group-hint").textContent = `Part of ${member}. Esc selects the whole group.`;
+  $("group-selection").hidden = !canGroupSelection();
+  $("ungroup-selection").hidden = !canUngroupSelection();
+}
 
 const propLayer = (prop) => (prop.layer === "front" ? "front" : "back");
 
@@ -842,6 +868,18 @@ export function bindInspector() {
     syncInspector();
     render();
   });
+
+  $("selection-group").addEventListener("change", (event) => {
+    renameSelectedGroup(event.target.value);
+    syncInspector();
+    render();
+  });
+  for (const [id, action] of [["group-selection", groupSelection], ["ungroup-selection", ungroupSelection]])
+    $(id).addEventListener("click", () => {
+      action();
+      syncInspector();
+      render();
+    });
 
   $("merge-blocks").addEventListener("click", () => {
     mergeSelectedBlocks();
