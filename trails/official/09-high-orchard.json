@@ -1,317 +1,54 @@
 {
   "name": "High Orchard",
   "finish": {
-    "x": 3315.4,
-    "y": -228
+    "x": 14028.829559307107,
+    "y": -42.46359497431885
   },
-  "description": "The Orchard finale, staged as a harvest trials day on a terraced hillside: the one where you climb. Five slopes, each taller and steeper than the last, take you from the cider barn up to the crag high above the orchard. 1) The barn yard and a long flat run-up to the first slope (15°, 70 up). Apple 1 on the first terrace among the harvest. 2) The second slope (22°, 100 up). Apple 2 on the second terrace. 3) The third slope (28°, 150 up) to the crowd and the camera tower. 4) The bank drops into a hollow (apple 3) at the foot of the big slope (34°, 290 up). Come down the bank with speed and lean forward, and it goes. Creep into the hollow and gas from a standstill, and the front comes up and the bike goes over. The lesson: roll back, up the bank, and come down it with speed. 5) The meadow at the top: the finish flower at its edge, the marshal and the crowd, the orchard below. 6) The crag (40°, 210 up, in rock) takes the meadow as its run-up. Apple 4 hangs by the lookout on top, the highest point of the trail, and only the climb reaches it. The tor behind it overhangs, so turn around (Space) or roll back, brake down the crag and ride back to the flower. Overshoot it and you roll down the big slope and climb it again. Recovery: a stall on any slope rolls the rider back to the terrace or hollow below, and nothing strands them; a bike that goes over backwards crashes. Skills: climbing (new), momentum and run-ups, turning around, braking. Ends: the cider barn behind the start, the overhanging tor at the top.",
+  "description": "HIGH ORCHARD. The First Rides finale, raced as a trials day in eight numbered sections (boards S1-S8): from the cider farm, through the orchard and up the dirt mountain, then through a tunnel into the next world, The Woods, where the crowd waits at the finish. A race: every apple and the flower lie ahead, nothing sends you back. Medium, about 45 s for a good rider. APPLES in the order you meet them. S1 rollers past the beehive: gas and lean. S2 a deep dip and a big hill: momentum carries you up, then a small kicker hops you through apple 1 onto a downslope. S3 the hollow: the lip throws you through apple 2 floating over it. S4 the braking descent: apple 3 hides at the foot of a drop and is only caught rolling off slowly; full gas flies over it. S5 the tall hill: carry speed up the face and the crest throws you through apple 4. Halfway flag. S6 the islands: a kicker throws you onto island A (apple 5), its lip up onto island B, and B's lip drops you onto lower island C (apple 6). S7 the climb: five slopes, each taller and steeper, then the dirt crag to apple 7 at the lookout. S8 the tunnel: a lantern-lit cut through the mountain with a step-down and a roller, out into the light over the Woods. FINISH: down into the pines, through the arena and up a steep bank to the flower on the plateau. RECOVERY: a miss costs time, never the run. Fly over the braking apple and ride back to the drop's foot. Fall off an island into the meadow hollow and ride back west over the kicker. A stall on any slope rolls back to the terrace below; a stall on the last bank rolls back into the arena. SKILLS: rollers, momentum, hops, braking, big air, floating islands, steep climbs, climbing for height. ENDS: the cider farm (barn and apple shed) and the outcrop leaning over the finish plateau.",
   "start": {
-    "x": 60,
+    "x": 62.49469848347911,
     "y": null,
     "facing": 1
   },
   "terrainBlocks": [
     {
-      "id": "ground",
-      "material": "grass",
+      "id": "barn-inside",
+      "material": "wood",
+      "layer": "back",
       "outer": {
-        "id": "b27",
+        "id": "barn-inside-o",
         "nodes": [
           {
-            "id": "n1",
-            "x": -1800,
-            "y": 300,
+            "id": "barn-inside-1",
+            "x": -322,
+            "y": 190,
             "mode": "corner",
             "in": null,
             "out": null,
             "edge": "straight"
           },
           {
-            "id": "n2",
-            "x": 510,
-            "y": 300,
-            "mode": "independent",
-            "in": null,
-            "out": [
-              559.5,
-              300
-            ],
-            "edge": "curve"
-          },
-          {
-            "id": "n3",
-            "x": 686.93,
-            "y": 276.71,
-            "mode": "corner",
-            "in": [
-              639.12,
-              289.52
-            ],
-            "out": null,
-            "edge": "straight"
-          },
-          {
-            "id": "n4",
-            "x": 745.33,
-            "y": 261.06,
-            "mode": "independent",
-            "in": null,
-            "out": [
-              809.08,
-              243.98
-            ],
-            "edge": "curve"
-          },
-          {
-            "id": "n5",
-            "x": 981.24,
-            "y": 230,
-            "mode": "corner",
-            "in": [
-              915.24,
-              230
-            ],
-            "out": null,
-            "edge": "straight"
-          },
-          {
-            "id": "n6",
-            "x": 1151.24,
-            "y": 230,
-            "mode": "independent",
-            "in": null,
-            "out": [
-              1200.74,
-              230
-            ],
-            "edge": "curve"
-          },
-          {
-            "id": "n7",
-            "x": 1324.69,
-            "y": 196.29,
-            "mode": "corner",
-            "in": [
-              1278.79,
-              214.83
-            ],
-            "out": null,
-            "edge": "straight"
-          },
-          {
-            "id": "n8",
-            "x": 1377.37,
-            "y": 175,
-            "mode": "independent",
-            "in": null,
-            "out": [
-              1438.63,
-              150.25
-            ],
-            "edge": "curve"
-          },
-          {
-            "id": "n9",
-            "x": 1608.88,
-            "y": 130,
-            "mode": "corner",
-            "in": [
-              1542.81,
-              130
-            ],
-            "out": null,
-            "edge": "straight"
-          },
-          {
-            "id": "n10",
-            "x": 1768.75,
-            "y": 130,
-            "mode": "independent",
-            "in": null,
-            "out": [
-              1823.75,
-              130
-            ],
-            "edge": "curve"
-          },
-          {
-            "id": "n11",
-            "x": 1957.04,
-            "y": 83.05,
-            "mode": "corner",
-            "in": [
-              1908.48,
-              108.87
-            ],
-            "out": null,
-            "edge": "straight"
-          },
-          {
-            "id": "n12",
-            "x": 2023.91,
-            "y": 47.5,
-            "mode": "independent",
-            "in": null,
-            "out": [
-              2093.73,
-              10.38
-            ],
-            "edge": "curve"
-          },
-          {
-            "id": "n13",
-            "x": 2294.64,
-            "y": -20,
-            "mode": "corner",
-            "in": [
-              2215.56,
-              -20
-            ],
-            "out": null,
-            "edge": "straight"
-          },
-          {
-            "id": "n14",
-            "x": 2440.86,
-            "y": -20,
-            "mode": "independent",
-            "in": null,
-            "out": [
-              2479.36,
-              -20
-            ],
-            "edge": "curve"
-          },
-          {
-            "id": "n15",
-            "x": 2574.81,
-            "y": 8.47,
-            "mode": "corner",
-            "in": [
-              2539.64,
-              -7.19
-            ],
-            "out": null,
-            "edge": "straight"
-          },
-          {
-            "id": "n16",
-            "x": 2710.79,
-            "y": 69.02,
-            "mode": "independent",
-            "in": null,
-            "out": [
-              2724.36,
-              75.06
-            ],
-            "edge": "curve"
-          },
-          {
-            "id": "n17",
-            "x": 2762.46,
-            "y": 80,
-            "mode": "corner",
-            "in": [
-              2747.61,
-              80
-            ],
-            "out": null,
-            "edge": "straight"
-          },
-          {
-            "id": "n18",
-            "x": 2768.46,
-            "y": 80,
-            "mode": "independent",
-            "in": null,
-            "out": [
-              2783.31,
-              80
-            ],
-            "edge": "curve"
-          },
-          {
-            "id": "n19",
-            "x": 2817.84,
-            "y": 64.9,
-            "mode": "corner",
-            "in": [
-              2805.53,
-              73.21
-            ],
-            "out": null,
-            "edge": "straight"
-          },
-          {
-            "id": "n20",
-            "x": 3168.16,
-            "y": -171.39,
-            "mode": "independent",
-            "in": null,
-            "out": [
-              3199.64,
-              -192.63
-            ],
-            "edge": "curve"
-          },
-          {
-            "id": "n21",
-            "x": 3293.59,
-            "y": -199.2,
-            "mode": "corner",
-            "in": [
-              3256.08,
-              -205.14
-            ],
-            "out": null,
-            "edge": "straight"
-          },
-          {
-            "id": "n22",
-            "x": 3308.74,
-            "y": -196.8,
-            "mode": "independent",
-            "in": null,
-            "out": [
-              3346.25,
-              -190.86
-            ],
-            "edge": "curve"
-          },
-          {
-            "id": "n23",
-            "x": 3445.97,
-            "y": -186,
-            "mode": "corner",
-            "in": [
-              3408,
-              -186
-            ],
-            "out": null,
-            "edge": "straight"
-          },
-          {
-            "id": "n24",
-            "x": 5200,
-            "y": -186,
+            "id": "barn-inside-2",
+            "x": -178,
+            "y": 190,
             "mode": "corner",
             "in": null,
             "out": null,
             "edge": "straight"
           },
           {
-            "id": "n25",
-            "x": 5200,
-            "y": 1400,
+            "id": "barn-inside-3",
+            "x": -178,
+            "y": 290,
             "mode": "corner",
             "in": null,
             "out": null,
             "edge": "straight"
           },
           {
-            "id": "n26",
-            "x": -1800,
-            "y": 1400,
+            "id": "barn-inside-4",
+            "x": -322,
+            "y": 290,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -322,321 +59,317 @@
       "inner": []
     },
     {
-      "id": "crag",
-      "material": "stone",
+      "id": "loft-inside",
+      "material": "wood",
+      "layer": "back",
       "outer": {
-        "id": "b57",
+        "id": "loft-inside-o",
         "nodes": [
           {
-            "id": "n28",
-            "x": 3550.93,
-            "y": -186,
+            "id": "loft-inside-1",
+            "x": -272,
+            "y": 92,
             "mode": "corner",
             "in": null,
             "out": null,
             "edge": "straight"
           },
           {
-            "id": "n29",
-            "x": 3556.93,
-            "y": -186,
-            "mode": "independent",
-            "in": null,
-            "out": [
-              3639.43,
-              -186
-            ],
-            "edge": "curve"
-          },
-          {
-            "id": "n30",
-            "x": 3821.84,
-            "y": -282.42,
-            "mode": "corner",
-            "in": [
-              3758.64,
-              -229.39
-            ],
-            "out": null,
-            "edge": "straight"
-          },
-          {
-            "id": "n31",
-            "x": 3867.57,
-            "y": -320.79,
-            "mode": "independent",
-            "in": null,
-            "out": [
-              3916.87,
-              -362.16
-            ],
-            "edge": "curve"
-          },
-          {
-            "id": "n32",
-            "x": 4074.2,
-            "y": -396,
-            "mode": "corner",
-            "in": [
-              4009.85,
-              -396
-            ],
-            "out": null,
-            "edge": "straight"
-          },
-          {
-            "id": "n33",
-            "x": 4187.2,
-            "y": -396,
-            "mode": "independent",
-            "in": null,
-            "out": [
-              4203.7,
-              -396
-            ],
-            "edge": "curve"
-          },
-          {
-            "id": "n34",
-            "x": 4208.21,
-            "y": -424.62,
-            "mode": "corner",
-            "in": [
-              4213.15,
-              -408.88
-            ],
-            "out": null,
-            "edge": "straight"
-          },
-          {
-            "id": "n35",
-            "x": 4195.2,
-            "y": -466,
+            "id": "loft-inside-2",
+            "x": -228,
+            "y": 92,
             "mode": "corner",
             "in": null,
             "out": null,
             "edge": "straight"
           },
           {
-            "id": "n36",
-            "x": 4193,
-            "y": -493.5,
-            "mode": "independent",
-            "in": null,
-            "out": [
-              4192.01,
-              -505.87
-            ],
-            "edge": "curve"
-          },
-          {
-            "id": "n37",
-            "x": 4204.39,
-            "y": -534.32,
-            "mode": "corner",
-            "in": [
-              4197.13,
-              -524.24
-            ],
-            "out": null,
-            "edge": "straight"
-          },
-          {
-            "id": "n38",
-            "x": 4211,
-            "y": -543.5,
-            "mode": "independent",
-            "in": null,
-            "out": [
-              4219.91,
-              -555.87
-            ],
-            "edge": "curve"
-          },
-          {
-            "id": "n39",
-            "x": 4254.1,
-            "y": -572.72,
-            "mode": "corner",
-            "in": [
-              4239.3,
-              -569.03
-            ],
-            "out": null,
-            "edge": "straight"
-          },
-          {
-            "id": "n40",
-            "x": 4288.39,
-            "y": -581.3,
-            "mode": "independent",
-            "in": null,
-            "out": [
-              4309.74,
-              -586.63
-            ],
-            "edge": "curve"
-          },
-          {
-            "id": "n41",
-            "x": 4365.82,
-            "y": -580.6,
-            "mode": "corner",
-            "in": [
-              4344.58,
-              -586.32
-            ],
-            "out": null,
-            "edge": "straight"
-          },
-          {
-            "id": "n42",
-            "x": 4408.92,
-            "y": -569,
-            "mode": "independent",
-            "in": null,
-            "out": [
-              4435.47,
-              -561.85
-            ],
-            "edge": "curve"
-          },
-          {
-            "id": "n43",
-            "x": 4490.65,
-            "y": -518.84,
-            "mode": "corner",
-            "in": [
-              4472.25,
-              -539.28
-            ],
-            "out": null,
-            "edge": "straight"
-          },
-          {
-            "id": "n44",
-            "x": 4507.06,
-            "y": -500.6,
-            "mode": "independent",
-            "in": null,
-            "out": [
-              4529.14,
-              -476.07
-            ],
-            "edge": "curve"
-          },
-          {
-            "id": "n45",
-            "x": 4566.17,
-            "y": -399.08,
-            "mode": "corner",
-            "in": [
-              4555.74,
-              -430.39
-            ],
-            "out": null,
-            "edge": "straight"
-          },
-          {
-            "id": "n46",
-            "x": 4624.55,
-            "y": -223.95,
-            "mode": "independent",
-            "in": null,
-            "out": [
-              4631.51,
-              -203.08
-            ],
-            "edge": "curve"
-          },
-          {
-            "id": "n47",
-            "x": 4677.2,
-            "y": -186,
-            "mode": "corner",
-            "in": [
-              4655.2,
-              -186
-            ],
-            "out": null,
-            "edge": "straight"
-          },
-          {
-            "id": "n48",
-            "x": 4737.2,
-            "y": -186,
+            "id": "loft-inside-3",
+            "x": -228,
+            "y": 144,
             "mode": "corner",
             "in": null,
             "out": null,
             "edge": "straight"
           },
           {
-            "id": "n49",
-            "x": 4737.2,
-            "y": 114,
+            "id": "loft-inside-4",
+            "x": -272,
+            "y": 144,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "shed-inside",
+      "material": "wood",
+      "layer": "back",
+      "outer": {
+        "id": "shed-inside-o",
+        "nodes": [
+          {
+            "id": "shed-inside-1",
+            "x": -540,
+            "y": 218,
             "mode": "corner",
             "in": null,
             "out": null,
             "edge": "straight"
           },
           {
-            "id": "n50",
-            "x": 3766.93,
-            "y": 114,
+            "id": "shed-inside-2",
+            "x": -420,
+            "y": 218,
             "mode": "corner",
             "in": null,
             "out": null,
             "edge": "straight"
           },
           {
-            "id": "n51",
-            "x": 3716.93,
-            "y": 4,
+            "id": "shed-inside-3",
+            "x": -420,
+            "y": 300,
             "mode": "corner",
             "in": null,
             "out": null,
             "edge": "straight"
           },
           {
-            "id": "n52",
-            "x": 3666.93,
-            "y": -36,
+            "id": "shed-inside-4",
+            "x": -540,
+            "y": 300,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "window-glass",
+      "material": "glass",
+      "layer": "back",
+      "outer": {
+        "id": "window-glass-o",
+        "nodes": [
+          {
+            "id": "window-glass-1",
+            "x": -372,
+            "y": 202,
             "mode": "corner",
             "in": null,
             "out": null,
             "edge": "straight"
           },
           {
-            "id": "n53",
-            "x": 3646.93,
-            "y": -90,
+            "id": "window-glass-2",
+            "x": -340,
+            "y": 202,
             "mode": "corner",
             "in": null,
             "out": null,
             "edge": "straight"
           },
           {
-            "id": "n54",
-            "x": 3602.93,
-            "y": -124,
+            "id": "window-glass-3",
+            "x": -340,
+            "y": 240,
             "mode": "corner",
             "in": null,
             "out": null,
             "edge": "straight"
           },
           {
-            "id": "n55",
-            "x": 3588.93,
-            "y": -156,
+            "id": "window-glass-4",
+            "x": -372,
+            "y": 240,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "shed",
+      "material": "wood",
+      "outer": {
+        "id": "shed-o",
+        "nodes": [
+          {
+            "id": "shed-1",
+            "x": -560,
+            "y": 310,
             "mode": "corner",
             "in": null,
             "out": null,
             "edge": "straight"
           },
           {
-            "id": "n56",
-            "x": 3560.93,
-            "y": -174,
+            "id": "shed-2",
+            "x": -560,
+            "y": 205,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "shed-3",
+            "x": -392,
+            "y": 168,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "shed-4",
+            "x": -392,
+            "y": 310,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": [
+        {
+          "id": "shed-i0",
+          "nodes": [
+            {
+              "id": "shed-i0-4",
+              "x": -536,
+              "y": 296,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            },
+            {
+              "id": "shed-i0-3",
+              "x": -424,
+              "y": 296,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            },
+            {
+              "id": "shed-i0-2",
+              "x": -424,
+              "y": 222,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            },
+            {
+              "id": "shed-i0-1",
+              "x": -536,
+              "y": 222,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "shed-roof",
+      "material": "concrete",
+      "outer": {
+        "id": "shed-roof-o",
+        "nodes": [
+          {
+            "id": "shed-roof-1",
+            "x": -578,
+            "y": 198,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "shed-roof-2",
+            "x": -392,
+            "y": 156,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "shed-roof-3",
+            "x": -392,
+            "y": 166,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "shed-roof-4",
+            "x": -574,
+            "y": 208,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "shed-post",
+      "material": "stone",
+      "outer": {
+        "id": "shed-post-o",
+        "nodes": [
+          {
+            "id": "shed-post-1",
+            "x": -484,
+            "y": 218,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "shed-post-2",
+            "x": -476,
+            "y": 218,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "shed-post-3",
+            "x": -476,
+            "y": 296,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "shed-post-4",
+            "x": -484,
+            "y": 296,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -650,11 +383,29 @@
       "id": "barn",
       "material": "brick",
       "outer": {
-        "id": "b66",
+        "id": "barn-o",
         "nodes": [
           {
-            "id": "n58",
-            "x": -340,
+            "id": "barn-1",
+            "x": -390,
+            "y": 150,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "barn-2",
+            "x": -110,
+            "y": 150,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "barn-3",
+            "x": -110,
             "y": 310,
             "mode": "corner",
             "in": null,
@@ -662,26 +413,8 @@
             "edge": "straight"
           },
           {
-            "id": "n59",
-            "x": -340,
-            "y": 120,
-            "mode": "corner",
-            "in": null,
-            "out": null,
-            "edge": "straight"
-          },
-          {
-            "id": "n60",
-            "x": -60,
-            "y": 120,
-            "mode": "corner",
-            "in": null,
-            "out": null,
-            "edge": "straight"
-          },
-          {
-            "id": "n61",
-            "x": -60,
+            "id": "barn-4",
+            "x": -390,
             "y": 310,
             "mode": "corner",
             "in": null,
@@ -692,39 +425,80 @@
       },
       "inner": [
         {
-          "id": "b67",
+          "id": "barn-i0",
           "nodes": [
             {
-              "id": "n65",
-              "x": -216,
-              "y": 168,
+              "id": "barn-i0-4",
+              "x": -316,
+              "y": 284,
               "mode": "corner",
               "in": null,
               "out": null,
               "edge": "straight"
             },
             {
-              "id": "n64",
+              "id": "barn-i0-3",
               "x": -184,
-              "y": 168,
+              "y": 284,
               "mode": "corner",
               "in": null,
               "out": null,
               "edge": "straight"
             },
             {
-              "id": "n63",
+              "id": "barn-i0-2",
               "x": -184,
-              "y": 136,
+              "y": 196,
               "mode": "corner",
               "in": null,
               "out": null,
               "edge": "straight"
             },
             {
-              "id": "n62",
-              "x": -216,
-              "y": 136,
+              "id": "barn-i0-1",
+              "x": -316,
+              "y": 196,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            }
+          ]
+        },
+        {
+          "id": "barn-i1",
+          "nodes": [
+            {
+              "id": "barn-i1-4",
+              "x": -372,
+              "y": 240,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            },
+            {
+              "id": "barn-i1-3",
+              "x": -340,
+              "y": 240,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            },
+            {
+              "id": "barn-i1-2",
+              "x": -340,
+              "y": 202,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            },
+            {
+              "id": "barn-i1-1",
+              "x": -372,
+              "y": 202,
               "mode": "corner",
               "in": null,
               "out": null,
@@ -735,42 +509,121 @@
       ]
     },
     {
-      "id": "barn-loft",
-      "material": "glass",
+      "id": "gable",
+      "material": "wood",
       "outer": {
-        "id": "b72",
+        "id": "gable-o",
         "nodes": [
           {
-            "id": "n68",
-            "x": -216,
-            "y": 136,
+            "id": "gable-1",
+            "x": -392,
+            "y": 152,
             "mode": "corner",
             "in": null,
             "out": null,
             "edge": "straight"
           },
           {
-            "id": "n69",
+            "id": "gable-2",
+            "x": -250,
+            "y": 40,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "gable-3",
+            "x": -108,
+            "y": 152,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": [
+        {
+          "id": "gable-i0",
+          "nodes": [
+            {
+              "id": "gable-i0-4",
+              "x": -268,
+              "y": 140,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            },
+            {
+              "id": "gable-i0-3",
+              "x": -232,
+              "y": 140,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            },
+            {
+              "id": "gable-i0-2",
+              "x": -232,
+              "y": 96,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            },
+            {
+              "id": "gable-i0-1",
+              "x": -268,
+              "y": 96,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "chimney",
+      "material": "brick",
+      "outer": {
+        "id": "chimney-o",
+        "nodes": [
+          {
+            "id": "chimney-1",
             "x": -184,
-            "y": 136,
+            "y": 44,
             "mode": "corner",
             "in": null,
             "out": null,
             "edge": "straight"
           },
           {
-            "id": "n70",
+            "id": "chimney-2",
+            "x": -162,
+            "y": 44,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "chimney-3",
+            "x": -162,
+            "y": 100,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "chimney-4",
             "x": -184,
-            "y": 168,
-            "mode": "corner",
-            "in": null,
-            "out": null,
-            "edge": "straight"
-          },
-          {
-            "id": "n71",
-            "x": -216,
-            "y": 168,
+            "y": 75,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -781,42 +634,42 @@
       "inner": []
     },
     {
-      "id": "barn-loft-frame",
-      "material": "wood",
+      "id": "chimney-cap",
+      "material": "concrete",
       "outer": {
-        "id": "b77",
+        "id": "chimney-cap-o",
         "nodes": [
           {
-            "id": "n73",
-            "x": -220,
-            "y": 168,
+            "id": "chimney-cap-1",
+            "x": -188,
+            "y": 36,
             "mode": "corner",
             "in": null,
             "out": null,
             "edge": "straight"
           },
           {
-            "id": "n74",
-            "x": -180,
-            "y": 168,
+            "id": "chimney-cap-2",
+            "x": -158,
+            "y": 36,
             "mode": "corner",
             "in": null,
             "out": null,
             "edge": "straight"
           },
           {
-            "id": "n75",
-            "x": -180,
-            "y": 174,
+            "id": "chimney-cap-3",
+            "x": -158,
+            "y": 44,
             "mode": "corner",
             "in": null,
             "out": null,
             "edge": "straight"
           },
           {
-            "id": "n76",
-            "x": -220,
-            "y": 174,
+            "id": "chimney-cap-4",
+            "x": -188,
+            "y": 44,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -827,14 +680,353 @@
       "inner": []
     },
     {
-      "id": "barn-doors",
-      "material": "wood",
+      "id": "roof",
+      "material": "concrete",
       "outer": {
-        "id": "b82",
+        "id": "roof-o",
         "nodes": [
           {
-            "id": "n78",
-            "x": -262,
+            "id": "roof-1",
+            "x": -419.1735,
+            "y": 157.2781,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "roof-2",
+            "x": -250,
+            "y": 23.1447,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "roof-3",
+            "x": -80.8265,
+            "y": 157.2781,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "roof-4",
+            "x": -91.9808,
+            "y": 162.8553,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "roof-5",
+            "x": -250,
+            "y": 38.0171,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "roof-6",
+            "x": -408.0192,
+            "y": 162.8553,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "vane-pole",
+      "material": "concrete",
+      "outer": {
+        "id": "vane-pole-o",
+        "nodes": [
+          {
+            "id": "vane-pole-1",
+            "x": -252,
+            "y": -18,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "vane-pole-2",
+            "x": -248,
+            "y": -18,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "vane-pole-3",
+            "x": -248,
+            "y": 24,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "vane-pole-4",
+            "x": -252,
+            "y": 24,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "vane-arrow",
+      "material": "concrete",
+      "outer": {
+        "id": "vane-arrow-o",
+        "nodes": [
+          {
+            "id": "vane-arrow-1",
+            "x": -274,
+            "y": -10,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "vane-arrow-2",
+            "x": -232,
+            "y": -10,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "vane-arrow-3",
+            "x": -232,
+            "y": -16,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "vane-arrow-4",
+            "x": -222,
+            "y": -8,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "vane-arrow-5",
+            "x": -232,
+            "y": 0,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "vane-arrow-6",
+            "x": -232,
+            "y": -6,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "vane-arrow-7",
+            "x": -274,
+            "y": -6,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "post-w",
+      "material": "wood",
+      "outer": {
+        "id": "post-w-o",
+        "nodes": [
+          {
+            "id": "post-w-1",
+            "x": -396,
+            "y": 156,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "post-w-2",
+            "x": -384,
+            "y": 156,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "post-w-3",
+            "x": -384,
+            "y": 286,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "post-w-4",
+            "x": -396,
+            "y": 286,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "post-e",
+      "material": "wood",
+      "outer": {
+        "id": "post-e-o",
+        "nodes": [
+          {
+            "id": "post-e-1",
+            "x": -116,
+            "y": 156,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "post-e-2",
+            "x": -104,
+            "y": 156,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "post-e-3",
+            "x": -104,
+            "y": 286,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "post-e-4",
+            "x": -116,
+            "y": 286,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "eaves-beam",
+      "material": "wood",
+      "outer": {
+        "id": "eaves-beam-o",
+        "nodes": [
+          {
+            "id": "eaves-beam-1",
+            "x": -398,
+            "y": 150,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "eaves-beam-2",
+            "x": -102,
+            "y": 150,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "eaves-beam-3",
+            "x": -102,
+            "y": 158,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "eaves-beam-4",
+            "x": -398,
+            "y": 158,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "lintel",
+      "material": "wood",
+      "outer": {
+        "id": "lintel-o",
+        "nodes": [
+          {
+            "id": "lintel-1",
+            "x": -324,
+            "y": 186,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "lintel-2",
+            "x": -176,
+            "y": 186,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "lintel-3",
+            "x": -176,
             "y": 196,
             "mode": "corner",
             "in": null,
@@ -842,27 +1034,9 @@
             "edge": "straight"
           },
           {
-            "id": "n79",
-            "x": -138,
+            "id": "lintel-4",
+            "x": -324,
             "y": 196,
-            "mode": "corner",
-            "in": null,
-            "out": null,
-            "edge": "straight"
-          },
-          {
-            "id": "n80",
-            "x": -138,
-            "y": 302,
-            "mode": "corner",
-            "in": null,
-            "out": null,
-            "edge": "straight"
-          },
-          {
-            "id": "n81",
-            "x": -262,
-            "y": 302,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -873,23 +1047,2167 @@
       "inner": []
     },
     {
-      "id": "barn-roof",
+      "id": "door-shut",
       "material": "wood",
       "outer": {
-        "id": "b86",
+        "id": "door-shut-o",
         "nodes": [
           {
-            "id": "n83",
-            "x": -370,
-            "y": 124,
+            "id": "door-shut-1",
+            "x": -314,
+            "y": 198,
             "mode": "corner",
             "in": null,
             "out": null,
             "edge": "straight"
           },
           {
-            "id": "n84",
-            "x": -200,
+            "id": "door-shut-2",
+            "x": -252,
+            "y": 198,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "door-shut-3",
+            "x": -252,
+            "y": 284,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "door-shut-4",
+            "x": -314,
+            "y": 284,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "strap-1",
+      "material": "concrete",
+      "outer": {
+        "id": "strap-1-o",
+        "nodes": [
+          {
+            "id": "strap-1-1",
+            "x": -312,
+            "y": 212,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "strap-1-2",
+            "x": -262,
+            "y": 212,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "strap-1-3",
+            "x": -262,
+            "y": 216,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "strap-1-4",
+            "x": -312,
+            "y": 216,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "strap-2",
+      "material": "concrete",
+      "outer": {
+        "id": "strap-2-o",
+        "nodes": [
+          {
+            "id": "strap-2-1",
+            "x": -312,
+            "y": 264,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "strap-2-2",
+            "x": -262,
+            "y": 264,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "strap-2-3",
+            "x": -262,
+            "y": 268,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "strap-2-4",
+            "x": -312,
+            "y": 268,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "door-open",
+      "material": "wood",
+      "outer": {
+        "id": "door-open-o",
+        "nodes": [
+          {
+            "id": "door-open-1",
+            "x": -186,
+            "y": 196,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "door-open-2",
+            "x": -160,
+            "y": 204,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "door-open-3",
+            "x": -160,
+            "y": 292,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "door-open-4",
+            "x": -186,
+            "y": 284,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "shutter-w",
+      "material": "wood",
+      "outer": {
+        "id": "shutter-w-o",
+        "nodes": [
+          {
+            "id": "shutter-w-1",
+            "x": -386,
+            "y": 202,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "shutter-w-2",
+            "x": -374,
+            "y": 202,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "shutter-w-3",
+            "x": -374,
+            "y": 240,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "shutter-w-4",
+            "x": -386,
+            "y": 240,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "shutter-e",
+      "material": "wood",
+      "outer": {
+        "id": "shutter-e-o",
+        "nodes": [
+          {
+            "id": "shutter-e-1",
+            "x": -338,
+            "y": 202,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "shutter-e-2",
+            "x": -326,
+            "y": 202,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "shutter-e-3",
+            "x": -326,
+            "y": 240,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "shutter-e-4",
+            "x": -338,
+            "y": 240,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "window-bar-v",
+      "material": "wood",
+      "outer": {
+        "id": "window-bar-v-o",
+        "nodes": [
+          {
+            "id": "window-bar-v-1",
+            "x": -357,
+            "y": 202,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "window-bar-v-2",
+            "x": -355,
+            "y": 202,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "window-bar-v-3",
+            "x": -355,
+            "y": 240,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "window-bar-v-4",
+            "x": -357,
+            "y": 240,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "window-bar-h",
+      "material": "wood",
+      "outer": {
+        "id": "window-bar-h-o",
+        "nodes": [
+          {
+            "id": "window-bar-h-1",
+            "x": -372,
+            "y": 220,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "window-bar-h-2",
+            "x": -340,
+            "y": 220,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "window-bar-h-3",
+            "x": -340,
+            "y": 222,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "window-bar-h-4",
+            "x": -372,
+            "y": 222,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "sill",
+      "material": "stone",
+      "outer": {
+        "id": "sill-o",
+        "nodes": [
+          {
+            "id": "sill-1",
+            "x": -378,
+            "y": 240,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "sill-2",
+            "x": -334,
+            "y": 240,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "sill-3",
+            "x": -334,
+            "y": 246,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "sill-4",
+            "x": -378,
+            "y": 246,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "hoist",
+      "material": "stone",
+      "outer": {
+        "id": "hoist-o",
+        "nodes": [
+          {
+            "id": "hoist-1",
+            "x": -262,
+            "y": 84,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "hoist-2",
+            "x": -238,
+            "y": 84,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "hoist-3",
+            "x": -238,
+            "y": 92,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "hoist-4",
+            "x": -262,
+            "y": 92,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "rope",
+      "material": "concrete",
+      "outer": {
+        "id": "rope-o",
+        "nodes": [
+          {
+            "id": "rope-1",
+            "x": -251,
+            "y": 92,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "rope-2",
+            "x": -249,
+            "y": 92,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "rope-3",
+            "x": -249,
+            "y": 122,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "rope-4",
+            "x": -251,
+            "y": 122,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "plinth",
+      "material": "stone",
+      "outer": {
+        "id": "plinth-o",
+        "nodes": [
+          {
+            "id": "plinth-1",
+            "x": -392,
+            "y": 284,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "plinth-2",
+            "x": -108,
+            "y": 284,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "plinth-3",
+            "x": -108,
+            "y": 310,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "plinth-4",
+            "x": -392,
+            "y": 310,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "shed-plinth",
+      "material": "stone",
+      "outer": {
+        "id": "shed-plinth-o",
+        "nodes": [
+          {
+            "id": "shed-plinth-1",
+            "x": -562,
+            "y": 296,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "shed-plinth-2",
+            "x": -392,
+            "y": 296,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "shed-plinth-3",
+            "x": -392,
+            "y": 310,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "shed-plinth-4",
+            "x": -562,
+            "y": 310,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "barrel-3",
+      "material": "wood",
+      "group": "Barrel",
+      "outer": {
+        "id": "barrel-3-o",
+        "nodes": [
+          {
+            "id": "barrel-3-1",
+            "x": -82.5,
+            "y": 258.2495,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "barrel-3-2",
+            "x": -85.5,
+            "y": 238.2495,
+            "mode": "smooth",
+            "in": [
+              -85.5,
+              244.9895
+            ],
+            "out": [
+              -85.5,
+              231.5095
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "barrel-3-3",
+            "x": -82.5,
+            "y": 218.2495,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "barrel-3-4",
+            "x": -58.5,
+            "y": 218.2495,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "barrel-3-5",
+            "x": -55.5,
+            "y": 238.2495,
+            "mode": "smooth",
+            "in": [
+              -55.5,
+              231.5095
+            ],
+            "out": [
+              -55.5,
+              244.9895
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "barrel-3-6",
+            "x": -58.5,
+            "y": 258.2495,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "barrel-3-hoop0",
+      "material": "concrete",
+      "group": "Barrel",
+      "outer": {
+        "id": "barrel-3-hoop0-o",
+        "nodes": [
+          {
+            "id": "barrel-3-hoop0-1",
+            "x": -85,
+            "y": 228.2495,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "barrel-3-hoop0-2",
+            "x": -56,
+            "y": 228.2495,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "barrel-3-hoop0-3",
+            "x": -56,
+            "y": 231.2495,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "barrel-3-hoop0-4",
+            "x": -85,
+            "y": 231.2495,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "barrel-3-hoop1",
+      "material": "concrete",
+      "group": "Barrel",
+      "outer": {
+        "id": "barrel-3-hoop1-o",
+        "nodes": [
+          {
+            "id": "barrel-3-hoop1-1",
+            "x": -85,
+            "y": 246.2495,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "barrel-3-hoop1-2",
+            "x": -56,
+            "y": 246.2495,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "barrel-3-hoop1-3",
+            "x": -56,
+            "y": 249.2495,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "barrel-3-hoop1-4",
+            "x": -85,
+            "y": 249.2495,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "ground",
+      "material": "grass",
+      "outer": {
+        "id": "ground-o",
+        "nodes": [
+          {
+            "id": "ground-1",
+            "x": -1800,
+            "y": 300,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ground-2",
+            "x": 420,
+            "y": 300,
+            "mode": "smooth",
+            "in": [
+              -320,
+              300
+            ],
+            "out": [
+              474.26,
+              300
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-3",
+            "x": 580,
+            "y": 270,
+            "mode": "smooth",
+            "in": [
+              525.74,
+              270
+            ],
+            "out": [
+              634.26,
+              270
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-4",
+            "x": 740,
+            "y": 300,
+            "mode": "smooth",
+            "in": [
+              685.74,
+              300
+            ],
+            "out": [
+              794.82,
+              300
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-5",
+            "x": 900,
+            "y": 262,
+            "mode": "smooth",
+            "in": [
+              845.18,
+              262
+            ],
+            "out": [
+              954.82,
+              262
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-6",
+            "x": 1060,
+            "y": 300,
+            "mode": "smooth",
+            "in": [
+              1005.18,
+              300
+            ],
+            "out": [
+              1115.49,
+              300
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-7",
+            "x": 1220,
+            "y": 254,
+            "mode": "smooth",
+            "in": [
+              1164.51,
+              254
+            ],
+            "out": [
+              1247.07,
+              254
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-8",
+            "x": 1300,
+            "y": 268,
+            "mode": "smooth",
+            "in": [
+              1272.93,
+              268
+            ],
+            "out": [
+              1407.83,
+              268
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-9",
+            "x": 1580,
+            "y": 430,
+            "mode": "smooth",
+            "in": [
+              1472.17,
+              430
+            ],
+            "out": [
+              1736.7,
+              430
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-10",
+            "x": 1950,
+            "y": 140,
+            "mode": "smooth",
+            "in": [
+              1793.3,
+              140
+            ],
+            "out": [
+              1980,
+              140
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-11",
+            "x": 2040,
+            "y": 140,
+            "mode": "smooth",
+            "in": [
+              2010,
+              140
+            ],
+            "out": [
+              2077.27,
+              140
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-12",
+            "x": 2150,
+            "y": 120,
+            "mode": "independent",
+            "in": [
+              2113.46,
+              127.31
+            ],
+            "out": [
+              2253.36,
+              140.67
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-13",
+            "x": 2450,
+            "y": 220,
+            "mode": "smooth",
+            "in": [
+              2352.81,
+              179.18
+            ],
+            "out": [
+              2548.79,
+              261.49
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-14",
+            "x": 2760,
+            "y": 305,
+            "mode": "smooth",
+            "in": [
+              2652.85,
+              305
+            ],
+            "out": [
+              2869.95,
+              305
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-15",
+            "x": 3080,
+            "y": 225,
+            "mode": "independent",
+            "in": [
+              2972.19,
+              246.56
+            ],
+            "out": [
+              3144.25,
+              244.28
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-16",
+            "x": 3260,
+            "y": 315,
+            "mode": "smooth",
+            "in": [
+              3198.83,
+              287.47
+            ],
+            "out": [
+              3297.6,
+              331.92
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-17",
+            "x": 3380,
+            "y": 345,
+            "mode": "smooth",
+            "in": [
+              3338.77,
+              345
+            ],
+            "out": [
+              3520,
+              345
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-18",
+            "x": 3800,
+            "y": 345,
+            "mode": "smooth",
+            "in": [
+              3660,
+              345
+            ],
+            "out": [
+              3911.07,
+              345
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-19",
+            "x": 4100,
+            "y": 200,
+            "mode": "smooth",
+            "in": [
+              3988.93,
+              200
+            ],
+            "out": [
+              4160,
+              200
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-20",
+            "x": 4280,
+            "y": 200,
+            "mode": "smooth",
+            "in": [
+              4220,
+              200
+            ],
+            "out": [
+              4445.27,
+              200
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-21",
+            "x": 4740,
+            "y": 385,
+            "mode": "smooth",
+            "in": [
+              4574.73,
+              385
+            ],
+            "out": [
+              4766.67,
+              385
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-22",
+            "x": 4820,
+            "y": 387,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ground-23",
+            "x": 4828,
+            "y": 431,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ground-24",
+            "x": 5280,
+            "y": 480,
+            "mode": "smooth",
+            "in": [
+              5128.45,
+              480
+            ],
+            "out": [
+              5415.69,
+              480
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-25",
+            "x": 5640,
+            "y": 290,
+            "mode": "smooth",
+            "in": [
+              5504.31,
+              290
+            ],
+            "out": [
+              5832.35,
+              290
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-26",
+            "x": 6150,
+            "y": 560,
+            "mode": "smooth",
+            "in": [
+              5957.65,
+              560
+            ],
+            "out": [
+              6227.82,
+              560
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-27",
+            "x": 6380,
+            "y": 600,
+            "mode": "smooth",
+            "in": [
+              6302.18,
+              600
+            ],
+            "out": [
+              6424.72,
+              600
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-28",
+            "x": 6500,
+            "y": 540,
+            "mode": "independent",
+            "in": [
+              6468.38,
+              571.62
+            ],
+            "out": [
+              6530.95,
+              552.38
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-29",
+            "x": 6580,
+            "y": 600,
+            "mode": "smooth",
+            "in": [
+              6546.67,
+              600
+            ],
+            "out": [
+              6638.31,
+              600
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-30",
+            "x": 6730,
+            "y": 690,
+            "mode": "smooth",
+            "in": [
+              6671.69,
+              690
+            ],
+            "out": [
+              7086.67,
+              690
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-31",
+            "x": 7800,
+            "y": 690,
+            "mode": "smooth",
+            "in": [
+              7443.33,
+              690
+            ],
+            "out": [
+              7873.11,
+              690
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-32",
+            "x": 8000,
+            "y": 600,
+            "mode": "smooth",
+            "in": [
+              7926.89,
+              600
+            ],
+            "out": [
+              8161.69,
+              600
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-33",
+            "x": 8480,
+            "y": 530,
+            "mode": "smooth",
+            "in": [
+              8318.31,
+              530
+            ],
+            "out": [
+              8533.33,
+              530
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-34",
+            "x": 8640,
+            "y": 530,
+            "mode": "smooth",
+            "in": [
+              8586.67,
+              530
+            ],
+            "out": [
+              8796.91,
+              530
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-35",
+            "x": 9100,
+            "y": 430,
+            "mode": "smooth",
+            "in": [
+              8943.09,
+              430
+            ],
+            "out": [
+              9153.33,
+              430
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-36",
+            "x": 9260,
+            "y": 430,
+            "mode": "smooth",
+            "in": [
+              9206.67,
+              430
+            ],
+            "out": [
+              9442,
+              430
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-37",
+            "x": 9785,
+            "y": 280,
+            "mode": "smooth",
+            "in": [
+              9603,
+              280
+            ],
+            "out": [
+              9833.33,
+              280
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-38",
+            "x": 9930,
+            "y": 280,
+            "mode": "smooth",
+            "in": [
+              9881.67,
+              280
+            ],
+            "out": [
+              10043.35,
+              280
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-39",
+            "x": 10255,
+            "y": 380,
+            "mode": "smooth",
+            "in": [
+              10141.65,
+              380
+            ],
+            "out": [
+              10277.48,
+              380
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-40",
+            "x": 10320,
+            "y": 362,
+            "mode": "smooth",
+            "in": [
+              10300.72,
+              373.57
+            ],
+            "out": [
+              10434.49,
+              293.31
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-41",
+            "x": 10650,
+            "y": 135,
+            "mode": "smooth",
+            "in": [
+              10539.08,
+              209.31
+            ],
+            "out": [
+              10689.9,
+              108.27
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-42",
+            "x": 10790,
+            "y": 101,
+            "mode": "smooth",
+            "in": [
+              10741.98,
+              101
+            ],
+            "out": [
+              10838.86,
+              101
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-43",
+            "x": 10936,
+            "y": 114,
+            "mode": "smooth",
+            "in": [
+              10887.14,
+              114
+            ],
+            "out": [
+              11086,
+              114
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-44",
+            "x": 11400,
+            "y": 114,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ground-45",
+            "x": 11400,
+            "y": 2000,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ground-46",
+            "x": -1800,
+            "y": 2000,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "island-a",
+      "material": "grass",
+      "outer": {
+        "id": "island-a-o",
+        "nodes": [
+          {
+            "id": "island-a-47",
+            "x": 6630,
+            "y": 458,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "island-a-48",
+            "x": 6750,
+            "y": 480,
+            "mode": "smooth",
+            "in": [
+              6709.33,
+              480
+            ],
+            "out": [
+              6800,
+              480
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "island-a-49",
+            "x": 6900,
+            "y": 480,
+            "mode": "smooth",
+            "in": [
+              6850,
+              480
+            ],
+            "out": [
+              6949.22,
+              480
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "island-a-50",
+            "x": 7030,
+            "y": 410,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "island-a-51",
+            "x": 6985,
+            "y": 490,
+            "mode": "smooth",
+            "in": [
+              7007.13,
+              468.87
+            ],
+            "out": [
+              6968.21,
+              506.03
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "island-a-52",
+            "x": 6920,
+            "y": 515,
+            "mode": "smooth",
+            "in": [
+              6939.55,
+              502.49
+            ],
+            "out": [
+              6897.15,
+              529.63
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "island-a-53",
+            "x": 6860,
+            "y": 570,
+            "mode": "smooth",
+            "in": [
+              6887.13,
+              570
+            ],
+            "out": [
+              6834.34,
+              570
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "island-a-54",
+            "x": 6790,
+            "y": 538,
+            "mode": "smooth",
+            "in": [
+              6814.79,
+              544.61
+            ],
+            "out": [
+              6764.11,
+              531.09
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "island-a-55",
+            "x": 6710,
+            "y": 530,
+            "mode": "smooth",
+            "in": [
+              6734.82,
+              540.12
+            ],
+            "out": [
+              6689.24,
+              521.53
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "island-a-56",
+            "x": 6660,
+            "y": 485,
+            "mode": "smooth",
+            "in": [
+              6676.67,
+              500
+            ],
+            "out": [
+              6650,
+              476
+            ],
+            "edge": "curve"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "island-b",
+      "material": "grass",
+      "outer": {
+        "id": "island-b-o",
+        "nodes": [
+          {
+            "id": "island-b-57",
+            "x": 7130,
+            "y": 388,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "island-b-58",
+            "x": 7250,
+            "y": 410,
+            "mode": "smooth",
+            "in": [
+              7209.33,
+              410
+            ],
+            "out": [
+              7300,
+              410
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "island-b-59",
+            "x": 7400,
+            "y": 410,
+            "mode": "smooth",
+            "in": [
+              7350,
+              410
+            ],
+            "out": [
+              7449.22,
+              410
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "island-b-60",
+            "x": 7530,
+            "y": 370,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "island-b-61",
+            "x": 7490,
+            "y": 425,
+            "mode": "smooth",
+            "in": [
+              7509.78,
+              400.72
+            ],
+            "out": [
+              7471.89,
+              447.23
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "island-b-62",
+            "x": 7420,
+            "y": 475,
+            "mode": "smooth",
+            "in": [
+              7445.65,
+              462.18
+            ],
+            "out": [
+              7395.01,
+              487.49
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "island-b-63",
+            "x": 7340,
+            "y": 500,
+            "mode": "smooth",
+            "in": [
+              7367.94,
+              500
+            ],
+            "out": [
+              7311.52,
+              500
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "island-b-64",
+            "x": 7260,
+            "y": 470,
+            "mode": "smooth",
+            "in": [
+              7287.74,
+              476.47
+            ],
+            "out": [
+              7237.22,
+              464.68
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "island-b-65",
+            "x": 7190,
+            "y": 465,
+            "mode": "smooth",
+            "in": [
+              7211.3,
+              474.68
+            ],
+            "out": [
+              7171.73,
+              456.7
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "island-b-66",
+            "x": 7150,
+            "y": 420,
+            "mode": "smooth",
+            "in": [
+              7162.34,
+              435.83
+            ],
+            "out": [
+              7142.27,
+              410.08
+            ],
+            "edge": "curve"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "island-c",
+      "material": "grass",
+      "outer": {
+        "id": "island-c-o",
+        "nodes": [
+          {
+            "id": "island-c-67",
+            "x": 7630,
+            "y": 370,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "island-c-68",
+            "x": 7840,
+            "y": 440,
+            "mode": "smooth",
+            "in": [
+              7766.21,
+              440
+            ],
+            "out": [
+              7866.67,
+              440
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "island-c-69",
+            "x": 7920,
+            "y": 440,
+            "mode": "smooth",
+            "in": [
+              7893.33,
+              440
+            ],
+            "out": [
+              7940.62,
+              440
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "island-c-70",
+            "x": 7980,
+            "y": 425,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "island-c-71",
+            "x": 7940,
+            "y": 470,
+            "mode": "smooth",
+            "in": [
+              7957.65,
+              460.44
+            ],
+            "out": [
+              7915.83,
+              483.09
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "island-c-72",
+            "x": 7860,
+            "y": 490,
+            "mode": "smooth",
+            "in": [
+              7885.22,
+              479.07
+            ],
+            "out": [
+              7834.55,
+              501.03
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "island-c-73",
+            "x": 7790,
+            "y": 535,
+            "mode": "smooth",
+            "in": [
+              7817.74,
+              535
+            ],
+            "out": [
+              7762.26,
+              535
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "island-c-74",
+            "x": 7720,
+            "y": 490,
+            "mode": "smooth",
+            "in": [
+              7740.78,
+              508.38
+            ],
+            "out": [
+              7696.98,
+              469.64
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "island-c-75",
+            "x": 7660,
+            "y": 420,
+            "mode": "smooth",
+            "in": [
+              7678.44,
+              444.59
+            ],
+            "out": [
+              7648.34,
+              404.45
+            ],
+            "edge": "curve"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "mountain-floor",
+      "material": "dirt",
+      "outer": {
+        "id": "bkgb",
+        "nodes": [
+          {
+            "id": "mtn-1",
+            "x": 11046.93,
+            "y": 114,
+            "mode": "independent",
+            "in": null,
+            "out": [
+              11129.43,
+              114
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "mtn-2",
+            "x": 11311.84,
+            "y": 17.58,
+            "mode": "independent",
+            "in": [
+              11248.64,
+              70.61
+            ],
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "mtn-3",
+            "x": 11357.57,
+            "y": -20.79,
+            "mode": "independent",
+            "in": null,
+            "out": [
+              11406.87,
+              -62.16
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "mtn-4",
+            "x": 11564.2,
+            "y": -96,
+            "mode": "independent",
+            "in": [
+              11499.85,
+              -96
+            ],
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "mtn-5",
+            "x": 11712.9475,
+            "y": -96.7187,
+            "mode": "smooth",
+            "in": [
+              11667.9475,
+              -96.7187
+            ],
+            "out": [
+              11757.9475,
+              -96.7187
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "mtn-6",
+            "x": 11850,
+            "y": -92,
+            "mode": "smooth",
+            "in": [
+              11804.29,
+              -92
+            ],
+            "out": [
+              11919.8,
+              -92
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "mtn-7",
+            "x": 12050,
+            "y": -30,
+            "mode": "smooth",
+            "in": [
+              11982.5,
+              -47.74
+            ],
+            "out": [
+              12099.31,
+              -17.04
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "mtn-8",
+            "x": 12200,
+            "y": 0,
+            "mode": "smooth",
+            "in": [
+              12149.01,
+              0
+            ],
+            "out": [
+              12240,
+              0
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "mtn-9",
+            "x": 12320,
+            "y": 0,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "mtn-10",
+            "x": 12326,
+            "y": 40,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "mtn-11",
+            "x": 12480,
+            "y": 52,
+            "mode": "smooth",
+            "in": [
+              12428.51,
+              52
+            ],
+            "out": [
+              12527.73,
+              52
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "mtn-12",
+            "x": 12620,
+            "y": 22,
+            "mode": "smooth",
+            "in": [
+              12572.27,
+              22
+            ],
+            "out": [
+              12667.95,
+              22
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "mtn-13",
+            "x": 12760,
+            "y": 55,
+            "mode": "smooth",
+            "in": [
+              12712.05,
+              55
+            ],
+            "out": [
+              12809.44,
+              55
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "mtn-14",
+            "x": 12900,
+            "y": 6,
+            "mode": "smooth",
+            "in": [
+              12850.56,
+              6
+            ],
+            "out": [
+              12920.1,
+              6
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "mtn-15",
+            "x": 12960,
+            "y": 0,
+            "mode": "smooth",
+            "in": [
+              12939.9,
+              0
+            ],
+            "out": [
+              12997.68,
+              0
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "mtn-16",
+            "x": 13070,
+            "y": 26,
+            "mode": "smooth",
+            "in": [
+              13034.72,
+              12.77
+            ],
+            "out": [
+              13168.44,
+              62.91
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "mtn-17",
+            "x": 13360,
+            "y": 150,
+            "mode": "smooth",
+            "in": [
+              13254.87,
+              150
+            ],
+            "out": [
+              13416.73,
+              150
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "mtn-18",
+            "x": 13530,
+            "y": 142,
+            "mode": "smooth",
+            "in": [
+              13473.27,
+              142
+            ],
+            "out": [
+              13586.73,
+              142
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "mtn-19",
+            "x": 13700,
+            "y": 150,
+            "mode": "smooth",
+            "in": [
+              13643.27,
+              150
+            ],
+            "out": [
+              13745.98,
+              150
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "mtn-20",
+            "x": 13820,
+            "y": 82,
+            "mode": "smooth",
+            "in": [
+              13780.73,
+              105.9
+            ],
+            "out": [
+              13857.43,
+              59.21
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "mtn-21",
+            "x": 13930,
+            "y": 10,
+            "mode": "smooth",
+            "in": [
+              13886.18,
+              10
+            ],
+            "out": [
+              14050,
+              10
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "mtn-22",
+            "x": 14290,
             "y": 10,
             "mode": "corner",
             "in": null,
@@ -897,9 +3215,138 @@
             "edge": "straight"
           },
           {
-            "id": "n85",
-            "x": -30,
-            "y": 124,
+            "id": "mtn-23",
+            "x": 14256,
+            "y": -120,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "mtn-24",
+            "x": 14280,
+            "y": -210,
+            "mode": "smooth",
+            "in": [
+              14259.58,
+              -186.61
+            ],
+            "out": [
+              14304.71,
+              -238.3
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "mtn-25",
+            "x": 14380,
+            "y": -262,
+            "mode": "smooth",
+            "in": [
+              14342.43,
+              -262
+            ],
+            "out": [
+              14886.67,
+              -262
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "mtn-26",
+            "x": 15900,
+            "y": -262,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "mtn-27",
+            "x": 15900,
+            "y": 2000,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "mtn-28",
+            "x": 11257,
+            "y": 2000,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "mtn-29",
+            "x": 11256.93,
+            "y": 414,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "mtn-30",
+            "x": 11206.93,
+            "y": 304,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "mtn-31",
+            "x": 11156.93,
+            "y": 264,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "mtn-32",
+            "x": 11136.93,
+            "y": 210,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "mtn-33",
+            "x": 11092.93,
+            "y": 176,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "mtn-34",
+            "x": 11078.93,
+            "y": 144,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "mtn-35",
+            "x": 11050.93,
+            "y": 126,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "mtn-36",
+            "x": 11040.93,
+            "y": 114,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -910,42 +3357,495 @@
       "inner": []
     },
     {
-      "id": "barn-plinth",
-      "material": "stone",
+      "id": "tunnel-back",
+      "material": "dirt",
+      "layer": "back",
       "outer": {
-        "id": "b91",
+        "id": "tunnel-back-o",
         "nodes": [
           {
-            "id": "n87",
-            "x": -340,
-            "y": 284,
+            "id": "tunnel-back-1",
+            "x": 11690.9681,
+            "y": -219.5807,
             "mode": "corner",
             "in": null,
             "out": null,
             "edge": "straight"
           },
           {
-            "id": "n88",
-            "x": -60,
-            "y": 284,
+            "id": "tunnel-back-2",
+            "x": 11775,
+            "y": -280,
             "mode": "corner",
             "in": null,
             "out": null,
             "edge": "straight"
           },
           {
-            "id": "n89",
-            "x": -60,
-            "y": 310,
+            "id": "tunnel-back-3",
+            "x": 12100,
+            "y": -242,
             "mode": "corner",
             "in": null,
             "out": null,
             "edge": "straight"
           },
           {
-            "id": "n90",
-            "x": -340,
-            "y": 310,
+            "id": "tunnel-back-4",
+            "x": 12500,
+            "y": -152,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "tunnel-back-5",
+            "x": 12890,
+            "y": -194,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "tunnel-back-6",
+            "x": 12986,
+            "y": -190,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ns2t",
+            "x": 12986,
+            "y": -50.3993,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "tunnel-back-7",
+            "x": 13002.8705,
+            "y": 28.7817,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "tunnel-back-8",
+            "x": 12500,
+            "y": 92,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "tunnel-back-9",
+            "x": 12340,
+            "y": 82,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "tunnel-back-10",
+            "x": 12050,
+            "y": 22,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "tunnel-back-11",
+            "x": 11678.9912,
+            "y": -67.1149,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n6lx",
+            "x": 11694.4082,
+            "y": -173.2145,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "mountain",
+      "material": "dirt",
+      "outer": {
+        "id": "mountain-o",
+        "nodes": [
+          {
+            "id": "mountain-20",
+            "x": 11730.9897,
+            "y": -319.2544,
+            "mode": "independent",
+            "in": null,
+            "out": [
+              11760.3897,
+              -362.9944
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "mountain-19",
+            "x": 11850,
+            "y": -450,
+            "mode": "smooth",
+            "in": [
+              11815.96,
+              -409.77
+            ],
+            "out": [
+              11889.59,
+              -496.78
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "mountain-18",
+            "x": 11980,
+            "y": -580,
+            "mode": "smooth",
+            "in": [
+              11932.65,
+              -541.1
+            ],
+            "out": [
+              12026.44,
+              -618.14
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "mountain-17",
+            "x": 12130,
+            "y": -680,
+            "mode": "smooth",
+            "in": [
+              12073.73,
+              -658.9
+            ],
+            "out": [
+              12183.42,
+              -700.03
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "mountain-16",
+            "x": 12300,
+            "y": -700,
+            "mode": "smooth",
+            "in": [
+              12242.94,
+              -700
+            ],
+            "out": [
+              12357.54,
+              -700
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "mountain-15",
+            "x": 12470,
+            "y": -670,
+            "mode": "smooth",
+            "in": [
+              12415.25,
+              -687.71
+            ],
+            "out": [
+              12529.59,
+              -650.72
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "mountain-14",
+            "x": 12640,
+            "y": -590,
+            "mode": "smooth",
+            "in": [
+              12588.35,
+              -625.42
+            ],
+            "out": [
+              12706.21,
+              -544.6
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "mountain-13",
+            "x": 12820,
+            "y": -430,
+            "mode": "smooth",
+            "in": [
+              12765.16,
+              -488.62
+            ],
+            "out": [
+              12862.36,
+              -384.72
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "mountain-12",
+            "x": 12930,
+            "y": -280,
+            "mode": "smooth",
+            "in": [
+              12895.51,
+              -331.53
+            ],
+            "out": [
+              12952.26,
+              -246.74
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "mountain-11",
+            "x": 12990,
+            "y": -176,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nn4o",
+            "x": 12986,
+            "y": -139.9081,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "mountain-10",
+            "x": 12950,
+            "y": -156,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "mountain-9",
+            "x": 12800,
+            "y": -146,
+            "mode": "smooth",
+            "in": [
+              12849.75,
+              -151.97
+            ],
+            "out": [
+              12749.62,
+              -139.95
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "mountain-8",
+            "x": 12650,
+            "y": -120,
+            "mode": "smooth",
+            "in": [
+              12700.42,
+              -125.71
+            ],
+            "out": [
+              12600.25,
+              -114.36
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "mountain-7",
+            "x": 12500,
+            "y": -112,
+            "mode": "smooth",
+            "in": [
+              12550.04,
+              -110.33
+            ],
+            "out": [
+              12449.67,
+              -113.68
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "mountain-6",
+            "x": 12350,
+            "y": -130,
+            "mode": "smooth",
+            "in": [
+              12399.78,
+              -122.37
+            ],
+            "out": [
+              12299.72,
+              -137.71
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "mountain-5",
+            "x": 12200,
+            "y": -158,
+            "mode": "smooth",
+            "in": [
+              12249.81,
+              -147.71
+            ],
+            "out": [
+              12149.79,
+              -168.38
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "mountain-4",
+            "x": 12050,
+            "y": -192,
+            "mode": "smooth",
+            "in": [
+              12099.2,
+              -177.57
+            ],
+            "out": [
+              11999.01,
+              -206.96
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "mountain-3",
+            "x": 11900,
+            "y": -246,
+            "mode": "smooth",
+            "in": [
+              11952.37,
+              -236.97
+            ],
+            "out": [
+              11853.99,
+              -253.93
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "mountain-2",
+            "x": 11760,
+            "y": -242,
+            "mode": "smooth",
+            "in": [
+              11806.09,
+              -249.46
+            ],
+            "out": [
+              11734.94,
+              -237.94
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "mountain-1",
+            "x": 11719.7584,
+            "y": -230.0078,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n2osr",
+            "x": 11690,
+            "y": -215.6069,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n32da",
+            "x": 11686.4007,
+            "y": -231.2164,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n11zg",
+            "x": 11694.4082,
+            "y": -244.776,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "b181e",
+      "material": "wood",
+      "outer": {
+        "id": "b181d",
+        "nodes": [
+          {
+            "id": "n1819",
+            "x": 15,
+            "y": 282.9059,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n181a",
+            "x": 113.3906,
+            "y": 282.9059,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n181b",
+            "x": 158.3906,
+            "y": 297.9059,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n181c",
+            "x": 15,
+            "y": 297.9059,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -959,13 +3859,14 @@
       "id": "lookout-leg-l",
       "material": "wood",
       "layer": "back",
+      "group": "Outpost",
       "outer": {
         "id": "b96",
         "nodes": [
           {
             "id": "n92",
-            "x": 4075.2,
-            "y": -544,
+            "x": 10908.0389,
+            "y": -44.4229,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -973,8 +3874,8 @@
           },
           {
             "id": "n93",
-            "x": 4083.2,
-            "y": -544,
+            "x": 10916.0389,
+            "y": -44.4229,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -982,8 +3883,8 @@
           },
           {
             "id": "n94",
-            "x": 4083.2,
-            "y": -388,
+            "x": 10916.0389,
+            "y": 111.5771,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -991,8 +3892,8 @@
           },
           {
             "id": "n95",
-            "x": 4075.2,
-            "y": -388,
+            "x": 10908.0389,
+            "y": 111.5771,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -1006,13 +3907,14 @@
       "id": "lookout-leg-r",
       "material": "wood",
       "layer": "back",
+      "group": "Outpost",
       "outer": {
         "id": "b101",
         "nodes": [
           {
             "id": "n97",
-            "x": 4151.2,
-            "y": -544,
+            "x": 10984.0389,
+            "y": -44.4229,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -1020,8 +3922,8 @@
           },
           {
             "id": "n98",
-            "x": 4159.2,
-            "y": -544,
+            "x": 10992.0389,
+            "y": -44.4229,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -1029,8 +3931,8 @@
           },
           {
             "id": "n99",
-            "x": 4159.2,
-            "y": -388,
+            "x": 10992.0389,
+            "y": 111.5771,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -1038,8 +3940,8 @@
           },
           {
             "id": "n100",
-            "x": 4151.2,
-            "y": -388,
+            "x": 10984.0389,
+            "y": 111.5771,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -1053,13 +3955,14 @@
       "id": "lookout-brace-1",
       "material": "wood",
       "layer": "back",
+      "group": "Outpost",
       "outer": {
         "id": "b106",
         "nodes": [
           {
             "id": "n105",
-            "x": 4149.2,
-            "y": -464,
+            "x": 10982.0389,
+            "y": 35.5771,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -1067,8 +3970,8 @@
           },
           {
             "id": "n104",
-            "x": 4155.2,
-            "y": -464,
+            "x": 10988.0389,
+            "y": 35.5771,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -1076,8 +3979,8 @@
           },
           {
             "id": "n103",
-            "x": 4087.2,
-            "y": -402,
+            "x": 10920.0389,
+            "y": 97.5771,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -1085,8 +3988,8 @@
           },
           {
             "id": "n102",
-            "x": 4081.2,
-            "y": -402,
+            "x": 10914.0389,
+            "y": 97.5771,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -1100,13 +4003,14 @@
       "id": "lookout-brace-2",
       "material": "wood",
       "layer": "back",
+      "group": "Outpost",
       "outer": {
         "id": "b111",
         "nodes": [
           {
             "id": "n110",
-            "x": 4081.2,
-            "y": -534,
+            "x": 10914.0389,
+            "y": -34.4229,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -1114,8 +4018,8 @@
           },
           {
             "id": "n109",
-            "x": 4087.2,
-            "y": -534,
+            "x": 10920.0389,
+            "y": -34.4229,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -1123,8 +4027,8 @@
           },
           {
             "id": "n108",
-            "x": 4155.2,
-            "y": -470,
+            "x": 10988.0389,
+            "y": 29.5771,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -1132,8 +4036,8 @@
           },
           {
             "id": "n107",
-            "x": 4149.2,
-            "y": -470,
+            "x": 10982.0389,
+            "y": 29.5771,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -1147,13 +4051,14 @@
       "id": "lookout-deck",
       "material": "wood",
       "layer": "back",
+      "group": "Outpost",
       "outer": {
         "id": "b116",
         "nodes": [
           {
             "id": "n112",
-            "x": 4061.2,
-            "y": -552,
+            "x": 10894.0389,
+            "y": -52.4229,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -1161,8 +4066,8 @@
           },
           {
             "id": "n113",
-            "x": 4173.2,
-            "y": -552,
+            "x": 11006.0389,
+            "y": -52.4229,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -1170,8 +4075,8 @@
           },
           {
             "id": "n114",
-            "x": 4173.2,
-            "y": -544,
+            "x": 11006.0389,
+            "y": -44.4229,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -1179,8 +4084,8 @@
           },
           {
             "id": "n115",
-            "x": 4061.2,
-            "y": -544,
+            "x": 10894.0389,
+            "y": -44.4229,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -1193,14 +4098,14 @@
     {
       "id": "lookout-post-54",
       "material": "wood",
-      "layer": "back",
+      "group": "Outpost",
       "outer": {
         "id": "b121",
         "nodes": [
           {
             "id": "n117",
-            "x": 4063.2,
-            "y": -578,
+            "x": 10896.0389,
+            "y": -78.4229,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -1208,8 +4113,8 @@
           },
           {
             "id": "n118",
-            "x": 4067.2,
-            "y": -578,
+            "x": 10900.0389,
+            "y": -78.4229,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -1217,8 +4122,8 @@
           },
           {
             "id": "n119",
-            "x": 4067.2,
-            "y": -552,
+            "x": 10900.0389,
+            "y": -52.4229,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -1226,8 +4131,8 @@
           },
           {
             "id": "n120",
-            "x": 4063.2,
-            "y": -552,
+            "x": 10896.0389,
+            "y": -52.4229,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -1240,14 +4145,14 @@
     {
       "id": "lookout-post-18",
       "material": "wood",
-      "layer": "back",
+      "group": "Outpost",
       "outer": {
         "id": "b126",
         "nodes": [
           {
             "id": "n122",
-            "x": 4099.2,
-            "y": -578,
+            "x": 10932.0389,
+            "y": -78.4229,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -1255,8 +4160,8 @@
           },
           {
             "id": "n123",
-            "x": 4103.2,
-            "y": -578,
+            "x": 10936.0389,
+            "y": -78.4229,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -1264,8 +4169,8 @@
           },
           {
             "id": "n124",
-            "x": 4103.2,
-            "y": -552,
+            "x": 10936.0389,
+            "y": -52.4229,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -1273,8 +4178,8 @@
           },
           {
             "id": "n125",
-            "x": 4099.2,
-            "y": -552,
+            "x": 10932.0389,
+            "y": -52.4229,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -1287,14 +4192,14 @@
     {
       "id": "lookout-post18",
       "material": "wood",
-      "layer": "back",
+      "group": "Outpost",
       "outer": {
         "id": "b131",
         "nodes": [
           {
             "id": "n127",
-            "x": 4135.2,
-            "y": -578,
+            "x": 10968.0389,
+            "y": -78.4229,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -1302,8 +4207,8 @@
           },
           {
             "id": "n128",
-            "x": 4139.2,
-            "y": -578,
+            "x": 10972.0389,
+            "y": -78.4229,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -1311,8 +4216,8 @@
           },
           {
             "id": "n129",
-            "x": 4139.2,
-            "y": -552,
+            "x": 10972.0389,
+            "y": -52.4229,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -1320,8 +4225,8 @@
           },
           {
             "id": "n130",
-            "x": 4135.2,
-            "y": -552,
+            "x": 10968.0389,
+            "y": -52.4229,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -1334,14 +4239,14 @@
     {
       "id": "lookout-post50",
       "material": "wood",
-      "layer": "back",
+      "group": "Outpost",
       "outer": {
         "id": "b136",
         "nodes": [
           {
             "id": "n132",
-            "x": 4167.2,
-            "y": -578,
+            "x": 11000.0389,
+            "y": -78.4229,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -1349,8 +4254,8 @@
           },
           {
             "id": "n133",
-            "x": 4171.2,
-            "y": -578,
+            "x": 11004.0389,
+            "y": -78.4229,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -1358,8 +4263,8 @@
           },
           {
             "id": "n134",
-            "x": 4171.2,
-            "y": -552,
+            "x": 11004.0389,
+            "y": -52.4229,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -1367,8 +4272,8 @@
           },
           {
             "id": "n135",
-            "x": 4167.2,
-            "y": -552,
+            "x": 11000.0389,
+            "y": -52.4229,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -1381,14 +4286,14 @@
     {
       "id": "lookout-rail",
       "material": "wood",
-      "layer": "back",
+      "group": "Outpost",
       "outer": {
         "id": "b141",
         "nodes": [
           {
             "id": "n137",
-            "x": 4061.2,
-            "y": -580,
+            "x": 10894.0389,
+            "y": -80.4229,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -1396,8 +4301,8 @@
           },
           {
             "id": "n138",
-            "x": 4173.2,
-            "y": -580,
+            "x": 11006.0389,
+            "y": -80.4229,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -1405,8 +4310,8 @@
           },
           {
             "id": "n139",
-            "x": 4173.2,
-            "y": -576,
+            "x": 11006.0389,
+            "y": -76.4229,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -1414,8 +4319,8 @@
           },
           {
             "id": "n140",
-            "x": 4061.2,
-            "y": -576,
+            "x": 10894.0389,
+            "y": -76.4229,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -1429,13 +4334,23 @@
       "id": "lookout-roof",
       "material": "wood",
       "layer": "back",
+      "group": "Outpost",
       "outer": {
         "id": "b145",
         "nodes": [
           {
             "id": "n142",
-            "x": 4053.2,
-            "y": -602,
+            "x": 10886.0389,
+            "y": -109.4229,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n1i3y",
+            "x": 10886.0389,
+            "y": -115,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -1443,8 +4358,17 @@
           },
           {
             "id": "n143",
-            "x": 4117.2,
-            "y": -636,
+            "x": 10950.0389,
+            "y": -143.4229,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n1gmb",
+            "x": 11014.0389,
+            "y": -115,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -1452,8 +4376,8 @@
           },
           {
             "id": "n144",
-            "x": 4181.2,
-            "y": -602,
+            "x": 11014.0389,
+            "y": -109.4229,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -1467,13 +4391,14 @@
       "id": "lookout-roofpost-52",
       "material": "wood",
       "layer": "back",
+      "group": "Outpost",
       "outer": {
         "id": "b150",
         "nodes": [
           {
             "id": "n146",
-            "x": 4065.2,
-            "y": -604,
+            "x": 10896.0389,
+            "y": -110,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -1481,8 +4406,8 @@
           },
           {
             "id": "n147",
-            "x": 4069.2,
-            "y": -604,
+            "x": 10900.0389,
+            "y": -110,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -1490,8 +4415,8 @@
           },
           {
             "id": "n148",
-            "x": 4069.2,
-            "y": -580,
+            "x": 10900.0389,
+            "y": -80.4229,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -1499,8 +4424,8 @@
           },
           {
             "id": "n149",
-            "x": 4065.2,
-            "y": -580,
+            "x": 10896.0389,
+            "y": -80.4229,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -1514,13 +4439,14 @@
       "id": "lookout-roofpost48",
       "material": "wood",
       "layer": "back",
+      "group": "Outpost",
       "outer": {
         "id": "b155",
         "nodes": [
           {
             "id": "n151",
-            "x": 4165.2,
-            "y": -604,
+            "x": 11000.0389,
+            "y": -110,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -1528,8 +4454,8 @@
           },
           {
             "id": "n152",
-            "x": 4169.2,
-            "y": -604,
+            "x": 11004.0389,
+            "y": -110,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -1537,8 +4463,8 @@
           },
           {
             "id": "n153",
-            "x": 4169.2,
-            "y": -580,
+            "x": 11004.0389,
+            "y": -80.4229,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -1546,8 +4472,350 @@
           },
           {
             "id": "n154",
-            "x": 4165.2,
-            "y": -580,
+            "x": 11000.0389,
+            "y": -80.4229,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "bcfg",
+      "material": "wood",
+      "group": "Barrel 2",
+      "outer": {
+        "id": "bcfh",
+        "nodes": [
+          {
+            "id": "ncfi",
+            "x": -66.5,
+            "y": 299.2495,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ncfj",
+            "x": -69.5,
+            "y": 279.2495,
+            "mode": "smooth",
+            "in": [
+              -69.5,
+              285.9895
+            ],
+            "out": [
+              -69.5,
+              272.5095
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ncfk",
+            "x": -66.5,
+            "y": 259.2495,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ncfl",
+            "x": -42.5,
+            "y": 259.2495,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ncfm",
+            "x": -39.5,
+            "y": 279.2495,
+            "mode": "smooth",
+            "in": [
+              -39.5,
+              272.5095
+            ],
+            "out": [
+              -39.5,
+              285.9895
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ncfn",
+            "x": -42.5,
+            "y": 299.2495,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "bcfo",
+      "material": "concrete",
+      "group": "Barrel 2",
+      "outer": {
+        "id": "bcfp",
+        "nodes": [
+          {
+            "id": "ncfq",
+            "x": -69,
+            "y": 269.2495,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ncfr",
+            "x": -40,
+            "y": 269.2495,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ncfs",
+            "x": -40,
+            "y": 272.2495,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ncft",
+            "x": -69,
+            "y": 272.2495,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "bcfu",
+      "material": "concrete",
+      "group": "Barrel 2",
+      "outer": {
+        "id": "bcfv",
+        "nodes": [
+          {
+            "id": "ncfw",
+            "x": -69,
+            "y": 287.2495,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ncfx",
+            "x": -40,
+            "y": 287.2495,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ncfy",
+            "x": -40,
+            "y": 290.2495,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ncfz",
+            "x": -69,
+            "y": 290.2495,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "bgx6",
+      "material": "wood",
+      "group": "Barrel 3",
+      "outer": {
+        "id": "bgx7",
+        "nodes": [
+          {
+            "id": "ngx8",
+            "x": -98,
+            "y": 299.2495,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ngx9",
+            "x": -101,
+            "y": 279.2495,
+            "mode": "smooth",
+            "in": [
+              -101,
+              285.9895
+            ],
+            "out": [
+              -101,
+              272.5095
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ngxa",
+            "x": -98,
+            "y": 259.2495,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ngxb",
+            "x": -74,
+            "y": 259.2495,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ngxc",
+            "x": -71,
+            "y": 279.2495,
+            "mode": "smooth",
+            "in": [
+              -71,
+              272.5095
+            ],
+            "out": [
+              -71,
+              285.9895
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ngxd",
+            "x": -74,
+            "y": 299.2495,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "bgxe",
+      "material": "concrete",
+      "group": "Barrel 3",
+      "outer": {
+        "id": "bgxf",
+        "nodes": [
+          {
+            "id": "ngxg",
+            "x": -100.5,
+            "y": 269.2495,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ngxh",
+            "x": -71.5,
+            "y": 269.2495,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ngxi",
+            "x": -71.5,
+            "y": 272.2495,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ngxj",
+            "x": -100.5,
+            "y": 272.2495,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "bgxk",
+      "material": "concrete",
+      "group": "Barrel 3",
+      "outer": {
+        "id": "bgxl",
+        "nodes": [
+          {
+            "id": "ngxm",
+            "x": -100.5,
+            "y": 287.2495,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ngxn",
+            "x": -71.5,
+            "y": 287.2495,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ngxo",
+            "x": -71.5,
+            "y": 290.2495,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ngxp",
+            "x": -100.5,
+            "y": 290.2495,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -1560,128 +4828,294 @@
   ],
   "apples": [
     {
-      "x": 921.24,
-      "y": null
+      "x": 2270,
+      "y": 85
     },
     {
-      "x": 1668.75,
-      "y": null
+      "x": 3300,
+      "y": 172
     },
     {
-      "x": 2765.46,
-      "y": null
+      "x": 4856,
+      "y": 412
     },
     {
-      "x": 4067.2,
-      "y": -458
+      "x": 5770,
+      "y": 240
+    },
+    {
+      "x": 6958.636591092964,
+      "y": 395.2029942469362
+    },
+    {
+      "x": 7800,
+      "y": 395
+    },
+    {
+      "x": 11564.2,
+      "y": -150
+    },
+    {
+      "x": 13020.118336814174,
+      "y": -44.39467594676523
     }
   ],
   "props": [
     {
-      "x": -470,
-      "y": null,
+      "x": 11788.7171930882,
+      "y": -386.84362022919777,
+      "type": "pine-small",
+      "layer": "back"
+    },
+    {
+      "x": 11900,
+      "y": -505.4943766891404,
+      "type": "pine",
+      "layer": "back"
+    },
+    {
+      "x": 12020,
+      "y": -612.6158964018028,
+      "type": "rock",
+      "layer": "back"
+    },
+    {
+      "x": 12150,
+      "y": -686.4839757825637,
+      "type": "pine",
+      "layer": "back"
+    },
+    {
+      "x": 12260,
+      "y": -699.6954574891423,
+      "type": "pine-small",
+      "layer": "back"
+    },
+    {
+      "x": 12420,
+      "y": -684.2365567326555,
+      "type": "pine",
+      "layer": "back"
+    },
+    {
+      "x": 12560,
+      "y": -634.969942411651,
+      "type": "boulder",
+      "layer": "back"
+    },
+    {
+      "x": 12700,
+      "y": -544.5386514785383,
+      "type": "pine",
+      "layer": "back"
+    },
+    {
+      "x": 12830,
+      "y": -418.73583106098056,
+      "type": "pine-small",
+      "layer": "back"
+    },
+    {
+      "x": -660,
+      "y": 300,
       "type": "tree",
       "layer": "back"
     },
     {
-      "x": -494,
+      "x": -684,
       "y": 188,
-      "type": "apple",
-      "layer": "back"
-    },
-    {
-      "x": -456,
-      "y": 168,
-      "type": "apple",
-      "layer": "back"
-    },
-    {
-      "x": -440,
-      "y": 200,
-      "type": "apple",
-      "layer": "back"
-    },
-    {
-      "x": -476,
-      "y": 204,
-      "type": "apple",
-      "layer": "back"
-    },
-    {
-      "x": -400,
-      "y": null,
-      "type": "fence",
-      "layer": "back"
-    },
-    {
-      "x": -640,
-      "y": null,
-      "type": "tree",
-      "layer": "back"
-    },
-    {
-      "x": -664,
-      "y": 188,
-      "type": "apple",
-      "layer": "back"
-    },
-    {
-      "x": -626,
-      "y": 168,
-      "type": "apple",
-      "layer": "back"
-    },
-    {
-      "x": -610,
-      "y": 200,
       "type": "apple",
       "layer": "back"
     },
     {
       "x": -646,
+      "y": 168,
+      "type": "apple",
+      "layer": "back"
+    },
+    {
+      "x": -630,
+      "y": 200,
+      "type": "apple",
+      "layer": "back"
+    },
+    {
+      "x": -666,
       "y": 204,
       "type": "apple",
       "layer": "back"
     },
     {
-      "x": -560,
-      "y": null,
-      "type": "bush",
-      "layer": "back"
-    },
-    {
       "x": -820,
-      "y": null,
+      "y": 300,
       "type": "tree",
       "layer": "back"
     },
     {
-      "x": -26,
-      "y": null,
+      "x": -844,
+      "y": 188,
+      "type": "apple",
+      "layer": "back"
+    },
+    {
+      "x": -806,
+      "y": 168,
+      "type": "apple",
+      "layer": "back"
+    },
+    {
+      "x": -790,
+      "y": 200,
+      "type": "apple",
+      "layer": "back"
+    },
+    {
+      "x": -826,
+      "y": 204,
+      "type": "apple",
+      "layer": "back"
+    },
+    {
+      "x": -980,
+      "y": 300,
+      "type": "tree",
+      "layer": "back"
+    },
+    {
+      "x": -600,
+      "y": 300,
+      "type": "fence",
+      "layer": "back"
+    },
+    {
+      "x": -740,
+      "y": 300,
+      "type": "bush",
+      "layer": "back"
+    },
+    {
+      "x": -900,
+      "y": 300,
+      "type": "flowers",
+      "layer": "back"
+    },
+    {
+      "x": -508,
+      "y": 296,
+      "type": "crates",
+      "layer": "back"
+    },
+    {
+      "x": -505,
+      "y": 279,
+      "type": "apple",
+      "layer": "back"
+    },
+    {
+      "x": -497,
+      "y": 280,
+      "type": "apple",
+      "layer": "back"
+    },
+    {
+      "x": -450,
+      "y": 296,
+      "type": "crates",
+      "layer": "back"
+    },
+    {
+      "x": -446,
+      "y": 279,
+      "type": "apple",
+      "layer": "back"
+    },
+    {
+      "x": -462,
+      "y": 296,
+      "type": "ladder",
+      "layer": "back"
+    },
+    {
+      "x": -215,
+      "y": 236,
+      "type": "lantern",
+      "layer": "back"
+    },
+    {
+      "x": -226,
+      "y": 284,
+      "type": "crates",
+      "layer": "back"
+    },
+    {
+      "x": -222,
+      "y": 267,
+      "type": "apple",
+      "layer": "back"
+    },
+    {
+      "x": -232,
+      "y": 268,
+      "type": "apple",
+      "layer": "back"
+    },
+    {
+      "x": -356,
+      "y": 240,
+      "type": "flowers",
+      "layer": "back"
+    },
+    {
+      "x": -171,
+      "y": 36,
+      "type": "smoke",
+      "layer": "back"
+    },
+    {
+      "x": -205,
+      "y": 60,
+      "type": "bird",
+      "layer": "back"
+    },
+    {
+      "x": -250,
+      "y": 140,
+      "type": "crates",
+      "layer": "back"
+    },
+    {
+      "x": -355.8842468146878,
+      "y": 300.55451620348396,
       "type": "wheelbarrow",
-      "layer": "back"
+      "layer": "front"
     },
     {
-      "x": -32,
-      "y": 286,
+      "x": -48.78841145833334,
+      "y": 257.3653160588224,
       "type": "apple",
       "layer": "back"
     },
     {
-      "x": -22,
-      "y": 285,
+      "x": -64.71158854166666,
+      "y": 217.29500355882232,
       "type": "apple",
       "layer": "back"
     },
     {
-      "x": 104,
-      "y": null,
-      "type": "petrol-can",
-      "layer": "back"
+      "x": -130,
+      "y": 300,
+      "type": "grass",
+      "layer": "front"
     },
     {
-      "x": 150,
-      "y": null,
+      "x": -410,
+      "y": 300,
+      "type": "grass",
+      "layer": "front"
+    },
+    {
+      "x": 168.8910359233919,
+      "y": 298.8481075656467,
       "type": "marshal-start",
       "layer": "back"
     },
@@ -1692,499 +5126,1412 @@
       "layer": "back"
     },
     {
-      "x": 340,
+      "x": 355.7010986107555,
       "y": null,
       "type": "banner",
+      "layer": "back",
+      "text": "High Orchard"
+    },
+    {
+      "x": 470,
+      "y": null,
+      "type": "pit-board",
+      "layer": "back",
+      "text": "S1"
+    },
+    {
+      "x": 600,
+      "y": null,
+      "type": "grass",
+      "layer": "front"
+    },
+    {
+      "x": 700,
+      "y": null,
+      "type": "bush",
       "layer": "back"
     },
     {
-      "x": 440,
+      "x": 760,
+      "y": null,
+      "type": "flowers",
+      "layer": "front"
+    },
+    {
+      "x": -10.3046875,
+      "y": 282.9059,
+      "type": "tree",
+      "layer": "back"
+    },
+    {
+      "x": 1057.7516019339355,
+      "y": 297.6146616214995,
+      "type": "beehive",
+      "layer": "back"
+    },
+    {
+      "x": 1029.399665119884,
+      "y": 291.6353925472131,
+      "type": "grass",
+      "layer": "back"
+    },
+    {
+      "x": 1150,
+      "y": null,
+      "type": "flowers",
+      "layer": "back"
+    },
+    {
+      "x": 1250,
+      "y": null,
+      "type": "sapling",
+      "layer": "back"
+    },
+    {
+      "x": 1330,
+      "y": null,
+      "type": "pit-board",
+      "layer": "back",
+      "text": "S2"
+    },
+    {
+      "x": 1470,
+      "y": null,
+      "type": "bush",
+      "layer": "back"
+    },
+    {
+      "x": 1580,
+      "y": null,
+      "type": "grass",
+      "layer": "front"
+    },
+    {
+      "x": 1700,
+      "y": null,
+      "type": "tree",
+      "layer": "back"
+    },
+    {
+      "x": 1676,
+      "y": 253.5,
+      "type": "apple",
+      "layer": "back"
+    },
+    {
+      "x": 1714,
+      "y": 233.5,
+      "type": "apple",
+      "layer": "back"
+    },
+    {
+      "x": 1730,
+      "y": 265.5,
+      "type": "apple",
+      "layer": "back"
+    },
+    {
+      "x": 1694,
+      "y": 269.5,
+      "type": "apple",
+      "layer": "back"
+    },
+    {
+      "x": 1790,
+      "y": null,
+      "type": "flowers",
+      "layer": "back"
+    },
+    {
+      "x": 1990,
+      "y": null,
+      "type": "hay-bales",
+      "layer": "back"
+    },
+    {
+      "x": 2330,
+      "y": null,
+      "type": "sapling",
+      "layer": "back"
+    },
+    {
+      "x": 2470,
+      "y": null,
+      "type": "grass",
+      "layer": "back"
+    },
+    {
+      "x": 2560,
+      "y": null,
+      "type": "flowers",
+      "layer": "front"
+    },
+    {
+      "x": 2640,
+      "y": null,
+      "type": "bush",
+      "layer": "back"
+    },
+    {
+      "x": 2790,
+      "y": null,
+      "type": "pit-board",
+      "layer": "back",
+      "text": "S3"
+    },
+    {
+      "x": 2700,
+      "y": null,
+      "type": "tree",
+      "layer": "back"
+    },
+    {
+      "x": 2676,
+      "y": 188.6,
+      "type": "apple",
+      "layer": "back"
+    },
+    {
+      "x": 2714,
+      "y": 168.6,
+      "type": "apple",
+      "layer": "back"
+    },
+    {
+      "x": 2730,
+      "y": 200.6,
+      "type": "apple",
+      "layer": "back"
+    },
+    {
+      "x": 2694,
+      "y": 204.6,
+      "type": "apple",
+      "layer": "back"
+    },
+    {
+      "x": 2900,
+      "y": null,
+      "type": "grass",
+      "layer": "back"
+    },
+    {
+      "x": 2974.813071390322,
+      "y": 253.21133525302116,
+      "type": "spectators",
+      "layer": "back"
+    },
+    {
+      "x": 3046.3120294828077,
+      "y": 233.24410125003573,
+      "type": "hay-bales",
+      "layer": "back"
+    },
+    {
+      "x": 3200,
+      "y": null,
+      "type": "grass",
+      "layer": "front"
+    },
+    {
+      "x": 3330,
+      "y": null,
+      "type": "stump",
+      "layer": "back"
+    },
+    {
+      "x": 3450,
+      "y": null,
+      "type": "banner",
+      "layer": "back",
+      "text": "KNOBBLY TYRES"
+    },
+    {
+      "x": 3500,
+      "y": 345,
+      "type": "flowers",
+      "layer": "back"
+    },
+    {
+      "x": 3650,
+      "y": null,
+      "type": "tree",
+      "layer": "back"
+    },
+    {
+      "x": 3626,
+      "y": 233,
+      "type": "apple",
+      "layer": "back"
+    },
+    {
+      "x": 3664,
+      "y": 213,
+      "type": "apple",
+      "layer": "back"
+    },
+    {
+      "x": 3680,
+      "y": 245,
+      "type": "apple",
+      "layer": "back"
+    },
+    {
+      "x": 3644,
+      "y": 249,
+      "type": "apple",
+      "layer": "back"
+    },
+    {
+      "x": 3760,
+      "y": null,
+      "type": "bush",
+      "layer": "back"
+    },
+    {
+      "x": 3900,
+      "y": null,
+      "type": "grass",
+      "layer": "back"
+    },
+    {
+      "x": 4000,
+      "y": null,
+      "type": "flowers",
+      "layer": "front"
+    },
+    {
+      "x": 4150,
+      "y": null,
+      "type": "tree",
+      "layer": "back"
+    },
+    {
+      "x": 4126,
+      "y": 88,
+      "type": "apple",
+      "layer": "back"
+    },
+    {
+      "x": 4164,
+      "y": 68,
+      "type": "apple",
+      "layer": "back"
+    },
+    {
+      "x": 4180,
+      "y": 100,
+      "type": "apple",
+      "layer": "back"
+    },
+    {
+      "x": 4144,
+      "y": 104,
+      "type": "apple",
+      "layer": "back"
+    },
+    {
+      "x": 4300,
+      "y": null,
+      "type": "pit-board",
+      "layer": "back",
+      "text": "S4"
+    },
+    {
+      "x": 4420,
+      "y": null,
+      "type": "bush",
+      "layer": "back"
+    },
+    {
+      "x": 4560,
+      "y": null,
+      "type": "grass",
+      "layer": "back"
+    },
+    {
+      "x": 4680,
+      "y": null,
+      "type": "flowers",
+      "layer": "back"
+    },
+    {
+      "x": 4760,
+      "y": null,
+      "type": "hay-bales",
+      "layer": "back"
+    },
+    {
+      "x": 4900,
       "y": null,
       "type": "spectators",
       "layer": "back"
     },
     {
-      "x": 520,
+      "x": 4990,
+      "y": null,
+      "type": "tyre-wall",
+      "layer": "back"
+    },
+    {
+      "x": 5080,
+      "y": null,
+      "type": "grass",
+      "layer": "front"
+    },
+    {
+      "x": 5180,
+      "y": null,
+      "type": "pit-board",
+      "layer": "back",
+      "text": "S5"
+    },
+    {
+      "x": 5300,
+      "y": null,
+      "type": "bush",
+      "layer": "back"
+    },
+    {
+      "x": 5420,
+      "y": null,
+      "type": "flowers",
+      "layer": "back"
+    },
+    {
+      "x": 5560,
       "y": null,
       "type": "grass",
       "layer": "back"
     },
     {
-      "x": 560,
+      "x": 5650,
+      "y": null,
+      "type": "pine-small",
+      "layer": "back"
+    },
+    {
+      "x": 5760,
+      "y": null,
+      "type": "grass",
+      "layer": "back"
+    },
+    {
+      "x": 5880,
+      "y": null,
+      "type": "bush",
+      "layer": "back"
+    },
+    {
+      "x": 5980,
       "y": null,
       "type": "flowers",
       "layer": "front"
     },
     {
-      "x": 1000,
+      "x": 7290.601152481611,
+      "y": 689.369674544653,
+      "type": "rabbit",
+      "layer": "back",
+      "flip": true
+    },
+    {
+      "x": 8337.734318203751,
+      "y": 539.5441094049504,
+      "type": "halfway-flag",
+      "layer": "back"
+    },
+    {
+      "x": 6391.216298193492,
+      "y": 586.359406201963,
+      "type": "pit-board",
+      "layer": "back",
+      "text": "S6"
+    },
+    {
+      "x": 6330,
+      "y": null,
+      "type": "camera-tower",
+      "layer": "back"
+    },
+    {
+      "x": 6243.34773902812,
+      "y": 571.634387568344,
+      "type": "spectators",
+      "layer": "back"
+    },
+    {
+      "x": 6760,
+      "y": 690,
+      "type": "grass",
+      "layer": "front"
+    },
+    {
+      "x": 6900,
+      "y": 690,
+      "type": "flowers",
+      "layer": "back"
+    },
+    {
+      "x": 7050,
+      "y": 690,
+      "type": "bush",
+      "layer": "back"
+    },
+    {
+      "x": 7200,
+      "y": 690,
+      "type": "grass",
+      "layer": "back"
+    },
+    {
+      "x": 7380,
+      "y": 690,
+      "type": "flowers",
+      "layer": "front"
+    },
+    {
+      "x": 7550,
+      "y": 690,
+      "type": "bush",
+      "layer": "back"
+    },
+    {
+      "x": 7700,
+      "y": 690,
+      "type": "grass",
+      "layer": "back"
+    },
+    {
+      "x": 6790,
+      "y": 480,
+      "type": "grass",
+      "layer": "back"
+    },
+    {
+      "x": 6870,
+      "y": 480,
+      "type": "sapling",
+      "layer": "back"
+    },
+    {
+      "x": 7280,
+      "y": 410,
+      "type": "bush",
+      "layer": "back"
+    },
+    {
+      "x": 7360,
+      "y": 410,
+      "type": "flowers",
+      "layer": "back"
+    },
+    {
+      "x": 7830,
+      "y": 440,
+      "type": "grass",
+      "layer": "back"
+    },
+    {
+      "x": 6904.660901685675,
+      "y": 495.144834804423,
+      "type": "hanging-roots",
+      "layer": "back"
+    },
+    {
+      "x": 7282.758605855844,
+      "y": 450.33497675440634,
+      "type": "hanging-roots",
+      "layer": "back"
+    },
+    {
+      "x": 7832.971328351106,
+      "y": 482.4975370671982,
+      "type": "hanging-roots",
+      "layer": "back"
+    },
+    {
+      "x": 8102,
+      "y": 586.978136035425,
+      "type": "pit-board",
+      "layer": "back",
+      "text": "S7"
+    },
+    {
+      "x": 8010,
+      "y": null,
+      "type": "grass",
+      "layer": "back"
+    },
+    {
+      "x": 8092,
+      "y": 587.8786363566458,
+      "type": "flowers",
+      "layer": "front"
+    },
+    {
+      "x": 8490,
       "y": null,
       "type": "tree",
       "layer": "back"
     },
     {
-      "x": 976,
-      "y": 118,
+      "x": 8466,
+      "y": 418,
       "type": "apple",
       "layer": "back"
     },
     {
-      "x": 1014,
-      "y": 98,
+      "x": 8504,
+      "y": 398,
       "type": "apple",
       "layer": "back"
     },
     {
-      "x": 1030,
-      "y": 130,
+      "x": 8520,
+      "y": 430,
       "type": "apple",
       "layer": "back"
     },
     {
-      "x": 994,
-      "y": 134,
+      "x": 8484,
+      "y": 434,
       "type": "apple",
       "layer": "back"
     },
     {
-      "x": 985,
+      "x": 8475,
       "y": null,
       "type": "ladder",
       "layer": "back"
     },
     {
-      "x": 1080,
+      "x": 8570,
       "y": null,
       "type": "crates",
       "layer": "back"
     },
     {
-      "x": 1072,
-      "y": 204,
+      "x": 8579,
+      "y": 502,
       "type": "apple",
       "layer": "back"
     },
     {
-      "x": 1080,
-      "y": 204,
+      "x": 8587,
+      "y": 502,
       "type": "apple",
       "layer": "back"
     },
     {
-      "x": 1088,
-      "y": 204,
+      "x": 8595,
+      "y": 502,
       "type": "apple",
       "layer": "back"
     },
     {
-      "x": 1180,
+      "x": 8670,
       "y": null,
       "type": "tree",
       "layer": "back"
     },
     {
-      "x": 1160,
-      "y": 110.54,
+      "x": 8650,
+      "y": 410.54,
       "type": "apple",
       "layer": "back"
     },
     {
-      "x": 1200,
-      "y": 100.54,
+      "x": 8690,
+      "y": 400.54,
       "type": "apple",
       "layer": "back"
     },
     {
-      "x": 1150,
-      "y": 130.54,
+      "x": 8640,
+      "y": 430.54,
       "type": "apple",
       "layer": "back"
     },
     {
-      "x": 900,
+      "x": 8390,
       "y": null,
       "type": "grass",
       "layer": "back"
     },
     {
-      "x": 1225,
+      "x": 8715,
       "y": null,
       "type": "flowers",
       "layer": "front"
     },
     {
-      "x": 1125,
+      "x": 8615,
       "y": null,
       "type": "rabbit",
       "layer": "front",
       "flip": true
     },
     {
-      "x": 1340,
+      "x": 8830,
       "y": null,
       "type": "bush",
       "layer": "back"
     },
     {
-      "x": 1420,
+      "x": 8910,
       "y": null,
       "type": "flowers",
       "layer": "back"
     },
     {
-      "x": 1560,
+      "x": 9050,
       "y": null,
       "type": "tree",
       "layer": "back"
     },
     {
-      "x": 1536,
-      "y": 20.88,
+      "x": 9026,
+      "y": 320.88,
       "type": "apple",
       "layer": "back"
     },
     {
-      "x": 1574,
-      "y": 0.88,
+      "x": 9064,
+      "y": 300.88,
       "type": "apple",
       "layer": "back"
     },
     {
-      "x": 1590,
-      "y": 32.88,
+      "x": 9080,
+      "y": 332.88,
       "type": "apple",
       "layer": "back"
     },
     {
-      "x": 1554,
-      "y": 36.88,
+      "x": 9044,
+      "y": 336.88,
       "type": "apple",
       "layer": "back"
     },
     {
-      "x": 1625,
+      "x": 9115,
       "y": null,
       "type": "beehive",
       "layer": "back"
     },
     {
-      "x": 1720,
+      "x": 9210,
       "y": null,
       "type": "sapling",
       "layer": "back"
     },
     {
-      "x": 1800,
+      "x": 9290,
       "y": null,
       "type": "tree",
       "layer": "back"
     },
     {
-      "x": 1774,
-      "y": 18.09,
+      "x": 9264,
+      "y": 318.09,
       "type": "apple",
       "layer": "back"
     },
     {
-      "x": 1810,
-      "y": -1.91,
+      "x": 9300,
+      "y": 298.09,
       "type": "apple",
       "layer": "back"
     },
     {
-      "x": 1826,
-      "y": 24.09,
+      "x": 9316,
+      "y": 324.09,
       "type": "apple",
       "layer": "back"
     },
     {
-      "x": 1850,
+      "x": 9340,
       "y": null,
       "type": "spectators",
       "layer": "back"
     },
     {
-      "x": 1690,
+      "x": 9180,
       "y": null,
       "type": "grass",
       "layer": "front"
     },
     {
-      "x": 1950,
+      "x": 9440,
       "y": null,
       "type": "bush",
       "layer": "back"
     },
     {
-      "x": 2040,
+      "x": 9530,
       "y": null,
       "type": "grass",
       "layer": "back"
     },
     {
-      "x": 2210,
+      "x": 9700,
       "y": null,
       "type": "camera-tower",
       "layer": "back"
     },
     {
-      "x": 2300,
+      "x": 9790,
       "y": null,
       "type": "tree",
       "layer": "back"
     },
     {
-      "x": 2276,
-      "y": -132,
+      "x": 9766,
+      "y": 168,
       "type": "apple",
       "layer": "back"
     },
     {
-      "x": 2314,
-      "y": -152,
+      "x": 9804,
+      "y": 148,
       "type": "apple",
       "layer": "back"
     },
     {
-      "x": 2330,
-      "y": -120,
+      "x": 9820,
+      "y": 180,
       "type": "apple",
       "layer": "back"
     },
     {
-      "x": 2294,
-      "y": -116,
+      "x": 9784,
+      "y": 184,
       "type": "apple",
       "layer": "back"
     },
     {
-      "x": 2420,
-      "y": null,
+      "x": 9875.444178416043,
+      "y": 279.8409457358422,
       "type": "spectators",
       "layer": "back"
     },
     {
-      "x": 2470,
+      "x": 9960,
       "y": null,
       "type": "hay-bales",
       "layer": "back"
     },
     {
-      "x": 2380,
+      "x": 9870,
       "y": null,
       "type": "course-tape",
       "layer": "back"
     },
     {
-      "x": 2585,
-      "y": 19.01,
+      "x": 10075,
+      "y": 319.01,
       "type": "tree",
       "layer": "back",
       "rotation": 0.1
     },
     {
-      "x": 2561,
-      "y": -98.99,
+      "x": 10051,
+      "y": 201.01,
       "type": "apple",
       "layer": "back"
     },
     {
-      "x": 2599,
-      "y": -118.99,
+      "x": 10089,
+      "y": 181.01,
       "type": "apple",
       "layer": "back"
     },
     {
-      "x": 2615,
-      "y": -86.99,
+      "x": 10105,
+      "y": 213.01,
       "type": "apple",
       "layer": "back"
     },
     {
-      "x": 2579,
-      "y": -82.99,
+      "x": 10069,
+      "y": 217.01,
       "type": "apple",
       "layer": "back"
     },
     {
-      "x": 2640,
+      "x": 10130,
       "y": null,
       "type": "flowers",
       "layer": "back"
     },
     {
-      "x": 2700,
+      "x": 10190,
       "y": null,
       "type": "stump",
       "layer": "back"
     },
     {
-      "x": 2880,
-      "y": 28.97,
+      "x": 10370,
+      "y": 328.97,
       "type": "tree",
       "layer": "back",
       "rotation": 0.1
     },
     {
-      "x": 2860,
-      "y": -91.03,
+      "x": 10350,
+      "y": 208.97,
       "type": "apple",
       "layer": "back"
     },
     {
-      "x": 2898,
-      "y": -105.03,
+      "x": 10388,
+      "y": 194.97,
       "type": "apple",
       "layer": "back"
     },
     {
-      "x": 2740,
+      "x": 10230,
       "y": null,
       "type": "grass",
       "layer": "front"
     },
     {
-      "x": 2810,
+      "x": 10300,
       "y": null,
       "type": "flowers",
       "layer": "back"
     },
     {
-      "x": 2900,
+      "x": 10390,
       "y": null,
       "type": "bush",
       "layer": "back"
     },
     {
-      "x": 3000,
+      "x": 10490,
       "y": null,
       "type": "grass",
       "layer": "back"
     },
     {
-      "x": 3110,
+      "x": 10600,
       "y": null,
       "type": "bush",
       "layer": "back"
     },
     {
-      "x": 3170,
+      "x": 10660,
       "y": null,
       "type": "grass",
       "layer": "front"
     },
     {
-      "x": 3370.4,
-      "y": null,
-      "type": "marshal-finish",
-      "layer": "back"
-    },
-    {
-      "x": 3440.4,
-      "y": null,
+      "x": 10949.888992899096,
+      "y": -52.873656629218644,
       "type": "spectators",
       "layer": "back"
     },
     {
-      "x": 3530.4,
-      "y": null,
-      "type": "banner",
-      "layer": "back",
-      "text": "HIGH ORCHARD"
-    },
-    {
-      "x": 3285.4,
+      "x": 10775.4,
       "y": null,
       "type": "flowers",
       "layer": "front"
     },
     {
-      "x": 3590.4,
-      "y": null,
+      "x": 10916.334387742963,
+      "y": 112.70218971784942,
       "type": "hay-bales",
       "layer": "back"
     },
     {
-      "x": 3240.4,
+      "x": 10730.4,
       "y": null,
       "type": "tree",
       "layer": "back"
     },
     {
-      "x": 3218.4,
-      "y": -313.75,
+      "x": 10708.4,
+      "y": -13.75,
       "type": "apple",
       "layer": "back"
     },
     {
-      "x": 3256.4,
-      "y": -327.75,
+      "x": 10746.4,
+      "y": -27.75,
       "type": "apple",
       "layer": "back"
     },
     {
-      "x": 3268.4,
-      "y": -297.75,
+      "x": 10758.4,
+      "y": 2.25,
       "type": "apple",
       "layer": "back"
     },
     {
-      "x": 3645.4,
-      "y": null,
+      "x": 10981.759645465467,
+      "y": 107.75492214536652,
       "type": "grass",
       "layer": "back"
     },
     {
-      "x": 3766.93,
+      "x": 11256.93,
       "y": null,
       "type": "pebbles",
       "layer": "back"
     },
     {
-      "x": 3866.93,
+      "x": 11356.93,
       "y": null,
       "type": "rock",
       "layer": "back"
     },
     {
-      "x": 3987.2,
+      "x": 11477.2,
       "y": null,
       "type": "pebbles",
       "layer": "back"
     },
     {
-      "x": 4187.2,
-      "y": null,
-      "type": "boulder",
-      "layer": "back"
-    },
-    {
-      "x": 4367.2,
-      "y": null,
-      "type": "pine-small",
-      "layer": "back"
-    },
-    {
-      "x": 4027.2,
+      "x": 11517.2,
       "y": null,
       "type": "grass",
       "layer": "front"
     },
     {
-      "x": 4737.2,
-      "y": null,
+      "x": 8247.971504665118,
+      "y": 546.4543939465852,
+      "type": "spectators",
+      "layer": "back"
+    },
+    {
+      "x": 8252.827133334345,
+      "y": 554.9404037117254,
+      "type": "course-tape",
+      "layer": "back"
+    },
+    {
+      "x": 3595.5350470100875,
+      "y": 322.2174896184457,
+      "type": "spectators",
+      "layer": "back"
+    },
+    {
+      "x": 11640,
+      "y": -96,
+      "type": "pit-board",
+      "layer": "back",
+      "text": "S8"
+    },
+    {
+      "x": 11728.087113988098,
+      "y": -94.81859539267765,
+      "type": "beams",
+      "layer": "back"
+    },
+    {
+      "x": 12951.770670039585,
+      "y": 6.8929833839573575,
+      "type": "beams",
+      "layer": "back"
+    },
+    {
+      "x": 11795.772148563776,
+      "y": -83.88327532186133,
+      "type": "beams",
+      "layer": "back"
+    },
+    {
+      "x": 11913.548622571792,
+      "y": -180.20503290792058,
+      "type": "lantern",
+      "layer": "back"
+    },
+    {
+      "x": 11970.780220935747,
+      "y": -250.24502170546424,
+      "type": "hanging-roots",
+      "layer": "back"
+    },
+    {
+      "x": 12370.08186846603,
+      "y": -61.513423108572454,
+      "type": "bats",
+      "layer": "back"
+    },
+    {
+      "x": 12091.523774785157,
+      "y": -19.29641903612844,
+      "type": "mushrooms",
+      "layer": "back"
+    },
+    {
+      "x": 12150,
+      "y": -10,
+      "type": "beams",
+      "layer": "back"
+    },
+    {
+      "x": 12450,
+      "y": 48,
+      "type": "beams",
+      "layer": "back"
+    },
+    {
+      "x": 12540.424100694709,
+      "y": 38.1316063163174,
+      "type": "mushrooms",
+      "layer": "back"
+    },
+    {
+      "x": 12600,
+      "y": -61.513423108572454,
+      "type": "lantern",
+      "layer": "back"
+    },
+    {
+      "x": 12708.760118326609,
+      "y": -154.18652561613706,
+      "type": "hanging-roots",
+      "layer": "back"
+    },
+    {
+      "x": 12808.313074934424,
+      "y": 49.513606230984976,
+      "type": "beams",
+      "layer": "back"
+    },
+    {
+      "x": 12881.98736807588,
+      "y": -83.88327532186133,
+      "type": "lantern",
+      "layer": "back"
+    },
+    {
+      "x": 13140,
+      "y": 44.2,
+      "type": "pine",
+      "layer": "back"
+    },
+    {
+      "x": 13520,
+      "y": 142.1,
+      "type": "pine",
+      "layer": "back"
+    },
+    {
+      "x": 13760,
+      "y": 116,
+      "type": "pine",
+      "layer": "back"
+    },
+    {
+      "x": 14220,
+      "y": 10,
+      "type": "pine",
+      "layer": "back"
+    },
+    {
+      "x": 13060,
+      "y": 25.4,
+      "type": "pine-small",
+      "layer": "back"
+    },
+    {
+      "x": 13223.119180699172,
+      "y": 104.97698722320226,
+      "type": "pine-small",
+      "layer": "back"
+    },
+    {
+      "x": 13872.975170292075,
+      "y": 23.422871238812377,
+      "type": "pine-small",
+      "layer": "back"
+    },
+    {
+      "x": 14400,
+      "y": -262,
+      "type": "pine",
+      "layer": "back"
+    },
+    {
+      "x": 14560,
+      "y": -262,
+      "type": "pine",
+      "layer": "back"
+    },
+    {
+      "x": 14700,
+      "y": -262,
+      "type": "pine",
+      "layer": "back"
+    },
+    {
+      "x": 14880,
+      "y": -262,
+      "type": "pine",
+      "layer": "back"
+    },
+    {
+      "x": 15050,
+      "y": -262,
+      "type": "pine",
+      "layer": "back"
+    },
+    {
+      "x": 15250,
+      "y": -262,
+      "type": "pine",
+      "layer": "back"
+    },
+    {
+      "x": 15450,
+      "y": -262,
+      "type": "pine",
+      "layer": "back"
+    },
+    {
+      "x": 15650,
+      "y": -262,
+      "type": "pine",
+      "layer": "back"
+    },
+    {
+      "x": 14480,
+      "y": -262,
+      "type": "stump",
+      "layer": "back"
+    },
+    {
+      "x": 14800,
+      "y": -262,
+      "type": "pine-small",
+      "layer": "back"
+    },
+    {
+      "x": 15120,
+      "y": -262,
+      "type": "stump",
+      "layer": "back"
+    },
+    {
+      "x": 13180,
+      "y": 66,
+      "type": "grass",
+      "layer": "back"
+    },
+    {
+      "x": 13276.483512811314,
+      "y": 135.71319189324757,
+      "type": "stump",
+      "layer": "back"
+    },
+    {
+      "x": 13660,
+      "y": 148.9,
+      "type": "rock",
+      "layer": "back"
+    },
+    {
+      "x": 13827.176452023561,
+      "y": 60,
+      "type": "grass",
+      "layer": "back"
+    },
+    {
+      "x": 14120.915665262419,
+      "y": 9.28571816299251,
+      "type": "grass",
+      "layer": "back"
+    },
+    {
+      "x": 14283.905483975985,
+      "y": 9.686121309274029,
+      "type": "boulder",
+      "layer": "back"
+    },
+    {
+      "x": 13415.499972018937,
+      "y": 141.3005505806351,
+      "type": "grass",
+      "layer": "front"
+    },
+    {
+      "x": 14286.18974486668,
+      "y": -163.6400084799457,
+      "type": "roots",
+      "layer": "back",
+      "rotation": -1.3
+    },
+    {
+      "x": 14284,
+      "y": -220,
+      "type": "moss",
+      "layer": "back",
+      "rotation": -1.1
+    },
+    {
+      "x": 13479.160775349234,
+      "y": 141.3005505806351,
+      "type": "spectators",
+      "layer": "back"
+    },
+    {
+      "x": 13592.753128959255,
+      "y": 145.61085264880978,
+      "type": "spectators",
+      "layer": "back"
+    },
+    {
+      "x": 13680,
+      "y": 149.7,
+      "type": "hay-bales",
+      "layer": "back"
+    },
+    {
+      "x": 13973.803708434414,
+      "y": 9.705916239006228,
+      "type": "tyre-wall",
+      "layer": "back"
+    },
+    {
+      "x": 14064.393714757452,
+      "y": 9.162316953190384,
+      "type": "marshal-finish",
+      "layer": "back"
+    },
+    {
+      "x": 14187.066764541252,
+      "y": 8.07852340788125,
+      "type": "spectators",
+      "layer": "back"
+    },
+    {
+      "x": 14125,
+      "y": 10,
+      "type": "camera-tower",
+      "layer": "back"
+    },
+    {
+      "x": 14237.921574782164,
+      "y": 9.41430491483544,
+      "type": "hay-bales",
+      "layer": "back"
+    },
+    {
+      "x": 14330,
+      "y": -262,
+      "type": "spectators",
+      "layer": "back"
+    },
+    {
+      "x": 13382.400060448888,
+      "y": 143.81054857740753,
+      "type": "banner",
+      "layer": "back",
+      "text": "FINISH"
+    },
+    {
+      "x": 12292.40303184758,
+      "y": -78.38471013330641,
+      "type": "lantern",
+      "layer": "back"
+    },
+    {
+      "x": 13595.229693679888,
+      "y": 129.01998242441692,
+      "type": "course-tape",
+      "layer": "back"
+    },
+    {
+      "x": 14121.994582174453,
+      "y": 6.520684873564932,
+      "type": "spectators",
+      "layer": "back"
+    },
+    {
+      "x": 14137.929393022332,
+      "y": -11.660898756043508,
+      "type": "course-tape",
+      "layer": "back"
+    },
+    {
+      "x": 62.5409471869319,
+      "y": 262.1322591205438,
+      "type": "course-tape",
+      "layer": "front"
+    },
+    {
+      "x": 224.18444758397462,
+      "y": 296.9315492288477,
+      "type": "spectators",
+      "layer": "back"
+    },
+    {
+      "x": 230.02292844150054,
+      "y": 294.80678152567634,
+      "type": "course-tape",
+      "layer": "back"
+    },
+    {
+      "x": 2094.805490901913,
+      "y": 131.5713107957394,
+      "type": "spectators",
+      "layer": "back"
+    },
+    {
+      "x": 3598.862561631837,
+      "y": 328.90375536710894,
+      "type": "course-tape",
+      "layer": "back"
+    },
+    {
+      "x": 6244,
+      "y": 574.0880315037775,
+      "type": "course-tape",
+      "layer": "back"
+    },
+    {
+      "x": 2088.3099667699453,
+      "y": 122.30570601607127,
+      "type": "course-tape",
+      "layer": "back"
+    },
+    {
+      "x": -19.435374854827884,
+      "y": 299.2494873055794,
+      "type": "petrol-can",
+      "layer": "back"
+    },
+    {
+      "x": 872.5952605666139,
+      "y": 267.9887777172186,
       "type": "tree",
       "layer": "back"
     },
     {
-      "x": 4817.2,
-      "y": null,
-      "type": "bush",
+      "x": 846,
+      "y": 153.1,
+      "type": "apple",
       "layer": "back"
     },
     {
-      "x": 4917.2,
-      "y": null,
-      "type": "tree",
+      "x": 884,
+      "y": 133.1,
+      "type": "apple",
+      "layer": "back"
+    },
+    {
+      "x": 900,
+      "y": 165.1,
+      "type": "apple",
+      "layer": "back"
+    },
+    {
+      "x": 864,
+      "y": 169.1,
+      "type": "apple",
       "layer": "back"
     }
   ],
@@ -2200,17 +6547,17 @@
     "wind": 0.3,
     "windDirection": "left"
   },
-  "timeOfDay": 17,
-  "lesson": "Climbing for height. Five slopes, each taller and steeper than the last, from the cider barn up to a crag above the orchard. Stall, roll back and come down with speed for a longer run-up.",
-  "alsoNew": "A harvest trials day with a crowd, a marshal and a camera tower, on a terraced hillside.",
+  "timeOfDay": 12,
+  "lesson": "The First Rides finale, raced as a trials event in eight sections: rollers, momentum, a hop, a braking drop, big air off a tall hill, floating islands, the climb to the crag and a tunnel into The Woods.",
+  "alsoNew": "A whole harvest trials day from the cider farm to a finish arena in the next world, reached through a tunnel under the mountain.",
   "world": "First Rides",
   "medals": {
-    "gold": 17.5,
-    "silver": 23,
-    "bronze": 30.5
+    "gold": 46,
+    "silver": 60,
+    "bronze": 81
   },
   "preview": {
-    "x": 2414,
-    "y": -100
+    "x": 151,
+    "y": 226
   }
 }
