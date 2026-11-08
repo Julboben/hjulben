@@ -57,6 +57,7 @@ import {
   toggleFlip,
 } from "./selection.js";
 import { gridSpacing, snapToAngleAndGrid } from "./snap.js";
+import { mirrorSelection, orderSelection } from "./arrange.js";
 import { clampZoom, editor } from "./state.js";
 import { refuseEdit, refuseReadOnly, showStatus } from "./status.js";
 import { PLACING_TOOLS, TOOL_KEYS, setTool, toolSettings } from "./tools.js";
@@ -1097,6 +1098,17 @@ export function bindInput() {
       return;
     }
 
+    // By the key's place rather than its character, which Shift changes.
+    if (
+      (event.metaKey || event.ctrlKey) &&
+      event.shiftKey &&
+      (event.code === "BracketRight" || event.code === "BracketLeft") &&
+      shortcutsReach()
+    ) {
+      event.preventDefault();
+      orderSelection(event.code === "BracketRight");
+      return;
+    }
     if (
       (event.key === "Delete" || event.key === "Backspace") &&
       shortcutsReach()
@@ -1145,8 +1157,10 @@ export function bindInput() {
       cyclePropType(event.key === "]" ? 1 : -1);
       return;
     }
+    // X flips a selection with blocks in it, Shift+X upside down; props alone
+    // flip where they stand.
     if (event.code === "KeyX") {
-      toggleFlip();
+      if (!mirrorSelection(!event.shiftKey) && !event.shiftKey) toggleFlip();
       return;
     }
     if (event.code === "KeyY") {

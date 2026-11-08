@@ -804,6 +804,20 @@
                                     <button type="button" id="rotate-cw">↻ 90°</button>
                                 </span>
                             </div>
+                            <div class="field-row" id="selection-mirror-row" hidden>
+                                Flip
+                                <span class="segmented">
+                                    <button type="button" id="mirror-horizontal" title="Flip left to right (X)">⇆ Horizontal</button>
+                                    <button type="button" id="mirror-vertical" title="Flip upside down (Shift+X)">⇅ Vertical</button>
+                                </span>
+                            </div>
+                            <div class="field-row" id="selection-order-row" hidden>
+                                Order
+                                <span class="segmented">
+                                    <button type="button" id="order-back" title="Send behind the others of its kind (⌘⇧[)">To back</button>
+                                    <button type="button" id="order-front" title="Bring in front of the others of its kind (⌘⇧])">To front</button>
+                                </span>
+                            </div>
                             <label id="selection-radius-row" hidden
                                 >Radius
                                 <input
@@ -1026,7 +1040,8 @@
                         <div><dt><kbd data-mod>⌘</kbd> <kbd>C</kbd> <kbd>X</kbd> <kbd>V</kbd></dt><dd>Copy, cut, paste</dd></div>
                         <div><dt><kbd>Delete</kbd></dt><dd>Delete</dd></div>
                         <div><dt><kbd>[</kbd> <kbd>]</kbd></dt><dd>Change prop type</dd></div>
-                        <div><dt><kbd>X</kbd></dt><dd>Flip prop</dd></div>
+                        <div><dt><kbd>X</kbd></dt><dd>Flip (Shift: upside down)</dd></div>
+                        <div><dt><kbd data-mod>⌘</kbd> <kbd>Shift</kbd> <kbd>]</kbd> <kbd>[</kbd></dt><dd>To front, to back</dd></div>
                         <div><dt><kbd>R</kbd></dt><dd>Rotate 15° (Shift: back)</dd></div>
                         <div><dt><kbd data-mod>⌘</kbd> <kbd>Z</kbd></dt><dd>Undo</dd></div>
                         <div><dt><kbd data-mod>⌘</kbd> <kbd>Shift</kbd> <kbd>Z</kbd></dt><dd>Redo</dd></div>

@@ -36,6 +36,7 @@ import {
 } from "./blocks.js";
 import { $, canvas } from "./dom.js";
 import { canRotateSelection, rotateSelected } from "./rotate.js";
+import { canMirrorSelection, canOrderSelection, mirrorSelection, orderSelection } from "./arrange.js";
 import { pushHistory, snapshot, updateHistoryButtons } from "./history.js";
 import { scheduleAutosave } from "./autosave.js";
 import { updateVersionChip } from "./drafts.js";
@@ -69,6 +70,10 @@ import { syncPreviewControls } from "./preview.js";
 
 export function selectedPosition() {
   if (!editor.selection) return null;
+  // Whole blocks are placed by the top-left of their box, the corner their
+  // Width and Height grow from, so typed values line blocks up.
+  const corner = blocksCorner();
+  if (corner) return corner;
   if (editor.selection.kind === "items") return itemsCentre(editor.selection.items);
   if (
     editor.selection.kind === "blockPoint" ||
@@ -95,8 +100,7 @@ export function selectedPosition() {
       .map((index) => blocks()[index])
       .filter(Boolean);
     if (!chosen.length) return null;
-    // The handle for blocks, or for one empty space, is the centre of their
-    // nodes. A block covers every node it owns; a single boundary just its own.
+    // A lone outline or cave is placed by the centre of its points.
     const nodes =
       editor.selection.kind === "blockBoundary"
         ? boundariesOf(chosen[0])[editor.selection.boundaryIndex]?.nodes || []
@@ -183,6 +187,12 @@ function resizableBlocks() {
     kind === "block" ||
     (kind === "items" && editor.selection.items.every((item) => item.type === "block"));
   return whole ? selectedBlocks().filter((index) => blocks()[index]) : [];
+}
+
+/** The top-left of the box around a selection of whole blocks, or null. */
+function blocksCorner() {
+  const box = resizableBlocks().length ? selectionBox() : null;
+  return box && [box.left, box.top];
 }
 
 // The smallest width or height typed in, as the scale handles allow.
@@ -292,6 +302,8 @@ export function syncInspector({ live = false } = {}) {
     $("selection-rotation").value = selectedProp.rotation || 0;
   // A lone prop has its own Rotation field; blocks and groups turn by a quarter.
   $("selection-rotate-row").hidden = Boolean(selectedProp) || !canRotateSelection();
+  $("selection-mirror-row").hidden = !canMirrorSelection();
+  $("selection-order-row").hidden = !canOrderSelection();
   const spikes = selectedOf("spike").map((index) => editor.trail.spikes[index]);
   for (const key of ["radius", "spin"]) {
     $(`selection-${key}-row`).hidden = !spikes.length;
@@ -426,7 +438,10 @@ export function updateSelectedPosition(x, y) {
   if (!editor.selection) return;
   const kind = editor.selection.kind;
   if (kind === "items") {
-    moveItems(x, y);
+    const corner = blocksCorner();
+    const centre = corner && itemsCentre(editor.selection.items);
+    if (centre) moveItems(centre[0] + x - corner[0], centre[1] + y - corner[1]);
+    else moveItems(x, y);
     return;
   }
   if (kind === "blockPoint" || kind === "blockHandle") {
@@ -913,6 +928,10 @@ export function bindInspector() {
     render();
   });
 
+  $("mirror-horizontal").addEventListener("click", () => mirrorSelection(true));
+  $("mirror-vertical").addEventListener("click", () => mirrorSelection(false));
+  $("order-back").addEventListener("click", () => orderSelection(false));
+  $("order-front").addEventListener("click", () => orderSelection(true));
   for (const [id, degrees] of [["rotate-ccw", -90], ["rotate-cw", 90]])
     $(id).addEventListener("click", () => {
       rotateSelected(degrees);

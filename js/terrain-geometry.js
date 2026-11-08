@@ -982,6 +982,32 @@ export function rotatePoint(x, y, px, py, angle) {
 }
 
 /**
+ * Mirror a block across the line x = px (`horizontal`) or y = py. A mirror
+ * turns every ring the other way round, and an outline must run one way and
+ * its caves the other, so each ring's points are put back in their usual
+ * order: each point's handles swap sides, and the straight-or-curved hint of
+ * the edge leaving it comes from the edge that now arrives there.
+ */
+export function mirrorBlock(block, px, py, horizontal) {
+  const mirrored = scaleBlock(block, px, py, horizontal ? -1 : 1, horizontal ? 1 : -1);
+  const reverse = boundary => {
+    const { nodes } = boundary;
+    const flipped = nodes.map((node, index) => {
+      const { edge, ...rest } = node;
+      const arriving = nodes[(index + nodes.length - 1) % nodes.length].edge;
+      return {
+        ...rest,
+        in: node.out ? [...node.out] : null,
+        out: node.in ? [...node.in] : null,
+        ...(arriving === undefined ? {} : { edge: arriving }),
+      };
+    });
+    return { ...boundary, nodes: flipped.reverse() };
+  };
+  return { ...mirrored, outer: reverse(mirrored.outer), inner: mirrored.inner.map(reverse) };
+}
+
+/**
  * Rotate a block and every boundary it owns about (px, py) by `angle` radians,
  * clockwise on screen. Curve handles turn with their points, so curves keep
  * their shape exactly.

@@ -240,6 +240,17 @@ const reported = (report, label) => {
   check('an edge offers no delete button', report.edgeDeleteHidden === true);
   check('Split Edge adds one point and selects it', json(report.split) === json([1, 'blockPoint', 4]), `(${json(report.split)})`);
   check('and undo takes it out again', report.splitUndone);
+  check('whole blocks show the top-left of their box as X and Y', json(report.cornerShown) === json([true, true]), `(${json(report.cornerShown)})`);
+  check('and a typed X moves that corner there', report.cornerMoved === 100, `(${report.cornerMoved})`);
+  check('a selection with a block can be flipped', report.mirrorShown);
+  check('flipping carries a prop across and turns it round', json(report.mirrored) === json([0, true]), `(${json(report.mirrored)})`);
+  check('X flips it too', report.keyMirrored === 0, `(${report.keyMirrored})`);
+  check('a prop alone has no block flip', report.propMirrorHidden);
+  check('and Shift+X leaves it alone', report.shiftXOnProp);
+  check('a prop can be brought to the front or sent to the back', report.orderShown);
+  check('To front draws it last, and the selection follows it', json(report.toFront) === json([true, true]), `(${json(report.toFront)})`);
+  check('Cmd+Shift+[ sends it to the back', json(report.toBack) === json([true, true]), `(${json(report.toBack)})`);
+  check('and undo puts the order back', report.orderUndone);
 }
 
 // ---------------------------------------------------------------------------

@@ -598,6 +598,49 @@ if (kind === 'group') {
   out.split = [points() - pointsBefore, editor.selection?.kind, editor.selection?.index];
   undo.click();
   out.splitUndone = points() === pointsBefore;
+
+  // Whole blocks are placed by the top-left of their box.
+  editor.selection = { kind: 'block', blockIndex: 0 };
+  syncInspector();
+  const box = selectionBox();
+  out.cornerShown = [Number(field('selection-x').value) === Math.round(box.left), Number(field('selection-y').value) === Math.round(box.top)];
+  set('selection-x', String(Math.round(box.left) + 100));
+  out.cornerMoved = Math.round(selectionBox().left - box.left);
+  undo.click();
+
+  // Flipping a block with a prop carries the prop across and turns it round.
+  const prop = () => current().props[0];
+  const propBefore = { ...prop() };
+  editor.selection = { kind: 'items', items: [{ type: 'block', index: 0 }, { type: 'prop', index: 0 }] };
+  syncInspector();
+  const middle = (selectionBox().left + selectionBox().right) / 2;
+  out.mirrorShown = field('selection-mirror-row').hidden === false;
+  field('mirror-horizontal').click();
+  out.mirrored = [Math.round(prop().x - (2 * middle - propBefore.x)), Boolean(prop().flip) !== Boolean(propBefore.flip)];
+  undo.click();
+  // X does the same; Shift+X on props alone does nothing.
+  editor.selection = { kind: 'items', items: [{ type: 'block', index: 0 }, { type: 'prop', index: 0 }] };
+  key('x', { code: 'KeyX' });
+  out.keyMirrored = Math.round(prop().x - (2 * middle - propBefore.x));
+  undo.click();
+  editor.selection = { kind: 'prop', index: 0 };
+  syncInspector();
+  out.propMirrorHidden = field('selection-mirror-row').hidden === true;
+  const propsBefore = JSON.stringify(current().props);
+  key('X', { code: 'KeyX', shiftKey: true });
+  out.shiftXOnProp = JSON.stringify(current().props) === propsBefore;
+
+  // To front puts a prop last in its list, where it is drawn over the others,
+  // and the selection follows it; Cmd+Shift+[ sends it back.
+  out.orderShown = field('selection-order-row').hidden === false;
+  const first = JSON.stringify(current().props[0]);
+  field('order-front').click();
+  out.toFront = [JSON.stringify(current().props.at(-1)) === first, editor.selection?.index === current().props.length - 1];
+  key('{', { code: 'BracketLeft', metaKey: true, shiftKey: true });
+  out.toBack = [JSON.stringify(current().props[0]) === first, editor.selection?.index === 0];
+  undo.click();
+  undo.click();
+  out.orderUndone = JSON.stringify(current().props) === propsBefore;
   process.stdout.write(JSON.stringify(out));
   process.exit(0);
 }

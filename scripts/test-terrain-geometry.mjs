@@ -7,7 +7,7 @@ import {
   rectangleBlock, cutBlock, normalizeBlock, regionRings, pointInRegion,
   regionArea, flattenBoundary, moveBlock, insertBoundaryNode, validateBlock, addInnerBoundary,
   createNode, createBoundary, createRegion, hitTestBlock, removeBoundaryNodes, setBoundaryEdge,
-  setNodeMode, blockSolidArea, isCurvedEdge, scaleBlock, rotateBlock, mergeBlocks,
+  setNodeMode, blockSolidArea, isCurvedEdge, scaleBlock, rotateBlock, mirrorBlock, mergeBlocks,
 } from "../js/terrain-geometry.js";
 import { normalizeTrail, validateTrail } from "../js/trail-schema.js";
 
@@ -124,6 +124,26 @@ check("turning back restores the block", back.outer.nodes.every((n, i) =>
 const curvedTurned = rotateBlock(roundish, 0, 0, Math.PI / 2).outer.nodes[0];
 check("rotation turns curve handles", curvedTurned.x === 0 && curvedTurned.y === 10
   && curvedTurned.in[0] === 5 && curvedTurned.in[1] === 10 && curvedTurned.out[0] === -5);
+
+// Mirroring a block keeps its shape, caves and curves, and leaves its rings
+// running the way normalization wants, so loading it again changes nothing.
+{
+  const lopsided = normalizeBlock({ ...holed.blocks[0], outer: setBoundaryEdge(holed.blocks[0].outer, 0, true) });
+  const curved = block => block.outer.nodes.filter((node, i, nodes) => isCurvedEdge(node, nodes[(i + 1) % nodes.length])).length;
+  for (const horizontal of [true, false]) {
+    const way = horizontal ? "left to right" : "upside down";
+    const mirrored = mirrorBlock(lopsided, 40, 30, horizontal);
+    check(`a block mirrored ${way} keeps its area and cave`,
+      Math.abs(area(mirrored) - area(lopsided)) < 1 && mirrored.inner.length === 1);
+    check(`and keeps its curved edge`, curved(mirrored) === curved(lopsided) && curved(lopsided) === 1);
+    check(`and is left as it is by normalization`,
+      JSON.stringify(normalizeBlock(mirrored)) === JSON.stringify(mirrored));
+    const xs = block => regionRings(block)[0].map(([x, y]) => horizontal ? x : y);
+    check(`and lands across the line`, Math.abs(Math.max(...xs(mirrored)) - (2 * (horizontal ? 40 : 30) - Math.min(...xs(lopsided)))) < 0.05);
+    const twice = mirrorBlock(mirrored, 40, 30, horizontal);
+    check(`mirrored ${way} twice, it is the block it was`, JSON.stringify(twice) === JSON.stringify(lopsided));
+  }
+}
 
 // 8. Validation catches malformed geometry.
 check("non-finite is rejected", validateBlock({ material: "grass", outer: { nodes: [
