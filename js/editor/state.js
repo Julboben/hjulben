@@ -38,6 +38,8 @@ export const editor = {
   history: [],
   future: [],
   snapGuide: null,
+  // The lines a drag has snapped along, drawn between what lined up.
+  snapLines: [],
   gameArt: null,
   // The Block or Cut drag currently in progress, drawn live so the author sees the
   // shape before committing it.

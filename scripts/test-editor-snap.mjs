@@ -1,4 +1,4 @@
-import { gridSpacing, snapToAngleAndGrid } from '../js/editor/snap.js';
+import { gridSpacing, lockDirection, snapAxis, snapToAngleAndGrid } from '../js/editor/snap.js';
 
 let failures = 0;
 const check = (name, ok, detail = '') => {
@@ -67,6 +67,38 @@ check('the grid gets finer when zoomed right in', gridSpacing(2) === 25 && gridS
 {
   const s = snapToAngleAndGrid({ x: 5, y: 5 }, [{ x: 5, y: 5 }], 50);
   check('pointer on the anchor falls back to the grid', s.x === 0 && s.y === 0 && s.anchor === null);
+}
+
+// A move snaps a line onto another thing's line when it comes close enough.
+{
+  const s = snapAxis(-197, [313, 353, 393], [113, 163, 213], 6, 50);
+  check('a moving edge lands on a nearby edge', s.delta === -200 && s.at === 113 && !s.grid, `(${s.delta})`);
+  const far = snapAxis(-170, [313, 353, 393], [113, 163, 213], 6, 50);
+  check('too far from anything, it moves as asked', far.delta === -170 && far.at === null, `(${far.delta})`);
+}
+
+// Things win over the grid, even when the grid is nearer.
+{
+  const s = snapAxis(0, [148], [153], 6, 50);
+  check('another thing wins over a nearer grid line', s.at === 153 && s.delta === 5, `(${s.at})`);
+  const grid = snapAxis(0, [148], [], 6, 50);
+  check('with nothing else close, the grid line', grid.at === 150 && grid.grid, `(${grid.at})`);
+}
+
+// Of the moving lines, the one nearest a target decides.
+{
+  const s = snapAxis(0, [10, 47], [12, 48], 6, 0);
+  check('the nearest pair snaps', s.at === 48 && s.delta === 1, `(${s.at})`);
+}
+
+// Shift locks a move to across, up and down, or 45 degrees.
+{
+  const level = lockDirection(200, 15);
+  check('mostly sideways stays level', level.dx === 200 && level.dy === 0 && level.angle === 0, `(${level.dx}, ${level.dy})`);
+  const up = lockDirection(-8, -120);
+  check('mostly upwards goes straight up', up.dx === 0 && up.dy === -120 && up.angle === -90, `(${up.dx}, ${up.dy})`);
+  const diagonal = lockDirection(90, -110);
+  check('near 45 degrees moves as far each way', diagonal.dx === 100 && diagonal.dy === -100 && diagonal.angle === -45, `(${diagonal.dx}, ${diagonal.dy})`);
 }
 
 console.log(failures ? `\n${failures} failing` : '\nEditor snap tests passed.');

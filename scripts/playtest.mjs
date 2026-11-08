@@ -10,7 +10,8 @@
 //
 // Options:
 //   --order 2,1,3    the order to take the apples in (default: the bot's choice, nearest first)
-//   --minutes N      search budget per stretch, in minutes (default 2)
+//   --budget N       search budget per stretch, in millions of simulation steps (default 4,
+//                    a minute or two); the same budget gives the same result on any machine
 //   --trials N       jittered reruns per second of riding for the forgiveness score (default 6; 0 skips it)
 //   --fresh          ignore the runs saved from the last playtest
 //   --json FILE      also write the whole report as JSON
@@ -37,7 +38,7 @@ import { decodeInputs, encodeInputs } from '../js/replay-codec.js';
 import { DESCRIPTION_MAX_LENGTH, normalizeTrail, validateTrail } from '../js/trail-schema.js';
 import { terrainAt } from '../js/terrain.js';
 import { hangsBelowWheel } from '../js/vehicle-physics.js';
-import { cloneRide, exploreTrail, recordTrail } from './lib/replay-bot.mjs';
+import { MILLION, cloneRide, exploreTrail, recordTrail } from './lib/replay-bot.mjs';
 import { MAX_JSON_BYTES } from '../js/trail-link.js';
 import { trailHash } from '../js/trail-hash.js';
 import { loadCatalogTrails, loadTrailArgument, playtestRunPath, repoRoot } from './lib/trails.mjs';
@@ -51,14 +52,17 @@ const option = name => {
   const at = args.indexOf(name);
   return at >= 0 ? args[at + 1] : undefined;
 };
-const VALUED = ['--minutes', '--trials', '--json', '--every', '--probe', '--script', '--goal', '--without', '--order'];
+const VALUED = ['--budget', '--trials', '--json', '--every', '--probe', '--script', '--goal', '--without', '--order'];
 const target = args.find((arg, index) => !arg.startsWith('--') && !VALUED.includes(args[index - 1]));
-const MINUTES = Number(option('--minutes')) || 2;
+if (args.includes('--minutes')) throw new Error('--minutes is gone: the search budget is now --budget, in millions of simulation steps (default 4)');
+// The bot's budget counts simulation steps, not time, so a playtest's result doesn't depend on the machine.
+const BUDGET = (Number(option('--budget')) || 4) * MILLION;
 const TRIALS = Number(option('--trials') ?? 6);
 // The forgiveness score nudges input timing by up to JITTER steps, in one WINDOW of seconds at a time.
 const JITTER = 6;
 const WINDOW = 1;
 const EVERY = Number(option('--every')) || 0.1;
+const budgetText = `${BUDGET / MILLION} million steps of search`;
 
 if (!target) {
   out('Usage: node scripts/playtest.mjs <trail file or catalog id> [--check] [--without SKILL] [--probe X,Y,FACING,SPEED --script "..." | --goal GOAL]');
@@ -396,7 +400,7 @@ const TRAP_SETTLE = Math.round(3 / STEP);
 const TRAP_REST = Math.round(0.5 / STEP);
 const TRAP_NEAR = 120;
 const TRAP_CHECKS = 3;
-const TRAP_MINUTES = 0.25;
+const TRAP_STEPS = 0.5 * MILLION;
 const ROUTE_REACH = 30;
 
 function findTraps(stalls, route, start, done, focus) {
@@ -423,8 +427,8 @@ function findTraps(stalls, route, start, done, focus) {
     // searches on a copy where only the stretch's apple is left.
     const from = cloneRide(ride);
     if (focus !== null) from.apples.forEach((apple, index) => { apple.taken = index !== focus; });
-    if (recordTrail(entry, { start: from, done: back, minutes: TRAP_MINUTES * 0.4, constrain }).done) return false;
-    return !exploreTrail(entry, [], { start: from, done: back, minutes: TRAP_MINUTES * 0.6, polish: false, constrain });
+    if (recordTrail(entry, { start: from, done: back, steps: TRAP_STEPS * 0.4, constrain }).done) return false;
+    return !exploreTrail(entry, [], { start: from, done: back, steps: TRAP_STEPS * 0.6, polish: false, constrain });
   }).map(({ place }) => ({ x: Math.round(place.x), y: Math.round(place.y) }));
 }
 
@@ -464,10 +468,10 @@ function solve(start, done, saved, focus = null) {
     start.apples.forEach((apple, index) => { apple.taken = index !== focus; });
     start.collected = start.apples.length - 1;
   }
-  const greedy = recordTrail(entry, { start, done, minutes: MINUTES * .4, constrain });
+  const greedy = recordTrail(entry, { start, done, steps: BUDGET * .4, constrain });
   if (greedy.done) return { inputs: greedy.inputs, method: 'greedy bot' };
   const stats = {};
-  const explored = exploreTrail(entry, [], { start, done, minutes: MINUTES * .6, polish: false, constrain, stats });
+  const explored = exploreTrail(entry, [], { start, done, steps: BUDGET * .6, polish: false, constrain, stats });
   if (explored) return { inputs: explored.inputs, method: 'explorer' };
   const furthest = measure(start, greedy.inputs, done);
   return { failed: true, greedyEnd: { ...mid(furthest.ride), status: furthest.stats.status, crash: furthest.stats.crash }, explorer: stats };
@@ -480,7 +484,7 @@ function solveTrail() {
   for (const index of order) if (!trail.apples[index]) throw new Error(`--order: there is no apple ${index + 1}`);
   out();
   out(`Solving one apple at a time, ${order.length ? `in the order ${order.map(index => index + 1).join(', ')}` : 'nearest first'}, `
-    + `${MINUTES} min at most per stretch${without.length ? `, without: ${without.join(', ')}` : ''}.`);
+    + `${budgetText} at most per stretch${without.length ? `, without: ${without.join(', ')}` : ''}.`);
   let ride = createRide(trail);
   const stretches = [];
   // The line every stretch so far has taken, for traps.
@@ -503,7 +507,7 @@ function solveTrail() {
       if (left.length) out(`  apples not taken yet: ${left.map(apple => `${apple.index + 1} at ${at(apple)}`).join(', ')}`);
       out(`  greedy bot ended at ${at(greedyEnd)} (${greedyEnd.crash ? `crashed: ${greedyEnd.crash.cause}` : greedyEnd.status === 'running' ? 'stuck' : greedyEnd.status})`);
       if (explorer.closest) out(`  explorer got within ${Math.round(explorer.closest.distance)} units (through open space) of the next goal, from ${at(explorer.closest)}, after ${explorer.iterations} tries`);
-      out('  The trail may be impossible from here, or need more search (--minutes). Probe the spot with --probe.');
+      out('  The trail may be impossible from here, or need more search (--budget). Probe the spot with --probe.');
       if (stretch && !order.length) out('  The bot takes apples nearest first; if this one was meant to be taken earlier, give the intended order with --order.');
       stretches.push({ failed: true, from: mid(ride), greedyEnd, explorer });
       break;
@@ -575,7 +579,7 @@ function solveTrail() {
 // line itself comes within ESCAPE_CLEAR of is left alone.
 const ESCAPE_CLEAR = 200;
 const ESCAPE_END = 150;
-const ESCAPE_MINUTES = 0.5;
+const ESCAPE_STEPS = 1 * MILLION;
 // Plain nature and wildlife, which dress the ground beyond a closing on
 // most trails. A prop type missing here counts as something placed out there
 // on purpose.
@@ -594,15 +598,15 @@ function findEscapes(route) {
   // A hard climb out can take the bot most of this, and on a trail closed at
   // both ends it is spent in full. So the answer is saved with the ground it
   // was found on: editing scenery, props or the nisse doesn't search again.
-  const minutes = Math.min(ESCAPE_MINUTES, MINUTES * 0.25);
+  const steps = Math.min(ESCAPE_STEPS, BUDGET * 0.25);
   const found = [];
   for (const end of ends) {
     if (!(end.side === 'west' ? end.edge > end.end : end.edge < end.end)) continue;
     const key = `${trailHash(trail)}:${end.side}:${Math.round(end.from.x)}:${Math.round(end.edge)}`;
     const saved = cache?.escapes?.[key];
     // A way out found stays found; none found only counts for a search as long as this one.
-    const way = saved && (saved.way || saved.minutes >= minutes) ? saved.way : searchEscape(end, minutes);
-    escapeCache[key] = saved && !saved.way && saved.minutes >= minutes ? saved : { way, minutes };
+    const way = saved && (saved.way || saved.steps >= steps) ? saved.way : searchEscape(end, steps);
+    escapeCache[key] = saved && !saved.way && saved.steps >= steps ? saved : { way, steps };
     if (!way) continue;
     // What lies out there, past the line, says whether the end is meant to be
     // open: a nisse hidden there, or things placed there, are worth riding out
@@ -617,7 +621,7 @@ function findEscapes(route) {
 }
 
 /** The bot's way out past one end, as where it starts and where it gets to, or null. */
-function searchEscape(end, minutes) {
+function searchEscape(end, steps) {
   // The bike stands on the floor under the line, not on the topmost surface
   // there, which in a cave is the outside of its roof.
   const below = end.from.y - RADIUS * 3;
@@ -634,8 +638,8 @@ function searchEscape(end, minutes) {
   if (!Number.isFinite(ground.y)) return null;
   goalOf(`reach:${Math.round(target)},${Math.round(ground.y - 60)}`, start);
   const done = probe => probe.status === 'running' && end.out(mid(probe).x);
-  const greedy = recordTrail(entry, { start, done, minutes: minutes * 0.4, constrain });
-  const path = greedy.done ? greedy.inputs : exploreTrail(entry, [], { start, done, minutes: minutes * 0.6, polish: false, constrain })?.inputs;
+  const greedy = recordTrail(entry, { start, done, steps: steps * 0.4, constrain });
+  const path = greedy.done ? greedy.inputs : exploreTrail(entry, [], { start, done, steps: steps * 0.6, polish: false, constrain })?.inputs;
   if (!path) return null;
   const { ride: after } = measure(start, path, done);
   return { from: { x: Math.round(end.from.x), y: Math.round(end.from.y) }, to: { x: Math.round(mid(after).x), y: Math.round(mid(after).y) } };
@@ -725,7 +729,7 @@ function probe() {
     return;
   }
   const goal = goalOf(option('--goal') || 'finish', ride);
-  out(`Solving to ${goal.name}, ${MINUTES} min at most${without.length ? `, without: ${without.join(', ')}` : ''}.`);
+  out(`Solving to ${goal.name}, ${budgetText} at most${without.length ? `, without: ${without.join(', ')}` : ''}.`);
   const found = solve(ride, goal.done, null);
   if (found.failed) {
     out(`FAILED. Greedy bot ended at ${at(found.greedyEnd)}`

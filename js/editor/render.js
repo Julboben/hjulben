@@ -754,6 +754,7 @@ export function render() {
   drawScaleFrame();
   drawRotateHandle();
   drawSnapGuide();
+  drawSnapLines();
   drawMarquee();
   drawSizeTag();
   drawPreviewFrame();
@@ -877,6 +878,31 @@ function drawSnapGuide() {
     to.x + 12 / editor.zoom,
     to.y - 12 / editor.zoom,
   );
+}
+
+/**
+ * While a drag has lined something up with something else, a line from one to
+ * the other along the edge, middle or point they share, as Figma shows it.
+ */
+function drawSnapLines() {
+  if (!editor.snapLines.length) return;
+  ctx.save();
+  ctx.beginPath();
+  for (const { axis, at, from, to } of editor.snapLines) {
+    // Past both ends a little, so a line between two points still shows.
+    const pad = 6 / editor.zoom;
+    if (axis === "x") {
+      ctx.moveTo(at, from - pad);
+      ctx.lineTo(at, to + pad);
+    } else {
+      ctx.moveTo(from - pad, at);
+      ctx.lineTo(to + pad, at);
+    }
+  }
+  ctx.strokeStyle = "#fff3be";
+  ctx.lineWidth = 1 / editor.zoom;
+  ctx.stroke();
+  ctx.restore();
 }
 
 /** A short label beside a world point, readable over any background. */

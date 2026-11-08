@@ -118,16 +118,13 @@ async function open(file, label) {
 
 await open(PAGES[0], PAGES[0]);
 // The service worker installs on the first visit: wait for it, then load
-// again so the page is served from its cache like a return visit.
-const installed = () => evaluateWithin(`navigator.serviceWorker.ready.then(() => new Promise(resolve => setTimeout(resolve, 2000))).then(() => true)`, BOOT_TIMEOUT_MS).catch(() => false);
-// Headless Chrome now and then never finishes installing the worker on a
-// first visit while DevTools is attached; a reload sets it going. A worker
-// that is really broken fails both times.
-let controlled = await installed();
-if (!controlled) {
-  await open(PAGES[0], `${PAGES[0]} (reloaded)`);
-  controlled = await installed();
-}
+// again so the page is served from its cache like a return visit. It has
+// finished once it controls the page, which it claims last thing when it
+// activates (see sw.js).
+const controlled = await evaluateWithin(`navigator.serviceWorker.ready
+  .then(() => navigator.serviceWorker.controller
+    ?? new Promise(resolve => navigator.serviceWorker.addEventListener('controllerchange', resolve, { once: true })))
+  .then(() => true)`, BOOT_TIMEOUT_MS).catch(() => false);
 if (!controlled) problems.push(`${PAGES[0]}: the service worker did not install`);
 await open(PAGES[0], `${PAGES[0]} (cached)`);
 // Production serves the game's own files from the cache; any that still

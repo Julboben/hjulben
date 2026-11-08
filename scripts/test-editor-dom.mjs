@@ -15,8 +15,8 @@ import { fileURLToPath } from 'node:url';
 const bootPath = fileURLToPath(new URL('./lib/editor-boot.mjs', import.meta.url));
 
 let failures = 0;
-const check = (label, condition) => {
-  if (!condition) { failures++; console.log('FAIL', label); }
+const check = (label, condition, detail = '') => {
+  if (!condition) { failures++; console.log('FAIL', label, detail); }
   else console.log('ok  ', label);
 };
 
@@ -200,6 +200,22 @@ const reported = (report, label) => {
   check('turning everything turns the props', report.propTurned === 90, `(${report.propTurned})`);
   check('water alone has no rotate handle', /WATER/i.test(report.waterTitle || '') && report.waterHandle === null && report.waterRowHidden === true, `("${report.waterTitle}")`);
   check('rotating raises no errors', report.errors.length === 0);
+}
+
+// ---------------------------------------------------------------------------
+// Dragging snaps to other things and the grid nearby, as in Figma.
+// ---------------------------------------------------------------------------
+{
+  const report = await boot('snap');
+  const json = JSON.stringify;
+  check('a block dragged near another lines up with its edge', report.aligned.left === 113 && report.aligned.top === 293, `(${json(report.aligned)})`);
+  check('a guide shows what it lined up with while dragging', json(report.guides) === json([['x', 113]]), `(${json(report.guides)})`);
+  check('the guide goes when the drag ends', report.guidesAfter === 0);
+  check('Cmd held mid-drag moves it freely', report.free.left === 116 && report.free.top === 293, `(${json(report.free)})`);
+  check('an edge near a grid line lands on it', report.grid.top === 300 && report.grid.left === 113, `(${json(report.grid)})`);
+  check('Shift keeps a sideways move level', report.level.top === 300, `(${json(report.level)})`);
+  check('a dragged point lines up with another point', report.pointY === 213, `(${report.pointY})`);
+  check('N turns snapping off and on', report.offByKey && report.onByKey);
 }
 
 // ---------------------------------------------------------------------------

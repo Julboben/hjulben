@@ -5,13 +5,14 @@
 //   node scripts/record-replays.mjs 03         only trails whose id or file name contains "03"
 //   node scripts/record-replays.mjs --force    re-record even replays that still work (human runs are still used)
 //   node scripts/record-replays.mjs --explore  skip the greedy bot and go straight to the explorer
-//   REPLAY_MAX_MINUTES=5 node scripts/...      search budget per trail (default 20)
+//   REPLAY_BUDGET=10 node scripts/...          search budget per trail, in millions of simulation steps (default 40)
 //   REPLAY_JOBS=4 node scripts/...             trails recorded at once (default: one per CPU core but one)
 //
 // Trails that need recording are recorded at the same time, each in its own
-// process (started with --trail=<id>). The search budget is wall-clock time,
-// so running more jobs than there are free cores gives each one less to work
-// with; keep the machine awake while it runs (e.g. `caffeinate -i` on macOS).
+// process (started with --trail=<id>). The search budget counts simulation
+// steps, not time, so a trail records the same however many jobs share the
+// machine; more jobs than free cores only make it take longer. Keep the
+// machine awake while it runs (e.g. `caffeinate -i` on macOS).
 //
 // A trail the bot can't figure out can be taught with a human run: save the
 // ghost (localStorage `hjulben-ghost-v1:<trail id>@<hash>`) or the output of
@@ -37,7 +38,7 @@ import { availableParallelism } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { simulateRun } from '../js/ride.js';
 import { decodeInputs, encodeInputs } from '../js/replay-codec.js';
-import { MAX_MINUTES, exploreTrail, recordTrail, repairRun } from './lib/replay-bot.mjs';
+import { MAX_STEPS, exploreTrail, recordTrail, repairRun } from './lib/replay-bot.mjs';
 import { loadCatalogTrails, replayFile, repoRoot } from './lib/trails.mjs';
 
 const OUT_DIR = repoRoot + 'tests/replays/';
@@ -129,7 +130,7 @@ function record(entry, { path, hash, references, reuse }) {
   // A reference that stopped finishing is patched where it breaks.
   for (const { source, inputs } of result ? [] : references) {
     console.log(`  ${entry.id}: repairing the ${source}`);
-    const repaired = repairRun(entry, inputs, { minutes: MAX_MINUTES / references.length });
+    const repaired = repairRun(entry, inputs, { steps: MAX_STEPS / references.length });
     if (repaired.done) { result = { ...repaired, source: `repaired ${source}` }; break; }
   }
   // The greedy bot can't use a reference, so a trail that has one goes straight to the explorer.

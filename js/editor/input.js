@@ -56,7 +56,8 @@ import {
   selectionItems,
   toggleFlip,
 } from "./selection.js";
-import { gridSpacing, snapToAngleAndGrid } from "./snap.js";
+import { gridSpacing, lockDirection, snapToAngleAndGrid } from "./snap.js";
+import { setSnapping, snapLines, snapMove, snappingOn } from "./magnet.js";
 import { mirrorSelection, orderSelection } from "./arrange.js";
 import { toggleMinimap } from "./minimap.js";
 import {
@@ -152,6 +153,8 @@ let dragSnapshot = null;
 let dragOrigin = null;
 
 let lastDragPointer = null;
+// Cmd/Ctrl held mid-drag: the selection follows the pointer without snapping.
+let dragFree = false;
 
 // A drag of something that can be copied, so Alt can switch it between moving
 // the original and moving a copy at any point in the drag: the trail before
@@ -300,10 +303,10 @@ function snapAnchors() {
 }
 
 /**
- * What a Shift-drag of anything but a single point or handle snaps: the point
- * of the moving selection nearest where it was grabbed, so the corner you hold
- * lands on the grid. A curved edge bends instead of moving its points, so it
- * snaps by the grabbed spot itself.
+ * Where a Shift-drag's direction guide starts: the point of the moving
+ * selection nearest where it was grabbed, so the guide runs from the corner
+ * you hold. A curved edge bends instead of moving its points, so it starts at
+ * the grabbed spot itself.
  */
 function snapReference(pointer, position) {
   const selection = editor.selection;
@@ -343,7 +346,12 @@ function startDragOrigin(pointer) {
   return { pointer, position, reference: snapReference(pointer, position) };
 }
 
-/** Move the dragged selection to where the pointer is, snapping it while Shift is held. */
+/**
+ * Move the dragged selection to where the pointer is. It snaps to other things
+ * and to the grid as it comes close, unless snapping is off or Cmd/Ctrl is
+ * held. Shift locks a point or curve handle to 15° steps from a neighbour and
+ * to the grid, and anything else to moving across, up and down, or at 45°.
+ */
 function dragSelectionTo(pointer, shift) {
   if (dragSnapshot) {
     pushHistory(dragSnapshot);
@@ -353,32 +361,17 @@ function dragSelectionTo(pointer, shift) {
   // away from its centre does not make it jump.
   const point = pointerWorld(pointer);
   const origin = dragOrigin?.position;
-  let x = origin ? origin[0] + point.x - dragOrigin.pointer.x : point.x;
-  let y = origin ? origin[1] + point.y - dragOrigin.pointer.y : point.y;
+  let x = point.x,
+    y = point.y;
   editor.snapGuide = null;
+  editor.snapLines = [];
   const anchors = shift ? snapAnchors() : null;
-  const reference = dragOrigin?.reference;
-  if (shift && !anchors && origin && reference) {
-    // The grabbed point snaps to the grid along an angle step from where it
-    // started, and the whole selection moves with it.
-    const moved = {
-      x: reference.x + point.x - dragOrigin.pointer.x,
-      y: reference.y + point.y - dragOrigin.pointer.y,
-    };
-    if (Math.hypot(moved.x - reference.x, moved.y - reference.y) > 1e-6) {
-      const snapped = snapToAngleAndGrid(moved, [reference], gridSpacing(editor.zoom));
-      x = origin[0] + snapped.x - reference.x;
-      y = origin[1] + snapped.y - reference.y;
-      if (snapped.anchor)
-        editor.snapGuide = {
-          from: reference,
-          to: { x: snapped.x, y: snapped.y },
-          angle: snapped.angle,
-          length: snapped.length,
-        };
-    }
-  } else if (anchors) {
-    const snapped = snapToAngleAndGrid({ x, y }, anchors, gridSpacing(editor.zoom));
+  if (anchors) {
+    const snapped = snapToAngleAndGrid(
+      { x: origin[0] + point.x - dragOrigin.pointer.x, y: origin[1] + point.y - dragOrigin.pointer.y },
+      anchors,
+      gridSpacing(editor.zoom),
+    );
     x = snapped.x;
     y = snapped.y;
     if (snapped.anchor)
@@ -388,8 +381,33 @@ function dragSelectionTo(pointer, shift) {
         angle: snapped.angle,
         length: snapped.length,
       };
+  } else if (origin) {
+    let dx = point.x - dragOrigin.pointer.x,
+      dy = point.y - dragOrigin.pointer.y;
+    const locked = shift && Math.hypot(dx, dy) > 1e-6 ? lockDirection(dx, dy) : null;
+    if (locked) ({ dx, dy } = locked);
+    // Along a diagonal the move snaps across, and goes up or down as far.
+    const diagonal = Boolean(locked?.dx && locked?.dy);
+    if (snappingOn() && !dragFree) {
+      dragOrigin.lines ??= snapLines();
+      const axes = locked ? { x: locked.dx !== 0, y: locked.dx === 0 } : { x: true, y: true };
+      const snapped = snapMove(dragOrigin.lines, dx, dy, axes);
+      dy = diagonal ? Math.sign(dy) * Math.abs(snapped.dx) : snapped.dy;
+      dx = snapped.dx;
+      editor.snapLines = diagonal ? [] : snapped.guides;
+    }
+    const reference = dragOrigin.reference;
+    if (locked && reference)
+      editor.snapGuide = {
+        from: reference,
+        to: { x: reference.x + dx, y: reference.y + dy },
+        angle: locked.angle,
+        length: Math.hypot(dx, dy),
+      };
+    x = origin[0] + dx;
+    y = origin[1] + dy;
   }
-  // A start dragged close to the ground lands on it, unless Shift holds it to the grid.
+  // A start dragged close to the ground lands on it, unless Shift holds it level.
   if (editor.selection?.kind === "start" && !shift) y = startY(x, y);
   updateSelectedPosition(x, y);
   syncInspector({ live: true });
@@ -418,8 +436,8 @@ function setDragCopying(copying, shift) {
   else render();
 }
 
-// Pressing or releasing Shift mid-drag turns snapping on or off straight away,
-// without waiting for the pointer to move.
+// Pressing or releasing Shift or Cmd/Ctrl mid-drag changes the snapping
+// straight away, without waiting for the pointer to move.
 const onShiftChange = (event) => {
   if (scaling() && scalePoint && (event.key === "Shift" || event.key === "Alt")) {
     event.preventDefault();
@@ -431,15 +449,17 @@ const onShiftChange = (event) => {
     applyRotate(event);
     return;
   }
+  const free = event.key === "Meta" || event.key === "Control";
   if (
-    event.key !== "Shift" ||
+    (event.key !== "Shift" && !free) ||
     !dragging ||
     !editor.selection ||
     editor.pendingShape ||
     !lastDragPointer
   )
     return;
-  dragSelectionTo(lastDragPointer, event.type === "keydown");
+  if (free) dragFree = event.type === "keydown";
+  dragSelectionTo(lastDragPointer, event.shiftKey);
 };
 
 const SHAPE_KEYS = new Set(["Alt", "Shift", "Meta", "Control"]);
@@ -463,6 +483,8 @@ function resetPointerState() {
   dragSnapshot = null;
   dragOrigin = null;
   lastDragPointer = null;
+  dragFree = false;
+  editor.snapLines = [];
   dragCopyable = null;
   editor.snapGuide = null;
   editor.marquee = null;
@@ -535,7 +557,7 @@ export const endPointer = () => {
     render();
     return;
   }
-  const hadGuide = editor.snapGuide !== null;
+  const hadGuide = editor.snapGuide !== null || editor.snapLines.length > 0;
   resetPointerState();
   flushInspector();
   if (hadGuide) render();
@@ -889,6 +911,7 @@ export function bindInput() {
       dragOrigin = startDragOrigin(press.point);
       dragging = true;
       lastDragPointer = { clientX: event.clientX, clientY: event.clientY };
+      dragFree = event.metaKey || event.ctrlKey;
       dragSelectionTo(lastDragPointer, event.shiftKey);
       return;
     }
@@ -915,6 +938,7 @@ export function bindInput() {
     }
     if (!dragging || !editor.selection || !pastSlop(event)) return;
     lastDragPointer = { clientX: event.clientX, clientY: event.clientY };
+    dragFree = event.metaKey || event.ctrlKey;
     // Alt went down or up while the window didn't have the key events (or
     // before the first move): catch up now.
     if (dragCopyable && Boolean(event.altKey) !== dragCopyable.copying) {
@@ -1203,6 +1227,11 @@ export function bindInput() {
     }
     if (event.code === "KeyM") {
       toggleMinimap();
+      return;
+    }
+    if (event.code === "KeyN") {
+      const snapping = setSnapping(!snappingOn());
+      showStatus("info", snapping ? "Snapping on" : "Snapping off: N turns it back on");
       return;
     }
     if (event.code === "KeyR") {

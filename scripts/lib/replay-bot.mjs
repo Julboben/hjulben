@@ -12,7 +12,13 @@ const HORIZONS = [36, 90, 180];
 const MAX_SECONDS = 150;
 const BACKTRACK_DECISIONS = 4;
 const MAX_BACKTRACKS = 3000;
-export const MAX_MINUTES = Number(process.env.REPLAY_MAX_MINUTES) || 20;
+
+// A search's budget is the number of simulation steps it may ride, counting
+// every look ahead and every try, rather than time, so the same trail and
+// options give the same result on any machine, however busy. Budgets are
+// given in millions of steps; one takes about half a minute on a laptop.
+export const MILLION = 1e6;
+export const MAX_STEPS = (Number(process.env.REPLAY_BUDGET) || 40) * MILLION;
 
 const CANDIDATES = [];
 for (const leanInput of [-1, -.5, 0, .5, 1]) {
@@ -55,23 +61,25 @@ function evaluate(ride, facing, candidate, horizon, constrain) {
   const probe = cloneRide(ride);
   const goalTarget = target(ride);
   const input = { facing, ...candidate };
-  let crashedAt = null;
-  for (let step = 0; step < horizon; step++) {
+  let crashedAt = null, step = 0;
+  while (step < horizon) {
     stepRide(probe, constrain ? constrain(probe, input) : input);
-    if (probe.status === 'crashed') { crashedAt = step; break; }
+    step++;
+    if (probe.status === 'crashed') { crashedAt = step - 1; break; }
     if (probe.status === 'won') break;
     if (probe.collected > ride.collected) break;
   }
-  return { value: score(probe, goalTarget, crashedAt), crashed: crashedAt !== null };
+  return { value: score(probe, goalTarget, crashedAt), crashed: crashedAt !== null, steps: step };
 }
 
 /**
- * @param {{ start?: any, done?: (ride: any) => boolean, minutes?: number, constrain?: (ride: any, input: any) => any }} [options]
- *   where to start (a ride), when the goal is reached (default: the finish), the search budget, and
+ * @param {{ start?: any, done?: (ride: any) => boolean, steps?: number, constrain?: (ride: any, input: any) => any }} [options]
+ *   where to start (a ride), when the goal is reached (default: the finish), the search budget in
+ *   simulation steps, and
  *   an optional rule that changes each input before it is ridden (scripts/playtest.mjs uses it to
  *   take a skill away, such as turning around)
  */
-export function recordTrail(entry, { start, done = ride => ride.status === 'won', minutes = MAX_MINUTES, constrain = null } = {}) {
+export function recordTrail(entry, { start, done = ride => ride.status === 'won', steps: budget = MAX_STEPS, constrain = null } = {}) {
   const trail = entry.trail;
   let ride = start ? cloneRide(start) : createRide(trail);
   const inputs = [];
@@ -81,8 +89,8 @@ export function recordTrail(entry, { start, done = ride => ride.status === 'won'
   let backtracks = 0, deadEnds = 0, lastDeadEnd = -Infinity;
   // If the trail can't be finished, keep the run that got furthest.
   let furthest = { progress: -Infinity, inputs: [] };
-  const started = Date.now();
-  let reported = started;
+  let work = 0;
+  let reported = Date.now();
   while (ride.status === 'running' && !done(ride) && inputs.length < MAX_SECONDS / STEP) {
     const frame = stack[stack.length - 1];
     const mx = (ride.rear.x + ride.front.x) / 2;
@@ -94,7 +102,7 @@ export function recordTrail(entry, { start, done = ride => ride.status === 'won'
       process.stderr.write(`  ${entry.id}: x ${mx.toFixed(0)}, ${ride.collected} apples, ${backtracks} backtracks, `
         + `furthest x ${(furthest.progress % 1e5).toFixed(0)}\n`);
     }
-    if (now - started > minutes * 60000) break;
+    if (work >= budget) break;
     const goalTarget = target(ride);
     const airborne = !ride.rear.grounded && !ride.front.grounded;
     const facing = !airborne && Math.abs(goalTarget.x - mx) > 30 ? Math.sign(goalTarget.x - mx) : ride.facing;
@@ -103,6 +111,7 @@ export function recordTrail(entry, { start, done = ride => ride.status === 'won'
       if (frame.banned.has(index)) continue;
       // A candidate is safe if holding it survives at least one horizon.
       const results = HORIZONS.map(horizon => evaluate(ride, facing, candidate, horizon, constrain));
+      for (const result of results) work += result.steps;
       const safe = results.filter(result => !result.crashed);
       if (!safe.length) continue;
       const value = Math.max(...safe.map(result => result.value));
@@ -125,6 +134,7 @@ export function recordTrail(entry, { start, done = ride => ride.status === 'won'
     for (let step = 0; step < DECISION_STEPS && ride.status === 'running'; step++) {
       const ridden = constrain ? constrain(ride, input) : input;
       stepRide(ride, ridden);
+      work++;
       inputs.push(ridden);
     }
     if (ride.status === 'crashed') {
@@ -135,8 +145,9 @@ export function recordTrail(entry, { start, done = ride => ride.status === 'won'
     }
     stack.push({ ride: cloneRide(ride), length: inputs.length, banned: new Set(), chosen: -1 });
   }
-  if (!done(ride) && furthest.inputs.length) return { inputs: furthest.inputs, backtracks, done: false };
-  return { inputs, backtracks, done: done(ride) };
+  if (process.env.BOT_WORK) process.stderr.write(`WORK greedy ${work} ${done(ride)}\n`);
+  if (!done(ride) && furthest.inputs.length) return { inputs: furthest.inputs, backtracks, done: false, work };
+  return { inputs, backtracks, done: done(ride), work };
 }
 
 // The explorer: a fallback for trails the greedy bot can't plan, where the
@@ -333,14 +344,14 @@ function inputsOf(node) {
 
 /**
  * @param {object[][]} [references] per-step inputs of runs to follow
- * @param {{ start?: any, done?: (ride: any) => boolean, minutes?: number, at?: number, polish?: boolean,
+ * @param {{ start?: any, done?: (ride: any) => boolean, steps?: number, at?: number, polish?: boolean,
  *   constrain?: (ride: any, input: any) => any, stats?: object }} [options]
  *   as for recordTrail, plus how far into the references `start` is, whether to look for a
  *   quicker route after the first one or stop there, and an object to fill in with how far the
- *   search got (the most apples taken and the place closest to the next one)
+ *   search got (the most apples taken, the place closest to the next one and the steps spent)
  * @returns the inputs from `start`, and where in its reference the route ended if it did following one
  */
-export function exploreTrail(entry, references = [], { start: from, done = ride => ride.status === 'won', minutes = MAX_MINUTES, at: startAt = 0, polish = true, constrain = null, stats = null } = {}) {
+export function exploreTrail(entry, references = [], { start: from, done = ride => ride.status === 'won', steps: budget = MAX_STEPS, at: startAt = 0, polish = true, constrain = null, stats = null } = {}) {
   const constrained = (ride, input) => constrain ? constrain(ride, input) : input;
   references = references.map(inputs => inputs.concat(Array(GUIDE_TAIL).fill(inputs[inputs.length - 1])));
   const random = seededGenerator(1);
@@ -393,10 +404,9 @@ export function exploreTrail(entry, references = [], { start: from, done = ride 
     for (let index = 0; index < list.length; index++) if ((pick -= weights[index]) <= 0) return list[index];
     return list[list.length - 1];
   };
-  let best = null, firstWin = 0, iterations = 0;
-  const started = Date.now();
-  let reported = started;
-  while (Date.now() - started < minutes * 60000) {
+  let best = null, firstWin = 0, iterations = 0, work = 0;
+  let reported = Date.now();
+  while (work < budget) {
     iterations++;
     if (best && (!polish || iterations > firstWin * 2 + EXPLORE_MIN_POLISH)) break;
     const cell = choose();
@@ -422,6 +432,7 @@ export function exploreTrail(entry, references = [], { start: from, done = ride 
           const next = constrained(ride, reference[at++]);
           stepRide(ride, next);
           steps++;
+          work++;
           // Nodes already stored in a cell are shared, so only extend this decision's own.
           if (count && sameInput(node.input, next)) node.count++;
           else node = { parent: node, input: next, count: 1 };
@@ -443,6 +454,7 @@ export function exploreTrail(entry, references = [], { start: from, done = ride 
           const next = constrained(ride, planned);
           stepRide(ride, next);
           steps++;
+          work++;
           ridden++;
           if (fresh && sameInput(node.input, next)) node.count++;
           else { node = { parent: node, input: next, count: 1 }; fresh = true; }
@@ -466,10 +478,11 @@ export function exploreTrail(entry, references = [], { start: from, done = ride 
         + `${references.length ? `, ${(Math.max(0, front) * 100).toFixed(0)}% along` : ''}${best ? `, best ${(best.steps * STEP).toFixed(2)}s` : ''}\n`);
     }
   }
+  if (process.env.BOT_WORK) process.stderr.write(`WORK explorer ${work} ${!!best}\n`);
   if (stats) {
     const at = closestCell?.ride;
     Object.assign(stats, {
-      iterations, places: list.length, apples: mostApples,
+      iterations, places: list.length, apples: mostApples, work,
       closest: at ? { x: (at.rear.x + at.front.x) / 2, y: (at.rear.y + at.front.y) / 2, distance: closest } : null
     });
   }
@@ -486,7 +499,7 @@ export function exploreTrail(entry, references = [], { start: from, done = ride 
 // tried again from further back. Each search only spans a few seconds, so it
 // depends far less on luck than exploring the whole trail does.
 const REPAIR_BACK = [1, 3, 6, 12];    // seconds before a break a patch may start
-const REPAIR_MINUTES = [1, 2, 3, 4];  // search budget for a patch from each of those, guided and then not
+const REPAIR_STEPS = [2, 4, 6, 8].map(millions => millions * MILLION); // search budget for a patch from each of those, guided and then not
 const REPAIR_REJOIN = 6;              // seconds around a patch's end to look for the place to rejoin the run
 
 // The point in `inputs` to carry on from after a patch that left the ride as
@@ -509,8 +522,8 @@ function rejoin(ride, inputs, from, guess) {
 }
 
 /** @param {object[]} reference per-step inputs of a run that once finished */
-export function repairRun(entry, reference, { minutes = MAX_MINUTES } = {}) {
-  const started = Date.now();
+export function repairRun(entry, reference, { steps: budget = MAX_STEPS } = {}) {
+  let spent = 0;
   let inputs = reference.slice();
   for (let patches = 0; ; patches++) {
     // Play the run, keeping a copy of the ride every decision to patch from.
@@ -528,11 +541,13 @@ export function repairRun(entry, reference, { minutes = MAX_MINUTES } = {}) {
     for (const [index, back] of REPAIR_BACK.entries()) {
       const from = Math.max(0, saved.length - 1 - Math.round(back / STEP / DECISION_STEPS));
       for (const guided of [true, false]) {
-        const left = minutes - (Date.now() - started) / 60000;
+        const left = budget - spent;
         if (left <= 0) break;
+        const stats = {};
         const result = exploreTrail(entry, guided ? [inputs] : [], {
-          start: saved[from], at: from * DECISION_STEPS, done, minutes: Math.min(REPAIR_MINUTES[index], left), polish: false
+          start: saved[from], at: from * DECISION_STEPS, done, steps: Math.min(REPAIR_STEPS[index], left), polish: false, stats
         });
+        spent += stats.work;
         if (!result) continue;
         const end = cloneRide(saved[from]);
         for (const input of result.inputs) stepRide(end, input);

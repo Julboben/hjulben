@@ -36,6 +36,12 @@ globalThis.addEventListener = (type, handler) => {
 
 await import('../../js/editor/main.js');
 
+// Drags snap to things nearby and the grid, which would move most of the
+// gestures below off the exact positions they check. Snapping has its own
+// checks, which turn it back on.
+const { setSnapping } = await import('../../js/editor/magnet.js');
+setSnapping(false);
+
 // The fixture is a trail file, which only the dev server can write, so every
 // shape but `readonly` is opened as if the dev server were running. Without
 // it the trail is read-only and none of the editing gestures would apply.
@@ -702,6 +708,68 @@ if (kind === 'group') {
   out.minimap.push(field('minimap').hidden);
   key('m', { code: 'KeyM' });
   out.minimap.push(field('minimap').hidden);
+  process.stdout.write(JSON.stringify(out));
+  process.exit(0);
+}
+
+
+// Drags snap to other things and the grid when they come close, as in Figma.
+// Two rectangles are drawn far from the trail, so nothing else is in view.
+if (kind === 'snap') {
+  const { snappingOn } = await import('../../js/editor/magnet.js');
+  const out = { errors: [] };
+  const B = 100000;
+  editorState.zoom = 1;
+  editorState.cameraX = cameraX = B;
+  editorState.cameraY = cameraY = B;
+  setSnapping(true);
+  const box = () => {
+    const nodes = current().terrainBlocks.at(-1).outer.nodes;
+    const xs = nodes.map(node => node.x - B), ys = nodes.map(node => node.y - B);
+    return { left: Math.min(...xs), top: Math.min(...ys), right: Math.max(...xs), bottom: Math.max(...ys) };
+  };
+  // A 100 square at 113, and an 80 square to the right of it, off the grid.
+  toolButton('block').click();
+  drag([B + 113, B + 113], [B + 213, B + 213], { altKey: true });
+  drag([B + 313, B + 263], [B + 393, B + 343], { altKey: true });
+  toolButton('select').click();
+  fire('pointerdown', world(B + 353, B + 303));
+  fire('pointerup');
+  // Its left edge comes within 3 of the first square's and lines up with it;
+  // its top is nowhere near anything, so it follows the pointer exactly.
+  fire('pointerdown', world(B + 353, B + 303));
+  fire('pointermove', world(B + 353 - 197, B + 303 + 30));
+  out.guides = editorState.snapLines.map(({ axis, at }) => [axis, at - B]);
+  fire('pointerup');
+  out.aligned = box();
+  out.guidesAfter = editorState.snapLines.length;
+  // Cmd held, it goes exactly where the pointer does.
+  fire('pointerdown', world(B + 160, B + 333));
+  fire('pointermove', { ...world(B + 163, B + 333), metaKey: true });
+  fire('pointerup');
+  out.free = box();
+  // Its top comes within 2 of a grid line and lands on it.
+  fire('pointerdown', world(B + 160, B + 333));
+  fire('pointermove', world(B + 160, B + 338));
+  fire('pointerup');
+  out.grid = box();
+  // Shift keeps a mostly sideways move level.
+  fire('pointerdown', world(B + 160, B + 340));
+  fire('pointermove', { ...world(B + 360, B + 355), shiftKey: true });
+  fire('pointerup');
+  out.level = box();
+  // A point dragged near the height of the first square's bottom corner
+  // lines up with it.
+  const corner = box();
+  fire('pointerdown', world(B + corner.left, B + corner.top));
+  fire('pointermove', world(B + corner.left, B + 215));
+  fire('pointerup');
+  out.pointY = current().terrainBlocks.at(-1).outer.nodes.map(node => node.y - B).sort((a, b) => a - b)[0];
+  // N turns snapping off, and on again.
+  key('n', { code: 'KeyN' });
+  out.offByKey = snappingOn() === false;
+  key('n', { code: 'KeyN' });
+  out.onByKey = snappingOn() === true;
   process.stdout.write(JSON.stringify(out));
   process.exit(0);
 }

@@ -63,6 +63,12 @@ export async function launchChrome(chromePath, { flags = [], onAttached = () => 
   const allFlags = [
     '--headless=new', '--remote-debugging-port=0', `--user-data-dir=${userDataDir}`,
     '--no-first-run', '--no-default-browser-check', '--mute-audio', '--window-size=1200,800',
+    // A fresh profile otherwise downloads and installs Chrome's default
+    // extensions a few seconds after it starts. Installing one kills a page's
+    // service worker that is still installing ("failed to install: Operation
+    // has failed"), which a busy machine makes likely, and it all costs CPU
+    // the pages need.
+    '--disable-extensions', '--disable-component-update', '--disable-background-networking',
     ...flags,
   ];
   if (process.getuid?.() === 0) allFlags.push('--no-sandbox');
