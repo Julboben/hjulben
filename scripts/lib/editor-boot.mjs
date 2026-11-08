@@ -196,7 +196,7 @@ if (kind === 'interact') {
   for (const handler of windowListeners.get('keydown') || []) handler({ type: 'keydown', key: 'Shift', shiftKey: true, preventDefault() {} });
   out.repressSnaps = ring()[cornerIndex].x === snapped.x && ring()[cornerIndex].y === snapped.y;
   fire('pointerup');
-  // Without Shift the point goes exactly where the pointer does.
+  // With snapping off and no Shift, the point goes exactly where the pointer does.
   const plainFrom = { ...ring()[cornerIndex] };
   fire('pointerdown', world(plainFrom.x, plainFrom.y));
   fire('pointermove', world(plainFrom.x + 7, plainFrom.y + 3));

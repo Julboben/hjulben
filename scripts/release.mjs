@@ -13,6 +13,7 @@
 //   Changelog: fixed: The camera no longer jumps at the start.
 //   Changelog: heads up: The leaderboard has been reset.
 //   Changelog: none          (leave this PR out of the notes)
+// A long note may wrap onto the following lines (see pinnedChanges).
 // Everything else is summarised into player-facing notes by Copilot CLI
 // (`copilot -p`), signed in locally or through COPILOT_GITHUB_TOKEN in Actions.
 // RELEASE_NOTES_MODEL picks a model. If Copilot is unavailable, the raw commit
@@ -24,11 +25,9 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { repoRoot } from './lib/trails.mjs';
 import {
-  CHANGE_TYPES, changeType, readChangelog, writeChangelog, validateChangelog, releaseMarkdown, compareVersions
+  CHANGE_TYPES, pinnedChanges, readChangelog, writeChangelog, validateChangelog, releaseMarkdown, compareVersions
 } from './lib/changelog.mjs';
 
-const PINNED = /^[ \t>*-]*changelog[ \t]*:[ \t]*(.+?)[ \t]*$/gim;
-const SKIP = /^(none|skip|-|n\/a)\.?$/i;
 // Commits that never matter to players.
 const NOISE = /^(release v\d|merge (branch|remote-tracking)|update sw(\.js)?$|sw$|npm run |update replays|rerun replays)/i;
 
@@ -57,19 +56,6 @@ function repoSlug() {
   if (process.env.GITHUB_REPOSITORY) return process.env.GITHUB_REPOSITORY;
   const url = git('remote', 'get-url', 'origin');
   return url.match(/github\.com[:/](.+?)(\.git)?$/)?.[1] ?? '';
-}
-
-/** Splits `Changelog:` lines into pinned changes, or marks the source as skipped. */
-function pinnedChanges(text) {
-  const changes = [];
-  let skip = false;
-  for (const [, value] of (text || '').replace(/<!--[\s\S]*?-->/g, '').matchAll(PINNED)) {
-    if (SKIP.test(value)) { skip = true; continue; }
-    const typed = value.match(/^([a-z][a-z _-]*?)\s*:\s*(.+)$/i);
-    const type = typed && changeType(typed[1]);
-    changes.push(type ? { type, text: typed[2] } : { type: null, text: value });
-  }
-  return { changes, skip };
 }
 
 async function fetchPullRequest(number, token, repo) {

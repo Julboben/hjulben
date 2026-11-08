@@ -1,7 +1,7 @@
 name: Slow tests
 
-# The playtest tools' checks (npm run test:slow) take minutes, because the
-# replay bot searches on a clock. They only run when something the bot, the
+# The playtest tools' checks (npm run test:slow) take a while, because the
+# replay bot searches. They only run when something the bot, the
 # physics or the trail renderer uses changes; the release workflows run them
 # every time, with everything else.
 on:

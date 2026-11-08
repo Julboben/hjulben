@@ -129,7 +129,7 @@ const reported = (report, label) => {
   check('Shift-drag puts a point on a grid line', report.snapGrid === true);
   check('releasing Shift mid-drag restores the exact position', report.releaseExact === true);
   check('pressing Shift mid-drag snaps again', report.repressSnaps === true);
-  check('dragging without Shift is not snapped', report.plainExact === true);
+  check('with snapping off, a dragged point goes exactly where the pointer does', report.plainExact === true);
   check('pressing Alt mid-drag moves a copy instead', report.altPressCopies === true);
   check('letting go of Alt drops the copy and moves the original again', report.altReleaseRestores === true);
   check('a press on the edge of an unselected block moves the whole block', report.closedEdgeMovesBlock === true);

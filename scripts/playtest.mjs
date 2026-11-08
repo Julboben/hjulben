@@ -54,7 +54,6 @@ const option = name => {
 };
 const VALUED = ['--budget', '--trials', '--json', '--every', '--probe', '--script', '--goal', '--without', '--order'];
 const target = args.find((arg, index) => !arg.startsWith('--') && !VALUED.includes(args[index - 1]));
-if (args.includes('--minutes')) throw new Error('--minutes is gone: the search budget is now --budget, in millions of simulation steps (default 4)');
 // The bot's budget counts simulation steps, not time, so a playtest's result doesn't depend on the machine.
 const BUDGET = (Number(option('--budget')) || 4) * MILLION;
 const TRIALS = Number(option('--trials') ?? 6);
@@ -400,7 +399,8 @@ const TRAP_SETTLE = Math.round(3 / STEP);
 const TRAP_REST = Math.round(0.5 / STEP);
 const TRAP_NEAR = 120;
 const TRAP_CHECKS = 3;
-const TRAP_STEPS = 0.5 * MILLION;
+// At most this much search to get out of each place, less with a small --budget.
+const TRAP_STEPS = Math.min(0.5 * MILLION, BUDGET / 8);
 const ROUTE_REACH = 30;
 
 function findTraps(stalls, route, start, done, focus) {

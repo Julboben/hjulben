@@ -68,7 +68,7 @@ try {
   writeFileSync(file, JSON.stringify(trail));
 
   // The bot solves the trail one apple at a time, turning around on the way back.
-  const solved = run('playtest.mjs', '--fresh', '--minutes', '0.5', '--trials', '2');
+  const solved = run('playtest.mjs', '--fresh', '--budget', '0.5', '--trials', '2');
   assert.match(solved, /Stretch 1: .* to apple 1 at 900,\d+ in [\d.]+ s/);
   assert.match(solved, /Stretch 2: .* to the finish at 150,248 in [\d.]+ s/);
   assert.match(solved, /turns [1-9]/, 'the way back takes a turn');
@@ -90,7 +90,7 @@ try {
   writeFileSync(file, JSON.stringify(trail));
 
   // Without turning around, the finish behind the start can't be reached.
-  const unturned = run('playtest.mjs', '--fresh', '--without', 'turn', '--minutes', '0.05', '--trials', '0');
+  const unturned = run('playtest.mjs', '--fresh', '--without', 'turn', '--budget', '0.05', '--trials', '0');
   assert.match(unturned, /Stretch 2: FAILED to reach the finish/);
   assert.match(unturned, /Result: NOT finished; the bot took 1 of 1 apples/);
 
@@ -114,11 +114,11 @@ try {
     props: [],
   };
   writeFileSync(pitFile, JSON.stringify(pit));
-  const trapped = runPit('--fresh', '--minutes', '0.5');
+  const trapped = runPit('--fresh', '--budget', '0.5');
   assert.match(trapped, /TRAPS: a miss leaves the rider at \d+,5\d\d, with no way back/, 'a pit a miss can\'t leave is a trap');
   assert.match(trapped, /^TRAPS: 1 place/m, 'and it is summed up at the end');
   writeFileSync(pitFile, JSON.stringify({ ...pit, spikes: [640, 700, 760, 820, 880].map(x => ({ x, y: 540, radius: 20 })) }));
-  assert.doesNotMatch(runPit('--fresh', '--minutes', '0.5'), /TRAP/, 'spikes on its floor make it a crash, not a trap');
+  assert.doesNotMatch(runPit('--fresh', '--budget', '0.5'), /TRAP/, 'spikes on its floor make it a crash, not a trap');
 
   // An end closed by a gentle ramp onto the ground beyond it can be ridden
   // out of: the rider escapes the trail.
@@ -130,10 +130,10 @@ try {
     ],
   };
   writeFileSync(pitFile, JSON.stringify(ramp));
-  assert.match(runPit('--fresh', '--minutes', '0.5', '--trials', '1'), /ESCAPE: the rider can ride out past the east end/, 'a ramp out of the trail is an escape');
+  assert.match(runPit('--fresh', '--budget', '0.5', '--trials', '1'), /ESCAPE: the rider can ride out past the east end/, 'a ramp out of the trail is an escape');
   // With a nisse hidden out there, the open end is the way to it, not a fault.
   writeFileSync(pitFile, JSON.stringify({ ...ramp, nisse: { x: 3200, y: null } }));
-  const hidden = runPit('--minutes', '0.5', '--trials', '1');
+  const hidden = runPit('--budget', '0.5', '--trials', '1');
   assert.match(hidden, /OPEN END: the rider can ride out past the east end.*to the nisse hidden out there/, 'an end opening onto the nisse is reported as a choice');
   assert.doesNotMatch(hidden, /ESCAPE/, 'and not as an escape');
   // A roof over the walled field runs out past both walls. Its top is the
@@ -144,7 +144,7 @@ try {
     start: { x: 400, y: 308, facing: 1 },
     apples: [{ x: 900, y: 260 }],
   }));
-  assert.doesNotMatch(runPit('--fresh', '--minutes', '0.5', '--trials', '1'), /ESCAPE|OPEN END/, 'the ground above a roof is no way out');
+  assert.doesNotMatch(runPit('--fresh', '--budget', '0.5', '--trials', '1'), /ESCAPE|OPEN END/, 'the ground above a roof is no way out');
 
   // A scripted probe prints a trace and rides where the script says.
   const scripted = run('playtest.mjs', '--probe', '400,ground,1,0', '--script', 'gas 0.5; gas fwd 0.1; gas 0.5; turn; brake 0.3', '--every', '0.5');
@@ -155,7 +155,7 @@ try {
   assert.equal(status, 'running');
 
   // A probe with a goal lets the bot find its own way and prints its inputs as a script.
-  const goal = run('playtest.mjs', '--probe', '400,ground,-1,0', '--goal', 'reach:1200,290', '--minutes', '0.5', '--trials', '0');
+  const goal = run('playtest.mjs', '--probe', '400,ground,-1,0', '--goal', 'reach:1200,290', '--budget', '0.5', '--trials', '0');
   assert.match(goal, /Reached 1200,290 in [\d.]+ s/);
   assert.match(goal, /inputs, in the --script format: .*turn/, 'facing left, the bot turns to reach a place to the right');
 

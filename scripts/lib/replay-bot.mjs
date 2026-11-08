@@ -145,7 +145,6 @@ export function recordTrail(entry, { start, done = ride => ride.status === 'won'
     }
     stack.push({ ride: cloneRide(ride), length: inputs.length, banned: new Set(), chosen: -1 });
   }
-  if (process.env.BOT_WORK) process.stderr.write(`WORK greedy ${work} ${done(ride)}\n`);
   if (!done(ride) && furthest.inputs.length) return { inputs: furthest.inputs, backtracks, done: false, work };
   return { inputs, backtracks, done: done(ride), work };
 }
@@ -478,7 +477,6 @@ export function exploreTrail(entry, references = [], { start: from, done = ride 
         + `${references.length ? `, ${(Math.max(0, front) * 100).toFixed(0)}% along` : ''}${best ? `, best ${(best.steps * STEP).toFixed(2)}s` : ''}\n`);
     }
   }
-  if (process.env.BOT_WORK) process.stderr.write(`WORK explorer ${work} ${!!best}\n`);
   if (stats) {
     const at = closestCell?.ride;
     Object.assign(stats, {

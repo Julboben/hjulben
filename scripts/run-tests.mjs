@@ -1,7 +1,8 @@
 // Runs the checks: `npm test` the fast ones, side by side on every core;
-// `npm run test:slow` the playtest tools, whose bot searches run on a clock;
-// `npm run test:all` both, the slow ones last and alone, so the bot's
-// searches get a whole machine as they do for an author.
+// `npm run test:slow` the playtest tools, whose bot searches take a while;
+// `npm run test:all` both, the slow ones last and alone. The searches count
+// simulation steps rather than time, so their results don't depend on the
+// machine's load; running them alone only makes them finish sooner.
 //
 //   node scripts/run-tests.mjs [--slow | --all] [--verbose]
 //

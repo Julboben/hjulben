@@ -23,6 +23,49 @@ export function changeType(name) {
   const key = name.trim().toLowerCase().replace(/[\s_-]+/g, '-');
   return CHANGE_TYPES.includes(key) ? key : key === 'headsup' ? 'heads-up' : null;
 }
+
+const PINNED = /^[ \t>*-]*changelog[ \t]*:[ \t]*(.*?)[ \t]*$/i;
+const SKIP = /^(none|skip|-|n\/a)\.?$/i;
+// A line that starts something else rather than carrying on a wrapped note:
+// a list item, heading, code fence or table, or a trailer such as Signed-off-by.
+const NOT_CONTINUED = /^([-*+#|]|\d+[.)]\s|```|[A-Za-z]+(-[A-Za-z]+)+:\s)/;
+
+/**
+ * The `Changelog:` lines of a PR or commit description: pinned changes, and
+ * whether it asks to be left out. A note may wrap over several lines, as
+ * editors and `git commit` wrap long lines; it carries on until a blank line,
+ * the next `Changelog:` line or a line that starts something else.
+ */
+export function pinnedChanges(text) {
+  const changes = [];
+  let skip = false;
+  let note = null;
+  const finish = () => {
+    if (note === null) return;
+    const value = note.replace(/\s+/g, ' ').trim();
+    note = null;
+    if (!value) return;
+    if (SKIP.test(value)) { skip = true; return; }
+    const typed = value.match(/^([a-z][a-z _-]*?)\s*:\s*(.+)$/i);
+    const type = typed && changeType(typed[1]);
+    changes.push(type ? { type, text: typed[2] } : { type: null, text: value });
+  };
+  for (const line of (text || '').replace(/<!--[\s\S]*?-->/g, '').split(/\r?\n/)) {
+    const pinned = line.match(PINNED);
+    if (pinned) {
+      finish();
+      note = pinned[1];
+      continue;
+    }
+    // A wrapped line in a quote keeps the quote's marker.
+    const rest = line.replace(/^[ \t]*(>[ \t]?)*/, '').trim();
+    // `none` is a whole answer, so whatever follows it is not part of it.
+    if (note !== null && rest && !NOT_CONTINUED.test(rest) && !SKIP.test(note.trim())) note += ' ' + rest;
+    else finish();
+  }
+  finish();
+  return { changes, skip };
+}
 const SEMVER = /^\d+\.\d+\.\d+$/;
 const RELEASE_HEADING = /^##\s+v?(\S+)\s+[—–-]\s+(\d{4}-\d{2}-\d{2})\s*$/;
 const DEFAULT_INTRO = '# Changelog\n\nPlayer-facing release notes. The game shows them under **What\'s new**, and each GitHub Release uses its section.\n';
