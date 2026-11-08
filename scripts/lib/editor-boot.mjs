@@ -560,7 +560,44 @@ if (kind === 'group') {
   // A block measures by its outline.
   editor.selection = { kind: 'block', blockIndex: 0 };
   syncInspector();
-  out.blockSize = field('selection-size').textContent;
+  out.blockSize = [field('selection-width').value, field('selection-height').value].join(' × ');
+  out.blockSizeEditable = field('selection-width-row').hidden === false && field('selection-size-row').hidden === true;
+  out.blockTitle = field('selection-title').textContent;
+  out.blockDelete = field('delete-selection').textContent;
+
+  // Typing a width stretches the block from its left edge, as one undo step.
+  const { selectionBox } = await import('../../js/editor/selection.js');
+  const before = selectionBox();
+  set('selection-width', '400');
+  const after = selectionBox();
+  out.resized = [after.left - before.left, after.right - after.left, after.bottom - after.top].map(Math.round);
+  undo.click();
+  editor.selection = { kind: 'block', blockIndex: 0 };
+  syncInspector();
+  out.resizeUndone = Math.round(selectionBox().right - selectionBox().left);
+  // A size too small to ride or grab is held at the smallest the handles allow.
+  set('selection-height', '0');
+  out.heightFloor = Math.round(selectionBox().bottom - selectionBox().top);
+  undo.click();
+
+  // A point shows its kind and an edge its shape, never the other's.
+  editor.selection = { kind: 'blockPoint', blockIndex: 0, boundaryIndex: 0, index: 1 };
+  syncInspector();
+  out.pointTitle = field('selection-title').textContent;
+  out.pointRows = [field('selection-node-row').hidden, field('selection-edge-row').hidden, field('split-edge').hidden];
+  out.pointDelete = field('delete-selection').textContent;
+  editor.selection = { kind: 'blockEdge', blockIndex: 0, boundaryIndex: 0, index: 3 };
+  syncInspector();
+  out.edgeTitle = field('selection-title').textContent;
+  out.edgeRows = [field('selection-node-row').hidden, field('selection-edge-row').hidden, field('split-edge').hidden];
+  out.edgeDeleteHidden = field('delete-selection').hidden;
+  // Split Edge puts a point halfway along it and selects that point.
+  const points = () => current().terrainBlocks[0].outer.nodes.length;
+  const pointsBefore = points();
+  field('split-edge').click();
+  out.split = [points() - pointsBefore, editor.selection?.kind, editor.selection?.index];
+  undo.click();
+  out.splitUndone = points() === pointsBefore;
   process.stdout.write(JSON.stringify(out));
   process.exit(0);
 }

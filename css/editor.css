@@ -159,6 +159,9 @@ fieldset:disabled :is(input, select, textarea, button) { opacity: .55; cursor: n
 .panel-head strong { font-size: 18px; }
 .inspector > label, .inspector fieldset label, .inspector fieldset .field-row { margin-bottom: 10px; display: grid; gap: 5px; color: var(--color-text-muted); font-size: var(--text-xs); font-weight: var(--weight-heavy); letter-spacing: .5px; }
 .inspector input, .inspector select { width: 100%; }
+/* Two short fields that belong together, such as X and Y, share a line. */
+.inspector .field-pair { display: grid; grid-template-columns: 1fr 1fr; column-gap: 6px; }
+.inspector .field-pair > label { min-width: 0; }
 .inspector fieldset { margin: 15px 0 0; padding: 13px; border: 1px solid var(--color-border); }
 .inspector legend { padding: 0 5px; }
 input[type="range"] { padding: 0; accent-color: var(--color-accent); }

@@ -5,6 +5,7 @@ import {
   edgeCurve,
   isCurvedEdge,
   moveBlock,
+  scaleBlock,
   setBoundaryEdge,
   setNodeMode,
 } from "../terrain-geometry.js";
@@ -24,6 +25,7 @@ import {
   boundariesOf,
   boundaryAt,
   fillCavesWithBackWalls,
+  insertBlockNode,
   isBackWall,
   mergeSelectedBlocks,
   realignSmooth,
@@ -145,6 +147,68 @@ const BLOCK_KINDS = [
 ];
 
 /**
+ * A block selection's title, numbered as validation numbers blocks and their
+ * points, so a warning and the selection it is about read alike.
+ */
+function blockTitle({ kind, blockIndex, boundaryIndex, index }) {
+  const block = blocks()[blockIndex];
+  if (!block) return "";
+  const name = `BLOCK ${blockIndex + 1}`;
+  if (kind === "block")
+    return `${name} · ${isBackWall(block) ? "BACK WALL" : block.material.toUpperCase()}`;
+  // Point and edge numbers count round the ring they belong to, a cave's own.
+  const ring = boundaryIndex > 0 ? `CAVE ${boundaryIndex} · ${name}` : name;
+  if (kind === "blockBoundary") return boundaryIndex > 0 ? ring : `OUTLINE · ${name}`;
+  if (kind === "blockEdge") {
+    const count = boundaryAt({ blockIndex, boundaryIndex })?.nodes.length || 1;
+    return `EDGE ${index + 1}–${((index + 1) % count) + 1} · ${ring}`;
+  }
+  return `${kind === "blockHandle" ? "CURVE HANDLE" : "POINT"} ${index + 1} · ${ring}`;
+}
+
+/** What the delete button removes, in its own words. */
+function deleteLabel(selection) {
+  const kind = selection?.kind;
+  if (kind === "blockPoint") return "DELETE POINT";
+  if (kind === "blockHandle") return "STRAIGHTEN THIS SIDE";
+  if (kind === "blockBoundary") return selection.boundaryIndex > 0 ? "FILL IN CAVE" : "DELETE BLOCK";
+  if (kind === "block") return "DELETE BLOCK";
+  return "DELETE SELECTION";
+}
+
+/** The selected blocks when only whole blocks are selected, which can be resized. */
+function resizableBlocks() {
+  const kind = editor.selection?.kind;
+  const whole =
+    kind === "block" ||
+    (kind === "items" && editor.selection.items.every((item) => item.type === "block"));
+  return whole ? selectedBlocks().filter((index) => blocks()[index]) : [];
+}
+
+// The smallest width or height typed in, as the scale handles allow.
+const MIN_BLOCK_SIZE = 8;
+
+/**
+ * Stretch the selected blocks so their outline's box is `size` wide or high,
+ * keeping its left or top edge where it is, as one undo step.
+ */
+function resizeBlocks(axis, size) {
+  const chosen = resizableBlocks();
+  const box = selectionBox();
+  if (!chosen.length || !box) return;
+  const from = axis === 0 ? box.right - box.left : box.bottom - box.top;
+  if (from < 1e-6) return;
+  const factor = Math.max(MIN_BLOCK_SIZE, size) / from;
+  if (Math.abs(factor - 1) < 1e-9) return;
+  pushHistory();
+  for (const index of chosen)
+    replaceBlock(
+      index,
+      scaleBlock(blocks()[index], box.left, box.top, axis === 0 ? factor : 1, axis === 1 ? factor : 1),
+    );
+}
+
+/**
  * Bring the side panel up to date with the trail. `live` is for a drag in
  * progress: everything that follows from the trail as a whole (the version
  * chip, validation, the Objects list and autosave) waits until the drag is
@@ -168,9 +232,8 @@ export function syncInspector({ live = false } = {}) {
     ? "NOTHING SELECTED"
     : editor.selection.kind === "items"
       ? groupTitle(editor.selection.items)
-      : editor.selection.kind === "block" &&
-          isBackWall(blocks()[editor.selection.blockIndex])
-        ? "BACK WALL"
+      : BLOCK_KINDS.includes(editor.selection.kind)
+        ? blockTitle(editor.selection)
         : editor.selection.kind.replace(/([A-Z])/g, " $1").toUpperCase();
   $("selection-empty").hidden = Boolean(editor.selection);
   if (position) {
@@ -181,8 +244,14 @@ export function syncInspector({ live = false } = {}) {
   // on its own has its own Width and Depth fields.
   const box = editor.selection?.kind === "water" ? null : selectionBox();
   const size = box && [box.right - box.left, box.bottom - box.top].map(Math.round);
-  $("selection-size-row").hidden = !size || !(size[0] || size[1]);
+  // Whole blocks can be given a size; anything else just shows its own.
+  const resizable = Boolean(size) && resizableBlocks().length > 0;
+  $("selection-size-row").hidden = resizable || !size || !(size[0] || size[1]);
   if (size) $("selection-size").textContent = `${size[0]} × ${size[1]}`;
+  for (const [axis, id] of [[0, "selection-width"], [1, "selection-height"]]) {
+    $(`${id}-row`).hidden = !resizable;
+    if (resizable && document.activeElement !== $(id)) $(id).value = size[axis];
+  }
   // A group with blocks in it can change their material together.
   const isBlock =
     BLOCK_KINDS.includes(editor.selection?.kind) || selectedBlocks().length > 0;
@@ -196,12 +265,11 @@ export function syncInspector({ live = false } = {}) {
   $("selection-block-layer-row").hidden = !isBlock;
   $("fill-back-walls").hidden = !selectedCaves().length;
   $("merge-blocks").hidden = selectedBlocks().length < 2;
-  $("selection-edge-row").hidden = !["blockPoint", "blockEdge"].includes(
-    editor.selection?.kind,
-  );
-  $("selection-node-row").hidden = !["blockPoint", "blockEdge"].includes(
-    editor.selection?.kind,
-  );
+  // A point has its own kind, and an edge its own shape: an edge has two
+  // points, so it doesn't show either one's kind.
+  $("selection-node-row").hidden = editor.selection?.kind !== "blockPoint";
+  $("selection-edge-row").hidden = editor.selection?.kind !== "blockEdge";
+  $("split-edge").hidden = editor.selection?.kind !== "blockEdge";
   $("selection-facing-row").hidden = editor.selection?.kind !== "start";
   // A group's props and spikes share their type, layer, flip, radius and spin
   // fields. Where they differ the field shows Mixed, and a new value sets them all.
@@ -243,8 +311,11 @@ export function syncInspector({ live = false } = {}) {
     $("selection-water-depth").value = Math.round(selectedWater.depth);
     $("selection-water-hint").textContent = waterDepthHint(selectedWater.depth);
   }
+  // Delete on an edge removes the point it starts from, which the button
+  // couldn't say plainly, so an edge offers Split Edge instead; the key still works.
   $("delete-selection").hidden =
-    !editor.selection || ["start", "finish"].includes(editor.selection.kind);
+    !editor.selection || ["start", "finish", "blockEdge"].includes(editor.selection.kind);
+  $("delete-selection").textContent = deleteLabel(editor.selection);
   if (isBlock) {
     const first = blocks()[selectedBlocks()[0]];
     $("selection-material").value = first?.material || "grass";
@@ -700,6 +771,14 @@ export function bindInspector() {
       render();
     });
 
+  for (const [axis, id] of [[0, "selection-width"], [1, "selection-height"]])
+    $(id).addEventListener("change", (event) => {
+      const value = Number(event.target.value);
+      if (event.target.value.trim() !== "" && Number.isFinite(value)) resizeBlocks(axis, value);
+      syncInspector();
+      render();
+    });
+
   $("selection-on-ground").addEventListener("click", putOnGround);
 
   $("selection-material").addEventListener("change", (event) => {
@@ -769,6 +848,17 @@ export function bindInspector() {
       ...updated,
       id: boundary.id,
     });
+    syncInspector();
+    render();
+  });
+
+  // Splitting an edge adds a point halfway along it, as a double-click on it does.
+  $("split-edge").addEventListener("click", () => {
+    if (editor.selection?.kind !== "blockEdge" || refuseEdit()) return;
+    const { blockIndex, boundaryIndex, index } = editor.selection;
+    if (!boundaryAt(editor.selection)) return;
+    pushHistory();
+    insertBlockNode(boundaryIndex, index, 0.5, blockIndex);
     syncInspector();
     render();
   });

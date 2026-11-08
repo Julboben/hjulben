@@ -147,7 +147,7 @@ const reported = (report, label) => {
 {
   const report = await boot('locks');
   reported(report, 'locks');
-  check('unlocked, a press on a back wall takes it', report.unlockedTakesWall === 'BACK WALL', `("${report.unlockedTakesWall}")`);
+  check('unlocked, a press on a back wall takes it', /BACK WALL/.test(report.unlockedTakesWall || ''), `("${report.unlockedTakesWall}")`);
   check('the Objects tab opens and lists every group', report.panelShown && report.groupCount === 7);
   check('a group lock is kept for this trail only', JSON.stringify(report.groupLockKeys) === '["hjulben-editor-locked-groups-t1"]', `(${JSON.stringify(report.groupLockKeys)})`);
   check('the tab shows a lock while anything is locked', report.badge === 'lock' && report.badgeGone === null);
@@ -226,6 +226,20 @@ const reported = (report, label) => {
   check('a lone spike shows no size', report.loneSizeHidden === true);
   check('two spikes show how far apart they are', report.spikeSize === '200 × 0', `("${report.spikeSize}")`);
   check('a block shows its width and height', report.blockSize === '800 × 300', `("${report.blockSize}")`);
+  check('in fields that can be changed', report.blockSizeEditable);
+  check('a block is titled by its number and material', report.blockTitle === 'BLOCK 1 · GRASS', `("${report.blockTitle}")`);
+  check('and its delete button says it deletes the block', report.blockDelete === 'DELETE BLOCK', `("${report.blockDelete}")`);
+  check('a typed width stretches the block from its left edge', json(report.resized) === json([0, 400, 300]), `(${json(report.resized)})`);
+  check('and undo puts its width back', report.resizeUndone === 800, `(${report.resizeUndone})`);
+  check('a block cannot be made thinner than the handles allow', report.heightFloor === 8, `(${report.heightFloor})`);
+  check('a point is titled by its number and block', report.pointTitle === 'POINT 2 · BLOCK 1', `("${report.pointTitle}")`);
+  check('a point shows its kind but not an edge\'s shape', json(report.pointRows) === json([false, true, true]), `(${json(report.pointRows)})`);
+  check('and its delete button says it deletes the point', report.pointDelete === 'DELETE POINT', `("${report.pointDelete}")`);
+  check('an edge is titled by the points it joins', report.edgeTitle === 'EDGE 4–1 · BLOCK 1', `("${report.edgeTitle}")`);
+  check('an edge shows its shape and Split Edge, but no point\'s kind', json(report.edgeRows) === json([true, false, false]), `(${json(report.edgeRows)})`);
+  check('an edge offers no delete button', report.edgeDeleteHidden === true);
+  check('Split Edge adds one point and selects it', json(report.split) === json([1, 'blockPoint', 4]), `(${json(report.split)})`);
+  check('and undo takes it out again', report.splitUndone);
 }
 
 // ---------------------------------------------------------------------------
