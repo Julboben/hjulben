@@ -29,3 +29,4 @@ Read `TRAIL_AUTHORING_CONTEXT.md` first: the format, the validation rules, the m
 - Ask before changing the size of touch targets or the visual design.
 - Don't write counts that change (the number of trails, props and so on) into the README or other docs.
 - Comments explain why, in full sentences, and match the density of the code around them.
+- Commit messages end with `Changelog:` lines for the release notes (see "Releasing" in `CONTRIBUTING.md`): one change per line, typed `new:`, `improved:`, `fixed:` or `heads up:`, written for players or trail authors (editor changes start "In the editor, …"). Never wrap a `Changelog:` line, however long, as the release script reads only that one line. Use `Changelog: none` only for changes nobody using the game or the editor would notice, such as tests, tooling and refactors.
