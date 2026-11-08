@@ -34,6 +34,7 @@ const SKIN = {
 };
 
 const snap = (value) => Math.round(value / 2) * 2;
+const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
 // A box with its left side shaded and its right edge lit.
 function block({ pixelRect }, x, y, width, height, c) {
@@ -277,15 +278,40 @@ function drawBannerIcon(tools, icon, x, y) {
 }
 
 /**
- * A sponsor banner tied between two posts, lettering left out (drawing.js
- * draws it the right way round at `bannerLayout(style).text`). The posts run
- * down to the ground live.
+ * How far the banner's cloth lifts (negative) or drops at column `cx`, on the
+ * art grid: a ripple running `downwind` (-1 left, 1 right) along it, faster
+ * and over more of the cloth the stronger the `wind` (0…1), and nothing at the
+ * tied ends. Still at time 0. It never moves more than one art pixel, which
+ * keeps the lettering readable.
  */
-export function drawBanner(tools, style, groundOffset) {
-  const { pixelRect } = tools;
-  const { half, icon } = bannerLayout(style);
-  const c = style.colors;
-  const height = BANNER_BOTTOM - BANNER_TOP;
+export function bannerRipple(time, wind, downwind, phase, cx, half) {
+  if (!time) return 0;
+  const envelope = Math.sin(((cx + half) / (half * 2)) * Math.PI);
+  return clamp(snap(Math.sin(time * (2 + wind * 5) - downwind * cx * 0.06 + phase * Math.PI * 2) * envelope * (0.6 + wind * 3.4)), -2, 2);
+}
+
+/**
+ * The banner's columns from -`half` to `half`, grouped into runs that
+ * `liftAt(cx)` moves the same: [{ from, to, lift }], so the cloth can be
+ * drawn once per run rather than once per column.
+ */
+export function bannerRuns(half, liftAt) {
+  const runs = [];
+  for (let cx = -half; cx < half; cx += 2) {
+    const lift = liftAt(cx);
+    const last = runs.at(-1);
+    if (last && last.lift === lift) last.to = cx + 2;
+    else runs.push({ from: cx, to: cx + 2, lift });
+  }
+  return runs;
+}
+
+/**
+ * The posts of a sponsor banner, each running down to the ground under it,
+ * and the ties from them to the cloth's corners (drawBannerCloth).
+ */
+export function drawBanner({ pixelRect }, style, groundOffset) {
+  const { half } = bannerLayout(style);
   // Posts, each standing on the ground under it.
   for (const px of [-half - 6, half + 2]) {
     const shaded = px < 0;
@@ -300,6 +326,18 @@ export function drawBanner(tools, style, groundOffset) {
     pixelRect(-half - 2, y, 2, 2, WHITE.dark, 2);
     pixelRect(half, y, 2, 2, WHITE.base, 2);
   }
+}
+
+/**
+ * A sponsor banner's cloth and logo, lettering left out (drawing.js draws it
+ * the right way round at `bannerLayout(style).text`, rippling with the cloth;
+ * see bannerRipple).
+ */
+export function drawBannerCloth(tools, style) {
+  const { pixelRect } = tools;
+  const { half, icon } = bannerLayout(style);
+  const c = style.colors;
+  const height = BANNER_BOTTOM - BANNER_TOP;
   // The cloth: lit hem along the top, a shaded fold along the bottom.
   pixelRect(-half, BANNER_TOP, half * 2, height, c.base, 2);
   pixelRect(-half, BANNER_TOP, half * 2, 2, c.light, 2);
@@ -433,18 +471,27 @@ export const SPECTATORS = [
 ];
 /** How close the rider must be for spectators to cheer. */
 export const SPECTATOR_CHEER = { x: 200, y: 160 };
-/** How close a crash must be for them to duck, and for how many seconds. */
-export const SPECTATOR_DUCK = { x: 240, y: 200, time: 1.4 };
+/** How close a crash must be for the people at an event to duck, and for how many seconds. */
+export const CRASH_DUCK = { x: 240, y: 200, time: 1.4 };
 
 /**
- * How spectators at (x, y) react: "duck" just after a crash nearby (scene
- * `crash`, { x, y, age }), then "wince" while the rider is down; "cheer"
- * while the rider is close; "idle" otherwise.
+ * How people at (x, y), the spectators, marshals and camera operator, react
+ * to a crash: "duck" just after one nearby (scene `crash`, { x, y, age }),
+ * then "wince" while the rider is down; null with no crash nearby.
+ */
+export function crashMood(scene, x, y) {
+  const crash = scene.crash;
+  if (!crash || Math.abs(crash.x - x) >= CRASH_DUCK.x || Math.abs(crash.y - y) >= CRASH_DUCK.y) return null;
+  return crash.age < CRASH_DUCK.time ? "duck" : "wince";
+}
+
+/**
+ * How spectators at (x, y) react: to a crash nearby as crashMood says;
+ * "cheer" while the rider is close; "idle" otherwise.
  */
 export function spectatorMood(scene, x, y) {
-  const crash = scene.crash;
-  if (crash && Math.abs(crash.x - x) < SPECTATOR_DUCK.x && Math.abs(crash.y - y) < SPECTATOR_DUCK.y)
-    return crash.age < SPECTATOR_DUCK.time ? "duck" : "wince";
+  const crash = crashMood(scene, x, y);
+  if (crash) return crash;
   if (
     Number.isFinite(scene.riderX) &&
     Number.isFinite(scene.riderY) &&
@@ -576,6 +623,15 @@ function drawCloth({ pixelRect }, x, y, side, columns, rows, pattern, wave) {
   }
 }
 
+// A flag dropped on the ground in front of the marshal, the pole along the
+// ground and the cloth lying crumpled at its tip.
+function drawDroppedFlag({ pixelRect }, pattern) {
+  pixelRect(6, -2, 26, 2, WOOD.tip, 2);
+  for (let column = 0; column < 8; column++)
+    for (let row = 0; row < 2; row++)
+      if (row || column % 3) pixelRect(32 + column * 2, -4 + row * 2, 2, 2, pattern(column, row + 1, 3), 2);
+}
+
 const FLAG_PATTERNS = {
   green: (column, row, rows) =>
     row === 0 ? FLAG_GREEN.light : row === rows - 1 ? FLAG_GREEN.dark : FLAG_GREEN.base,
@@ -585,12 +641,18 @@ const FLAG_PATTERNS = {
 /**
  * A marshal and their flag. `flag` is "green" or "checkered", `wave` comes
  * from marshalFlag, `gaze` is where they look (see drawPerson), and the
- * person's feet are at (0, 0).
+ * person's feet are at (0, 0). With a `crash` mood from crashMood they drop
+ * the flag and duck or wince like the spectators.
  */
-export function drawMarshal(tools, type, wave, time = 0, gaze = { x: 1, y: 0 }) {
+export function drawMarshal(tools, type, wave, time = 0, gaze = { x: 1, y: 0 }, crash = null) {
   const { pixelPath, pixelRect } = tools;
   const marshal = MARSHALS[type];
   const { look } = marshal;
+  if (crash) {
+    drawDroppedFlag(tools, FLAG_PATTERNS[marshal.flag]);
+    drawPerson(tools, look, crash, gaze);
+    return;
+  }
   drawPerson(tools, look, "hold", gaze);
   const { hand, tip } = MARSHAL_HOLDS[wave.hold];
   // Arm from the shoulder to the hand, then the pole.
@@ -654,15 +716,17 @@ export function drawCameraTower(tools) {
 /**
  * The camera crew on the deck, drawn live: the operator beside the camera,
  * the tripod and the camera, which point where `gaze` says (see drawPerson
- * and drawCamera). `tally` lights the camera's tally light.
+ * and drawCamera). `tally` lights the camera's tally light, and the
+ * operator stands in `pose`: ducking or wincing at a crash below, while the
+ * camera keeps rolling.
  * @param {any} tools
  * @param {{ x: number, y: number }} gaze
  * @param {boolean} [tally]
  */
-export function drawCameraCrew(tools, gaze, tally = true) {
+export function drawCameraCrew(tools, gaze, tally = true, pose = "idle") {
   const { pixelRect, pixelPath } = tools;
   const deck = CAMERA_TOWER_DECK;
-  drawPersonAt({ pixelRect }, -8, deck, CAMERA_OPERATOR, gaze);
+  drawPersonAt({ pixelRect }, -8, deck, CAMERA_OPERATOR, gaze, pose);
   // Tripod, its feet on the deck.
   const { x: hx, y: hy } = CAMERA_HEAD;
   pixelPath([[hx, hy], [hx - 8, deck - 2]], RUBBER.base, 1, 2);
@@ -684,8 +748,8 @@ export function drawCameraRail({ pixelRect }) {
 }
 
 // A person stood at (x, y) inside another sprite.
-function drawPersonAt({ pixelRect }, x, y, look, gaze) {
-  drawPerson({ pixelRect: (px, py, w, h, color, p) => pixelRect(px + x, py + y, w, h, color, p) }, look, "idle", gaze);
+function drawPersonAt({ pixelRect }, x, y, look, gaze, pose) {
+  drawPerson({ pixelRect: (px, py, w, h, color, p) => pixelRect(px + x, py + y, w, h, color, p) }, look, pose, gaze);
 }
 
 /**

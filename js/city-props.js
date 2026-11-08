@@ -303,12 +303,34 @@ export function drawCrane(tools) {
   pixelRect(16, -232, 2, 6, PAINT.base, 2);
   pixelRect(10, -222, 14, 2, c.dark, 2);
 
-  // Trolley, cable, hook block and a steel beam on slings: the cable pays
-  // out CRANE_LIFT further, so the load hangs where it always did.
+  // The trolley; the cable and its load hang from it live (drawCraneLoad).
   pixelRect(118, -236, 10, 4, RUBBER.base, 2);
   pixelRect(124, -236, 4, 2, RUBBER.light, 2);
-  pixelRect(122, -232, 2, 80 + CRANE_LIFT, RUBBER.dark, 2);
-  ({ pixelRect, pixelPath } = tools);
+}
+
+/**
+ * How far the crane's load has swung out sideways on its long cable, in
+ * units: pushed `downwind` (-1 left, 1 right) the harder the `wind` (0…1)
+ * blows, and swinging slowly while `time` runs (still at 0).
+ */
+export function craneSway(time, wind, downwind, phase) {
+  let sway = downwind * wind * 4;
+  if (time) sway += Math.sin(time * 0.7 + phase * Math.PI * 2) * (1 + wind * 5);
+  return sway;
+}
+
+/**
+ * The cable down from the trolley, and the hook block and a steel beam on
+ * slings at its end, swung `sway` units sideways (see craneSway). The cable
+ * pays out CRANE_LIFT further than the mast was raised, so the load hangs
+ * where it always did.
+ */
+export function drawCraneLoad(tools, sway = 0) {
+  const c = YELLOW;
+  const dx = snap(sway);
+  tools.pixelPath([[122, -232 - CRANE_LIFT], [122 + dx, -154]], RUBBER.dark, 1, 2);
+  const pixelRect = (x, ...rest) => tools.pixelRect(x + dx, ...rest);
+  const pixelPath = (points, ...rest) => tools.pixelPath(points.map(([x, y]) => [x + dx, y]), ...rest);
   pixelRect(118, -152, 10, 8, c.base, 2);
   pixelRect(118, -152, 2, 8, c.dark, 2);
   pixelRect(124, -152, 4, 2, c.light, 2);

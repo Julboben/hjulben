@@ -848,7 +848,7 @@ export function createRenderer(canvas, { still = false } = {}) {
         propGroundOffset(trail, prop),
         prop.flip,
         propScene.time,
-        { dark, trail, prop, fit, emissive: true, rotation, lit, rider: { x: propScene.riderX, y: propScene.riderY } },
+        { dark, trail, prop, fit, emissive: true, rotation, lit, rider: { x: propScene.riderX, y: propScene.riderY }, weather: propScene.weather, landing: propScene.landing },
       ];
       if (prop.layer === "front") gameArt.drawPropGlow(...glow);
       else

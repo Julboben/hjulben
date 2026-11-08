@@ -6,8 +6,8 @@ import { normalizeTrail, validateTrail } from '../js/trail-schema.js';
 import { rectangle } from './lib/terrain-fixtures.mjs';
 import { PAINTED_PROPS, TEXT_PROPS, canFlip, canRotate, paintedBounds, riderGaze } from '../js/drawing.js';
 import {
-  BANNER_BRANDS, BANNER_MAX, CAMERA_EYE, HALFWAY_FLASH, PERSON_EYES, SPECTATOR_CHEER, SPECTATOR_DUCK, MARSHAL_WAVE,
-  bannerLayout, bannerStyle, halfwayFlash, marshalFlag, pitBoardText, spectatorHop, spectatorMood,
+  BANNER_BRANDS, BANNER_MAX, CAMERA_EYE, HALFWAY_FLASH, PERSON_EYES, SPECTATOR_CHEER, CRASH_DUCK, MARSHAL_WAVE,
+  bannerLayout, bannerRipple, bannerRuns, bannerStyle, crashMood, halfwayFlash, marshalFlag, pitBoardText, spectatorHop, spectatorMood,
   splitText, tapeDroop, tapeTail,
 } from '../js/event-props.js';
 
@@ -82,8 +82,12 @@ const warningsFor = (props) => validateTrail(trail(props)).filter((m) => m.type 
   assert.equal(spectatorMood({ ...scene, riderX: 500 + SPECTATOR_CHEER.x + 1, riderY: 300 }, 500, 300), 'idle');
   const crash = { x: 540, y: 300, age: 0.2 };
   assert.equal(spectatorMood({ ...scene, riderX: 540, riderY: 300, crash }, 500, 300), 'duck');
-  assert.equal(spectatorMood({ ...scene, crash: { ...crash, age: SPECTATOR_DUCK.time + 0.1 } }, 500, 300), 'wince');
-  assert.equal(spectatorMood({ ...scene, crash: { ...crash, x: 500 + SPECTATOR_DUCK.x + 1 } }, 500, 300), 'idle', 'a crash far off');
+  assert.equal(spectatorMood({ ...scene, crash: { ...crash, age: CRASH_DUCK.time + 0.1 } }, 500, 300), 'wince');
+  assert.equal(spectatorMood({ ...scene, crash: { ...crash, x: 500 + CRASH_DUCK.x + 1 } }, 500, 300), 'idle', 'a crash far off');
+  // The marshals and the camera operator react to a crash the same way.
+  assert.equal(crashMood(scene, 500, 300), null, 'no crash');
+  assert.equal(crashMood({ ...scene, crash }, 500, 300), 'duck');
+  assert.equal(crashMood({ ...scene, crash: { ...crash, y: 300 + CRASH_DUCK.y + 1 } }, 500, 300), null, 'a crash far below');
   assert.equal(spectatorHop(0, 1, 0.3), 0, 'still at time 0');
   const hops = Array.from({ length: 40 }, (_, i) => spectatorHop(0.05 + i * 0.05, 0, 0));
   assert.ok(hops.some((hop) => hop < 0) && hops.every((hop) => hop <= 0 && hop % 2 === 0), 'they jump on the art grid');
@@ -125,6 +129,22 @@ const warningsFor = (props) => validateTrail(trail(props)).filter((m) => m.type 
   assert.ok(tapeTail(1, 0.5, 0.2, 1).every(([dx]) => dx > 0));
   const calm = tapeTail(0, 0, 0, -1).at(-1), gale = tapeTail(0, 1, 0, -1).at(-1);
   assert.ok(gale[1] < calm[1] && gale[0] < calm[0], 'a gale lifts it out straight');
+}
+
+// A banner's cloth ripples on the art grid, harder in a gale, but not at its
+// tied ends or at time 0; its runs cover the cloth end to end.
+{
+  const half = bannerLayout(BANNER_BRANDS[2]).half;
+  const lifts = (time, wind) => Array.from({ length: half }, (_, i) => bannerRipple(time, wind, -1, 0.3, -half + i * 2, half));
+  assert.ok(lifts(0, 1).every((lift) => lift === 0), 'still at time 0');
+  assert.equal(bannerRipple(2.3, 1, -1, 0.3, -half, half), 0, 'tied at the end');
+  const moved = (wind) => Array.from({ length: 40 }, (_, t) => lifts(0.5 + t * 0.2, wind).filter((lift) => lift !== 0).length).reduce((a, b) => a + b);
+  assert.ok(moved(1) > moved(0.25) && moved(0.25) > 0, 'it ripples in a breeze, more of it in a gale');
+  assert.ok(lifts(2.3, 1).every((lift) => lift % 2 === 0 && Math.abs(lift) <= 2), 'on the art grid, a pixel at most');
+  const runs = bannerRuns(half, (cx) => bannerRipple(2.3, 1, -1, 0.3, cx, half));
+  assert.equal(runs[0].from, -half);
+  assert.equal(runs.at(-1).to, half);
+  runs.slice(1).forEach((run, index) => assert.ok(run.from === runs[index].to && run.lift !== runs[index].lift, 'runs meet and differ'));
 }
 
 // The halfway flag's split reads like the HUD timer, and its flash fades.

@@ -140,11 +140,23 @@ export function drawLanternGlass({ pixelRect }, brightness = 1) {
   pixelRect(0, -8 - brightness * 2, 2, 2 + brightness * 2, LANTERN_LIGHT.flame, 2);
 }
 
-/** A miner's lantern; with `chain` > 0 it hangs that far below a hook. */
-export function drawLantern(tools, chain = 0) {
-  const { pixelRect } = tools;
-  for (let py = LANTERN_TOP - chain; py < LANTERN_TOP; py += 2)
-    pixelRect(-2, py, 2, 2, (py / 2) % 2 ? IRON.base : STEEL.mid, 2);
+/**
+ * How far sideways a lantern hanging on a `chain` that long has swung, when
+ * the chain is `swing` radians from straight down (see hangingSwing).
+ */
+export const lanternSway = (chain, swing) => snap(Math.sin(swing) * chain);
+
+/**
+ * A miner's lantern; with `chain` > 0 it hangs that far below a hook,
+ * swung `swing` radians from straight down.
+ */
+export function drawLantern(tools, chain = 0, swing = 0) {
+  const top = LANTERN_TOP - chain;
+  for (let py = top; py < LANTERN_TOP; py += 2)
+    tools.pixelRect(lanternSway(py - top, swing) - 2, py, 2, 2, (py / 2) % 2 ? IRON.base : STEEL.mid, 2);
+  // The lantern itself hangs straight from the chain's end.
+  const dx = lanternSway(chain, swing);
+  const pixelRect = (x, ...rest) => tools.pixelRect(x + dx, ...rest);
   // Ring and cap.
   pixelRect(-2, -22, 4, 2, IRON.base, 2);
   pixelRect(-4, -20, 2, 2, IRON.dark, 2);
@@ -154,7 +166,7 @@ export function drawLantern(tools, chain = 0) {
   pixelRect(-6, -16, 2, 2, IRON.dark, 2);
   pixelRect(2, -18, 2, 2, IRON.light, 2);
   pixelRect(2, -16, 4, 2, IRON.light, 2);
-  drawLanternGlass(tools);
+  drawLanternGlass({ pixelRect });
   // Frame bars, shaded left and lit right.
   pixelRect(-6, -14, 2, 10, IRON.dark, 2);
   pixelRect(4, -14, 2, 10, IRON.light, 2);

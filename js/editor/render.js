@@ -490,6 +490,7 @@ function drawPropGlows(dark) {
         prop,
         fit: propWallFit(editor.trail, prop),
         rotation: propRotation(prop),
+        weather: stillScene().weather,
       },
     );
   }

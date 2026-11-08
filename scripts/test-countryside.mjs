@@ -7,7 +7,7 @@ import { normalizeTrail, validateTrail } from '../js/trail-schema.js';
 import { rectangle } from './lib/terrain-fixtures.mjs';
 import { PAINTED_PROPS, WALL_PROPS, canFlip, canRotate, mossSurface, paintedBounds, propWallFit } from '../js/drawing.js';
 import { FARMHOUSE, FARMHOUSE_BOUNDS, FARMHOUSE_WINDOWS, FLAGPOLE, MILL, STALL, STALL_COIN_DROP, STALL_SIGN_LINE, STALL_SIGN_LINES, STALL_TEXT, TURBINE, farmhouseLitWindows, flagDroop, flagRipple, mailboxFlagLift, millAngle, stallCoin, stallSignLines, turbineAngle } from '../js/countryside-props.js';
-import { FIRE_TONGUES, GRASS_BRUSH, IVY, LEAF_REST, LEAVES_AIRBORNE, TREE_SWAY_MAX, fallingLeaves, grassLean, ivyLayout, ivyRustle, mossCushions, mossPlacement, treeSway } from '../js/forest-props.js';
+import { FIRE_TONGUES, GRASS_BRUSH, IVY, tentFlapSway, LEAF_REST, LEAVES_AIRBORNE, TREE_SWAY_MAX, fallingLeaves, grassLean, ivyLayout, ivyRustle, mossCushions, mossPlacement, treeSway } from '../js/forest-props.js';
 import { fireFrame, fireTongues } from '../js/fire.js';
 
 const COUNTRYSIDE_PROPS = ['tent', 'grass', 'flagpole', 'christiania-bike', 'bench', 'fireplace', 'farmhouse', 'mailbox', 'stall', 'wind-turbine', 'tutorial-lean-forward'];
@@ -284,6 +284,14 @@ const COUNTRYSIDE_PROPS = ['tent', 'grass', 'flagpole', 'christiania-bike', 'ben
   assert.equal(turbineAngle(0, 1, 0.3), -millAngle(0, 1, 0.3), 'still at time 0');
   assert.ok(turbineAngle(30, 0.5, 0) - turbineAngle(0.001, 0.5, 0) > 0, 'it turns clockwise');
   assert.ok(TURBINE.hub.y - TURBINE.blade > -300 && TURBINE.hub.y - TURBINE.blade < -240, 'tall, but within the view');
+}
+
+// The tent's loose door flaps hang still in still air, blow downwind, and
+// flap out of step while time runs.
+{
+  for (const side of [-1, 1]) assert.ok(tentFlapSway(2.3, 0, -1, 0.4, side) === 0, 'still in still air');
+  assert.ok(tentFlapSway(0, 0.6, -1, 0.4, -1) < 0 && tentFlapSway(0, 0.6, 1, 0.4, -1) > 0, 'blown downwind');
+  assert.notEqual(tentFlapSway(2.3, 0.6, -1, 0.4, -1), tentFlapSway(2.3, 0.6, -1, 0.4, 1), 'out of step');
 }
 
 console.log('Countryside props: all checks passed.');

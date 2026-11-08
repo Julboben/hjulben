@@ -59,6 +59,7 @@ import {
   drawDrip,
   drawHangingRoots,
   drawLantern,
+  lanternSway,
   drawLanternGlass,
   drawMinecart,
   drawMushroomSpots,
@@ -87,6 +88,8 @@ import {
   drawBirdPerched,
   drawBirdFlying,
   drawCrane,
+  drawCraneLoad,
+  craneSway,
   drawScaffoldDecks,
   drawScaffoldCouplers,
   drawGraffiti,
@@ -107,13 +110,17 @@ import {
   FIRE,
   TENT,
   TENT_DOOR_CENTRE,
+  drawTentFlaps,
   drawFireplace,
+  drawFlowers,
   drawGrass,
   drawTent,
   drawTentDoorGlow,
   drawTentRopes,
   FIRE_TONGUES,
+  FLOWER_STIFFNESS,
   grassLean,
+  tentFlapSway,
   IVY,
   TREE_SWAY_MAX,
   fallingLeaves,
@@ -197,6 +204,7 @@ import {
   pineSway,
 } from "./mountain-props.js";
 import {
+  BANNER_BOTTOM,
   BANNER_TOP,
   CAMERA_EYE,
   CAMERA_TALLY,
@@ -215,10 +223,13 @@ import {
   TUTORIAL_BOUNDS,
   TYRE_WALL_BOUNDS,
   bannerLayout,
+  bannerRipple,
+  bannerRuns,
   bannerStyle,
   cameraTallyOn,
   drawArrowSign,
   drawBanner,
+  drawBannerCloth,
   drawCameraCrew,
   drawCameraRail,
   drawCameraTower,
@@ -245,6 +256,7 @@ import {
   drawWarningTriangle,
   halfwayFlash,
   halfwayTextColor,
+  crashMood,
   marshalFlag,
   pitBoardText,
   spectatorHop,
@@ -3980,6 +3992,32 @@ const SCARECROW_FACES = {
   front: [[26, 26], [36, 26], [28, 32], [34, 32]],
   right: [[32, 26], [38, 26], [32, 32], [36, 32]],
 };
+// Straw poking out of the cuffs and hem, in sprite coordinates, drawn live
+// so it stirs in the wind (see strawSway).
+const SCARECROW_STRAW = [
+  [2, 44, 4, 2, FARM_STRAW.base],
+  [4, 52, 2, 2, FARM_STRAW.base],
+  [58, 44, 4, 2, FARM_STRAW.base],
+  [58, 52, 2, 2, FARM_STRAW.base],
+  [22, 72, 2, 6, FARM_STRAW.base],
+  [38, 72, 2, 4, FARM_STRAW.base],
+  [0, 48, 6, 2, FARM_STRAW.dark],
+  [58, 48, 6, 2, FARM_STRAW.dark],
+  [26, 72, 2, 4, FARM_STRAW.dark],
+  [42, 72, 2, 6, FARM_STRAW.dark],
+];
+
+/**
+ * How far a wisp of straw blows sideways, in units: `downwind` (-1 left, 1
+ * right) the harder the `wind` (0…1) blows, and fluttering while `time`
+ * runs (still at 0). `phase` is a fixed 0…1 value per wisp.
+ */
+function strawSway(time, wind, downwind, phase) {
+  let sway = downwind * wind * 2;
+  if (time) sway += Math.sin(time * (3 + wind * 5) + phase * Math.PI * 2) * (0.6 + wind * 2);
+  return sway;
+}
+
 // Where the prisoner peeking out of the escape tunnel looks from.
 const TUNNEL_EYES = { x: 0, y: -22 };
 // Where the scarecrow looks from, in its own frame.
@@ -4015,17 +4053,6 @@ function drawScarecrow(tools) {
       [36, 58, 6, 6, PROP_APPLE.base],
       [36, 62, 2, 2, PROP_APPLE.shade],
       [20, 66, 24, 2, s.dark],
-      // Straw poking out of the cuffs and hem.
-      [2, 44, 4, 2, s.base],
-      [4, 52, 2, 2, s.base],
-      [58, 44, 4, 2, s.base],
-      [58, 52, 2, 2, s.base],
-      [22, 72, 2, 6, s.base],
-      [38, 72, 2, 4, s.base],
-      [0, 48, 6, 2, s.dark],
-      [58, 48, 6, 2, s.dark],
-      [26, 72, 2, 4, s.dark],
-      [42, 72, 2, 6, s.dark],
       // Burlap head.
       [24, 20, 16, 20, FARM_WOOD.cut],
       [22, 22, 20, 16, FARM_WOOD.cut],
@@ -4303,7 +4330,8 @@ const PROP_EXTENTS = {
   fence: [-42, -38, 42],
   rock: [-18, -20, 20],
   boulder: [-24, -42, 24],
-  flowers: [-16, -22, 16],
+  // Room for the stems bent over by the wind or the rider.
+  flowers: [-28, -22, 28],
   stump: [-12, -18, 12],
   cactus: [-32, -104, 32],
   "cactus-small": [-14, -58, 14],
@@ -4313,7 +4341,8 @@ const PROP_EXTENTS = {
   crystal: [-16, -42, 16],
   // The pennant flies downwind, either way.
   start: [-48, -102, 48],
-  vines: [-16, -10, 16],
+  // Room for the strands swinging from the lip.
+  vines: [-48, -10, 48],
   roots: [-32, -16, 32],
   // Moss lies along whatever surface it finds, so any way round.
   moss: [-32, -32, 32],
@@ -4321,7 +4350,8 @@ const PROP_EXTENTS = {
   apple: [-6, -12, 6],
   ladder: [-28, -100, 26],
   wheelbarrow: [-34, -36, 30],
-  scarecrow: [-32, -112, 32],
+  // Room for its straw blowing out from the cuffs.
+  scarecrow: [-36, -112, 36],
   beehive: [-32, -80, 32],
   tyre: [-36, TYRE.centre - TYRE.lug - 4, 36],
   cone: [-12, -26, 12],
@@ -4339,7 +4369,8 @@ const PROP_EXTENTS = {
   "hanging-roots": [-16, -CEILING_REACH - 4, 16],
   stalactites: [-20, -CEILING_REACH - 4, 20],
   drip: [-10, -CEILING_REACH - 4, 10],
-  lantern: [-8, -CEILING_REACH - 4, 8],
+  // Room for it swinging on its chain.
+  lantern: [-24, -CEILING_REACH - 4, 24],
   bats: [-16, -CEILING_REACH - 4, 18],
   mushrooms: [-20, -34, 20],
   minecart: [-RAIL_REACH - 4, -52, RAIL_REACH + 4],
@@ -5370,7 +5401,9 @@ export function createGameArt(ctx) {
   }
 
   // Hanging from a cliff's top corner. `wall.drop` is the free fall below.
-  function drawVines(x, wall) {
+  // `swing` (radians, see hangingSwing) swings the strands from the lip,
+  // a little out of step with each other.
+  function drawVines(x, wall, swing = 0) {
     const length = Math.max(24, Math.min(VINE_MAX, wall?.drop || 56));
     const lean = (wall?.side || 0) * 2;
     // Leafy clump over the lip.
@@ -5379,7 +5412,8 @@ export function createGameArt(ctx) {
     pixelRect(0, -6, 4, 2, LEAF.light, 2);
     [-6, 0, 6].forEach((offset, index) => {
       const reach = Math.round((length * (0.55 + propNoise(x, index) * 0.45)) / 2) * 2;
-      const sway = (py) => Math.round(Math.sin((py + index * 9) * 0.12) * 1.2) * 2;
+      const out = Math.sin(swing * (1 - index * 0.15));
+      const sway = (py) => Math.round(Math.sin((py + index * 9) * 0.12) * 1.2) * 2 + Math.round((out * py) / 2) * 2;
       const stemX = offset + lean;
       for (let py = 0; py < reach; py += 2) {
         const sx = stemX + sway(py);
@@ -5656,6 +5690,26 @@ export function createGameArt(ctx) {
       drawPixelDisc(puff.x, groundOffset(puff.x) + puff.y, puff.radius, SNOW.light, 2);
     }
     ctx.globalAlpha = base;
+  }
+
+  /**
+   * How long a lantern's chain is, from the roof (`fit` as from propWallFit)
+   * down to its ring, and how far it has swung (see hangingSwing). One with
+   * no roof over it stands on its anchor instead.
+   */
+  function lanternHang(fit, scene, x, y) {
+    if (!Number.isFinite(fit?.ceiling)) return { chain: 0, swing: 0 };
+    const roof = Math.round(fit.ceiling / 2) * 2;
+    const chain = Math.max(0, Math.round((fit.body || 0) / 2) * 2 + LANTERN_TOP - roof);
+    const swing = hangingSwing(scene.time || 0, propWind(scene, false).wind, scene.landing, x, y + roof, propNoise(x, 58));
+    return { chain, swing };
+  }
+
+  /** How far a tent's door flaps at x blow, for drawTentFlaps (see tentFlapSway). */
+  function tentFlaps(scene, x, mirrored) {
+    const { wind, downwind } = propWind(scene, mirrored);
+    const phase = propNoise(x, 57);
+    return (side) => tentFlapSway(scene.time || 0, wind, downwind, phase, side);
   }
 
   /**
@@ -6006,30 +6060,20 @@ export function createGameArt(ctx) {
       pixelRect(-14, -10, 8, 4, "#8b978c", 2);
       pixelRect(-10, -10, 4, 2, "#a2ab9e", 2);
     } else if (type === "flowers") {
-      // Fixed variation: no random changes or flicker between frames.
-      const flowers = [
-        { x: -12, height: 8, color: "#e8755b" },
-        { x: -6, height: 14, color: "#f1b95d" },
-        { x: 0, height: 10, color: "#e8755b" },
-        { x: 6, height: 16, color: "#f1b95d" },
-        { x: 12, height: 8, color: "#e8755b" },
-      ];
-
-      for (const flower of flowers) {
-        const base = groundOffset(flower.x + 1);
-        const top = base - flower.height;
-
-        pixelRect(flower.x, top, 2, flower.height, "#58784d", 2);
-
-        // Leaves sit above each stem's local ground anchor.
-        pixelRect(flower.x - 2, base - 6, 2, 2, "#477158", 2);
-        pixelRect(flower.x + 2, base - 8, 2, 2, "#618b66", 2);
-
-        // Compact cross-shaped blossom with a warm center.
-        pixelRect(flower.x - 2, top - 2, 6, 2, flower.color, 2);
-        pixelRect(flower.x, top - 4, 2, 6, flower.color, 2);
-        pixelRect(flower.x, top - 2, 2, 2, "#f4e9d1", 2);
-      }
+      // Swaying like the grass, if stiffer, and pushed aside as the rider
+      // brushes through.
+      const side = mirrored ? -1 : 1;
+      const known = Number.isFinite(scene.riderX) && Number.isFinite(scene.riderY);
+      const phase = propNoise(x, 56);
+      const { wind, downwind } = propWind(scene, mirrored);
+      drawFlowers({ pixelRect }, groundOffset, (stem) => {
+        const ground = groundOffset(stem.x + 1);
+        return FLOWER_STIFFNESS * grassLean(
+          scene.time || 0, wind, downwind, phase, stem.x,
+          known ? (scene.riderX - x) * side - stem.x : null,
+          known ? scene.riderY - (y + ground) : null,
+        );
+      });
     } else if (type === "stump") {
       // Flared base, still following the terrain column by column.
       rectDownTo(-10, -8, 20, "#66543f", 2, groundOffset);
@@ -6112,6 +6156,15 @@ export function createGameArt(ctx) {
       drawCanopy(type);
     } else if (type === "scarecrow") {
       drawCanopy(type);
+      // Its straw stirs in the wind, each wisp out of step with the rest.
+      const { wind, downwind } = propWind(scene, mirrored);
+      const phase = propNoise(x, 62);
+      drawFarmRects(
+        { pixelRect },
+        SCARECROW_STRAW.map(([sx, ...rest], index) => [sx + Math.round(strawSway(scene.time || 0, wind, downwind, phase + index * 0.37) / 2) * 2, ...rest]),
+        SCARECROW_OX,
+        SCARECROW_OY,
+      );
       // The post below the body follows the ground, like a tree trunk.
       rectDownTo(-2, SCARECROW_BODY_BOTTOM, 2, FARM_WOOD.base, 2, groundOffset);
       rectDownTo(0, SCARECROW_BODY_BOTTOM, 2, FARM_WOOD.light, 2, groundOffset);
@@ -6161,6 +6214,9 @@ export function createGameArt(ctx) {
       rectDownTo(-16, CRANE_BODY_BOTTOM, 4, f.dark, 2, groundOffset);
       rectDownTo(-12, CRANE_BODY_BOTTOM, 28, f.base, 2, groundOffset);
       rectAboveGround(-12, CRANE_BODY_BOTTOM, 28, 2, f.light, 2, groundOffset);
+      // The load swings on its cable in the wind.
+      const { wind, downwind } = propWind(scene, mirrored);
+      drawCraneLoad({ pixelRect, pixelPath }, craneSway(scene.time || 0, wind, downwind, propNoise(x, 61)));
     } else if (type === "scaffolding") {
       drawCanopy(type);
       // Standards run down to base plates on the ground, like tree trunks.
@@ -6364,13 +6420,29 @@ export function createGameArt(ctx) {
       drawCourseTape({ pixelRect }, groundOffset, scene.time || 0, wind, propNoise(x, 13), downwind);
     } else if (type === "banner") {
       const style = bannerStyle(text, propNoise(x, 14));
-      drawBanner({ pixelRect, drawPixelDisc }, style, groundOffset);
+      drawBanner({ pixelRect }, style, groundOffset);
       const layout = bannerLayout(style);
-      drawPixelText(style.name, layout.text.x, layout.text.y, style.colors.text, { align: "left" });
-      if (Number.isInteger(style.umlaut)) {
-        const ux = layout.text.x + style.umlaut * 8;
-        pixelRect(ux, layout.text.y - 4, 2, 2, style.colors.text, 2);
-        pixelRect(ux + 4, layout.text.y - 4, 2, 2, style.colors.text, 2);
+      // The cloth ripples in the wind and its lettering with it: drawn once
+      // for each run of columns lifted the same, clipped to that run.
+      const { wind, downwind } = propWind(scene, mirrored);
+      const phase = propNoise(x, 60);
+      const runs = bannerRuns(layout.half, (cx) => bannerRipple(scene.time || 0, wind, downwind, phase, cx, layout.half));
+      for (const { from, to, lift } of runs) {
+        ctx.save();
+        if (runs.length > 1) {
+          ctx.beginPath();
+          ctx.rect(from, BANNER_TOP - 8, to - from, BANNER_BOTTOM - BANNER_TOP + 16);
+          ctx.clip();
+        }
+        ctx.translate(0, lift);
+        drawBannerCloth({ pixelRect, drawPixelDisc }, style);
+        drawPixelText(style.name, layout.text.x, layout.text.y, style.colors.text, { align: "left" });
+        if (Number.isInteger(style.umlaut)) {
+          const ux = layout.text.x + style.umlaut * 8;
+          pixelRect(ux, layout.text.y - 4, 2, 2, style.colors.text, 2);
+          pixelRect(ux + 4, layout.text.y - 4, 2, 2, style.colors.text, 2);
+        }
+        ctx.restore();
       }
     } else if (type === "spectators") {
       // They cheer as the rider goes by and duck from a crash nearby.
@@ -6398,7 +6470,9 @@ export function createGameArt(ctx) {
       const ground = Math.round(groundOffset(0) / 2) * 2;
       ctx.translate(0, ground);
       const gaze = riderGaze(scene, x, y, mirrored, { x: 0, y: ground + PERSON_EYES });
-      drawMarshal({ pixelRect, pixelPath }, type, marshalFlag(scene, x, y, propNoise(x, 17)), scene.time || 0, gaze);
+      // They wave the rider on, and drop the flag to duck from a crash.
+      const wave = marshalFlag(scene, x, y, propNoise(x, 17));
+      drawMarshal({ pixelRect, pixelPath }, type, wave, scene.time || 0, gaze, crashMood(scene, x, y));
     } else if (type === "camera-tower") {
       drawCanopy(type);
       for (const [index, lx] of CAMERA_TOWER_LEGS.entries()) {
@@ -6408,9 +6482,11 @@ export function createGameArt(ctx) {
         pixelRect(lx - 2, foot - 2, 8, 2, STEEL.dark, 2);
       }
       // The camera and its operator follow the rider, the tally light
-      // blinking while it rolls.
+      // blinking while it rolls. The operator ducks from a crash below, and
+      // the camera keeps rolling.
       const gaze = riderGaze(scene, x, y, mirrored, CAMERA_EYE);
-      drawCameraCrew({ pixelRect, pixelPath, drawPixelDisc }, gaze, cameraTallyOn(scene.time || 0));
+      const pose = crashMood(scene, x, y) ?? "idle";
+      drawCameraCrew({ pixelRect, pixelPath, drawPixelDisc }, gaze, cameraTallyOn(scene.time || 0), pose);
       drawCameraRail({ pixelRect });
     } else if (
       type === "warning-triangle" ||
@@ -6530,10 +6606,10 @@ export function createGameArt(ctx) {
       // With no roof found it hangs from its own anchor.
       const roof = Math.round((fit.ceiling ?? 0) / 2) * 2;
       if (type === "lantern") {
-        const body = Math.round((fit.body || 0) / 2) * 2;
-        ctx.translate(0, body);
-        const chain = fit.ceiling === null ? 0 : Math.max(0, body + LANTERN_TOP - roof);
-        drawLantern(tools, chain);
+        // Swaying in the draught, and swinging after a hard landing nearby.
+        const { chain, swing } = lanternHang(fit, scene, x, y);
+        ctx.translate(0, Math.round((fit.body || 0) / 2) * 2);
+        drawLantern(tools, chain, swing);
       } else {
         ctx.translate(0, roof);
         const room = Number.isFinite(fit.drop) ? fit.drop : Infinity;
@@ -6610,6 +6686,7 @@ export function createGameArt(ctx) {
     } else if (type === "tent") {
       drawCanopy(type);
       drawTentRopes({ pixelRect, pixelPath }, groundOffset);
+      drawTentFlaps({ pixelRect }, tentFlaps(scene, x, mirrored));
     } else if (type === "fireplace") {
       // The stones and logs; the flames are drawn with the glowing parts.
       // Smoke rises off the fire and blows downwind, like the hut's.
@@ -6704,7 +6781,12 @@ export function createGameArt(ctx) {
       if (type === "moss") ctx.translate(Math.round((wall?.at?.[0] ?? 0) / 2) * 2, Math.round((wall?.at?.[1] ?? 0) / 2) * 2);
       else if (type !== "vines") ctx.translate(wall?.face || 0, 0);
       // Grow away from the rock: rock on the right (side 1) means grow left.
-      if (type === "vines") drawVines(x, wall);
+      if (type === "vines") {
+        // Swaying in the wind, leaning downwind in a strong one, and
+        // swinging after a hard landing nearby.
+        const { wind, downwind } = propWind(scene, mirrored);
+        drawVines(x, wall, downwind * wind * 0.12 + hangingSwing(scene.time || 0, wind, scene.landing, x, y, propNoise(x, 59)));
+      }
       else if (type === "moss") {
         // Cushions of moss along the surface, whichever way it faces.
         drawMoss({ pixelRect }, mossCushions((n) => propNoise(x, 40 + n)), wall?.normal ?? [0, -1]);
@@ -7663,22 +7745,28 @@ export function createGameArt(ctx) {
     groundOffset = () => 0,
     flip = false,
     time = 0,
-    { dark = true, trail = null, prop = null, fit = null, emissive = false, rotation = 0, lit = false, rider = null } = {},
+    { dark = true, trail = null, prop = null, fit = null, emissive = false, rotation = 0, lit = false, rider = null, weather = NO_SCENE.weather, landing = null } = {},
   ) {
     const dir = flip ? -1 : 1;
     const strength = dark ? 1 : 0.5;
+    // The wind and the last hard landing, for the glowing parts that move.
+    const scene = { time, weather, landing };
     if (type === "lantern") {
       const centreY = y + (fit?.body || 0) + LANTERN_CENTRE;
+      const { chain, swing } = lanternHang(fit, scene, x, y);
       const flicker = lanternFlicker(x, time);
       ctx.save();
       ctx.imageSmoothingEnabled = false;
       ctx.globalCompositeOperation = "screen";
+      // The light on the rock stays where the lantern hangs at rest: it is
+      // built pixel by pixel, too slow to follow every swing, and the swing
+      // is small beside its reach.
       if (trail && prop && !emissive) {
         const light = lanternLightSprite(trail, prop, x, centreY);
         ctx.globalAlpha = strength * flicker;
         ctx.drawImage(light.canvas, light.left, light.top, light.size, light.size);
       }
-      ctx.translate(Math.round(x / 2) * 2, Math.round(centreY / 2) * 2);
+      ctx.translate(Math.round(x / 2) * 2 + lanternSway(chain, swing), Math.round(centreY / 2) * 2);
       if (!emissive) {
         ctx.globalAlpha = 0.22 * strength * flicker;
         drawPixelDisc(0, 0, 16, LANTERN_LIGHT.flame, 2);
@@ -7827,6 +7915,8 @@ export function createGameArt(ctx) {
       }
       ctx.globalAlpha = 1;
       drawTentDoorGlow({ pixelRect }, flicker);
+      // The flaps again, over the light, for when one blows across the door.
+      drawTentFlaps({ pixelRect }, tentFlaps(scene, x, flip));
     } else if (type === "hut") {
       // Firelight in the window, flickering like a lantern, and the light it
       // throws on the snow below.

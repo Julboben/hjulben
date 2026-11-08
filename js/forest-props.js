@@ -6,8 +6,9 @@
 // where it hides (see drawing.js for how it finds its tree and path). With no
 // tree in reach it dashes off and is gone. A tent glows from the lantern inside
 // it after dark, a fireplace burns in its ring of stones, and a tuft of grass
-// sways downwind and bends flat as the rider brushes through it. Everything
-// here is decoration and never touches the simulation.
+// or a clump of flowers sways downwind and bends flat as the rider brushes
+// through it. The tent's loose door flaps stir in the wind. Everything here
+// is decoration and never touches the simulation.
 
 import { STEEL } from "./city-props.js";
 import { fireTongues } from "./fire.js";
@@ -208,12 +209,15 @@ export const TENT_LIGHT = { glow: "#ffe39a", core: "#fff3be", flame: "#f1b95d" }
 
 // The door's half width at a row `y` (0 at the ground).
 const doorHalf = (y) => snap(Math.max(0, (y + 30) * 0.45));
+// The row the flaps are tied back at; below it their ends hang loose.
+const TENT_TIE = -14;
 
 /**
  * A ridge tent seen end on, about 68 wide and 44 tall: orange fabric shaded
  * on the left, a seam down from the ridge pole, the door flaps tied back
  * round a dark doorway, and a pair of boots left outside. The guy ropes and
- * their pegs are drawn live (drawTentRopes); the doorway glows after dark
+ * their pegs (drawTentRopes) and the flaps' loose ends below the tie-backs
+ * (drawTentFlaps) are drawn live; the doorway glows after dark
  * (drawTentDoorGlow).
  */
 export function drawTent({ pixelRect }) {
@@ -226,8 +230,8 @@ export function drawTent({ pixelRect }) {
     pixelRect(-2, y, 2, 2, FABRIC.dark, 2);
     // The doorway, with a rolled-up flap either side.
     const door = doorHalf(y);
-    if (door) {
-      pixelRect(-door, y, door * 2, 2, INK, 2);
+    if (door) pixelRect(-door, y, door * 2, 2, INK, 2);
+    if (door && y < TENT_TIE) {
       pixelRect(-door - 2, y, 2, 2, FABRIC.dark, 2);
       pixelRect(door, y, 2, 2, ROPE.base, 2);
     }
@@ -237,8 +241,8 @@ export function drawTent({ pixelRect }) {
   pixelRect(0, apex - 4, 2, 2, STEEL.light, 2);
   pixelRect(-half - 2, -2, half * 2 + 4, 2, FABRIC.dark, 2);
   // Tie-backs holding the flaps.
-  pixelRect(-12, -14, 4, 2, ROPE.dark, 2);
-  pixelRect(8, -14, 4, 2, ROPE.light, 2);
+  pixelRect(-12, TENT_TIE, 4, 2, ROPE.dark, 2);
+  pixelRect(8, TENT_TIE, 4, 2, ROPE.light, 2);
   // Boots by the door.
   for (const bx of [16, 24]) {
     pixelRect(bx, -8, 4, 6, WOOD.base, 2);
@@ -260,6 +264,34 @@ export function drawTentRopes({ pixelRect, pixelPath }, groundOffset) {
     pixelPath([[side * 6, TENT.apex + 8], [px, ground - 4]], side < 0 ? ROPE.dark : ROPE.base, 1, 2);
     pixelRect(px - 2, ground - 6, 4, 2, STEEL.light, 2);
     pixelRect(px, ground - 4, 2, 4, STEEL.base, 2);
+  }
+}
+
+/**
+ * How far the loose ends of the tent's door flaps blow, in units at their
+ * bottom (negative is left in the prop's frame): out `downwind` (-1 left, 1
+ * right) the harder the `wind` (0…1) blows, and flapping while `time` runs
+ * (still at 0). Not at all in still air. `side` is -1 for the left flap and
+ * 1 for the right, so the two flap out of step.
+ */
+export function tentFlapSway(time, wind, downwind, phase, side) {
+  let sway = downwind * wind * 3;
+  if (time) sway += Math.sin(time * (3 + wind * 6) + (phase + side * 0.2) * Math.PI * 2) * wind * 2;
+  return sway;
+}
+
+/**
+ * The door flaps' loose ends, from the tie-backs down to just above the
+ * groundsheet, blown sideways by `swayOf(side)` (see tentFlapSway), the
+ * more the lower down.
+ */
+export function drawTentFlaps({ pixelRect }, swayOf) {
+  for (const side of [-1, 1]) {
+    const sway = swayOf(side);
+    for (let y = TENT_TIE + 2; y < -2; y += 2) {
+      const x = side < 0 ? -doorHalf(y) - 2 : doorHalf(y);
+      pixelRect(x + snap((sway * (y - TENT_TIE)) / (-2 - TENT_TIE)), y, 2, 2, side < 0 ? FABRIC.dark : ROPE.base, 2);
+    }
   }
 }
 
@@ -328,6 +360,42 @@ export function drawGrass({ pixelRect }, groundOffset, leanOf) {
       const color = up >= height - 2 ? BLADES.tip : BLADES[blade.color];
       pixelRect(x, ground - up - 2, 2, 2, color, 2);
     }
+  }
+}
+
+// --------------------------------------------------------------------- flowers
+
+/** The flowers' stems: where each grows, how tall, and its blossom's colour. */
+export const FLOWER_STEMS = [
+  { x: -12, height: 8, color: "#e8755b" },
+  { x: -6, height: 14, color: "#f1b95d" },
+  { x: 0, height: 10, color: "#e8755b" },
+  { x: 6, height: 16, color: "#f1b95d" },
+  { x: 12, height: 8, color: "#e8755b" },
+];
+/** How far a stem leans next to a grass blade in the same wind: stiffer, it bends half as far. */
+export const FLOWER_STIFFNESS = 0.5;
+
+/**
+ * A clump of flowers, each stem rising from the ground under it
+ * (`groundOffset(localX)`) and bent over by `leanOf(stem)` (a grassLean
+ * scaled by FLOWER_STIFFNESS), more towards the blossom, which rides on top.
+ */
+export function drawFlowers({ pixelRect }, groundOffset, leanOf) {
+  for (const stem of FLOWER_STEMS) {
+    const base = snap(groundOffset(stem.x + 1));
+    const lean = leanOf(stem);
+    const height = snap(stem.height / Math.sqrt(1 + lean * lean * 0.6));
+    const at = (up) => stem.x + snap((lean * up * up) / stem.height);
+    for (let up = 0; up < height; up += 2) pixelRect(at(up), base - up - 2, 2, 2, BLADES.base, 2);
+    // Leaves low on the stem.
+    pixelRect(at(6) - 2, base - 6, 2, 2, BLADES.dark, 2);
+    pixelRect(at(8) + 2, base - 8, 2, 2, BLADES.light, 2);
+    // Compact cross-shaped blossom with a warm centre.
+    const x = at(height), top = base - height;
+    pixelRect(x - 2, top - 2, 6, 2, stem.color, 2);
+    pixelRect(x, top - 4, 2, 6, stem.color, 2);
+    pixelRect(x, top - 2, 2, 2, "#f4e9d1", 2);
   }
 }
 
