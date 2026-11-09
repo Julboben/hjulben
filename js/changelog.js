@@ -2,6 +2,124 @@
 /** @type {{ version: string, date: string, changes: { type: 'new' | 'improved' | 'fixed', text: string }[] }[]} */
 export const RELEASES = [
   {
+    "version": "0.6.3",
+    "date": "2026-11-09",
+    "changes": [
+      {
+        "type": "heads-up",
+        "text": "High Orchard, the First Rides finale, is now a whole trials day in eight sections that tests everything the world teaches, and ends through a tunnel in the Woods. Its times start afresh."
+      },
+      {
+        "type": "new",
+        "text": "The Garage has new accessories and extra cosmetics, undo and redo, and a room that grows with your career. New gear is tagged NEW, and locked items show how close you are to earning them."
+      },
+      {
+        "type": "new",
+        "text": "Picking a different bike in the Garage now lets you hear its engine, or the Pocket Classic's bell."
+      },
+      {
+        "type": "new",
+        "text": "Earning an achievement or new Garage gear plays a sound."
+      },
+      {
+        "type": "new",
+        "text": "Editor: There is a mini map of the whole trail. Click or drag it to move around, and press M to hide it."
+      },
+      {
+        "type": "new",
+        "text": "Editor: Blocks and props can be grouped into one named thing with Cmd+G, such as a house, which selects, moves, copies, flips and locks as one. Double-click to work on one part of it."
+      },
+      {
+        "type": "new",
+        "text": "Editor: Blocks can be flipped (X, and Shift+X upside down), and blocks and props can be brought to the front or sent to the back."
+      },
+      {
+        "type": "improved",
+        "text": "Medals on 23 official trails now follow the replay bot's times, so gold is a real challenge. Elastic Summit gets its first medals. Leaderboards, ghosts and best times stay."
+      },
+      {
+        "type": "improved",
+        "text": "Achievements and gear are now spread out more, so one good run earns one or two rather than a pile at once."
+      },
+      {
+        "type": "improved",
+        "text": "The Garage is zoomed out, with a real light switch on the wall, a larger career map and a pegboard."
+      },
+      {
+        "type": "improved",
+        "text": "Your Ghost of best run choice now goes with your save and syncs across devices. New online riders are asked to pick Mine or World."
+      },
+      {
+        "type": "improved",
+        "text": "Clouds now drift in the wind, including on the menu, and stay still with reduced motion."
+      },
+      {
+        "type": "improved",
+        "text": "Flowers, vines, sponsor banners, hanging lanterns, the crane's load, tent door flaps and the scarecrow's straw now move in the wind like the grass and flags do, and vines and lanterns swing after a hard landing nearby."
+      },
+      {
+        "type": "improved",
+        "text": "Marshals drop their flag and the camera operator ducks when you crash nearby, like the spectators."
+      },
+      {
+        "type": "improved",
+        "text": "Spectators, marshals, the camera operator and the prison guard turn their heads to watch you ride by, and look up as you jump over them."
+      },
+      {
+        "type": "improved",
+        "text": "The scarecrow, snowman, prisoners and skeleton look up and down at you as well as sideways."
+      },
+      {
+        "type": "improved",
+        "text": "Editor: Anything you drag snaps to the edges, middles and points of other things nearby and to the grid, with a guide showing what it lined up with. Hold Cmd/Ctrl mid-drag to move freely, and press N to turn snapping off or on."
+      },
+      {
+        "type": "improved",
+        "text": "Editor: Shift-dragging keeps a move straight across, up and down, or at 45°. A single point still snaps to 15° steps and the grid."
+      },
+      {
+        "type": "improved",
+        "text": "Editor: The mini map shows the trail's riding line clearly, marks the apples, spikes, start, finish and the selection, and shows a dot for each problem. Click a dot to go to it."
+      },
+      {
+        "type": "improved",
+        "text": "Editor: The inspector names what is selected the way warnings do (Block 3, Point 2). A block's width and height can be typed, and X and Y place it by its top-left corner."
+      },
+      {
+        "type": "improved",
+        "text": "Editor: An edge can be split in two from the inspector, and related fields such as X and Y share a line."
+      },
+      {
+        "type": "improved",
+        "text": "Editor: Letting go of Alt mid-drag now drops the copy and moves the original again, as in Illustrator or Figma."
+      },
+      {
+        "type": "improved",
+        "text": "Editor: A trail only shows as edited once you let go of a drag."
+      },
+      {
+        "type": "improved",
+        "text": "Editor: A block's edges can only be dragged once it is selected, and the point or edge you would grab is highlighted, so outlines are no longer reshaped by accident. Escape cancels a drag."
+      },
+      {
+        "type": "improved",
+        "text": "Editor: Each tool's hint is a single line. Press ? for every shortcut."
+      },
+      {
+        "type": "improved",
+        "text": "Editor: The shortcuts dialog is easier to scan, with one line per shortcut, one key column, and only your machine's modifier shown."
+      },
+      {
+        "type": "improved",
+        "text": "Editor: The Water tool draws water by dragging, with no size to set first."
+      },
+      {
+        "type": "fixed",
+        "text": "Editor: Tool shortcuts keep working after you click a button or choose from a dropdown."
+      }
+    ]
+  },
+  {
     "version": "0.6.2",
     "date": "2026-11-05",
     "changes": [
