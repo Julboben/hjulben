@@ -2,6 +2,20 @@
 
 Player-facing release notes. The game shows them under **What's new**, and each GitHub Release uses its section.
 
+## 0.6.4 — 2026-11-09
+
+### New
+- A bell on the dashboard opens a log of achievements, new gear, nisse finds, newly opened bonus trails and new versions of the game. It keeps up to 60 entries on this device, and tapping one opens where it points.
+- When another rider takes an online rider's world record, the bell tells them the next time they open the game.
+
+### Improved
+- The notification bell now drops a small panel down under it, instead of sliding a drawer in from the right side of the screen.
+- The notification log catches up on more than 20 items at a time.
+- The title screen no longer shows the MOMENTUM · BALANCE · CONTROL line above the Hjulben title.
+
+### Fixed
+- Losing a world record gives one notice, naming the rider who holds it, even when two runs take the record at once.
+
 ## 0.6.3 — 2026-11-09
 
 ### Heads up
