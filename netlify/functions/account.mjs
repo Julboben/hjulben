@@ -6,6 +6,7 @@
 //   GET  /api/account/save              (Bearer token)               -> { player, save, token? }
 //   PUT  /api/account/save              { save }  (Bearer token)     -> { ok, save, token? }
 //   POST /api/account/delete            { state, response } (Bearer) -> { ok }   removes the rider for good
+//   GET  /api/account/notifications?after=ID  (Bearer token)       -> { notifications, more, token? }
 // `token` is a fresh session token, sent when the current one is close to
 // expiring. PUT merges the save with the cloud copy and returns the result.
 import { randomBytes, randomUUID } from 'node:crypto';
@@ -29,6 +30,9 @@ import { cleanNisseFinds, mergeNisseFinds } from '../../js/nisse.js';
 const GHOST_MODES = ['on', 'world', 'off'];
 
 const RP_NAME = 'Hjulben';
+// How long news waits for a rider to come back, and how much comes at once.
+const NOTIFICATION_DAYS = 60;
+const NOTIFICATIONS_AT_ONCE = 20;
 // Passkey ceremonies per address a minute: enough for retries, not for guessing names.
 const CEREMONIES_PER_MINUTE = 20;
 
@@ -288,6 +292,29 @@ async function getSave(req) {
   });
 }
 
+/**
+ * News for the rider newer than the id their device last had (see
+ * notifications.js), oldest first, each as { id, kind, at, ...data }.
+ */
+async function getNotifications(req) {
+  const session = requireSession(req);
+  const after = Number(new URL(req.url).searchParams.get('after')) || 0;
+  const sql = await db();
+  // Every rider's old news, not just this one's: riders who never come back
+  // would otherwise keep theirs for good.
+  await sql`delete from notifications where created_at < now() - make_interval(days => ${NOTIFICATION_DAYS})`;
+  // One more than is sent, to tell whether more are waiting.
+  const rows = await sql`
+    select id, kind, data, created_at from notifications
+    where player_id = ${session.player} and id > ${after}
+    order by id asc limit ${NOTIFICATIONS_AT_ONCE + 1}`;
+  return json({
+    notifications: rows.slice(0, NOTIFICATIONS_AT_ONCE).map(row => ({ ...row.data, id: Number(row.id), kind: row.kind, at: new Date(row.created_at).getTime() })),
+    more: rows.length > NOTIFICATIONS_AT_ONCE,
+    token: renewedToken(session),
+  });
+}
+
 const ROUTES = {
   'register-options': { POST: registerOptions },
   'register': { POST: register },
@@ -295,6 +322,7 @@ const ROUTES = {
   'login': { POST: login },
   'save': { GET: getSave, PUT: putSave },
   'delete': { POST: deleteRider },
+  'notifications': { GET: getNotifications },
 };
 
 export default (req, context) => respond(async () => {

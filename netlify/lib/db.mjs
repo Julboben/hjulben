@@ -48,6 +48,23 @@ begin
   alter table players add column if not exists look jsonb;
   alter table runs add column if not exists look jsonb;
 
+  -- News for a rider from what others did, such as taking their world record;
+  -- see the notifications endpoint in account.mjs. Each device keeps the id of
+  -- the last one it has, and old ones are cleared whenever a rider reads theirs.
+  create table if not exists notifications (
+    id bigint generated always as identity constraint notifications_pkey primary key,
+    player_id uuid not null constraint notifications_player_fkey references players(id) on delete cascade,
+    kind text not null,
+    data jsonb not null,
+    created_at timestamptz not null default now()
+  );
+  create index if not exists notifications_player_idx on notifications (player_id, id);
+  create index if not exists notifications_created_idx on notifications (created_at);
+  -- One notice per rider and trail for a lost record, so two runs taking it at
+  -- once can't leave two.
+  create unique index if not exists notifications_record_lost_key
+    on notifications (player_id, (data->>'trail')) where kind = 'record-lost';
+
   -- Fixed-window request counts (see rate-limit.mjs). Stale rows are harmless.
   create table if not exists rate_limits (
     key text constraint rate_limits_pkey primary key,

@@ -11,7 +11,8 @@ import {
 import { DEFAULT_LOOK, itemsForSlot, keepIdentity, lookKey, lookParts, randomLook, sameLook, starterLook } from '../cosmetics.js';
 import { createCustomizer, createIdentityPicker, drawLook } from './customizer.js';
 import { ONLINE_LEADERBOARD_EVENT, boardStatus, isOnlineBoardLoading, isOnlineTrail, fetchWorldGhost, settledWorldGhost, refreshOnlineBoard, queuePendingRun, flushPendingRuns, dropPendingRuns } from '../online-leaderboard.js';
-import { registerRider, loginRider, deleteRider, accountErrorText, passkeysSupported, queueSaveSync, fetchCloudSave } from '../account.js';
+import { registerRider, loginRider, deleteRider, accountErrorText, passkeysSupported, queueSaveSync, fetchCloudSave, fetchNotifications } from '../account.js';
+import { NOTIFICATIONS_EVENT, lastNoticeId, markRead, notificationsFor, notify, setLastNoticeId, unreadCount } from '../notifications.js';
 import { isSandbox } from '../local-store.js';
 import { NAME_HINT, disallowedNameChars } from '../rider-name.js';
 import { RIDE_VERSION } from '../ride.js';
@@ -426,6 +427,7 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     session.look = riderLook();
     updateDashboard();
     onRiderChange();
+    refreshNotifications();
   }
 
   function disarmDelete() {
@@ -734,15 +736,19 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     drawBackground();
     drawHowToPlayIllustrations();
     buildTrailCards();
+    syncBell();
   }
 
   function controls() {
     if (isLookConfirmOpen()) return [...$('look-confirm').querySelectorAll('button')];
+    if (panel.open) return [...panel.querySelectorAll('button')];
     const visibleView = document.querySelector('.menu-view:not([hidden])');
     // Skips controls in hidden parts of the view, such as another tab's panel,
     // and ones the stylesheet hides, such as the trail editor on touch screens.
-    return visibleView ? [...visibleView.querySelectorAll('button:not([disabled]), input:not([disabled])')]
+    const list = visibleView ? [...visibleView.querySelectorAll('button:not([disabled]), input:not([disabled])')]
       .filter(control => !control.closest('[hidden]') && control.getClientRects().length > 0) : [];
+    // The bell sits above the home view's buttons, so up from the first reaches it.
+    return $('notification-bell').hidden ? list : [$('notification-bell'), ...list];
   }
 
   function selectControl(control) {
@@ -816,6 +822,7 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     if (!isOpen()) { if (session.gameLoopStarted) onBack?.(); return; }
     fromHistory = true;
     try {
+      if (closeNotifications()) return;
       if (closeTrailPicker(true)) return;
       if ($('menu-home').hidden) goBack();
       else onClose();
@@ -828,6 +835,7 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     disarmDelete();
     setTrailPicker(false);
     setLookConfirm(false);
+    if (panel.open) panel.close();
     if (view !== 'home') pushView(view);
     $('menu-home').hidden = view !== 'home';
     $('menu-riders-view').hidden = view !== 'riders';
@@ -845,11 +853,12 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     rideAfterHowTo = null;
     $('how-ride').hidden = true;
     if (view === 'how') saveSeenHowTo();
+    syncBell();
     $('menu-scroll').scrollTop = 0;
     requestAnimationFrame(() => {
       const list = controls();
       // The login shortcut is for returning riders, so a new rider starts on the form.
-      selectControl(list.find(button => !button.matches('[data-menu-back], #save-login-button')) || list[0]);
+      selectControl(list.find(button => !button.matches('[data-menu-back], #save-login-button, #notification-bell')) || list[0]);
     });
   }
 
@@ -864,6 +873,7 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     animateBackground();
     requestAnimationFrame(() => selectControl($(canResume() || session.saveGame ? 'menu-continue' : 'menu-first-ride')));
     refreshCloudSave();
+    refreshNotifications();
   }
 
   /**
@@ -903,6 +913,7 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
 
   function close() {
     setLookConfirm(false);
+    if (panel.open) panel.close();
     $('menu-screen').hidden = true;
   }
 
@@ -915,6 +926,14 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
       saveSeenVersion(seen);
     }
     $('whats-new-badge').hidden = seen === VERSION;
+    // A new version is news for everyone on the device, once.
+    const title = 'Hjulben v' + VERSION;
+    if (seen !== VERSION && notificationsFor(null).find(item => item.key === 'version')?.title !== title) {
+      notify({
+        key: 'version', playerId: null, label: 'NEW VERSION', title,
+        text: 'See what’s new in the changelog.', icon: 'star', opens: { view: 'changelog' },
+      });
+    }
   }
 
   const CHANGE_LABELS = { 'heads-up': 'HEADS UP', new: 'NEW', improved: 'IMPROVED', fixed: 'FIXED' };
@@ -954,6 +973,151 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     });
     $('changelog-list').replaceChildren(...releases);
   }
+
+  // --- Notifications ---------------------------------------------------------
+  // The bell in the home view's corner counts what the rider hasn't seen, and
+  // drops down a panel with the log (see notifications.js). Opening it reads all.
+
+  const panel = /** @type {HTMLDialogElement} */ ($('notification-panel'));
+  const riderId = () => session.saveGame?.playerId ?? null;
+  // What was unread when it came into the panel: still marked new while it is
+  // open, though opening it has read it.
+  let newInPanel = new Set();
+  // In English like the rest of the game, whatever the browser's language.
+  const relativeTime = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
+
+  function agoText(at) {
+    const minutes = Math.round((at - Date.now()) / 60000);
+    if (minutes > -1) return 'just now';
+    if (minutes > -60) return relativeTime.format(minutes, 'minute');
+    const hours = Math.round(minutes / 60);
+    if (hours > -24) return relativeTime.format(hours, 'hour');
+    return relativeTime.format(Math.round(hours / 24), 'day');
+  }
+
+  function syncBell() {
+    const count = unreadCount(riderId());
+    $('notification-bell').hidden = !isOpen() || $('menu-home').hidden;
+    $('notification-bell').setAttribute('aria-label', count ? `Notifications, ${count} unread` : 'Notifications');
+    $('notification-count').hidden = !count;
+    $('notification-count').textContent = count > 9 ? '9+' : String(count);
+  }
+
+  function buildNotifications() {
+    const items = notificationsFor(riderId());
+    for (const item of items) if (!item.read) newInPanel.add(item.key);
+    $('notification-list').replaceChildren(...items.map(item => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'notification' + (newInPanel.has(item.key) ? ' unread' : '');
+      const icon = document.createElement('span');
+      icon.dataset.icon = item.icon;
+      icon.setAttribute('aria-hidden', 'true');
+      const copy = document.createElement('span');
+      copy.className = 'notification-copy';
+      const label = document.createElement('small');
+      label.textContent = item.label + ' · ' + agoText(item.at);
+      const title = document.createElement('strong');
+      title.textContent = item.title;
+      const text = document.createElement('span');
+      text.replaceChildren(...keyTextNodes(item.text));
+      copy.append(label, title, text);
+      button.append(icon, copy);
+      button.addEventListener('click', () => openNotification(item));
+      return button;
+    }));
+    $('notification-empty').hidden = items.length > 0;
+  }
+
+  function openNotifications() {
+    newInPanel = new Set();
+    buildNotifications();
+    // The panel hangs from the bell, wherever the menu's frame puts it.
+    const bell = $('notification-bell').getBoundingClientRect();
+    panel.style.setProperty('--drop-top', `${bell.bottom + 12}px`);
+    panel.style.setProperty('--drop-right', `${innerWidth - bell.right}px`);
+    panel.style.setProperty('--notch-right', `${bell.width / 2 - 7}px`);
+    panel.showModal();
+    pushView('notifications');
+    // Read once shown: the bell clears, while the list still marks what was new.
+    markRead(riderId());
+    requestAnimationFrame(() => selectControl(controls().find(button => button.id !== 'notification-close') ?? $('notification-close')));
+  }
+
+  function closeNotifications() {
+    if (!panel.open) return false;
+    panel.close();
+    return true;
+  }
+
+  /** Goes where an entry points: the menu view it is about, or a trail's world board. */
+  function openNotification(item) {
+    const { opens } = item;
+    if (opens.view === 'achievements') { buildAchievements(); showView('achievements'); }
+    else if (opens.view === 'garage') { closeNotifications(); openGarage(); }
+    else if (opens.view === 'trails') { buildTrailCards(); showView('trails'); }
+    else if (opens.view === 'changelog') showChangelog();
+    else if (opens.view === 'leaderboard') {
+      // By catalog id: the board for the trail as it is now, even after a change.
+      const id = opens.trail.replace(/@.*/, '');
+      const index = leaderboardTrails().findIndex(entry => entry.id === id);
+      if (index >= 0) leaderboardTrail = index;
+      buildLeaderboard(true);
+      showView('leaderboard');
+    }
+  }
+
+  /** A world record another rider took from this one, from the server's notice. */
+  function recordLost(playerId, notice) {
+    const trail = String(notice.trail);
+    const id = trail.replace(/@.*/, '');
+    const name = leaderboardTrails().find(entry => entry.id === id)?.name ?? 'A trail';
+    const rival = cleanRiderName(notice.name) || 'Another rider';
+    return {
+      key: `record-lost:${playerId}:${id}`, playerId, at: Number(notice.at) || Date.now(), label: 'WORLD RECORD LOST',
+      title: name, text: `${rival} beat your world record with ${runTimeText(Number(notice.time))}, ahead of your ${runTimeText(Number(notice.was))}.`,
+      icon: 'crown', opens: { view: 'leaderboard', trail },
+    };
+  }
+
+  let fetchingNotifications = false;
+  // Asked again while fetching, maybe for another rider: fetch once more after.
+  let notificationsAskedAgain = false;
+
+  /** Takes the active online rider's news from the server into the log. */
+  async function refreshNotifications() {
+    if (fetchingNotifications) { notificationsAskedAgain = true; return; }
+    const save = session.saveGame;
+    if (!save?.token) return;
+    fetchingNotifications = true;
+    try {
+      let page;
+      do {
+        page = await fetchNotifications(save.token, save.playerId, lastNoticeId(save.playerId));
+        for (const notice of page?.notices ?? []) {
+          if (notice.kind === 'record-lost') notify(recordLost(save.playerId, notice));
+          setLastNoticeId(save.playerId, notice.id);
+        }
+      } while (page?.more);
+    } finally {
+      fetchingNotifications = false;
+      if (notificationsAskedAgain) { notificationsAskedAgain = false; refreshNotifications(); }
+    }
+  }
+
+  $('notification-bell').addEventListener('click', openNotifications);
+  $('notification-close').addEventListener('click', closeNotifications);
+  // A click on the menu outside the panel lands on its backdrop, and closes it.
+  panel.addEventListener('click', event => { if (event.target === panel) closeNotifications(); });
+  panel.addEventListener('close', () => {
+    syncBell();
+    if (isOpen() && !$('menu-home').hidden) selectControl($('notification-bell'));
+  });
+  window.addEventListener(NOTIFICATIONS_EVENT, () => {
+    syncBell();
+    // News that arrives while the panel is open shows there, and counts as read.
+    if (panel.open && unreadCount(riderId())) { buildNotifications(); markRead(riderId()); }
+  });
 
   // --- Credits ---------------------------------------------------------------
 
@@ -1075,6 +1239,7 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     buildChangelog();
     saveSeenVersion(VERSION);
     $('whats-new-badge').hidden = true;
+    markRead(null, ['version']);
     showView('changelog');
   }
 
@@ -1718,7 +1883,7 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     } else if (action === 'tab-prev' || action === 'tab-next') {
       stepTab(action === 'tab-prev' ? -1 : 1);
     } else if (action === 'cancel') {
-      if (closeTrailPicker(true)) sounds.menuBack();
+      if (closeNotifications() || closeTrailPicker(true)) sounds.menuBack();
       else if ($('menu-home').hidden) { sounds.menuBack(); goBack(); } else onClose();
     }
   }
@@ -1754,14 +1919,14 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
   });
   $('menu-screen').addEventListener('focusin', event => {
     const control = event.target.closest('button, input');
-    if (!control?.closest('.menu-view, .menu-confirm')) return;
+    if (!control?.closest('.menu-view, .menu-confirm, .notification-panel, .notification-bell')) return;
     document.querySelectorAll('.menu-selected').forEach(item => item.classList.remove('menu-selected'));
     control.classList.add('menu-selected');
   });
   $('menu-screen').addEventListener('pointerover', event => {
     const button = event.target.closest('button');
     if (event.pointerType === 'mouse' && button && !button.contains(event.relatedTarget)) {
-      if (button.closest('.menu-view, .menu-confirm')) selectControl(button);
+      if (button.closest('.menu-view, .menu-confirm, .notification-panel, .notification-bell')) selectControl(button);
       sounds.menuMove();
     }
   });
@@ -1901,9 +2066,10 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
   });
 
   const back = () => {
+    if (closeNotifications()) return true;
     if (closeTrailPicker(true)) return true;
     if ($('menu-home').hidden) { goBack(); return true; }
     return false;
   };
-  return { open, close, isOpen, showTrailsStatus, updateDashboard, drawBackground, syncSettings, handlePad, showView, showCredits, canResume, back, refreshCloudSave, markRideStarted };
+  return { open, close, isOpen, showTrailsStatus, updateDashboard, drawBackground, syncSettings, handlePad, showView, showCredits, canResume, back, refreshCloudSave, refreshNotifications, markRideStarted };
 }

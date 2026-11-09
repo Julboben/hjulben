@@ -246,6 +246,30 @@ export async function fetchCloudSave(token, playerId = null) {
   return data;
 }
 
+/**
+ * The rider's news from the server newer than notice `after` (see
+ * getNotifications in account.mjs), oldest first, and whether more is waiting
+ * after it. Null when offline or signed out: the news waits on the server for
+ * the next try.
+ * @returns {Promise<{ notices: { id: number, kind: string, at: number, [field: string]: unknown }[], more: boolean } | null>}
+ */
+export async function fetchNotifications(token, playerId, after) {
+  if (!token || typeof window === 'undefined') return null;
+  try {
+    const res = await fetch(API + 'notifications?after=' + after, {
+      headers: { authorization: 'Bearer ' + token },
+      signal: AbortSignal.timeout(8000),
+    });
+    if (res.status === 401) signal(SIGNED_OUT_EVENT, { playerId });
+    if (!res.ok) return null;
+    const data = await res.json();
+    noteRenewal(playerId, data);
+    return Array.isArray(data.notifications) ? { notices: data.notifications, more: data.more === true } : null;
+  } catch (_) {
+    return null;
+  }
+}
+
 /** Uploads the savegame shortly after it last changed. Fails quietly; the next change retries. */
 export function queueSaveSync(save) {
   if (!save?.token || typeof window === 'undefined') return;

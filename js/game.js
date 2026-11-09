@@ -31,7 +31,8 @@ import { gearCard, legacyRider, lookOf, lookParts, newlyUnlockedItems } from './
 import { createOverlay } from './ui/overlay.js';
 import { keyChoices, keyTextNodes } from './ui/key-text.js';
 import { createMenu, loadStoredState } from './ui/menu.js';
-import { $, session, currentTrailEntry, trailKey, nisseKey, timeText, isRankedSource, bonusUnlock, riderLook, progressOf, debugMode, ghostMode } from './state.js';
+import { $, session, currentTrailEntry, trailKey, nisseKey, timeText, isRankedSource, bonusUnlock, riderLook, progressOf, debugMode, ghostMode, newlyOpenedBonusTrails } from './state.js';
+import { notify } from './notifications.js';
 import { isNight } from './time-of-day.js';
 
 const LANDING_SOUND_IMPACT = 45;
@@ -380,10 +381,31 @@ export function startGame({ shared = null } = {}) {
     }
     const after = progressOf(saveGame);
     const earned = newlyEarned(before, after);
-    for (const achievement of earned) overlay.achievement(achievement);
+    const { playerId } = saveGame;
+    for (const achievement of earned) {
+      overlay.achievement(achievement);
+      notify({
+        key: `achievement:${playerId}:${achievement.id}`, playerId, label: 'ACHIEVEMENT UNLOCKED',
+        title: achievement.name, text: achievement.blurb, icon: achievement.icon, opens: { view: 'achievements' },
+      });
+    }
     // The gear the run or those achievements won (see unlocks.js), for the Garage.
     const won = newlyUnlockedItems(before, after);
-    for (const item of won) overlay.gear(gearCard(item));
+    for (const item of won) {
+      const card = gearCard(item);
+      overlay.gear(card);
+      notify({
+        key: `gear:${playerId}:${item.slot}:${item.id}`, playerId, label: 'NEW GEAR',
+        title: card.name, text: card.blurb, icon: card.icon, opens: { view: 'garage' },
+      });
+    }
+    // Bonus trails have no card of their own; the trail list shows them open.
+    for (const entry of newlyOpenedBonusTrails(before, after)) {
+      notify({
+        key: `bonus:${playerId}:${entry.id}`, playerId, label: 'BONUS TRAIL OPEN',
+        title: entry.name, text: 'Ride it from Trails, under Bonus trails.', icon: 'unlock', opens: { view: 'trails' },
+      });
+    }
     // Earned in the menu: its "earned" count is on screen.
     if ((earned.length || won.length) && menu.isOpen()) menu.updateDashboard();
     if (fresh.length || Object.keys(gains).length || earned.length) queueSaveSync(saveGame);
@@ -410,6 +432,10 @@ export function startGame({ shared = null } = {}) {
     const key = nisseKey(entry);
     if (!recordNisse(session.activeSaveSlot, trails.length, key)) return;
     saveGame.nisse = { ...saveGame.nisse, [key]: Date.now() };
+    notify({
+      key: `nisse:${saveGame.playerId}:${key}`, playerId: saveGame.playerId, label: 'NISSE FOUND',
+      title: entry.name, text: `You found the nisse hiding on ${entry.name}.`, icon: 'nisse', opens: { view: 'trails' },
+    });
     earn([], {}, before);
     queueSaveSync(saveGame);
   }
@@ -1203,8 +1229,9 @@ export function startGame({ shared = null } = {}) {
     if (document.hidden) { input.clear(); pauseGame(); sounds.suspend(); }
     else {
       holdWakeLock(session.state === 'running' || session.state === 'ragdoll');
-      // Another device may have changed the rider while this tab was away.
-      if (menu.isOpen()) menu.refreshCloudSave();
+      // Another device may have changed the rider, or another rider taken
+      // their record, while this tab was away.
+      if (menu.isOpen()) { menu.refreshCloudSave(); menu.refreshNotifications(); }
     }
     lastTime = 0; accumulator = 0;
   });
