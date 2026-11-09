@@ -318,6 +318,63 @@ const run = (replay = firstTrailRun) => ({ inputs: replay.inputs, seed: replay.s
   assert.equal((await board('trail:abcdef12')).status, 400, 'custom trails stay local');
 }
 
+// --- Notifications ----------------------------------------------------------------
+
+{
+  await sql`delete from rate_limits`;
+  const { body: racer } = await registerRider('Chaser', createAuthenticator(), 'male');
+  const racerId = (await sql`select id from players where name_key = 'chaser'`)[0].id;
+  const fresh = (token, after = 0) => api('notifications?after=' + after, { method: 'GET', token });
+  const recordNotices = async () => (await sql`select count(*)::int as count from notifications where kind = 'record-lost'`)[0].count;
+  const bestMs = Math.round(firstTrailRun.outcome.elapsed * 1000);
+  assert.equal((await fresh(undefined)).status, 401, 'news needs a signed-in rider');
+  assert.deepEqual((await fresh(julianToken)).body.notifications, [], 'no news to begin with');
+
+  // Taking the record tells the rider who held it.
+  await sql`update runs set time_ms = 60000 where trail = ${firstKey}`;
+  assert.equal((await submit({ body: { trail: firstKey, run: run() }, token: racer.token })).status, 200);
+  let news = (await fresh(julianToken)).body.notifications;
+  assert.equal(news.length, 1, 'the old record holder hears of it');
+  assert.equal(news[0].kind, 'record-lost');
+  assert.equal(news[0].trail, firstKey);
+  assert.equal(news[0].name, 'Chaser');
+  assert.ok(Math.abs(news[0].time - bestMs / 1000) < 0.001, 'with the new time');
+  assert.equal(news[0].was, 60, 'and the time it beat');
+  assert.ok(news[0].at > Date.now() - 60_000);
+  assert.deepEqual((await fresh(julianToken, news[0].id)).body.notifications, [], 'a device asks only for what it has not had');
+  assert.deepEqual((await fresh(racer.token)).body.notifications, [], 'the new holder gets no news');
+
+  // Beating your own record, tying it, or a run behind the leader tell nobody.
+  await sql`update runs set time_ms = 50000 where trail = ${firstKey} and player_id = ${racerId}`;
+  await submit({ body: { trail: firstKey, run: run() }, token: racer.token });
+  await sql`update runs set time_ms = ${bestMs}, updated_at = now() - interval '1 day' where trail = ${firstKey} and player_id <> ${racerId}`;
+  await sql`update runs set time_ms = 70000 where trail = ${firstKey} and player_id = ${racerId}`;
+  await submit({ body: { trail: firstKey, run: run() }, token: racer.token });
+  await sql`update runs set time_ms = ${bestMs - 500} where trail = ${firstKey} and player_id <> ${racerId}`;
+  await sql`update runs set time_ms = 70000 where trail = ${firstKey} and player_id = ${racerId}`;
+  await submit({ body: { trail: firstKey, run: run() }, token: racer.token });
+  assert.equal(await recordNotices(), 1, 'only a faster run by someone else takes the record');
+
+  // A record lost again on the same trail is one notice, the latest.
+  await sql`update runs set time_ms = 60000 where trail = ${firstKey}`;
+  await sql`update runs set time_ms = 40000 where trail = ${firstKey} and player_id <> ${racerId}`;
+  await submit({ body: { trail: firstKey, run: run() }, token: racer.token });
+  await sql`update runs set time_ms = 30000 where trail = ${firstKey} and player_id <> ${racerId}`;
+  await sql`update runs set time_ms = 60000 where trail = ${firstKey} and player_id = ${racerId}`;
+  await submit({ body: { trail: firstKey, run: run() }, token: racer.token });
+  news = (await fresh(julianToken)).body.notifications;
+  assert.deepEqual(news.map(notice => notice.was), [30], 'one notice per trail');
+
+  // Old news is cleared.
+  await sql`update notifications set created_at = now() - interval '61 days'`;
+  assert.deepEqual((await fresh(julianToken)).body.notifications, [], 'news older than 60 days is gone');
+  assert.equal(await recordNotices(), 0);
+  await sql`update runs set time_ms = 60000 where trail = ${firstKey}`;
+  await sql`delete from runs where trail = ${firstKey} and player_id = ${racerId}`;
+  await sql`delete from players where id = ${racerId}`;
+  await sql`update runs set time_ms = ${bestMs} where trail = ${firstKey}`;
+}
+
 // --- Cloud save and login restore ---------------------------------------------
 
 {

@@ -3081,6 +3081,126 @@ h2 {
         transform: scale(1.15);
     }
 }
+/* The bell in the home view's top-right corner, where the game's own menu
+   button sits during a ride, and the drawer it opens from that side. */
+.notification-bell {
+    --px: 2px;
+    position: absolute;
+    z-index: 3;
+    top: 14px;
+    right: 14px;
+    @media (max-width: 760px) {
+        top: calc(10px + env(safe-area-inset-top, 0px));
+        right: calc(10px + env(safe-area-inset-right, 0px));
+    }
+}
+.notification-count {
+    position: absolute;
+    top: -7px;
+    right: -7px;
+    min-width: 18px;
+    padding: 1px 4px;
+    background: var(--color-accent);
+    color: var(--color-shell);
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-heavy);
+    line-height: 16px;
+    text-align: center;
+}
+.notification-drawer {
+    position: fixed;
+    inset: 0 0 0 auto;
+    width: min(400px, calc(100% - 40px));
+    height: 100%;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-left: 1px solid var(--color-border);
+    background: var(--color-shell);
+    color: inherit;
+    font: inherit;
+    overscroll-behavior: contain;
+    translate: 100% 0;
+    transition:
+        translate 0.25s ease-out,
+        display 0.25s allow-discrete,
+        overlay 0.25s allow-discrete;
+    &[open] {
+        translate: 0 0;
+        @starting-style {
+            translate: 100% 0;
+        }
+    }
+    &::backdrop {
+        background: var(--color-dim-menu);
+    }
+    @media (prefers-reduced-motion: reduce) {
+        transition: none;
+    }
+}
+.notification-panel {
+    height: 100%;
+    padding: calc(18px + env(safe-area-inset-top, 0px))
+        calc(16px + env(safe-area-inset-right, 0px))
+        calc(18px + env(safe-area-inset-bottom, 0px)) 16px;
+    overflow-y: auto;
+}
+.notification-list {
+    display: grid;
+    gap: 8px;
+}
+.notification {
+    --px: 3px;
+    width: 100%;
+    padding: 11px 13px;
+    display: grid;
+    grid-template-columns: 28px minmax(0, 1fr);
+    align-items: start;
+    gap: 12px;
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+    color: var(--color-text);
+    text-align: left;
+    font: inherit;
+    &:hover {
+        background: var(--color-surface-hover);
+    }
+    & [data-icon] {
+        justify-self: center;
+        margin-top: 2px;
+        color: var(--color-text-muted);
+    }
+    /* Not seen yet when the drawer opened. */
+    &.unread {
+        border-color: var(--color-accent);
+        & [data-icon] {
+            color: var(--color-accent);
+        }
+    }
+}
+.notification-copy {
+    min-width: 0;
+    display: grid;
+    gap: 4px;
+    & small {
+        color: var(--color-text-muted);
+        font-size: var(--text-xs);
+        font-weight: var(--weight-heavy);
+        letter-spacing: 1.5px;
+    }
+    & strong {
+        font-size: var(--text-md);
+        text-transform: uppercase;
+    }
+    & span {
+        color: var(--color-text-muted);
+        font-size: var(--text-sm);
+        line-height: 1.45;
+    }
+}
+
 /* Credits: the text rolls up through a frame that fades out at both ends,
    over the menu's trail. With reduced motion it is a plain list to scroll. */
 .credits {

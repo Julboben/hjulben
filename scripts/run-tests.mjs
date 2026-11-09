@@ -33,7 +33,7 @@ const FAST = [
     'trail-link', 'career', 'water', 'squirrel', 'rabbit', 'corgi', 'interactions', 'desert',
     'mountain', 'event', 'prison', 'spiders', 'dungeon', 'countryside', 'apples', 'nisse',
     'prop-drawing', 'spikes', 'cosmetics', 'achievements', 'storage', 'pending-runs',
-    'changelog', 'haptics',
+    'changelog', 'haptics', 'notifications',
   ].map(test),
   check('icons', 'generate-icons.mjs'),
   { name: 'tokens', command: node('check-tokens.mjs') },

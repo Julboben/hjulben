@@ -297,6 +297,12 @@ export function garageRoom(save) {
   };
 }
 
+/** The bonus trails open with `after`'s progress that were shut with `before`'s (see progressOf). */
+export const newlyOpenedBonusTrails = (before, after) => bonusTrailEntries.filter(entry => {
+  const rule = trailUnlock(entry.id);
+  return rule && !unlockStatus(rule, before, shippedTrailName).open && unlockStatus(rule, after, shippedTrailName).open;
+});
+
 /** Whether a bonus trail is open for this save, and what opens it if not. */
 export const bonusUnlock = (entry, save = session.saveGame) =>
   unlockStatus(trailUnlock(entry.id), progressOf(save), shippedTrailName);

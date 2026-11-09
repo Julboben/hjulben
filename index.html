@@ -1465,6 +1465,60 @@
                         </div>
                     </div>
                 </div>
+                <!-- In the corner of the home view, outside the scrolling
+                     menu so it stays put; menu.js shows it there only. -->
+                <button
+                    type="button"
+                    class="icon-button notification-bell"
+                    id="notification-bell"
+                    aria-label="Notifications"
+                    aria-haspopup="dialog"
+                    hidden
+                >
+                    <span data-icon="bell" aria-hidden="true"></span>
+                    <b
+                        class="notification-count"
+                        id="notification-count"
+                        aria-hidden="true"
+                        hidden
+                    ></b>
+                </button>
+                <dialog
+                    class="notification-drawer"
+                    id="notification-drawer"
+                    aria-labelledby="notification-title"
+                >
+                    <div class="notification-panel">
+                        <div class="menu-view-head">
+                            <div>
+                                <span class="save-label" data-icon-before="bell"
+                                    >WHAT HAPPENED</span
+                                >
+                                <h3 id="notification-title">Notifications</h3>
+                            </div>
+                            <button
+                                type="button"
+                                class="menu-back"
+                                id="notification-close"
+                            >
+                                CLOSE
+                            </button>
+                        </div>
+                        <div
+                            class="notification-list"
+                            id="notification-list"
+                        ></div>
+                        <p
+                            class="load-game-help"
+                            id="notification-empty"
+                            hidden
+                        >
+                            Nothing yet. Achievements, new gear, nisse finds,
+                            new versions and news from the world board show up
+                            here.
+                        </p>
+                    </div>
+                </dialog>
                 <dialog
                     class="menu-confirm"
                     id="look-confirm"

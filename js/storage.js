@@ -14,6 +14,7 @@ const LEADERBOARD_KEY = 'hjulben-leaderboard-v1';
 const SEEN_VERSION_KEY = 'hjulben-seen-version-v1';
 const SEEN_HOW_TO_KEY = 'hjulben-seen-how-to-v1';
 const SEEN_GEAR_KEY = 'hjulben-seen-gear-v1';
+const NOTIFICATIONS_KEY = 'hjulben-notifications-v1';
 const SLOT_COUNT = 3;
 // The ghost a rider races (see the Ghost setting): their own best, the faster
 // of that and the world's best, or none.
@@ -173,6 +174,23 @@ export function saveSeenGear(playerId, keys) {
   if (keys) next[playerId] = [...new Set(keys)];
   else delete next[playerId];
   writeJson(SEEN_GEAR_KEY, next);
+}
+
+/**
+ * The notification log on this device (see notifications.js): its entries,
+ * and for each online rider the id of the last notice taken from the server.
+ * Kept apart from the saves, as what was shown, and read, is this device's.
+ * @returns {{ items: object[], after: Record<string, number> }}
+ */
+export function loadNotifications() {
+  const stored = readJson(NOTIFICATIONS_KEY, null);
+  const items = Array.isArray(stored?.items) ? stored.items.filter(item => item && typeof item.key === 'string') : [];
+  const after = stored?.after && typeof stored.after === 'object' && !Array.isArray(stored.after) ? stored.after : {};
+  return { items, after };
+}
+
+export function saveNotifications(log) {
+  writeJson(NOTIFICATIONS_KEY, log);
 }
 
 export function loadPreferences(defaults) {
@@ -421,7 +439,12 @@ export function applyCloudSave(slotIndex, trailCount, { player, save: cloud }) {
 export function deleteSave(slotIndex, trailCount) {
   const next = [...slots(trailCount)];
   const playerId = next[clamp(slotIndex, 0, SLOT_COUNT - 1)]?.playerId;
-  if (playerId) saveSeenGear(playerId, null);
+  if (playerId) {
+    saveSeenGear(playerId, null);
+    const log = loadNotifications();
+    delete log.after[playerId];
+    saveNotifications({ items: log.items.filter(item => item.playerId !== playerId), after: log.after });
+  }
   next[clamp(slotIndex, 0, SLOT_COUNT - 1)] = null;
   persistSlots(trailCount, next);
 }

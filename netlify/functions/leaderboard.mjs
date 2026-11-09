@@ -58,10 +58,14 @@ async function submit(req) {
   await rateLimit(sql, 'submit:' + playerId, SUBMITS_PER_MINUTE, 60);
   const { timeMs, replay } = await verifyRun(trail, body.run, new URL(req.url).origin);
 
-  const [player] = await sql`select look, rider from players where id = ${playerId}`;
+  const [player] = await sql`select name, look, rider from players where id = ${playerId}`;
   if (!player) throw new HttpError(401, 'not signed in');
   // Whether this run beats the player's row, before the upsert folds them together.
   const [previous] = await sql`select time_ms from runs where trail = ${trail} and player_id = ${playerId}`;
+  // Who held the world record before it, to tell them if this run took it.
+  const [leader] = await sql`
+    select player_id, time_ms from runs where trail = ${trail}
+    order by time_ms asc, updated_at asc limit 1`;
   // The look the run was ridden in, shown on the board and on its ghost, as
   // the player was created: gender and skin come from their row.
   const look = playerLook(body, player);
@@ -92,6 +96,14 @@ async function submit(req) {
          where r.trail = ${trail} and r.player_id <> ${playerId} and r.time_ms >= ${best.time_ms}
          order by r.time_ms asc, r.updated_at asc limit 1) as behind`;
   const rival = row => row ? { name: row.name, time: row.time_ms / 1000 } : null;
+
+  // A tie keeps the older run first, so only a faster one takes the record.
+  if (leader && leader.player_id !== playerId && timeMs < leader.time_ms) {
+    const data = { trail, name: player.name, time: timeMs / 1000, was: leader.time_ms / 1000 };
+    // Only the latest news per trail: a record traded back and forth is one notice.
+    await sql`delete from notifications where player_id = ${leader.player_id} and kind = 'record-lost' and data->>'trail' = ${trail}`;
+    await sql`insert into notifications (player_id, kind, data) values (${leader.player_id}, 'record-lost', ${JSON.stringify(data)}::jsonb)`;
+  }
 
   return json({
     rank, total,

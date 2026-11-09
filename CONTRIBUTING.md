@@ -60,6 +60,7 @@ Development needs Node.js 24 (the version CI uses) and npm. The game itself has 
 │   ├── storage.js      # Preferences, progression, and best times
 │   ├── cosmetics.js    # DOM-free catalog of rider looks (gender, skin, hair, helmet, outfit, bike, and their colours)
 │   ├── account.js      # Passkey sign-up/login and cloud save sync
+│   ├── notifications.js # The log behind the dashboard's bell
 │   ├── online-leaderboard.js # World leaderboard client
 │   └── terrain.js      # Heightfield and collision sampling
 ├── editor.html         # Standalone visual trail editor
@@ -94,7 +95,7 @@ For a trail the bot can't finish, add a human run. With the game running from `n
 
 `scripts/test-groups.mjs` puts every block and prop of each official and bonus trail into editor groups (the `group` names the editor's Cmd+G gives them), renames them, and checks that the trail's hash, and so its leaderboard, ghosts and best times, stays the same, and that its recorded run rides exactly as before.
 
-Run `npm run check` (syntax), `npm run typecheck` (JSDoc types in `// @ts-check` files), and `npm test` before pushing. `npm test` (`scripts/run-tests.mjs`) runs every check but the slow ones side by side, one per core, and shows a check's output only when it fails (`--verbose` shows all of it); `npm run test:all` adds the slow ones, and the release workflows run that. After `npm ci`, `npm run test:online` tests the online API against an in-memory Postgres (PGlite) using a software passkey. It covers sign-up, unique names, login, cloud saves, and rejection of tampered runs. CI runs all of these.
+Run `npm run check` (syntax), `npm run typecheck` (JSDoc types in `// @ts-check` files), and `npm test` before pushing. `npm test` (`scripts/run-tests.mjs`) runs every check but the slow ones side by side, one per core, and shows a check's output only when it fails (`--verbose` shows all of it); `npm run test:all` adds the slow ones, and the release workflows run that. After `npm ci`, `npm run test:online` tests the online API against an in-memory Postgres (PGlite) using a software passkey. It covers sign-up, unique names, login, cloud saves, rejection of tampered runs, and the notice a rider gets when their world record is taken. CI runs all of these.
 
 `scripts/test-console.mjs` (part of `npm test`) opens the game and the editor in headless Chrome, served like static hosting, and fails on any failed request, uncaught exception, or console warning or error from the page or its service worker: in production the console should show nothing but the easter-egg hints. The pages load from a non-local hostname, so the service worker caches as it does in production, and the test checks that a return visit is served from that cache. It needs Chrome (`CHROME_PATH` if it is somewhere unusual) and is skipped without one; CI has it. The dev server marks what it serves with the header in `js/dev-server.js`, which is how the game and the editor know they may ask for the custom trail catalog and save trail files; a request that only the dev server can answer must be behind that mark, or this test fails.
 
