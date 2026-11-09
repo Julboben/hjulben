@@ -741,7 +741,7 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
 
   function controls() {
     if (isLookConfirmOpen()) return [...$('look-confirm').querySelectorAll('button')];
-    if (drawer.open) return [...drawer.querySelectorAll('button')];
+    if (panel.open) return [...panel.querySelectorAll('button')];
     const visibleView = document.querySelector('.menu-view:not([hidden])');
     // Skips controls in hidden parts of the view, such as another tab's panel,
     // and ones the stylesheet hides, such as the trail editor on touch screens.
@@ -835,7 +835,7 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     disarmDelete();
     setTrailPicker(false);
     setLookConfirm(false);
-    if (drawer.open) drawer.close();
+    if (panel.open) panel.close();
     if (view !== 'home') pushView(view);
     $('menu-home').hidden = view !== 'home';
     $('menu-riders-view').hidden = view !== 'riders';
@@ -913,7 +913,7 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
 
   function close() {
     setLookConfirm(false);
-    if (drawer.open) drawer.close();
+    if (panel.open) panel.close();
     $('menu-screen').hidden = true;
   }
 
@@ -976,13 +976,13 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
 
   // --- Notifications ---------------------------------------------------------
   // The bell in the home view's corner counts what the rider hasn't seen, and
-  // opens a drawer with the log (see notifications.js). Opening it reads all.
+  // drops down a panel with the log (see notifications.js). Opening it reads all.
 
-  const drawer = /** @type {HTMLDialogElement} */ ($('notification-drawer'));
+  const panel = /** @type {HTMLDialogElement} */ ($('notification-panel'));
   const riderId = () => session.saveGame?.playerId ?? null;
-  // What was unread when it came into the drawer: still marked new while it is
+  // What was unread when it came into the panel: still marked new while it is
   // open, though opening it has read it.
-  let newInDrawer = new Set();
+  let newInPanel = new Set();
   // In English like the rest of the game, whatever the browser's language.
   const relativeTime = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
 
@@ -1005,11 +1005,11 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
 
   function buildNotifications() {
     const items = notificationsFor(riderId());
-    for (const item of items) if (!item.read) newInDrawer.add(item.key);
+    for (const item of items) if (!item.read) newInPanel.add(item.key);
     $('notification-list').replaceChildren(...items.map(item => {
       const button = document.createElement('button');
       button.type = 'button';
-      button.className = 'notification' + (newInDrawer.has(item.key) ? ' unread' : '');
+      button.className = 'notification' + (newInPanel.has(item.key) ? ' unread' : '');
       const icon = document.createElement('span');
       icon.dataset.icon = item.icon;
       icon.setAttribute('aria-hidden', 'true');
@@ -1030,9 +1030,14 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
   }
 
   function openNotifications() {
-    newInDrawer = new Set();
+    newInPanel = new Set();
     buildNotifications();
-    drawer.showModal();
+    // The panel hangs from the bell, wherever the menu's frame puts it.
+    const bell = $('notification-bell').getBoundingClientRect();
+    panel.style.setProperty('--drop-top', `${bell.bottom + 12}px`);
+    panel.style.setProperty('--drop-right', `${innerWidth - bell.right}px`);
+    panel.style.setProperty('--notch-right', `${bell.width / 2 - 7}px`);
+    panel.showModal();
     pushView('notifications');
     // Read once shown: the bell clears, while the list still marks what was new.
     markRead(riderId());
@@ -1040,8 +1045,8 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
   }
 
   function closeNotifications() {
-    if (!drawer.open) return false;
-    drawer.close();
+    if (!panel.open) return false;
+    panel.close();
     return true;
   }
 
@@ -1095,16 +1100,16 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
 
   $('notification-bell').addEventListener('click', openNotifications);
   $('notification-close').addEventListener('click', closeNotifications);
-  // A click on the dimmed menu beside the drawer closes it.
-  drawer.addEventListener('click', event => { if (event.target === drawer) closeNotifications(); });
-  drawer.addEventListener('close', () => {
+  // A click on the menu outside the panel lands on its backdrop, and closes it.
+  panel.addEventListener('click', event => { if (event.target === panel) closeNotifications(); });
+  panel.addEventListener('close', () => {
     syncBell();
     if (isOpen() && !$('menu-home').hidden) selectControl($('notification-bell'));
   });
   window.addEventListener(NOTIFICATIONS_EVENT, () => {
     syncBell();
-    // News that arrives while the drawer is open shows there, and counts as read.
-    if (drawer.open && unreadCount(riderId())) { buildNotifications(); markRead(riderId()); }
+    // News that arrives while the panel is open shows there, and counts as read.
+    if (panel.open && unreadCount(riderId())) { buildNotifications(); markRead(riderId()); }
   });
 
   // --- Credits ---------------------------------------------------------------
@@ -1907,14 +1912,14 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
   });
   $('menu-screen').addEventListener('focusin', event => {
     const control = event.target.closest('button, input');
-    if (!control?.closest('.menu-view, .menu-confirm, .notification-drawer, .notification-bell')) return;
+    if (!control?.closest('.menu-view, .menu-confirm, .notification-panel, .notification-bell')) return;
     document.querySelectorAll('.menu-selected').forEach(item => item.classList.remove('menu-selected'));
     control.classList.add('menu-selected');
   });
   $('menu-screen').addEventListener('pointerover', event => {
     const button = event.target.closest('button');
     if (event.pointerType === 'mouse' && button && !button.contains(event.relatedTarget)) {
-      if (button.closest('.menu-view, .menu-confirm, .notification-drawer, .notification-bell')) selectControl(button);
+      if (button.closest('.menu-view, .menu-confirm, .notification-panel, .notification-bell')) selectControl(button);
       sounds.menuMove();
     }
   });

@@ -1822,15 +1822,6 @@ h2 {
     align-items: center;
     gap: 24px;
     margin: 0 auto 44px;
-    & .modal-badge {
-        margin-bottom: 8px;
-        color: var(--color-accent);
-        display: block;
-        font-size: var(--text-md);
-        @media (max-width: 520px) {
-            font-size: var(--text-sm);
-        }
-    }
     /* Drawn on the same block size as the wheel logo beside it, in whole
        steps of the pixel font so its blocks stay on the pixel grid. */
     & h2 {
@@ -3082,7 +3073,7 @@ h2 {
     }
 }
 /* The bell in the home view's top-right corner, where the game's own menu
-   button sits during a ride, and the drawer it opens from that side. */
+   button sits during a ride, and the panel that drops down from it. */
 .notification-bell {
     --px: 2px;
     position: absolute;
@@ -3107,44 +3098,62 @@ h2 {
     line-height: 16px;
     text-align: center;
 }
-.notification-drawer {
+/* Drops down from the bell, so it reads as part of the dashboard rather than
+   a screen of its own; openNotifications places it under the bell. */
+.notification-panel {
     position: fixed;
-    inset: 0 0 0 auto;
-    width: min(400px, calc(100% - 40px));
-    height: 100%;
+    inset: var(--drop-top) var(--drop-right) auto auto;
+    width: min(360px, calc(100% - 2 * var(--drop-right)));
     max-width: none;
-    max-height: none;
+    max-height: calc(100dvh - var(--drop-top) - 14px);
     margin: 0;
     padding: 0;
-    border: 0;
-    border-left: 1px solid var(--color-border);
+    border: 1px solid var(--color-border);
     background: var(--color-shell);
     color: inherit;
     font: inherit;
+    overflow: visible;
     overscroll-behavior: contain;
-    translate: 100% 0;
+    opacity: 0;
+    translate: 0 -10px;
     transition:
-        translate 0.25s ease-out,
-        display 0.25s allow-discrete,
-        overlay 0.25s allow-discrete;
+        opacity 0.15s ease-out,
+        translate 0.15s ease-out,
+        display 0.15s allow-discrete,
+        overlay 0.15s allow-discrete;
     &[open] {
+        display: flex;
+        opacity: 1;
         translate: 0 0;
         @starting-style {
-            translate: 100% 0;
+            opacity: 0;
+            translate: 0 -10px;
         }
     }
+    /* A notch pointing up at the bell. */
+    &::before {
+        content: "";
+        position: absolute;
+        top: -7px;
+        right: var(--notch-right);
+        width: 12px;
+        height: 12px;
+        border: solid var(--color-border);
+        border-width: 1px 0 0 1px;
+        background: var(--color-shell);
+        rotate: 45deg;
+    }
     &::backdrop {
-        background: var(--color-dim-menu);
+        background: transparent;
     }
     @media (prefers-reduced-motion: reduce) {
         transition: none;
     }
 }
-.notification-panel {
-    height: 100%;
-    padding: calc(18px + env(safe-area-inset-top, 0px))
-        calc(16px + env(safe-area-inset-right, 0px))
-        calc(18px + env(safe-area-inset-bottom, 0px)) 16px;
+.notification-scroll {
+    width: 100%;
+    max-height: inherit;
+    padding: 14px;
     overflow-y: auto;
 }
 .notification-list {
@@ -3172,7 +3181,7 @@ h2 {
         margin-top: 2px;
         color: var(--color-text-muted);
     }
-    /* Not seen yet when the drawer opened. */
+    /* Not seen yet when the panel opened. */
     &.unread {
         border-color: var(--color-accent);
         & [data-icon] {
