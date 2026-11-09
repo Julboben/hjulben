@@ -6,7 +6,7 @@
 //   GET  /api/account/save              (Bearer token)               -> { player, save, token? }
 //   PUT  /api/account/save              { save }  (Bearer token)     -> { ok, save, token? }
 //   POST /api/account/delete            { state, response } (Bearer) -> { ok }   removes the rider for good
-//   GET  /api/account/notifications?after=ID  (Bearer token)       -> { notifications, token? }
+//   GET  /api/account/notifications?after=ID  (Bearer token)       -> { notifications, more, token? }
 // `token` is a fresh session token, sent when the current one is close to
 // expiring. PUT merges the save with the cloud copy and returns the result.
 import { randomBytes, randomUUID } from 'node:crypto';
@@ -300,13 +300,17 @@ async function getNotifications(req) {
   const session = requireSession(req);
   const after = Number(new URL(req.url).searchParams.get('after')) || 0;
   const sql = await db();
-  await sql`delete from notifications where player_id = ${session.player} and created_at < now() - make_interval(days => ${NOTIFICATION_DAYS})`;
+  // Every rider's old news, not just this one's: riders who never come back
+  // would otherwise keep theirs for good.
+  await sql`delete from notifications where created_at < now() - make_interval(days => ${NOTIFICATION_DAYS})`;
+  // One more than is sent, to tell whether more are waiting.
   const rows = await sql`
     select id, kind, data, created_at from notifications
     where player_id = ${session.player} and id > ${after}
-    order by id asc limit ${NOTIFICATIONS_AT_ONCE}`;
+    order by id asc limit ${NOTIFICATIONS_AT_ONCE + 1}`;
   return json({
-    notifications: rows.map(row => ({ ...row.data, id: Number(row.id), kind: row.kind, at: new Date(row.created_at).getTime() })),
+    notifications: rows.slice(0, NOTIFICATIONS_AT_ONCE).map(row => ({ ...row.data, id: Number(row.id), kind: row.kind, at: new Date(row.created_at).getTime() })),
+    more: rows.length > NOTIFICATIONS_AT_ONCE,
     token: renewedToken(session),
   });
 }

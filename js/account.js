@@ -248,9 +248,10 @@ export async function fetchCloudSave(token, playerId = null) {
 
 /**
  * The rider's news from the server newer than notice `after` (see
- * getNotifications in account.mjs), oldest first. Null when offline or
- * signed out: the news waits on the server for the next try.
- * @returns {Promise<{ id: number, kind: string, at: number, [field: string]: unknown }[] | null>}
+ * getNotifications in account.mjs), oldest first, and whether more is waiting
+ * after it. Null when offline or signed out: the news waits on the server for
+ * the next try.
+ * @returns {Promise<{ notices: { id: number, kind: string, at: number, [field: string]: unknown }[], more: boolean } | null>}
  */
 export async function fetchNotifications(token, playerId, after) {
   if (!token || typeof window === 'undefined') return null;
@@ -259,10 +260,11 @@ export async function fetchNotifications(token, playerId, after) {
       headers: { authorization: 'Bearer ' + token },
       signal: AbortSignal.timeout(8000),
     });
+    if (res.status === 401) signal(SIGNED_OUT_EVENT, { playerId });
     if (!res.ok) return null;
     const data = await res.json();
     noteRenewal(playerId, data);
-    return Array.isArray(data.notifications) ? data.notifications : null;
+    return Array.isArray(data.notifications) ? { notices: data.notifications, more: data.more === true } : null;
   } catch (_) {
     return null;
   }

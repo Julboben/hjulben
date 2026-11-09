@@ -362,8 +362,33 @@ const run = (replay = firstTrailRun) => ({ inputs: replay.inputs, seed: replay.s
   await sql`update runs set time_ms = 30000 where trail = ${firstKey} and player_id <> ${racerId}`;
   await sql`update runs set time_ms = 60000 where trail = ${firstKey} and player_id = ${racerId}`;
   await submit({ body: { trail: firstKey, run: run() }, token: racer.token });
+  const lastSeen = news[0].id;
   news = (await fresh(julianToken)).body.notifications;
   assert.deepEqual(news.map(notice => notice.was), [30], 'one notice per trail');
+  assert.ok(news[0].id > lastSeen, 'under a new id, so devices that read the old one fetch it again');
+
+  // Two runs taking the record at once tell the old holder once, about the run that holds it.
+  const { body: rival } = await registerRider('Rival', createAuthenticator(), 'female');
+  await sql`update runs set time_ms = 60000 where trail = ${firstKey}`;
+  await sql`delete from notifications`;
+  await Promise.all([racer.token, rival.token].map(token => submit({ body: { trail: firstKey, run: run() }, token })));
+  const [holder] = await sql`select p.name from runs r join players p on p.id = r.player_id where r.trail = ${firstKey} order by r.time_ms, r.updated_at limit 1`;
+  news = (await fresh(julianToken)).body.notifications;
+  assert.deepEqual(news.map(notice => notice.name), [holder.name], 'one notice, naming the rider who holds the record');
+  await sql`delete from players where name_key = 'rival'`;
+
+  // News that doesn't fit in one reply says more is waiting.
+  const frejaId = (await sql`select id from players where name_key = 'freja'`)[0].id;
+  for (let index = 0; index < 21; index++) {
+    await sql`insert into notifications (player_id, kind, data) values (${frejaId}, 'test', '{}'::jsonb)`;
+  }
+  let page = (await fresh(julianToken, news[0].id)).body;
+  assert.equal(page.notifications.length, 20);
+  assert.equal(page.more, true, 'more is waiting');
+  page = (await fresh(julianToken, page.notifications.at(-1).id)).body;
+  assert.equal(page.notifications.length, 1);
+  assert.equal(page.more, false, 'and then no more');
+  await sql`delete from notifications where kind = 'test'`;
 
   // Old news is cleared.
   await sql`update notifications set created_at = now() - interval '61 days'`;

@@ -1081,20 +1081,27 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
   }
 
   let fetchingNotifications = false;
+  // Asked again while fetching, maybe for another rider: fetch once more after.
+  let notificationsAskedAgain = false;
 
   /** Takes the active online rider's news from the server into the log. */
   async function refreshNotifications() {
+    if (fetchingNotifications) { notificationsAskedAgain = true; return; }
     const save = session.saveGame;
-    if (!save?.token || fetchingNotifications) return;
+    if (!save?.token) return;
     fetchingNotifications = true;
     try {
-      const notices = await fetchNotifications(save.token, save.playerId, lastNoticeId(save.playerId));
-      for (const notice of notices ?? []) {
-        if (notice.kind === 'record-lost') notify(recordLost(save.playerId, notice));
-        setLastNoticeId(save.playerId, notice.id);
-      }
+      let page;
+      do {
+        page = await fetchNotifications(save.token, save.playerId, lastNoticeId(save.playerId));
+        for (const notice of page?.notices ?? []) {
+          if (notice.kind === 'record-lost') notify(recordLost(save.playerId, notice));
+          setLastNoticeId(save.playerId, notice.id);
+        }
+      } while (page?.more);
     } finally {
       fetchingNotifications = false;
+      if (notificationsAskedAgain) { notificationsAskedAgain = false; refreshNotifications(); }
     }
   }
 

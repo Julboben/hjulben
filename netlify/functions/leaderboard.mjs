@@ -100,9 +100,16 @@ async function submit(req) {
   // A tie keeps the older run first, so only a faster one takes the record.
   if (leader && leader.player_id !== playerId && timeMs < leader.time_ms) {
     const data = { trail, name: player.name, time: timeMs / 1000, was: leader.time_ms / 1000 };
-    // Only the latest news per trail: a record traded back and forth is one notice.
-    await sql`delete from notifications where player_id = ${leader.player_id} and kind = 'record-lost' and data->>'trail' = ${trail}`;
-    await sql`insert into notifications (player_id, kind, data) values (${leader.player_id}, 'record-lost', ${JSON.stringify(data)}::jsonb)`;
+    // Sent only if this run still holds the record as the notice is written:
+    // of two runs that took it at once, only the faster one tells the old
+    // holder. Only the latest news per trail is kept, under a new id so
+    // devices that already read the old notice fetch it again.
+    await sql`
+      insert into notifications (player_id, kind, data)
+      select ${leader.player_id}, 'record-lost', ${JSON.stringify(data)}::jsonb
+      where (select player_id from runs where trail = ${trail} order by time_ms asc, updated_at asc limit 1) = ${playerId}
+      on conflict (player_id, (data->>'trail')) where kind = 'record-lost'
+      do update set id = default, data = excluded.data, created_at = now()`;
   }
 
   return json({
