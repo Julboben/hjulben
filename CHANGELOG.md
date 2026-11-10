@@ -2,6 +2,21 @@
 
 Player-facing release notes. The game shows them under **What's new**, and each GitHub Release uses its section.
 
+## 0.6.5 — 2026-11-10
+
+### New
+- The world board shows your own row when you're outside the top ten, with the riders just ahead and behind.
+- Watch any world rider's run from the leaderboard, and race the rider just ahead of you from the results screen.
+- The leaderboard's trail list shows your own time on each trail, with your world rank.
+- The bell tells you when another rider pushes you out of a trail's top ten.
+
+### Improved
+- The world board shows how many riders have finished each trail.
+- What's new reads more clearly, with one change per note and nothing listed twice.
+
+### Fixed
+- Riders on the same time now share a rank on the leaderboard.
+
 ## 0.6.4 — 2026-11-09
 
 ### New

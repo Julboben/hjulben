@@ -2,6 +2,40 @@
 /** @type {{ version: string, date: string, changes: { type: 'new' | 'improved' | 'fixed', text: string }[] }[]} */
 export const RELEASES = [
   {
+    "version": "0.6.5",
+    "date": "2026-11-10",
+    "changes": [
+      {
+        "type": "new",
+        "text": "The world board shows your own row when you're outside the top ten, with the riders just ahead and behind."
+      },
+      {
+        "type": "new",
+        "text": "Watch any world rider's run from the leaderboard, and race the rider just ahead of you from the results screen."
+      },
+      {
+        "type": "new",
+        "text": "The leaderboard's trail list shows your own time on each trail, with your world rank."
+      },
+      {
+        "type": "new",
+        "text": "The bell tells you when another rider pushes you out of a trail's top ten."
+      },
+      {
+        "type": "improved",
+        "text": "The world board shows how many riders have finished each trail."
+      },
+      {
+        "type": "improved",
+        "text": "What's new reads more clearly, with one change per note and nothing listed twice."
+      },
+      {
+        "type": "fixed",
+        "text": "Riders on the same time now share a rank on the leaderboard."
+      }
+    ]
+  },
+  {
     "version": "0.6.4",
     "date": "2026-11-09",
     "changes": [
