@@ -233,7 +233,7 @@ Changelog: heads up: The leaderboard has been reset.
 Changelog: none
 ```
 
-A long note may wrap over several lines; it ends at a blank line, the next `Changelog:` line or a list item, heading or trailer such as `Signed-off-by:`. `none` leaves the PR out of the notes. Preview the notes for the next release locally with `npm run release:notes` (uses your Copilot CLI login).
+A long note may wrap over several lines; it ends at a blank line, the next `Changelog:` line or a list item, heading or trailer such as `Signed-off-by:`. `none` leaves the PR out of the notes. Use it, too, for a fix or improvement to something that is not released yet (added since the last `v*` tag): players never saw the earlier version, so reword that feature's `new:` line instead if it changed. Preview the notes for the next release locally with `npm run release:notes` (uses your Copilot CLI login).
 
 In the game, clicking the version number (`v0.1.2 · CHANGELOG`) under the logo opens **What's new**, which lists every release from `CHANGELOG.md`. After an update, returning players see a NEW badge next to it until they open it.
 

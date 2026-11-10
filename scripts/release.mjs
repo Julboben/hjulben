@@ -149,7 +149,7 @@ async function writeNotesWithAI(changes, previous) {
     '- Prefix trail editor changes with "Editor: ".',
     '- type is "new" for new features or content, "improved" for changes to existing things, "fixed" for bug fixes.',
     '- type is "heads-up" only for things players must know about, such as a leaderboard reset, lost saves or progress, or something they need to do. Most releases have none.',
-    '- Include every pinned note.',
+    '- Include every pinned note, except that a fixed or improved note about something that is new in this same release goes into that thing\'s new note, or is left out: players never saw the earlier version.',
     '- Do not invent details that are not supported by the changes.',
     'Reply with JSON only, without a code fence: {"changes":[{"type":"heads-up|new|improved|fixed","text":"..."}]}'
   ].join('\n');
