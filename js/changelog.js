@@ -2,6 +2,36 @@
 /** @type {{ version: string, date: string, changes: { type: 'new' | 'improved' | 'fixed', text: string }[] }[]} */
 export const RELEASES = [
   {
+    "version": "0.6.4",
+    "date": "2026-11-09",
+    "changes": [
+      {
+        "type": "new",
+        "text": "A bell on the dashboard opens a log of achievements, new gear, nisse finds, newly opened bonus trails and new versions of the game. It keeps up to 60 entries on this device, and tapping one opens where it points."
+      },
+      {
+        "type": "new",
+        "text": "When another rider takes an online rider's world record, the bell tells them the next time they open the game."
+      },
+      {
+        "type": "improved",
+        "text": "The notification bell now drops a small panel down under it, instead of sliding a drawer in from the right side of the screen."
+      },
+      {
+        "type": "improved",
+        "text": "The notification log catches up on more than 20 items at a time."
+      },
+      {
+        "type": "improved",
+        "text": "The title screen no longer shows the MOMENTUM · BALANCE · CONTROL line above the Hjulben title."
+      },
+      {
+        "type": "fixed",
+        "text": "Losing a world record gives one notice, naming the rider who holds it, even when two runs take the record at once."
+      }
+    ]
+  },
+  {
     "version": "0.6.3",
     "date": "2026-11-09",
     "changes": [
