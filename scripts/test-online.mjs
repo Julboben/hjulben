@@ -24,7 +24,17 @@ const RP_ID = 'julben.dk';
 // --- Database ---------------------------------------------------------------
 
 const pg = new PGlite();
-const sql = (strings, ...values) => pg.sql(strings, ...values).then(result => result.rows);
+// Like Neon's HTTP driver, a query runs once awaited, so a list of them can
+// also run in order in one transaction.
+const sql = (strings, ...values) => {
+  const run = db => db.sql(strings, ...values).then(result => result.rows);
+  return { run, then: (resolve, reject) => run(pg).then(resolve, reject) };
+};
+sql.transaction = queries => pg.transaction(async tx => {
+  const results = [];
+  for (const query of queries) results.push(await query.run(tx));
+  return results;
+});
 sql.query = (text, params) => pg.query(text, params).then(result => result.rows);
 useSql(sql);
 
@@ -426,6 +436,7 @@ const run = (replay = firstTrailRun) => ({ inputs: replay.inputs, seed: replay.s
   const mine = await call(leaderboard, '/api/leaderboard?mine=1', { method: 'GET', token: racer.token });
   assert.deepEqual(Object.keys(mine.body.standings), [firstKey]);
   assert.deepEqual({ ...mine.body.standings[firstKey], time: undefined }, { rank: 10, total: 12, time: undefined });
+  assert.deepEqual((await board(firstKey, racer.token)).body.near, [], 'a rider tenth on the board has no rows below the top');
 
   // A run that moves up within the top ten pushes nobody out.
   await sql`delete from notifications`;
@@ -433,7 +444,18 @@ const run = (replay = firstTrailRun) => ({ inputs: replay.inputs, seed: replay.s
   await sql`update runs set time_ms = ${bestMs + 100} where trail = ${firstKey} and player_id = ${racerId}`;
   await submit({ body: { trail: firstKey, run: run() }, token: racer.token });
   assert.deepEqual(await topTenNotices(), [], 'the last rider in the top ten is still in it');
-  await sql`delete from players where name_key like 'fast%' or name_key = 'tenth'`;
+
+  // Two runs entering the top ten at once push out, and tell, two different riders.
+  const ninthId = crypto.randomUUID();
+  await sql`insert into players (id, name, name_key, rider) values (${ninthId}, 'Ninth', 'ninth', 'male')`;
+  await sql`insert into runs (trail, player_id, rider, time_ms) values (${firstKey}, ${ninthId}, 'male', ${bestMs + 300})`;
+  await sql`update runs set time_ms = 90000 where trail = ${firstKey} and player_id = ${racerId}`;
+  await sql`delete from notifications`;
+  const { body: entrant } = await registerRider('Entrant', createAuthenticator(), 'female');
+  await Promise.all([racer.token, entrant.token].map(token => submit({ body: { trail: firstKey, run: run() }, token })));
+  pushed = await topTenNotices();
+  assert.deepEqual(pushed.map(row => row.player_id).sort(), [ninthId, tenthId].sort(), 'each pushed-out rider hears of it once');
+  await sql`delete from players where name_key like 'fast%' or name_key in ('tenth', 'ninth', 'entrant')`;
 
   // News that doesn't fit in one reply says more is waiting.
   const frejaId = (await sql`select id from players where name_key = 'freja'`)[0].id;

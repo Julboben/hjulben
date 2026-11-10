@@ -333,7 +333,7 @@ export function startGame({ shared = null } = {}) {
     syncSound();
     input.setBindings(preferences.bindings);
     renderer.setInteractKey(preferences.bindings.interact?.[0] ? keyLabel(preferences.bindings.interact[0]) : '');
-    if (ghostMode() === 'off') ghost = null;
+    if (ghostMode() === 'off' && ghost?.kind !== 'rival') ghost = null;
     syncHeadlight();
   }
 
@@ -982,8 +982,9 @@ export function startGame({ shared = null } = {}) {
         const ahead = standing?.ahead;
         const raceable = ahead?.replay && racedGhost !== 'world' && !(racedGhost === 'rival' && rival?.name === ahead.name);
         // Riders who have already moved on still hear how the run placed.
+        // Results behind the dashboard come back with Continue, Race button and all.
+        if (shown === overlay.currentResults()) chase = raceable ? { key, name: ahead.name, time: ahead.time } : null;
         const onResults = overlay.showWorldStanding(shown, standing, raceable ? ahead.name : null);
-        if (onResults) chase = raceable ? { key, name: ahead.name, time: ahead.time } : null;
         if (!onResults && standing) {
           overlay.toast(`WORLD RANK #${standing.rank} OF ${standing.total}`, 4000);
         }

@@ -231,7 +231,11 @@ export function refreshMyStandings() {
       window.dispatchEvent(new CustomEvent(ONLINE_STANDINGS_EVENT));
     })
     .catch(() => {})
-    .finally(() => { standingsPending = false; });
+    .finally(() => {
+      standingsPending = false;
+      // Another rider may have taken over meanwhile, and their request was dropped.
+      if (viewer()?.playerId !== rider.playerId) refreshMyStandings();
+    });
 }
 
 const riderGhosts = new Map(); // trailKey, name and time -> Promise<ghost | null>

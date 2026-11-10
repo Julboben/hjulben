@@ -34,7 +34,7 @@ async function board(sql, trail, playerId = null) {
         count(*) over ()::int as total
       from runs r join players p on p.id = r.player_id
       where r.trail = ${trail}
-    ), mine as (select place from ranked where player_id = ${playerId})
+    ), mine as (select place from ranked where player_id = ${playerId} and place > ${TOP})
     select * from ranked
     where place <= ${TOP} or place between (select place from mine) - 1 and (select place from mine) + 1
     order by place`;
@@ -101,32 +101,47 @@ async function submit(req) {
   if (!player) throw new HttpError(401, 'not signed in');
   // Whether this run beats the player's row, before the upsert folds them together.
   const [previous] = await sql`select time_ms from runs where trail = ${trail} and player_id = ${playerId}`;
-  // Who held the world record before it, and who was last in the top ten,
-  // to tell them if this run took the record or pushed them off the top.
-  const places = await sql`
-    select player_id, time_ms, updated_at, place from (
-      select player_id, time_ms, updated_at, row_number() over (order by time_ms, updated_at)::int as place
-      from runs where trail = ${trail}
-    ) ranked
-    where place in (1, ${TOP})`;
-  const leader = places.find(row => row.place === 1);
-  const last = places.find(row => row.place === TOP);
+  // Who held the world record before it, to tell them if this run took it.
+  const [leader] = await sql`
+    select player_id, time_ms from runs where trail = ${trail}
+    order by time_ms asc, updated_at asc limit 1`;
   // The look the run was ridden in, shown on the board and on its ghost, as
   // the player was created: gender and skin come from their row.
   const look = playerLook(body, player);
   const rider = legacyRider(look);
 
-  // Keep only each player's best run per trail, with its replay for the ghost.
-  const [best] = await sql`
-    insert into runs (trail, player_id, rider, look, time_ms, replay)
-    values (${trail}, ${playerId}, ${rider}, ${JSON.stringify(look)}::jsonb, ${timeMs}, ${JSON.stringify(replay)}::jsonb)
-    on conflict (trail, player_id) do update set
-      rider      = case when excluded.time_ms < runs.time_ms then excluded.rider else runs.rider end,
-      look       = case when excluded.time_ms < runs.time_ms then excluded.look else runs.look end,
-      replay     = case when excluded.time_ms < runs.time_ms then excluded.replay else runs.replay end,
-      updated_at = case when excluded.time_ms < runs.time_ms then now() else runs.updated_at end,
-      time_ms    = least(runs.time_ms, excluded.time_ms)
-    returning time_ms`;
+  // Runs on one trail take turns from the top-ten check to the upsert, so two
+  // that enter the top ten at once push out, and tell, two different riders.
+  const topTenLost = { trail, name: player.name, time: timeMs / 1000 };
+  const [, , [best]] = await sql.transaction([
+    sql`select pg_advisory_xact_lock(hashtext(${'runs:' + trail}))`,
+    // The rider last in the top ten hears of it when this run pushes them
+    // below it: a faster run from a player not yet in the top ten. A tie
+    // keeps the older run ahead. Only the latest news per trail is kept, as
+    // for a lost record.
+    sql`
+      with ranked as (
+        select player_id, time_ms, row_number() over (order by time_ms, updated_at) as place
+        from runs where trail = ${trail}
+      )
+      insert into notifications (player_id, kind, data)
+      select player_id, 'top-ten-lost', ${JSON.stringify(topTenLost)}::jsonb from ranked
+      where place = ${TOP} and player_id <> ${playerId} and time_ms > ${timeMs}
+        and not exists (select 1 from ranked where player_id = ${playerId} and place <= ${TOP})
+      on conflict (player_id, (data->>'trail')) where kind = 'top-ten-lost'
+      do update set id = default, data = excluded.data, created_at = now()`,
+    // Keep only each player's best run per trail, with its replay for the ghost.
+    sql`
+      insert into runs (trail, player_id, rider, look, time_ms, replay)
+      values (${trail}, ${playerId}, ${rider}, ${JSON.stringify(look)}::jsonb, ${timeMs}, ${JSON.stringify(replay)}::jsonb)
+      on conflict (trail, player_id) do update set
+        rider      = case when excluded.time_ms < runs.time_ms then excluded.rider else runs.rider end,
+        look       = case when excluded.time_ms < runs.time_ms then excluded.look else runs.look end,
+        replay     = case when excluded.time_ms < runs.time_ms then excluded.replay else runs.replay end,
+        updated_at = case when excluded.time_ms < runs.time_ms then now() else runs.updated_at end,
+        time_ms    = least(runs.time_ms, excluded.time_ms)
+      returning time_ms`,
+  ]);
 
   const [{ rank, ahead, behind }] = await sql`
     select
@@ -153,20 +168,6 @@ async function submit(req) {
       select ${leader.player_id}, 'record-lost', ${JSON.stringify(data)}::jsonb
       where (select player_id from runs where trail = ${trail} order by time_ms asc, updated_at asc limit 1) = ${playerId}
       on conflict (player_id, (data->>'trail')) where kind = 'record-lost'
-      do update set id = default, data = excluded.data, created_at = now()`;
-  }
-
-  // The rider who was last in the top ten hears of it once this run has
-  // pushed them below it; a run that was in the top ten already moves nobody
-  // out. Only the latest news per trail is kept, as for a lost record.
-  if (last && last.player_id !== playerId && (!previous || timeMs < previous.time_ms)) {
-    const data = { trail, name: player.name, time: timeMs / 1000 };
-    await sql`
-      insert into notifications (player_id, kind, data)
-      select ${last.player_id}, 'top-ten-lost', ${JSON.stringify(data)}::jsonb
-      where (select count(*) from runs where trail = ${trail}
-               and (time_ms, updated_at) < (${last.time_ms}, ${last.updated_at})) >= ${TOP}
-      on conflict (player_id, (data->>'trail')) where kind = 'top-ten-lost'
       do update set id = default, data = excluded.data, created_at = now()`;
   }
 

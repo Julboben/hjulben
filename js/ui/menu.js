@@ -1536,6 +1536,8 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
         watch.disabled = true;
         const data = await replay();
         watch.disabled = false;
+        // The player may have left the board, or moved to another, while it loaded.
+        if (!isBoardShown() || shownBoardKey() !== trailKey(entry)) return;
         if (data) onWatchReplay({ entry, data, name: runnerName(run.name) });
         else showBoardNote('Couldn’t load that run · Try again');
       });
