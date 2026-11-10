@@ -43,6 +43,16 @@ const ghost = (time, physics = RIDE_VERSION) => ({ time, splits: [], startStep: 
   assert.equal(storage.readLeaderboard('trail:custom1').length, 1);
 }
 
+// --- Riders on the same time share a rank -------------------------------------
+
+{
+  assert.equal(storage.recordLeaderboardRun('trail:ties', { time: 5, name: 'A' }), 1);
+  assert.equal(storage.recordLeaderboardRun('trail:ties', { time: 5, name: 'B' }), 1, 'a tie shares the rank');
+  assert.equal(storage.recordLeaderboardRun('trail:ties', { time: 6, name: 'C' }), 3, 'and the next rider skips it');
+  assert.deepEqual(storage.readLeaderboard('trail:ties').map(run => [run.name, run.rank]), [['A', 1], ['B', 1], ['C', 3]],
+    'the older run is listed first');
+}
+
 // --- A full store is announced, and the session carries on ------------------
 
 {

@@ -322,6 +322,7 @@ export function createOverlay({ onDismiss, onCard } = {}) {
     // Keeps the rival line's room while the world rank loads, so nothing jumps.
     $("results-rival").textContent = "";
     $("results-rival").hidden = !result.worldPending;
+    $("race-rival").hidden = true;
     $("results").dataset.world = result.worldPending ? "loading" : "";
     // One ladder: the medal won is filled in, the others show their target times.
     const targets = medals
@@ -402,7 +403,7 @@ export function createOverlay({ onDismiss, onCard } = {}) {
 
   /**
    * @typedef {{ rank: number, total: number, best: number,
-   *   ahead?: { name: string, time: number } | null,
+   *   ahead?: { name: string, time: number, replay: boolean } | null,
    *   behind?: { name: string, time: number } | null }} WorldStanding
    */
 
@@ -431,8 +432,9 @@ export function createOverlay({ onDismiss, onCard } = {}) {
    * false when the player has already left that results screen.
    * @param {number} id from currentResults() when the results were shown
    * @param {WorldStanding | null} standing
+   * @param {string | null} [race] the rider the Race button offers, or none
    */
-  function showWorldStanding(id, standing) {
+  function showWorldStanding(id, standing, race = null) {
     if (id !== resultsId) return false;
     $("results").dataset.world = "";
     if (!standing) {
@@ -445,6 +447,8 @@ export function createOverlay({ onDismiss, onCard } = {}) {
     showRank("WORLD", "#" + standing.rank + " / " + standing.total);
     const rival = rivalText(standing);
     $("results-rival").textContent = rival;
+    $("race-rival-name").textContent = race ?? "";
+    $("race-rival").hidden = !race;
     announce("World rank " + standing.rank + " of " + standing.total + "." + (rival ? " " + rival.replace(/[^!]$/, "$&.") : ""));
     return dialog.open;
   }

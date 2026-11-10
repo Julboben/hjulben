@@ -51,7 +51,7 @@ async function call(handler, path, { method = 'POST', body, token, origin = SITE
 const api = (action, options) => call(account, '/api/account/' + action, options);
 // Each submission starts with a clean rate limit; the limit itself is tested on its own below.
 const submit = async (options) => { await sql`delete from rate_limits`; return call(leaderboard, '/api/leaderboard', options); };
-const board = trail => call(leaderboard, '/api/leaderboard?trail=' + encodeURIComponent(trail), { method: 'GET' });
+const board = (trail, token) => call(leaderboard, '/api/leaderboard?trail=' + encodeURIComponent(trail), { method: 'GET', token });
 
 // --- Software authenticator (ES256, "none" attestation) -------------------------
 
@@ -296,8 +296,13 @@ const run = (replay = firstTrailRun) => ({ inputs: replay.inputs, seed: replay.s
   }
   const chasing = await submit({ body: { trail: firstKey, rider: 'female', run: run() }, token: julianToken });
   assert.equal(chasing.body.rank, 2);
-  assert.deepEqual(chasing.body.ahead, { name: 'Speedy', time: (bestMs - 500) / 1000 }, 'the nearest faster rider');
+  assert.deepEqual(chasing.body.ahead, { name: 'Speedy', time: (bestMs - 500) / 1000, replay: false }, 'the nearest faster rider');
   assert.deepEqual(chasing.body.behind, { name: 'Tied', time: bestMs / 1000 }, 'a tied rider counts as behind');
+  assert.deepEqual(chasing.body.runs.map(r => [r.name, r.rank]), [['Speedy', 1], ['Freja', 2], ['Tied', 2], ['Slowpoke', 4], ['Slowest', 5]],
+    'riders on the same time share a rank, the older run listed first');
+  assert.deepEqual(chasing.body.runs.map(r => r.replay), [false, true, false, false, false], 'only runs with a replay can be watched');
+  assert.equal(chasing.body.total, 5);
+  assert.deepEqual(chasing.body.near, [], 'a player in the top ten needs no row of their own');
   await sql`delete from players where name_key in ('speedy', 'tied')`;
   const leading = await submit({ body: { trail: firstKey, rider: 'female', run: run() }, token: julianToken });
   assert.equal(leading.body.rank, 1);
@@ -316,6 +321,27 @@ const run = (replay = firstTrailRun) => ({ inputs: replay.inputs, seed: replay.s
   const listed = await board(firstKey);
   assert.equal(listed.body.runs[0].name, 'Freja');
   assert.equal((await board('trail:abcdef12')).status, 400, 'custom trails stay local');
+
+  // A player below the top ten gets their row and the riders either side.
+  const quick = Array.from({ length: 11 }, (_, index) => ['Quick' + index, bestMs - 1100 + index * 10]);
+  for (const [name, timeMs] of [...quick, ['Behind', bestMs + 10]]) {
+    const id = crypto.randomUUID();
+    await sql`insert into players (id, name, name_key, rider) values (${id}, ${name}, ${name.toLowerCase()}, 'male')`;
+    await sql`insert into runs (trail, player_id, rider, time_ms) values (${firstKey}, ${id}, 'male', ${timeMs})`;
+  }
+  const below = await board(firstKey, julianToken);
+  assert.equal(below.body.runs.length, 10);
+  assert.equal(below.body.total, 13);
+  assert.deepEqual(below.body.near.map(r => [r.name, r.rank]), [['Quick10', 11], ['Freja', 12], ['Behind', 13]]);
+  assert.deepEqual((await board(firstKey)).body.near, [], 'a board fetched without a session has no rows of its own');
+  assert.deepEqual((await board(firstKey, julianToken + 'x')).body.near, [], 'nor one with a broken session, which still gets the board');
+
+  // Any rider's run can be watched or raced by name.
+  const named = await call(leaderboard, '/api/leaderboard?ghost=1&name=Freja&trail=' + encodeURIComponent(firstKey), { method: 'GET' });
+  assert.equal(named.body.ghost.name, 'Freja');
+  const imported = await call(leaderboard, '/api/leaderboard?ghost=1&name=Quick0&trail=' + encodeURIComponent(firstKey), { method: 'GET' });
+  assert.equal(imported.body.ghost, null, 'a time without a replay has no ghost');
+  await sql`delete from players where name_key like 'quick%' or name_key = 'behind'`;
 }
 
 // --- Notifications ----------------------------------------------------------------
@@ -376,6 +402,38 @@ const run = (replay = firstTrailRun) => ({ inputs: replay.inputs, seed: replay.s
   news = (await fresh(julianToken)).body.notifications;
   assert.deepEqual(news.map(notice => notice.name), [holder.name], 'one notice, naming the rider who holds the record');
   await sql`delete from players where name_key = 'rival'`;
+
+  // A run that enters the top ten tells the rider it pushed out of it.
+  // Freja's run stays, at the back of the board.
+  await sql`delete from runs where trail = ${firstKey} and player_id <> (select id from players where name_key = 'freja')`;
+  await sql`update runs set time_ms = 90000 where trail = ${firstKey}`;
+  await sql`delete from notifications`;
+  const others = [...Array.from({ length: 9 }, (_, index) => ['Fast' + index, bestMs - 900 + index * 100]), ['Tenth', bestMs + 500]];
+  for (const [name, timeMs] of others) {
+    const id = crypto.randomUUID();
+    await sql`insert into players (id, name, name_key, rider) values (${id}, ${name}, ${name.toLowerCase()}, 'male')`;
+    await sql`insert into runs (trail, player_id, rider, time_ms) values (${firstKey}, ${id}, 'male', ${timeMs})`;
+  }
+  const tenthId = (await sql`select id from players where name_key = 'tenth'`)[0].id;
+  const topTenNotices = () => sql`select player_id, data from notifications where kind = 'top-ten-lost'`;
+  await submit({ body: { trail: firstKey, run: run() }, token: racer.token });
+  let pushed = await topTenNotices();
+  assert.deepEqual(pushed.map(row => [row.player_id, row.data.name]), [[tenthId, 'Chaser']], 'the rider pushed out hears who did it');
+  assert.ok(Math.abs(pushed[0].data.time - bestMs / 1000) < 0.001, 'and with what time');
+
+  // Each rider's place on every trail they have a time on, for the trail picker.
+  assert.equal((await call(leaderboard, '/api/leaderboard?mine=1', { method: 'GET' })).status, 401, 'standings need a signed-in rider');
+  const mine = await call(leaderboard, '/api/leaderboard?mine=1', { method: 'GET', token: racer.token });
+  assert.deepEqual(Object.keys(mine.body.standings), [firstKey]);
+  assert.deepEqual({ ...mine.body.standings[firstKey], time: undefined }, { rank: 10, total: 12, time: undefined });
+
+  // A run that moves up within the top ten pushes nobody out.
+  await sql`delete from notifications`;
+  await sql`delete from players where name_key = 'fast0'`;
+  await sql`update runs set time_ms = ${bestMs + 100} where trail = ${firstKey} and player_id = ${racerId}`;
+  await submit({ body: { trail: firstKey, run: run() }, token: racer.token });
+  assert.deepEqual(await topTenNotices(), [], 'the last rider in the top ten is still in it');
+  await sql`delete from players where name_key like 'fast%' or name_key = 'tenth'`;
 
   // News that doesn't fit in one reply says more is waiting.
   const frejaId = (await sql`select id from players where name_key = 'freja'`)[0].id;

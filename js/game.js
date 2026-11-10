@@ -16,7 +16,7 @@ import {
 } from './storage.js';
 import { bikeBroken, createFeatTracker, editorProgress, eggAchievements, eventAchievements, finishAchievements, finishGains, interactAchievements, newlyEarned, statGains } from './achievements.js';
 import { createLimWatcher, installConsoleCheats } from './easter-eggs.js';
-import { submitOnlineRun, fetchWorldGhost, refreshOnlineBoard, cachedOnlineBoard, queuePendingRun, dropPendingRun, flushPendingRuns } from './online-leaderboard.js';
+import { submitOnlineRun, fetchWorldGhost, fetchRiderGhost, refreshOnlineBoard, cachedOnlineBoard, queuePendingRun, dropPendingRun, flushPendingRuns, useBoardViewer } from './online-leaderboard.js';
 import { queueSaveSync, SIGNED_OUT_EVENT, SESSION_RENEWED_EVENT } from './account.js';
 import { createInput, keyLabel } from './input.js';
 import { createHaptics } from './haptics.js';
@@ -98,6 +98,8 @@ export function startGame({ shared = null } = {}) {
     // them, and a rider just logged in sends the runs that waited for them.
     onRiderChange: () => { claimEditorFeats(); flushPendingRuns(tokenFor); }
   });
+  // An online rider's boards come with their own row, when it is below the top.
+  useBoardViewer(() => session.saveGame?.token ? { playerId: session.saveGame.playerId, token: session.saveGame.token } : null);
 
   // ?debug=1 turns on every debugging aid, on a developer's machine only (see
   // debugMode): the frame-rate meter, the readout of the ride, the physics
@@ -180,7 +182,10 @@ export function startGame({ shared = null } = {}) {
   const SLOW_MOTION_RATIO = .9;
   /** Time in the air and on one wheel during the current attempt, for achievements. */
   const feats = createFeatTracker(STEP);
-  /** @type {{ ride: any, inputs: any[], index: number, data: any } | null} */
+  /**
+   * The ghost riding along: the player's own best, the world's best or a rival's.
+   * @type {{ ride: any, inputs: any[], index: number, data: any, look: any, kind: 'own' | 'world' | 'rival' } | null}
+   */
   let ghost = null;
   /**
    * A recorded run being played back instead of the player's input: its
@@ -190,6 +195,14 @@ export function startGame({ shared = null } = {}) {
   let replay = null;
   /** The last finished run, for Watch Replay on the results. */
   let lastRun = null;
+  /** The world rider just ahead of the last finished run, for Race on the results. @type {{ key: string, name: string, time: number } | null} */
+  let chase = null;
+  /**
+   * A world rider the player chose to race on a trail: their ghost replaces
+   * the usual one on every ride there, until the player leaves the trail.
+   * @type {{ key: string, name: string, data: any } | null}
+   */
+  let rival = null;
   // Set when this run ended the career, until its results' Roll Credits button is used.
   let creditsAfterResults = false;
   let wakeLock = null;
@@ -491,12 +504,17 @@ export function startGame({ shared = null } = {}) {
 
   // --- Trails ----------------------------------------------------------------
 
-  /** 'on' races your own best run; 'world' the fastest of that and the world's best. */
+  /**
+   * 'on' races your own best run; 'world' the fastest of that and the world's
+   * best. A rival chosen from the results is raced whatever the setting.
+   */
   function loadGhost(trail) {
     ghost = null;
+    if (rival && !(isRankedSource(session.trailSource) && trailKey(currentTrailEntry()) === rival.key)) rival = null;
+    if (rival) { useGhost(trail, rival.data, 'rival'); return; }
     const mode = ghostMode();
     if (mode === 'off') return;
-    useGhost(trail, session.trailSource === 'playtest' ? playtestBest : readGhost(trailKey(currentTrailEntry())));
+    useGhost(trail, session.trailSource === 'playtest' ? playtestBest : readGhost(trailKey(currentTrailEntry())), 'own');
     if (mode !== 'world' || !isRankedSource(session.trailSource)) return;
     const ride = session.ride;
     fetchWorldGhost(trailKey(currentTrailEntry())).then(world => {
@@ -504,11 +522,11 @@ export function startGame({ shared = null } = {}) {
       if (!world || session.ride !== ride || ghostMode() !== 'world') return;
       if (ghost && ghost.data.time <= world.time) return;
       // Steps the ghost would already have taken alongside the player.
-      useGhost(trail, world, ride.started ? recorded.length - startStep : 0);
+      useGhost(trail, world, 'world', ride.started ? recorded.length - startStep : 0);
     });
   }
 
-  function useGhost(trail, data, catchUp = 0) {
+  function useGhost(trail, data, kind, catchUp = 0) {
     if (!data || data.physics !== RIDE_VERSION) return;
     const inputs = decodeInputs(data.inputs);
     // Ghosts from before looks existed were always drawn as the player.
@@ -517,7 +535,7 @@ export function startGame({ shared = null } = {}) {
     // Play the idle lead-in now so the ghost sets off with the player.
     const lead = Math.min(data.startStep + catchUp, inputs.length);
     for (let index = 0; index < lead; index++) stepRide(ride, inputs[index]);
-    ghost = { ride, inputs, index: lead, data, look };
+    ghost = { ride, inputs, index: lead, data, look, kind };
   }
 
   /** Whether the ghost is still on its way to the finish, with inputs left to play. */
@@ -847,7 +865,27 @@ export function startGame({ shared = null } = {}) {
     setState('won');
   }
 
+  /** Rides the trail again against the ghost of the world rider just ahead. */
+  async function raceRival() {
+    const button = $('race-rival');
+    if (session.state !== 'won' || !chase || button.disabled) return;
+    const { key, name, time } = chase;
+    button.disabled = true;
+    const data = await fetchRiderGhost(key, name, time);
+    button.disabled = false;
+    // The player may have moved on while the run was on its way.
+    if (session.state !== 'won' || chase?.key !== key || chase.name !== name) return;
+    if (data?.physics !== RIDE_VERSION) {
+      overlay.toast('Couldn’t load ' + name + '’s run · Try again', 4000);
+      return;
+    }
+    rival = { key, name, data };
+    startFresh();
+    overlay.toast('Racing ' + name + '’s ghost', 3000);
+  }
+
   function finishRun(ride) {
+    chase = null;
     if (session.trailSource === 'playtest') { finishPlaytestRun(ride); return; }
     const entry = currentTrailEntry();
     const key = trailKey(entry);
@@ -891,6 +929,7 @@ export function startGame({ shared = null } = {}) {
       saveGhost(key, { time, splits: ride.splits.slice(), startStep, seed: ride.seed, inputs, physics: RIDE_VERSION, look: session.look, ...(slowMotion ? { slow: true } : {}) });
     }
     const finished = finishedRun(ride, previousBest, worldBest);
+    const racedGhost = ghost?.kind ?? null;
     earn(finishAchievements(finished), finishGains(finished), before);
     const medals = session.trail.medals;
     const last = session.trailIndex === trails.length - 1;
@@ -938,8 +977,13 @@ export function startGame({ shared = null } = {}) {
             : 'Couldn’t reach the world board, and browser storage is too full to keep the run', 6000);
         }
         const standing = result && 'rank' in result ? result : null;
+        // The rider just ahead can be raced, unless this run already raced the
+        // world's best, which is ahead of them, or raced that very rider.
+        const ahead = standing?.ahead;
+        const raceable = ahead?.replay && racedGhost !== 'world' && !(racedGhost === 'rival' && rival?.name === ahead.name);
         // Riders who have already moved on still hear how the run placed.
-        const onResults = overlay.showWorldStanding(shown, standing);
+        const onResults = overlay.showWorldStanding(shown, standing, raceable ? ahead.name : null);
+        if (onResults) chase = raceable ? { key, name: ahead.name, time: ahead.time } : null;
         if (!onResults && standing) {
           overlay.toast(`WORLD RANK #${standing.rank} OF ${standing.total}`, 4000);
         }
@@ -1279,6 +1323,7 @@ export function startGame({ shared = null } = {}) {
   });
   $('secondary').addEventListener('click', startFresh);
   $('save-reference').addEventListener('click', saveReferenceRun);
+  $('race-rival').addEventListener('click', raceRival);
   $('watch-replay').addEventListener('click', () => {
     if (session.state === 'won' && lastRun) watchReplay({ data: lastRun, name: session.saveGame?.name || 'Your run' });
   });

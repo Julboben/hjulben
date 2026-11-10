@@ -84,6 +84,18 @@ export function requireSession(req) {
 /** The signed-in player's id, from `Authorization: Bearer <token>`. */
 export const requirePlayer = req => requireSession(req).player;
 
+/**
+ * The signed-in player's id, or null, for a request anyone may make: a
+ * missing or stale token only leaves out what is personal.
+ */
+export function optionalPlayer(req) {
+  try {
+    return requirePlayer(req);
+  } catch (_) {
+    return null;
+  }
+}
+
 /** A fresh token for a session that is about to expire, or null while it has time left. */
 export function renewedToken(session) {
   return session.exp - Date.now() / 1000 < RENEW_WITHIN_DAYS * 86400 ? sessionToken(session.player) : null;

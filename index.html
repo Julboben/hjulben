@@ -178,6 +178,14 @@
                             </button>
                             <button
                                 class="secondary"
+                                id="race-rival"
+                                data-icon-before="flag"
+                                hidden
+                            >
+                                Race <span id="race-rival-name"></span>
+                            </button>
+                            <button
+                                class="secondary"
                                 id="save-reference"
                                 data-icon-before="upload"
                                 title="Save this run for the replay bot (dev server only)"
@@ -707,10 +715,7 @@
                                 id="leaderboard-offline"
                                 role="status"
                                 hidden
-                            >
-                                Couldn’t reach the world board · showing runs
-                                from this device
-                            </p>
+                            ></p>
                             <p class="load-game-help leaderboard-help">
                                 Each rider’s best time. Official and bonus
                                 trails use the world board; custom trails and

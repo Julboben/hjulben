@@ -10,7 +10,7 @@ import {
 } from '../storage.js';
 import { DEFAULT_LOOK, itemsForSlot, keepIdentity, lookKey, lookParts, randomLook, sameLook, starterLook } from '../cosmetics.js';
 import { createCustomizer, createIdentityPicker, drawLook } from './customizer.js';
-import { ONLINE_LEADERBOARD_EVENT, boardStatus, isOnlineBoardLoading, isOnlineTrail, fetchWorldGhost, settledWorldGhost, refreshOnlineBoard, queuePendingRun, flushPendingRuns, dropPendingRuns } from '../online-leaderboard.js';
+import { ONLINE_LEADERBOARD_EVENT, ONLINE_STANDINGS_EVENT, boardStatus, isOnlineBoardLoading, isOnlineTrail, fetchRiderGhost, settledWorldGhost, refreshOnlineBoard, onlineBoardStanding, myStanding, refreshMyStandings, queuePendingRun, flushPendingRuns, dropPendingRuns } from '../online-leaderboard.js';
 import { registerRider, loginRider, deleteRider, accountErrorText, passkeysSupported, queueSaveSync, fetchCloudSave, fetchNotifications } from '../account.js';
 import { NOTIFICATIONS_EVENT, lastNoticeId, markRead, notificationsFor, notify, setLastNoticeId, unreadCount } from '../notifications.js';
 import { isSandbox } from '../local-store.js';
@@ -93,6 +93,10 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
   // Fresh world results rebuild the board while the menu is on screen.
   window.addEventListener(ONLINE_LEADERBOARD_EVENT, () => {
     if (isOpen()) buildLeaderboard();
+  });
+  // The rider's places arrive after the trail picker has opened.
+  window.addEventListener(ONLINE_STANDINGS_EVENT, () => {
+    if (isTrailPickerOpen()) $('leaderboard-picker').querySelectorAll('.leaderboard-pick').forEach(fillPickStanding);
   });
 
   // Opening the board, flipping to a trail or coming back to the tab fetches
@@ -1067,18 +1071,31 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     }
   }
 
-  /** A world record another rider took from this one, from the server's notice. */
-  function recordLost(playerId, notice) {
+  /**
+   * A log entry for the server's news about another rider's run on one of
+   * this rider's trails: one entry per kind and trail, opening its board.
+   */
+  function boardNotice(playerId, notice, { label, icon, text }) {
     const trail = String(notice.trail);
     const id = trail.replace(/@.*/, '');
-    const name = leaderboardTrails().find(entry => entry.id === id)?.name ?? 'A trail';
     const rival = cleanRiderName(notice.name) || 'Another rider';
     return {
-      key: `record-lost:${playerId}:${id}`, playerId, at: Number(notice.at) || Date.now(), label: 'WORLD RECORD LOST',
-      title: name, text: `${rival} beat your world record with ${runTimeText(Number(notice.time))}, ahead of your ${runTimeText(Number(notice.was))}.`,
-      icon: 'crown', opens: { view: 'leaderboard', trail },
+      key: `${notice.kind}:${playerId}:${id}`, playerId, at: Number(notice.at) || Date.now(), label, icon,
+      title: leaderboardTrails().find(entry => entry.id === id)?.name ?? 'A trail', text: text(rival),
+      opens: { view: 'leaderboard', trail },
     };
   }
+
+  const BOARD_NOTICES = {
+    'record-lost': notice => ({
+      label: 'WORLD RECORD LOST', icon: 'crown',
+      text: rival => `${rival} beat your world record with ${runTimeText(Number(notice.time))}, ahead of your ${runTimeText(Number(notice.was))}.`,
+    }),
+    'top-ten-lost': notice => ({
+      label: 'OUT OF THE TOP TEN', icon: 'arrow-down',
+      text: rival => `${rival} pushed you out of the top ten with ${runTimeText(Number(notice.time))}.`,
+    }),
+  };
 
   let fetchingNotifications = false;
   // Asked again while fetching, maybe for another rider: fetch once more after.
@@ -1095,7 +1112,8 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
       do {
         page = await fetchNotifications(save.token, save.playerId, lastNoticeId(save.playerId));
         for (const notice of page?.notices ?? []) {
-          if (notice.kind === 'record-lost') notify(recordLost(save.playerId, notice));
+          const kind = BOARD_NOTICES[notice.kind];
+          if (kind) notify(boardNotice(save.playerId, notice, kind(notice)));
           setLastNoticeId(save.playerId, notice.id);
         }
       } while (page?.more);
@@ -1412,10 +1430,13 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     $('menu-trail-grid').replaceChildren(...cards);
   }
 
-  /** Trail keys whose world-best replay is on its way, so the board redraws once. */
-  const awaitingWorld = new Set();
-  /** True while the board on show is this device's runs because the world board couldn't be reached. */
-  let boardFailed = false;
+  const BOARD_FAILED_NOTE = 'Couldn’t reach the world board · showing runs from this device';
+
+  /** A line under the board about what went wrong, or none. */
+  function showBoardNote(text) {
+    $('leaderboard-offline').textContent = text;
+    $('leaderboard-offline').hidden = !text;
+  }
 
   /** Whether the player may open a trail, and so watch runs on it. */
   function canWatch(entry) {
@@ -1424,15 +1445,28 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     return true;
   }
 
-  /** The recorded run behind a board row: this device's best, or the world's. */
+  /**
+   * How to get the recorded run behind a board row, or null when it can't be
+   * watched: this device's best or the world's at once, or another world
+   * rider's from the server when asked for.
+   * @returns {(() => Promise<object | null>) | null}
+   */
   function replayFor(run, key) {
     const same = replay => replay?.physics === RIDE_VERSION && Math.abs(replay.time - run.time) < .001;
     const local = readGhost(key);
-    if (same(local)) return local;
+    if (same(local)) return () => Promise.resolve(local);
     const world = settledWorldGhost(key);
-    return same(world) && (!run.name || run.name === world.name) ? world : null;
+    if (same(world) && (!run.name || run.name === world.name)) return () => Promise.resolve(world);
+    if (!run.replay || !run.name) return null;
+    // The rider may have gone faster since: their latest best is shown then.
+    return () => fetchRiderGhost(key, run.name, run.time).then(replay => (replay?.physics === RIDE_VERSION ? replay : null));
   }
 
+  /**
+   * @param {object | undefined} run
+   * @param {number} rank its rank, or its place on the board for an open row
+   * @param {(() => Promise<object | null>) | null} [replay]
+   */
   function leaderboardRow(run, rank, loading = false, entry = null, replay = null) {
     const row = document.createElement('li');
     row.className = 'leaderboard-row' + (rank <= 3 && run ? ' podium-' + rank : '') + (run ? '' : ' open');
@@ -1498,7 +1532,13 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
       icon.dataset.icon = 'play';
       icon.setAttribute('aria-hidden', 'true');
       watch.append(icon);
-      watch.addEventListener('click', () => onWatchReplay({ entry, data: replay, name: runnerName(run.name) }));
+      watch.addEventListener('click', async () => {
+        watch.disabled = true;
+        const data = await replay();
+        watch.disabled = false;
+        if (data) onWatchReplay({ entry, data, name: runnerName(run.name) });
+        else showBoardNote('Couldn’t load that run · Try again');
+      });
       row.classList.add('watchable');
       row.append(watch);
     }
@@ -1518,27 +1558,27 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     $('leaderboard-trail-number').textContent = trailMarker(leaderboardTrail);
     $('leaderboard-trail-name').textContent = entry.name.toUpperCase();
     const author = normalizeAuthor(entry.trail?.author);
+    const standing = loading ? null : onlineBoardStanding(key);
     $('leaderboard-trail-meta').textContent = entry.source.toUpperCase() + ' TRAIL'
       + (author ? ' · BY ' + author.toUpperCase() : '')
+      + (standing?.total ? ' · ' + standing.total + (standing.total === 1 ? ' RIDER' : ' RIDERS') : '')
       + ' · ' + (leaderboardTrail + 1) + ' / ' + trails.length;
     const watchable = canWatch(entry);
-    const rows = Array.from({ length: LEADERBOARD_SIZE }, (_, index) => {
-      const run = loading ? undefined : runs[index];
-      return leaderboardRow(run, index + 1, loading, entry, run && watchable ? replayFor(run, key) : null);
-    });
+    const row = (run, place) => leaderboardRow(run, run?.rank ?? place, loading, entry, run && watchable ? replayFor(run, key) : null);
+    const rows = Array.from({ length: LEADERBOARD_SIZE }, (_, index) => row(loading ? undefined : runs[index], index + 1));
+    // A rider below the top sees their own row too, between the riders either side.
+    const near = standing?.near ?? [];
+    if (near.length) {
+      const gap = document.createElement('li');
+      gap.className = 'leaderboard-gap';
+      gap.setAttribute('aria-hidden', 'true');
+      gap.textContent = '⋯';
+      rows.push(gap, ...near.map(run => row(run, run.rank)));
+    }
     $('leaderboard-list').replaceChildren(...rows);
     // An unreachable world board falls back to this device's runs, and says so.
-    boardFailed = !loading && isOnlineTrail(key) && boardStatus(key) === 'failed';
-    $('leaderboard-offline').hidden = !boardFailed;
-    // The world best can be watched too, once its replay has arrived.
-    if (watchable && isOnlineTrail(key) && settledWorldGhost(key) === undefined && !awaitingWorld.has(key)) {
-      awaitingWorld.add(key);
-      fetchWorldGhost(key).then(world => {
-        awaitingWorld.delete(key);
-        // Only a replay that arrived redraws, so a failed fetch can't loop.
-        if (world && isBoardShown() && shownBoardKey() === key) buildLeaderboard();
-      });
-    }
+    const failed = !loading && isOnlineTrail(key) && boardStatus(key) === 'failed';
+    showBoardNote(failed ? BOARD_FAILED_NOTE : '');
   }
 
   function stepLeaderboard(direction) {
@@ -1553,7 +1593,7 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     $('leaderboard-picker').hidden = !open;
     $('leaderboard-list').hidden = open;
     $('menu-leaderboard-view').querySelector('.leaderboard-help').hidden = open;
-    $('leaderboard-offline').hidden = open || !boardFailed;
+    $('leaderboard-offline').hidden = open || !$('leaderboard-offline').textContent;
     $('leaderboard-trail-pick').setAttribute('aria-expanded', String(open));
   }
 
@@ -1572,8 +1612,27 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     }[source] || [source.toUpperCase() + ' TRAILS', ''];
   }
 
+  /**
+   * The active rider's own time under a trail in the picker: with their world
+   * rank once the server has sent it, their place on this device's board for
+   * a custom trail, or else just their best.
+   */
+  function fillPickStanding(button) {
+    const entry = leaderboardTrails()[Number(button.dataset.index)];
+    const key = trailKey(entry);
+    const save = session.saveGame;
+    const world = myStanding(key);
+    const local = entry.source === 'custom' && save ? readLeaderboard(key).find(run => run.saveId === save.createdAt) : null;
+    const best = world?.time ?? local?.time ?? (save && entry.source !== 'custom' ? readBest(session.activeSaveSlot, key, trails.length) : null);
+    const place = world ? ' · #' + world.rank + ' / ' + world.total : local ? ' · #' + local.rank : '';
+    const yours = button.querySelector('.leaderboard-pick-copy small');
+    yours.textContent = best == null ? '' : 'YOU ' + runTimeText(best) + place;
+    yours.hidden = best == null;
+  }
+
   /** Lists every trail with a board, so one can be picked without stepping through the rest. */
   function openTrailPicker() {
+    refreshMyStandings();
     const items = [];
     let section = null;
     let current = null;
@@ -1588,13 +1647,19 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
       const number = document.createElement('span');
       number.className = 'trail-number';
       number.textContent = trailMarker(index);
+      const copy = document.createElement('span');
+      copy.className = 'leaderboard-pick-copy';
       const name = document.createElement('strong');
       name.textContent = entry.name.toUpperCase();
+      const yours = document.createElement('small');
+      copy.append(name, yours);
       const best = document.createElement('span');
       best.className = 'trail-best';
       const top = topTime(trailKey(entry));
       best.textContent = top == null ? '—' : runTimeText(top);
-      button.append(number, name, best);
+      button.dataset.index = String(index);
+      button.append(number, copy, best);
+      fillPickStanding(button);
       if (index === leaderboardTrail) {
         button.setAttribute('aria-current', 'true');
         current = button;

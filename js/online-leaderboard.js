@@ -12,17 +12,36 @@ const REFRESH_MS = 10_000;
 // How soon a board is asked for again after the server couldn't be reached.
 const RETRY_MS = 5_000;
 export const ONLINE_LEADERBOARD_EVENT = 'hjulben:online-leaderboard';
+export const ONLINE_STANDINGS_EVENT = 'hjulben:online-standings';
+// How old the rider's standings may get before the trail picker asks again.
+const STANDINGS_MS = 60_000;
 
 // Shipped trails only ('official:<id>@<hash>', 'bonus:<id>@<hash>'); custom trails ('trail:<hash>') stay local.
 const TRAIL_RE = /^(official|bonus):[a-z0-9][a-z0-9-]{0,55}@[0-9a-f]{8}$/;
 
-const boards = new Map();     // trailKey -> runs[]
-const signatures = new Map(); // trailKey -> JSON of runs, to spot boards that didn't change
+const boards = new Map();     // trailKey -> { runs, total, near, viewer }
+const signatures = new Map(); // trailKey -> JSON of the board, to spot boards that didn't change
 const lastFetch = new Map();  // trailKey -> timestamp of the last fetch that got an answer
 const failed = new Map();     // trailKey -> timestamp of the last fetch that didn't
 const pending = new Set();    // trailKeys with a fetch in flight
 
 export const isOnlineTrail = trail => typeof trail === 'string' && TRAIL_RE.test(trail);
+
+/** @type {() => { playerId: string, token: string } | null} */
+let viewerOf = () => null;
+
+/**
+ * Tells the boards who is looking: an online rider's boards come with their
+ * own row when they are below the top. A board fetched for another rider (or
+ * none) is fetched again, whatever its age.
+ * @param {() => { playerId: string, token: string } | null} viewer
+ */
+export function useBoardViewer(viewer) {
+  viewerOf = viewer;
+}
+
+// Sandbox riders are throwaway, so the server never hears of them.
+const viewer = () => isSandbox() ? null : viewerOf();
 
 /**
  * How the world board for a trail stands: 'loading' before its first answer,
@@ -45,9 +64,19 @@ function toRuns(runs) {
       name: cleanName(r.name) || null,
       slot: null, saveId: null,
       date: Number(r.date) || null,
+      rank: Number(r.rank) || null,
+      replay: r.replay === true,
     }))
     .filter(r => Number.isFinite(r.time) && r.time > 0);
 }
+
+/** A board as the server sent it, for the rider it was fetched for. */
+const toBoard = (data, playerId) => ({
+  runs: toRuns(data.runs),
+  total: Number(data.total) || 0,
+  near: toRuns(data.near),
+  viewer: playerId,
+});
 
 function announce(trail) {
   window.dispatchEvent(new CustomEvent(ONLINE_LEADERBOARD_EVENT, { detail: { trail } }));
@@ -57,18 +86,31 @@ function announce(trail) {
  * Stores a fresh board and returns whether it differs from the one before.
  * A new world best also drops the cached world ghost, so the next ride races it.
  */
-function setBoard(trail, runs) {
-  const signature = JSON.stringify(runs);
+function setBoard(trail, board) {
+  const signature = JSON.stringify(board);
   if (signatures.get(trail) === signature) return false;
-  const before = boards.get(trail)?.[0];
-  if (before && (before.time !== runs[0]?.time || before.name !== runs[0]?.name)) dropWorldGhost(trail);
-  boards.set(trail, runs);
+  const before = boards.get(trail)?.runs[0];
+  if (before && (before.time !== board.runs[0]?.time || before.name !== board.runs[0]?.name)) dropWorldGhost(trail);
+  boards.set(trail, board);
   signatures.set(trail, signature);
   return true;
 }
 
+/** The top of the world board, once fetched. */
 export function cachedOnlineBoard(trail) {
-  return boards.get(trail) ?? null;
+  return boards.get(trail)?.runs ?? null;
+}
+
+/**
+ * How many riders the world board has, and the active rider's row with the
+ * rows either side when it is below the top (empty when it isn't, or the
+ * board was fetched for someone else).
+ * @returns {{ total: number, near: ReturnType<typeof toRuns> } | null}
+ */
+export function onlineBoardStanding(trail) {
+  const board = boards.get(trail);
+  if (!board) return null;
+  return { total: board.total, near: board.viewer === (viewer()?.playerId ?? null) ? board.near : [] };
 }
 
 /** True while the first fetch for a trail is in flight, before there is anything to show. */
@@ -84,16 +126,24 @@ export function isOnlineBoardLoading(trail) {
 export function refreshOnlineBoard(trail, maxAge = REFRESH_MS) {
   if (typeof window === 'undefined' || !isOnlineTrail(trail) || pending.has(trail)) return;
   const now = Date.now();
-  // A fetch that failed is tried again sooner, so a reconnect shows soon.
-  const since = Math.max(lastFetch.get(trail) ?? 0, failed.get(trail) ?? 0);
-  if (now - since < (boardStatus(trail) === 'failed' ? Math.min(RETRY_MS, maxAge) : maxAge)) return;
+  const rider = viewer();
+  const playerId = rider?.playerId ?? null;
+  // A fetch that failed is tried again sooner, so a reconnect shows soon, and
+  // a board fetched for another rider at once, unless that just failed.
+  const forSomeoneElse = boards.has(trail) && boards.get(trail).viewer !== playerId;
+  const since = forSomeoneElse ? failed.get(trail) ?? 0 : Math.max(lastFetch.get(trail) ?? 0, failed.get(trail) ?? 0);
+  const wait = forSomeoneElse || boardStatus(trail) === 'failed' ? Math.min(RETRY_MS, maxAge) : maxAge;
+  if (now - since < wait) return;
   pending.add(trail);
   const first = !boards.has(trail);
   const wasFailed = boardStatus(trail) === 'failed';
   let changed = false, answered = false;
-  fetch(`${API}?trail=${encodeURIComponent(trail)}`, { signal: AbortSignal.timeout(5000) })
+  fetch(`${API}?trail=${encodeURIComponent(trail)}`, {
+    headers: rider ? { authorization: 'Bearer ' + rider.token } : {},
+    signal: AbortSignal.timeout(5000),
+  })
     .then(res => (res.ok ? res.json() : Promise.reject(res.status)))
-    .then(data => { answered = true; changed = setBoard(trail, toRuns(data.runs)); })
+    .then(data => { answered = true; changed = setBoard(trail, toBoard(data, playerId)); })
     .catch(() => {})
     .finally(() => {
       pending.delete(trail);
@@ -112,6 +162,13 @@ function dropWorldGhost(trail) {
   settledGhosts.delete(trail);
 }
 
+/** A fetched ghost reply, in ghost format plus who rode it, or null. */
+function toGhost(ghost) {
+  const replay = ghost?.replay;
+  return !replay || !Number.isFinite(replay.time) || !Array.isArray(replay.inputs) ? null
+    : { ...replay, name: cleanName(ghost.name) || null, look: lookOf(ghost), rider: ghost.rider === 'female' ? 'female' : 'male' };
+}
+
 /** The cached world ghost: undefined until fetched (or after a new world best), null when there is none. */
 export const settledWorldGhost = trail => settledGhosts.get(trail);
 
@@ -127,9 +184,7 @@ export function fetchWorldGhost(trail) {
     const request = fetch(`${API}?ghost=1&trail=${encodeURIComponent(trail)}`, { signal: AbortSignal.timeout(8000) })
       .then(res => (res.ok ? res.json() : Promise.reject(res.status)))
       .then(({ ghost }) => {
-        const replay = ghost?.replay;
-        const world = !replay || !Number.isFinite(replay.time) || !Array.isArray(replay.inputs) ? null
-          : { ...replay, name: cleanName(ghost.name) || null, look: lookOf(ghost), rider: ghost.rider === 'female' ? 'female' : 'male' };
+        const world = toGhost(ghost);
         // A new world best may have dropped this request while it was out.
         if (worldGhosts.get(trail) === request) settledGhosts.set(trail, world);
         return world;
@@ -140,9 +195,71 @@ export function fetchWorldGhost(trail) {
   return worldGhosts.get(trail);
 }
 
+/** @type {{ playerId: string, at: number, byTrail: Record<string, { time: number, rank: number, total: number }> } | null} */
+let standings = null;
+let standingsPending = false;
+
+function toStandings(byTrail) {
+  return Object.fromEntries(Object.entries(byTrail && typeof byTrail === 'object' ? byTrail : {})
+    .filter(([trail, row]) => isOnlineTrail(trail) && [row?.time, row?.rank, row?.total].every(Number.isFinite))
+    .map(([trail, row]) => [trail, { time: row.time, rank: row.rank, total: row.total }]));
+}
+
+/**
+ * The active online rider's time, rank and board size on a trail, once their
+ * standings have been fetched; null otherwise, or without a time there.
+ */
+export function myStanding(trail) {
+  const rider = viewer();
+  return rider && standings?.playerId === rider.playerId ? standings.byTrail[trail] ?? null : null;
+}
+
+/**
+ * Fetches the active online rider's place on every trail in one request,
+ * unless that was done less than a minute ago. Fires ONLINE_STANDINGS_EVENT
+ * when they arrive.
+ */
+export function refreshMyStandings() {
+  const rider = viewer();
+  if (typeof window === 'undefined' || !rider || standingsPending) return;
+  if (standings?.playerId === rider.playerId && Date.now() - standings.at < STANDINGS_MS) return;
+  standingsPending = true;
+  fetch(`${API}?mine=1`, { headers: { authorization: 'Bearer ' + rider.token }, signal: AbortSignal.timeout(5000) })
+    .then(res => (res.ok ? res.json() : Promise.reject(res.status)))
+    .then(data => {
+      standings = { playerId: rider.playerId, at: Date.now(), byTrail: toStandings(data.standings) };
+      window.dispatchEvent(new CustomEvent(ONLINE_STANDINGS_EVENT));
+    })
+    .catch(() => {})
+    .finally(() => { standingsPending = false; });
+}
+
+const riderGhosts = new Map(); // trailKey, name and time -> Promise<ghost | null>
+
+/**
+ * One rider's best run on a trail, to watch from the board or race. Fetched
+ * only when asked for, and kept while the board shows the same time for them.
+ * @param {string} trail
+ * @param {string} name
+ * @param {number} time the rider's time on the board
+ * @returns {Promise<Awaited<ReturnType<typeof fetchWorldGhost>>>}
+ */
+export function fetchRiderGhost(trail, name, time) {
+  if (typeof window === 'undefined' || isSandbox() || !isOnlineTrail(trail)) return Promise.resolve(null);
+  const key = `${trail}\n${name}\n${time}`;
+  if (!riderGhosts.has(key)) {
+    const request = fetch(`${API}?ghost=1&trail=${encodeURIComponent(trail)}&name=${encodeURIComponent(name)}`, { signal: AbortSignal.timeout(8000) })
+      .then(res => (res.ok ? res.json() : Promise.reject(res.status)))
+      .then(({ ghost }) => toGhost(ghost))
+      .catch(() => { riderGhosts.delete(key); return null; });
+    riderGhosts.set(key, request);
+  }
+  return riderGhosts.get(key);
+}
+
 /**
  * @typedef {{ inputs: number[][], seed: number, physics: number }} RunInputs
- * @typedef {{rank:number,total:number,time:number,best:number,improved:boolean,ahead?:{name:string,time:number}|null,behind?:{name:string,time:number}|null}} Standing
+ * @typedef {{rank:number,total:number,time:number,best:number,improved:boolean,ahead?:{name:string,time:number,replay:boolean}|null,behind?:{name:string,time:number}|null}} Standing
  */
 
 /**
@@ -177,7 +294,9 @@ export async function submitOnlineRun(trail, { look, token, playerId, run }) {
     noteRenewal(playerId ?? null, data);
     // A new world best also drops the old ghost when no board was cached to compare with.
     if (data.rank === 1 && data.improved) dropWorldGhost(trail);
-    if (setBoard(trail, toRuns(data.runs))) announce(trail);
+    if (setBoard(trail, toBoard(data, playerId ?? null))) announce(trail);
+    // The posted run's place, without asking for every trail again.
+    if (standings && standings.playerId === playerId) standings.byTrail[trail] = { time: data.best, rank: data.rank, total: data.total };
     lastFetch.set(trail, Date.now());
     failed.delete(trail);
     return data;

@@ -1,13 +1,18 @@
 // Online leaderboard API.
-//   GET  /api/leaderboard?trail=ID                                   -> { runs }
-//   GET  /api/leaderboard?trail=ID&ghost=1                           -> { ghost: { name, look, rider, replay } | null }
-//   POST /api/leaderboard  { trail, look, run }  (Bearer token)     -> { rank, total, time, best, improved, ahead, behind, runs }
-// `ahead` is the nearest rider faster than the player's best and `behind` the
-// nearest one at or behind it, each { name, time } or null.
+//   GET  /api/leaderboard?trail=ID              (Bearer token optional)  -> { runs, total, near }
+//   GET  /api/leaderboard?trail=ID&ghost=1[&name=NAME]                   -> { ghost: { name, look, rider, replay } | null }
+//   GET  /api/leaderboard?mine=1                (Bearer token)           -> { standings: { [trail]: { time, rank, total } } }
+//   POST /api/leaderboard  { trail, look, run }  (Bearer token)     -> { rank, total, time, best, improved, ahead, behind, runs, near }
+// `runs` is the top of the board, `total` how many riders it has, and `near`
+// the signed-in player's row with the rows either side of it, when it is
+// below the top. Each row has its `rank`, shared by riders on the same time,
+// and `replay`, whether it can be watched (imported times can't).
+// `ahead` is the nearest rider faster than the player's best, { name, time,
+// replay } or null, and `behind` the nearest one at or behind it, { name, time } or null.
 // `run` is the ride's recorded inputs ({ inputs, seed, physics }). The server
 // replays them and takes the time from its own simulation, never the client's.
 import { db } from '../lib/db.mjs';
-import { HttpError, json, respond, readBody, requireSession, renewedToken } from '../lib/auth.mjs';
+import { HttpError, json, respond, readBody, requireSession, optionalPlayer, renewedToken } from '../lib/auth.mjs';
 import { TRAIL_RE, verifyRun } from '../lib/verify-run.mjs';
 import { lookOf, legacyRider, playerLook } from '../lib/looks.mjs';
 import { rateLimit } from '../lib/rate-limit.mjs';
@@ -16,32 +21,66 @@ const TOP = 10;
 // Replaying a run costs real CPU, so a player gets this many a minute.
 const SUBMITS_PER_MINUTE = 12;
 
-async function top(sql, trail) {
+/**
+ * The top of a trail's board and, for a signed-in player below it, their row
+ * with the rows either side, in one query so a board costs one round trip.
+ */
+async function board(sql, trail, playerId = null) {
   const rows = await sql`
-    select p.name, r.rider, r.look, r.time_ms, r.updated_at
-    from runs r join players p on p.id = r.player_id
-    where r.trail = ${trail}
-    order by r.time_ms asc, r.updated_at asc
-    limit ${TOP}`;
-  return rows.map(r => ({
+    with ranked as (
+      select p.name, r.player_id, r.rider, r.look, r.time_ms, r.updated_at, r.replay is not null as replay,
+        rank() over (order by r.time_ms)::int as rank,
+        row_number() over (order by r.time_ms, r.updated_at)::int as place,
+        count(*) over ()::int as total
+      from runs r join players p on p.id = r.player_id
+      where r.trail = ${trail}
+    ), mine as (select place from ranked where player_id = ${playerId})
+    select * from ranked
+    where place <= ${TOP} or place between (select place from mine) - 1 and (select place from mine) + 1
+    order by place`;
+  const row = r => ({
     name: r.name, rider: r.rider, look: lookOf(r), time: r.time_ms / 1000, date: new Date(r.updated_at).getTime(),
-  }));
+    rank: r.rank, replay: r.replay,
+  });
+  return {
+    runs: rows.filter(r => r.place <= TOP).map(row),
+    total: rows[0]?.total ?? 0,
+    near: rows.filter(r => r.place > TOP).map(row),
+  };
+}
+
+/** The player's place on every trail they have a time on, for the trail picker. */
+async function standings(sql, playerId) {
+  const rows = await sql`
+    select trail, time_ms, rank, total from (
+      select trail, player_id, time_ms,
+        rank() over (partition by trail order by time_ms)::int as rank,
+        count(*) over (partition by trail)::int as total
+      from runs
+      where trail in (select trail from runs where player_id = ${playerId})
+    ) ranked
+    where player_id = ${playerId}`;
+  return Object.fromEntries(rows.map(r => [r.trail, { time: r.time_ms / 1000, rank: r.rank, total: r.total }]));
 }
 
 async function list(req) {
   const params = new URL(req.url).searchParams;
+  if (params.has('mine')) return json({ standings: await standings(await db(), requireSession(req).player) });
   const trail = params.get('trail') ?? '';
   if (!TRAIL_RE.test(trail)) throw new HttpError(400, 'bad trail');
-  if (params.has('ghost')) return json({ ghost: await worldGhost(await db(), trail) });
-  return json({ runs: await top(await db(), trail) });
+  if (params.has('ghost')) return json({ ghost: await ghost(await db(), trail, params.get('name')) });
+  return json(await board(await db(), trail, optionalPlayer(req)));
 }
 
-/** The fastest run that has a replay (imported times have none), for the World ghost. */
-async function worldGhost(sql, trail) {
+/**
+ * A rider's run with its replay, to watch or race: the named rider's, or
+ * else the fastest that has one (imported times have none), for the World ghost.
+ */
+async function ghost(sql, trail, name) {
   const [row] = await sql`
     select p.name, r.rider, r.look, r.replay
     from runs r join players p on p.id = r.player_id
-    where r.trail = ${trail} and r.replay is not null
+    where r.trail = ${trail} and r.replay is not null and (${name}::text is null or p.name = ${name})
     order by r.time_ms asc, r.updated_at asc
     limit 1`;
   return row ? { name: row.name, rider: row.rider, look: lookOf(row), replay: row.replay } : null;
@@ -62,10 +101,16 @@ async function submit(req) {
   if (!player) throw new HttpError(401, 'not signed in');
   // Whether this run beats the player's row, before the upsert folds them together.
   const [previous] = await sql`select time_ms from runs where trail = ${trail} and player_id = ${playerId}`;
-  // Who held the world record before it, to tell them if this run took it.
-  const [leader] = await sql`
-    select player_id, time_ms from runs where trail = ${trail}
-    order by time_ms asc, updated_at asc limit 1`;
+  // Who held the world record before it, and who was last in the top ten,
+  // to tell them if this run took the record or pushed them off the top.
+  const places = await sql`
+    select player_id, time_ms, updated_at, place from (
+      select player_id, time_ms, updated_at, row_number() over (order by time_ms, updated_at)::int as place
+      from runs where trail = ${trail}
+    ) ranked
+    where place in (1, ${TOP})`;
+  const leader = places.find(row => row.place === 1);
+  const last = places.find(row => row.place === TOP);
   // The look the run was ridden in, shown on the board and on its ghost, as
   // the player was created: gender and skin come from their row.
   const look = playerLook(body, player);
@@ -83,11 +128,10 @@ async function submit(req) {
       time_ms    = least(runs.time_ms, excluded.time_ms)
     returning time_ms`;
 
-  const [{ rank, total, ahead, behind }] = await sql`
+  const [{ rank, ahead, behind }] = await sql`
     select
       (select count(*) from runs where trail = ${trail} and time_ms < ${best.time_ms})::int + 1 as rank,
-      (select count(*) from runs where trail = ${trail})::int as total,
-      (select json_build_object('name', p.name, 'time_ms', r.time_ms)
+      (select json_build_object('name', p.name, 'time_ms', r.time_ms, 'replay', r.replay is not null)
          from runs r join players p on p.id = r.player_id
          where r.trail = ${trail} and r.time_ms < ${best.time_ms}
          order by r.time_ms desc, r.updated_at desc limit 1) as ahead,
@@ -112,15 +156,31 @@ async function submit(req) {
       do update set id = default, data = excluded.data, created_at = now()`;
   }
 
+  // The rider who was last in the top ten hears of it once this run has
+  // pushed them below it; a run that was in the top ten already moves nobody
+  // out. Only the latest news per trail is kept, as for a lost record.
+  if (last && last.player_id !== playerId && (!previous || timeMs < previous.time_ms)) {
+    const data = { trail, name: player.name, time: timeMs / 1000 };
+    await sql`
+      insert into notifications (player_id, kind, data)
+      select ${last.player_id}, 'top-ten-lost', ${JSON.stringify(data)}::jsonb
+      where (select count(*) from runs where trail = ${trail}
+               and (time_ms, updated_at) < (${last.time_ms}, ${last.updated_at})) >= ${TOP}
+      on conflict (player_id, (data->>'trail')) where kind = 'top-ten-lost'
+      do update set id = default, data = excluded.data, created_at = now()`;
+  }
+
   return json({
-    rank, total,
+    rank,
     time: timeMs / 1000,
     best: best.time_ms / 1000,
     // A run that only ties the row's time changes nothing on the board.
     improved: !previous || timeMs < previous.time_ms,
-    ahead: rival(ahead),
+    // The rider to chase, and whether their run can be raced as a ghost.
+    ahead: ahead && { ...rival(ahead), replay: ahead.replay },
     behind: rival(behind),
-    runs: await top(sql, trail),
+    // The board as it stands after this run, with `total`.
+    ...await board(sql, trail, playerId),
     token: renewedToken(session),
   });
 }

@@ -170,6 +170,8 @@ Don't add `.foo[hidden] { display: none; }` rules. The global `[hidden] { displa
 
 ### Breakpoints
 
+Phones are played in portrait only: a phone turned sideways gets the "Turn your phone upright" screen (`.turn-upright`), and fullscreen locks the orientation. Design and check phone layouts upright.
+
 | Media query                                   | Used for                                                          |
 | --------------------------------------------- | ----------------------------------------------------------------- |
 | `(max-width: 760px)`                          | Tablets and phones: stacked handheld controls, full-width shell   |
