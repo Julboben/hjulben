@@ -3,9 +3,10 @@ import { bodyPose } from './bike-lamps.js';
 const HAIR_STEP = 1 / 120;
 const HAIR_MAX_STEPS = 4;
 const HAIR_LENGTHS = [4, 4, 4, 4, 4];
-// Where the ponytail leaves the head: a high ponytail at the back of the
-// crown, in the same place with or without a helmet.
+// Where the ponytail leaves the head: high on the back of the crown when the
+// hair is open, and out from under the back rim of a full-face or MX shell.
 const HAIR_ROOT = [-9, -46];
+const HAIR_SHELL_ROOT = [-9, -40];
 const HAIR_REST = [-.55, .84];
 // Each strand's colour is the matching entry of the cut's `strands`.
 const HAIR_STRANDS = [
@@ -43,6 +44,35 @@ const STRING = '#e8e5d9';
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 const lerp = (a, b, t) => a + (b - a) * t;
 
+/**
+ * The seated rider's joint positions and body offsets in bike-body coordinates
+ * (before suspension pitch and drop), shared by drawBike and riderBodyFrame.
+ * Leaning forward rises into an elbows-up attack stance clear of the tank;
+ * leaning back shifts over the rear fender with braced legs and taut arms;
+ * heavy landings past sag flex the hips, shoulders and elbows.
+ */
+export function riderSeatedPose({ leanVisual = 0, drop = 0 }, exact = false) {
+  const snap = value => exact ? value : Math.round(value / 2) * 2;
+  const fwd = Math.max(0, leanVisual), back = Math.max(0, -leanVisual);
+  const flex = snap(clamp((drop - 5) / 10, 0, 1) * 3);
+  const hipDX = snap(fwd * 6 - back * 6);
+  const hipDY = snap(-fwd * 2 + back * 2) + flex;
+  const torsoDX = snap(fwd * 8 - back * 6);
+  const torsoDY = snap(-fwd * 2 + back * 2) + flex;
+  const headDX = torsoDX + snap(fwd * 2);
+  const headDY = snap(back * 2) + flex;
+  return {
+    hip: [-11 + hipDX, -26 + hipDY],
+    shoulder: [-4 + torsoDX, -36 + torsoDY],
+    elbow: [8 + fwd * 3 - back * 4.5, -32 - fwd * 3 + back * 0.5 + flex * 0.5],
+    head: [-1 + headDX, -44 + headDY],
+    torsoDX,
+    torsoDY,
+    headDX,
+    headDY,
+  };
+}
+
 // Maps rider-local coordinates onto a bike pose the same way drawBike does.
 // Without `exact`, positions snap to the pixel grid drawBike renders on.
 export function riderBodyFrame({ rear, front, facing = 1, flipVisual = facing, leanVisual = 0 }, exact = false) {
@@ -53,7 +83,7 @@ export function riderBodyFrame({ rear, front, facing = 1, flipVisual = facing, l
   const suspension = bodyPose(rear, front, facing);
   const bodyDrop = snap(suspension.drop, 2);
   const bodyPitch = suspension.pitch;
-  const shift = snap(leanVisual * 9, 2);
+  const seated = riderSeatedPose({ leanVisual, drop: suspension.drop }, exact);
   const cosPitch = Math.cos(bodyPitch), sinPitch = Math.sin(bodyPitch);
   const cosAngle = Math.cos(angle), sinAngle = Math.sin(angle);
   const rotate = (localX, localY, drop) => {
@@ -64,7 +94,11 @@ export function riderBodyFrame({ rear, front, facing = 1, flipVisual = facing, l
   };
   return {
     point(localX, localY) {
-      const offset = rotate(localX + shift, localY, bodyDrop);
+      const offset = rotate(localX + seated.torsoDX, localY + seated.torsoDY, bodyDrop);
+      return { x: mx + offset.x, y: my + offset.y };
+    },
+    headPoint(localX, localY) {
+      const offset = rotate(localX + seated.headDX, localY + seated.headDY, bodyDrop);
       return { x: mx + offset.x, y: my + offset.y };
     },
     direction(localX, localY) {
@@ -75,9 +109,9 @@ export function riderBodyFrame({ rear, front, facing = 1, flipVisual = facing, l
   };
 }
 
-export function hairRoot(pose, exact) {
-  const [x, y] = HAIR_ROOT;
-  return riderBodyFrame(pose, exact).point(x, y);
+export function hairRoot(pose, exact, shelled = false) {
+  const [x, y] = shelled ? HAIR_SHELL_ROOT : HAIR_ROOT;
+  return riderBodyFrame(pose, exact).headPoint(x, y);
 }
 
 export function hairRestDirection(pose) {

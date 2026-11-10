@@ -58,4 +58,27 @@ for (const type of types) {
   }
 }
 assert.deepEqual(failures, [], `every prop draws:\n${failures.join('\n')}`);
+
+// Every outfit, helmet and bike model draws on the bike across lean and landing
+// states, and thrown off it as a ragdoll.
+const { STARTER_LOOKS, itemsForSlot } = await import('../js/cosmetics.js');
+const { createRagdoll } = await import('../js/ragdoll.js');
+let seed = 11;
+const random = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
+for (const outfit of itemsForSlot('outfit')) {
+  for (const bike of itemsForSlot('bike')) {
+    const look = { ...STARTER_LOOKS.female, outfit: outfit.id, bike: bike.id };
+    for (const leanVisual of [-1, 0, 1]) {
+      art.drawBike({
+        rear: { x: 100, y: 200, spin: 0.4, compression: leanVisual === 0 ? 14 : 2 },
+        front: { x: 150, y: 200, spin: 0.4, compression: leanVisual === 0 ? 14 : 2 },
+        mx: 125, my: 200, angle: 0, length: 50, facing: 1, flipVisual: 1,
+        leanVisual, look, state: 'running', foot: { crank: 0.8, kick: null, tap: null },
+      });
+    }
+    const ragdoll = createRagdoll({ x: 100, y: 200, ox: 98, oy: 200 }, { x: 150, y: 200, ox: 148, oy: 200 }, 1, random);
+    art.drawRagdoll(ragdoll, look);
+  }
+}
+
 console.log(`Prop drawing tests passed (${types.length} types).`);

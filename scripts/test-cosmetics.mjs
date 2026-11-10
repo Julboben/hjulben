@@ -8,7 +8,7 @@ import {
   sameLook, isColorless, partName, randomLook, lookParts, ownsWith, ownedLook, shownItemsForSlot, newlyUnlockedItems, gearCard,
   extraHiddenBy
 } from '../js/cosmetics.js';
-import { hasTrailArt } from '../js/rider-hair.js';
+import { hasTrailArt, hairRoot, riderSeatedPose } from '../js/rider-hair.js';
 import { lookUnlock } from '../js/unlocks.js';
 import { readFileSync } from 'node:fs';
 import { BIKE_MODELS, hasBeardArt, hasFaceWearArt, hasOutfitStyle, isHeadwear } from '../js/drawing.js';
@@ -374,6 +374,38 @@ const random = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
     if (name === 'head') continue;
     assert.deepEqual(without.points[name], withHelmet.points[name], `${name} is thrown the same`);
   }
+}
+
+// --- Seated pose, ponytail root and glove highlight ------------------------------
+
+{
+  const rest = riderSeatedPose({ leanVisual: 0, drop: 0 });
+  assert.deepEqual(rest.hip, [-11, -26]);
+  assert.deepEqual(rest.shoulder, [-4, -36]);
+  assert.deepEqual(rest.elbow, [8, -32]);
+  assert.deepEqual(rest.head, [-1, -44]);
+
+  const forward = riderSeatedPose({ leanVisual: 1, drop: 0 });
+  assert.ok(forward.hip[0] <= -5 && forward.hip[1] < rest.hip[1], 'leaning forward rises off the saddle clear of the tank');
+  assert.ok(forward.shoulder[1] < rest.shoulder[1] && forward.elbow[1] < rest.elbow[1], 'elbows stay up above the bars');
+
+  const back = riderSeatedPose({ leanVisual: -1, drop: 0 });
+  const hand = [16, -28];
+  const armLength = Math.hypot(back.elbow[0] - back.shoulder[0], back.elbow[1] - back.shoulder[1])
+    + Math.hypot(hand[0] - back.elbow[0], hand[1] - back.elbow[1]);
+  assert.ok(back.hip[0] < rest.hip[0] && armLength < 27, `leaning back keeps a taut arm (${armLength.toFixed(1)})`);
+
+  const landed = riderSeatedPose({ leanVisual: 0, drop: 15 });
+  assert.ok(landed.hip[1] > rest.hip[1] && landed.shoulder[1] > rest.shoulder[1], 'heavy landings flex the rider');
+
+  const levelPose = { rear: { x: 0, y: 0, compression: 0 }, front: { x: 50, y: 0, compression: 0 }, facing: 1, flipVisual: 1, leanVisual: 0 };
+  const openRoot = hairRoot(levelPose, true, false);
+  const shellRoot = hairRoot(levelPose, true, true);
+  assert.equal(shellRoot.x, openRoot.x);
+  assert.equal(shellRoot.y - openRoot.y, 6, 'a full-shell helmet drops the ponytail root to the nape');
+
+  const nisse = lookParts({ ...STARTER_LOOKS.male, outfit: 'nisse' }).palette;
+  assert.notEqual(nisse.glovesLight, nisse.jacketLight, 'dark gloves do not take a bright jacket highlight');
 }
 
 console.log('Cosmetics tests passed.');

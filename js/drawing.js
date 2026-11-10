@@ -7,6 +7,7 @@ import {
 import { terrainMaterials } from "./materials.js";
 import { lookParts } from "./cosmetics.js";
 import { BIKE_LAMPS, bodyPose, lampColors, lampLenses, posedBodyPoint } from "./bike-lamps.js";
+import { riderSeatedPose } from "./rider-hair.js";
 import { FINISH_FLOWER_LIFT } from "./finish.js";
 import { APPLE_SPRITE } from "./apple.js";
 import { SPIKE_CORE, SPIKE_TIP, spikePoints } from "./spike.js";
@@ -2480,13 +2481,17 @@ export function drawBareHead(rect, colors, hair) {
 }
 
 // The riding pose, in bike body coordinates before lean: where the helmet's
-// centre sits, over the collar, and the hand on the handlebar every bike
-// model shares. The ponytail's root in rider-hair.js follows the head.
+// centre sits at rest, over the collar, and the hand on the handlebar every
+// bike model shares. riderSeatedPose in rider-hair.js moves the joints with
+// lean and landing flex, and the ponytail's root follows the head.
 const RIDER_HEAD = [-1, -44];
 const RIDER_HAND = [16, -28];
-// Where the ankle goes off the footpeg, in the body's frame. Kick-starting,
-// the foot goes up onto the kick lever and stamps it down through its swing.
+// Where the ankle goes off the footpeg, in the body's frame, and the resting
+// thigh and shin lengths from [-11, -26] through [2, -16] to RIDER_PEG.
+// Kick-starting, the foot goes up onto the kick lever and stamps it down.
 const RIDER_PEG = [-2, -3];
+const RIDER_THIGH = Math.hypot(13, 10);
+const RIDER_SHIN = Math.hypot(4, 13);
 const RIDER_KICK_TOP = [-8, -10];
 const RIDER_KICK_BOTTOM = [-6, 0];
 // The Pocket Classic's cranks: the bottom bracket, the arm's length, and
@@ -2536,21 +2541,23 @@ function riderAnkle(foot, pedalled = false) {
  */
 function riderKnee(hip, ankle, thigh, shin) {
   const dx = ankle[0] - hip[0], dy = ankle[1] - hip[1];
-  const reach = Math.hypot(dx, dy) || 1;
+  const raw = Math.hypot(dx, dy) || 1;
+  const reach = Math.min(thigh + shin - 0.05, raw);
   const along = (reach * reach + thigh * thigh - shin * shin) / (2 * reach);
   const out = Math.sqrt(Math.max(0, thigh * thigh - along * along));
-  const ux = dx / reach, uy = dy / reach;
+  const ux = dx / raw, uy = dy / raw;
   return [hip[0] + ux * along + uy * out, hip[1] + uy * along - ux * out];
 }
 
-// The jersey, leaning forward from the hip on the seat to the shoulder. Top
-// left at (-16, -38), moved with the lean.
+// The jersey, leaning forward from the hip on the seat to the shoulder, lit
+// along the sky-facing back and shaded under the chest and arm. Top left at
+// (-16, -38), moved with riderSeatedPose.
 const RIDER_TORSO = [
   "    OPPPPO ",
-  "   OjjjjjJO",
-  "   OdjjJJJO",
-  "  OddJJJJJO",
-  " OddJJJJO  ",
+  "   OjjjjJdO",
+  "   OjjJJddO",
+  "  OjjJJJddO",
+  " OjjJJddO  ",
   "OPPPPPPO   ",
   " OPPPPO    ",
 ];
@@ -2596,12 +2603,12 @@ const OUTFIT_STYLES = {
   hoodie: {
     torso: [
       "  OOOO     ",
-      " OjjjdO    ",
-      " OdjddOPPO ",
-      " OdddOjjjJO",
-      "  OdjjjJJJO",
-      "  OddJJJJJO",
-      " OddJddJO  ",
+      " OjjjJO    ",
+      " OjjJdOPPO ",
+      " OJJdOjjJdO",
+      "  OjjjJJddO",
+      "  OjjJJJddO",
+      " OjjJdddO  ",
       "OddddddO   ",
       " OddddO    ",
     ],
@@ -2616,11 +2623,11 @@ const OUTFIT_STYLES = {
   mx: {
     torso: [
       "    OPPPPO ",
-      "   OjjjjjJO",
-      "   OddjJJJO",
-      "  OPPPPPPJO",
-      " OddJJJJO  ",
-      "OJJJJJJO   ",
+      "   OjjjjJdO",
+      "   OjjJJddO",
+      "  OPPPPPPdO",
+      " OjjJJddO  ",
+      "OJJJJddO   ",
       " OddddO    ",
     ],
     sleeve: "long",
@@ -2633,10 +2640,10 @@ const OUTFIT_STYLES = {
   tracksuit: {
     torso: [
       "    OJJJJO ",
-      "   OjjjjjPO",
-      "   OdjjJJPO",
-      "  OddJJJJPO",
-      " OddJJJPO  ",
+      "   OjjjjJPO",
+      "   OjjJJdPO",
+      "  OjjJJJdPO",
+      " OjjJJdPO  ",
       "OddddddO   ",
       " OddddO    ",
     ],
@@ -2652,10 +2659,10 @@ const OUTFIT_STYLES = {
   dungarees: {
     torso: [
       "    OjjjjO ",
-      "   OjjjjjJO",
-      "   OkjBbBJO",
-      "  OdkBBBBBO",
-      " OdkBBBBO  ",
+      "   OjjjjJdO",
+      "   OjjBbBkO",
+      "  OjbBBBBkO",
+      " OjbBBBkO  ",
       "OkkkkkkO   ",
       " OkkkkO    ",
     ],
@@ -2688,9 +2695,9 @@ const OUTFIT_STYLES = {
     torso: [
       "    OPPPPO ",
       "   OPPjPPPO",
-      "  POdjjPJJO",
-      " P OddJJJJO",
-      "P OddJJJO  ",
+      "  POjjJPJdO",
+      " P OjjJJddO",
+      "P OjjJJdO  ",
       " OPJPJPO   ",
       " P P P     ",
     ],
@@ -2723,10 +2730,10 @@ const OUTFIT_STYLES = {
   coveralls: {
     torso: [
       "    OddddO ",
-      "   OjjjjjJO",
-      "   OdjjJJJO",
+      "   OjjjjJdO",
+      "   OjjJJddO",
       "  ORRRRRRRO",
-      " OddJJJJO  ",
+      " OjjJJddO  ",
       "OddddddO   ",
       " OJJJJO    ",
     ],
@@ -2741,11 +2748,11 @@ const OUTFIT_STYLES = {
   leathers: {
     torso: [
       "  OOOOPPPO ",
-      " OjjjjjjjJO",
-      " OdjjjjJJJO",
-      " OddPPJJJJO",
-      " OdPPJJJO  ",
-      "OPJJJJJO   ",
+      " OjjjjjjJdO",
+      " OjjjjJJddO",
+      " OjjPPJJddO",
+      " OjjPPJdO  ",
+      "OPJJJJdO   ",
       " OJJJJO    ",
     ],
     sleeve: "long",
@@ -2758,10 +2765,10 @@ const OUTFIT_STYLES = {
   puffer: {
     torso: [
       "   OPPPPPO ",
-      "  OjjjjjjJO",
-      " OjjjjjJJJO",
+      "  OjjjjjJdO",
+      " OjjjjJJddO",
       " OddddddddO",
-      "OddJJJJJO  ",
+      "OjjJJJddO  ",
       "OdddddddO  ",
       " OJJJJJO   ",
     ],
@@ -2778,10 +2785,10 @@ const OUTFIT_STYLES = {
   superhero: {
     torso: [
       "    OJJJJO ",
-      "   OjjjjjJO",
-      "   OdjjJPJO",
-      "  OddJPPPJO",
-      " OddJJPJO  ",
+      "   OjjjjJdO",
+      "   OjjJJPdO",
+      "  OjjJPPPdO",
+      " OjjJJPdO  ",
       "OPPPPPPO   ",
       " OJJJJO    ",
     ],
@@ -2794,11 +2801,11 @@ const OUTFIT_STYLES = {
   dummy: {
     torso: [
       "    OPPPPO ",
-      "   OPPjjjJO",
-      "   OPPJJJJO",
-      "  OdJJPPJJO",
-      " OdJJPPO   ",
-      "OJJJJJJO   ",
+      "   OPPjjJdO",
+      "   OPPJJJdO",
+      "  OjjJPPJdO",
+      " OjjJPPO   ",
+      "OJJJJJdO   ",
       " OPPPPO    ",
     ],
     sleeve: "long",
@@ -2813,11 +2820,11 @@ const OUTFIT_STYLES = {
   tuxedo: {
     torso: [
       "    ObbbbO ",
-      "   OjjjPPJO",
-      "   OdjjjPJO",
-      "  OddJJJPJO",
-      " OddJJJPO  ",
-      "OJJJJJJO   ",
+      "   OjjJPPdO",
+      "   OjjJJPdO",
+      "  OjjJJJPdO",
+      " OjjJJJPO  ",
+      "OJJJJJdO   ",
       " OJJJJO    ",
     ],
     keys: { b: "bow" },
@@ -2831,11 +2838,11 @@ const OUTFIT_STYLES = {
   prisoner: {
     torso: [
       "    OPPPPO ",
-      "   OjjjjjJO",
+      "   OjjjjJdO",
       "   OPPPPPPO",
-      "  OddJJJJJO",
+      "  OjjJJJddO",
       " OPPPPPPO  ",
-      "OJJJJJJO   ",
+      "OJJJJJdO   ",
       " OPPPPO    ",
     ],
     sleeve: "long",
@@ -2849,9 +2856,9 @@ const OUTFIT_STYLES = {
   nisse: {
     torso: [
       "    OPPPPO ",
-      "   OjjjjjJO",
-      "   OdjjJJJO",
-      "  OddJJPJJO",
+      "   OjjjjJdO",
+      "   OjjJJddO",
+      "  OjjJJPJdO",
       " OBBBBYBO  ",
       "OPPPPPPO   ",
       " OJJJJO    ",
@@ -2867,10 +2874,10 @@ const OUTFIT_STYLES = {
     torso: [
       "   OPPPPPPO",
       "  OPpPPpPPO",
-      "   OPdjJJJO",
-      "  OddJJJJJO",
+      "   OPjjJJdO",
+      "  OjjJJJddO",
       " OBBBBYBO  ",
-      "OJJJJJJO   ",
+      "OJJJJJdO   ",
       " OJdJJO    ",
     ],
     keys: { p: "furShade", B: "belt", Y: "buckle" },
@@ -7260,29 +7267,19 @@ export function createGameArt(ctx) {
     bodyRows(lamps.tail.x, lamps.tail.y, lamps.tail.rows, lampPaint);
 
     if (state !== "ragdoll") {
-      const shift = Math.round(leanVisual * 4.5) * 2;
+      const seated = riderSeatedPose({ leanVisual, drop: bodyDrop });
       const colors = parts.palette;
       const outline = "#263b36";
 
-      const hip = [-11 + shift, -26];
-      const pegKnee = [2 + shift * 0.45, -16];
+      const { hip, shoulder, elbow } = seated;
       const ankle = riderAnkle(foot, modelId === "classic");
-      const knee = ankle === RIDER_PEG
-        ? pegKnee
-        : riderKnee(
-            hip,
-            ankle,
-            Math.hypot(pegKnee[0] - hip[0], pegKnee[1] - hip[1]),
-            Math.hypot(RIDER_PEG[0] - pegKnee[0], RIDER_PEG[1] - pegKnee[1]),
-          );
+      const knee = riderKnee(hip, ankle, RIDER_THIGH, RIDER_SHIN);
       // The boot moves with the ankle by whole art pixels.
       const bootX = Math.round((ankle[0] - RIDER_PEG[0]) / 2) * 2,
         bootY = Math.round((ankle[1] - RIDER_PEG[1]) / 2) * 2;
       const bootRect = (x, y, width, height, color) =>
         bodyRect(x + bootX, y + bootY, width, height, color);
 
-      const shoulder = [-4 + shift, -36];
-      const elbow = [8 + shift * 0.45, -32];
       const hand = RIDER_HAND;
 
       const style = outfitStyle(parts.shapes.outfit);
@@ -7320,7 +7317,7 @@ export function createGameArt(ctx) {
       }
       bodyPath(
         [
-          [-10 + shift, -27],
+          [hip[0] + 1, hip[1] - 1],
           [knee[0] - 2, knee[1] - 2],
         ],
         colors[style.legLight],
@@ -7367,8 +7364,8 @@ export function createGameArt(ctx) {
       // Only its front is outlined, so the back of the head runs straight
       // down into the collar.
       const neck = [
-        [-3 + shift, -37],
-        [-2 + shift, -40],
+        [-3 + seated.torsoDX, -37 + seated.torsoDY],
+        [-2 + seated.headDX, -40 + seated.headDY],
       ];
       bodyPath(neck.map(([x, y]) => [x + 2, y]), outline, 3);
       bodyPath(neck, colors.skin, 2);
@@ -7376,37 +7373,47 @@ export function createGameArt(ctx) {
       // Jersey leaning over the tank, clear of the arm and tank in front.
       const torsoKeys = { O: outline, J: colors.jacket, j: colors.jacketLight, d: colors.jacketShade, P: colors.panel };
       for (const [key, color] of Object.entries(style.keys)) torsoKeys[key] = colors[color];
-      bodyRows(-16 + shift, style.torsoY, style.torso, torsoKeys);
+      const torsoTop = style.torsoY + seated.torsoDY;
+      bodyRows(-16 + seated.torsoDX, torsoTop, style.torso, torsoKeys);
       // A scarf worn as an accessory wraps the neck above the collar, the
       // way the puffer's does; its loose end trails from there.
       if (parts.accessory?.wrap) {
-        bodyRect(-6 + shift, style.torsoY - 2, 8, 2, parts.accessory.shade);
-        bodyRect(-6 + shift, style.torsoY, 8, 2, parts.accessory.fill);
-        bodyRect(-2 + shift, style.torsoY, 2, 2, parts.accessory.light);
+        bodyRect(-6 + seated.torsoDX, torsoTop - 2, 8, 2, parts.accessory.shade);
+        bodyRect(-6 + seated.torsoDX, torsoTop, 8, 2, parts.accessory.fill);
+        bodyRect(-2 + seated.torsoDX, torsoTop, 2, 2, parts.accessory.light);
       }
 
-      // Arm sloping down to the raised handlebar, bent at a dropped elbow.
+      // Arm reaching to the raised handlebar, elbows up when leaning forward.
       const sleeve = colors[style.sleeveColor];
       bodyPath(arm, outline, 3);
       bodyPath([shoulder, elbow], sleeve, 2);
       bodyPath(
         [
-          [-4 + shift, -38],
-          [6 + shift * 0.45, -34],
+          [shoulder[0], shoulder[1] - 2],
+          [elbow[0] - 2, elbow[1] - 2],
         ],
         colors[style.armLight],
         1,
       );
 
       // Forearm, bare or sleeved, then the cuff and glove.
-      if (style.sleeve === "long") bodyPath([elbow, hand], sleeve, 2);
-      else {
+      if (style.sleeve === "long") {
+        bodyPath([elbow, hand], sleeve, 2);
+        bodyPath(
+          [
+            [elbow[0], elbow[1] - 2],
+            [hand[0] - 2, hand[1] - 2],
+          ],
+          colors[style.armLight],
+          1,
+        );
+      } else {
         if (style.sleeve === "short") bodyPath([along(arm, 0.3).at, elbow], colors.skin, 2);
         bodyPath([elbow, hand], colors.skin, 2);
         bodyPath(
           [
-            [10 + shift * 0.3, -33],
-            [13, -29],
+            [elbow[0] + 2, elbow[1] - 1],
+            [hand[0] - 3, hand[1] - 1],
           ],
           colors.skinLight,
           1,
@@ -7421,13 +7428,12 @@ export function createGameArt(ctx) {
         }
       }
       bodyRect(hand[0] - 2, hand[1] - 2, 6, 4, colors.gloves);
-      bodyRect(hand[0], hand[1] - 2, 4, 2, colors.jacketLight);
+      bodyRect(hand[0], hand[1] - 2, 4, 2, colors.glovesLight);
 
       // The head is the same one the ragdoll shows, centred on the neck. It
       // moves with the body as one piece, by whole art pixels, so its own
       // pixels never slip against each other as the body pitches.
-      const headX = RIDER_HEAD[0] + shift,
-        headY = RIDER_HEAD[1];
+      const [headX, headY] = [RIDER_HEAD[0] + seated.headDX, RIDER_HEAD[1] + seated.headDY];
       const headDX = Math.round((headX * pc - headY * ps - headX) / 2) * 2,
         headDY = Math.round((headX * ps + headY * pc + drop - headY) / 2) * 2;
       const head = (x, y, width, height, color) =>
@@ -7624,6 +7630,21 @@ export function createGameArt(ctx) {
           backUpper[1] - facingVector[1] * 2,
         ],
       ],
+      colors.jacketLight,
+      2,
+      2,
+    );
+    pixelPath(
+      [
+        [
+          backLower[0] + facingVector[0] * 2,
+          backLower[1] + facingVector[1] * 2,
+        ],
+        [
+          backUpper[0] + facingVector[0] * 2,
+          backUpper[1] + facingVector[1] * 2,
+        ],
+      ],
       colors.jacketShade,
       2,
       2,
@@ -7668,8 +7689,15 @@ export function createGameArt(ctx) {
       2,
     );
 
-    if (style.sleeve === "long") pixelPath([point(p.elbow), point(p.hand)], sleeve, 2, 2);
-    else {
+    if (style.sleeve === "long") {
+      pixelPath([point(p.elbow), point(p.hand)], sleeve, 2, 2);
+      pixelPath(
+        [between(p.elbow, p.hand, 0.15), between(p.elbow, p.hand, 0.65)],
+        colors[style.armLight],
+        1,
+        2,
+      );
+    } else {
       if (style.sleeve === "short") pixelPath([between(p.shoulder, p.elbow, 0.6), point(p.elbow)], colors.skin, 2, 2);
       pixelPath([point(p.elbow), point(p.hand)], colors.skin, 2, 2);
       pixelPath(
@@ -7696,7 +7724,7 @@ export function createGameArt(ctx) {
       2,
       2,
     );
-    pixelRect(p.hand.x - 1, p.hand.y - 1, 2, 2, colors.jacketLight, 2);
+    pixelRect(p.hand.x - 1, p.hand.y - 1, 2, 2, colors.glovesLight, 2);
 
     // HEAD
     // Cached and mirrored correctly; follows the head/shoulder axis. Bare

@@ -563,6 +563,7 @@ export function lookParts(look) {
   const outfitItem = item('outfit');
   const outfitColors = { ...item('outfitColor').colors, ...outfitItem.colors };
   for (const [key, from] of Object.entries(outfitItem.match ?? {})) outfitColors[key] = outfitColors[from];
+  outfitColors.glovesLight ??= mix(outfitColors.gloves, '#fff8e7', 0.22);
   const beardShape = hasBeard(valid) ? item('beard').shape : null;
   // What trails behind the rider: the outfit's own piece in its panel
   // colour, or else the look's trail in its colour.
@@ -599,7 +600,7 @@ export function lookParts(look) {
       outfit: {
         jersey: outfitColors.jacket, jerseyLight: outfitColors.jacketLight, jerseyShade: outfitColors.jacketShade,
         panel: outfitColors.panel, pants: outfitColors.trousers, pantsLight: outfitColors.trousersLight,
-        gloves: outfitColors.gloves, boots: outfitColors.boots, sole: outfitColors.sole
+        gloves: outfitColors.gloves, glovesLight: outfitColors.glovesLight, boots: outfitColors.boots, sole: outfitColors.sole
       },
       bike: { ...bikeColors },
     }),

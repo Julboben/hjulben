@@ -1143,7 +1143,8 @@ export function createRenderer(canvas, { still = false } = {}) {
       const head = ride.ragdoll.points.head;
       return { x: head.x - ride.facing * 6, y: head.y };
     }
-    return hairRoot(riderPose(ride, flip), exact);
+    const shelled = look ? !lookParts(look).bareHead : false;
+    return hairRoot(riderPose(ride, flip), exact, shelled);
   }
 
   function hairState(ride, flip, look) {
