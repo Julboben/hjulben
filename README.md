@@ -25,11 +25,13 @@ It runs in the browser with no build step and no runtime dependencies, built wit
 - Direction flipping with an animated rider and bike transition
 - Code-drawn pixel presentation with smooth terrain, mountains, and apples for readability
 - Responsive mobile and expanded desktop layouts with optional fullscreen play
+- Phones are played upright, with the touch controls under the trail: turning one sideways pauses the ride and asks to turn it back, and fullscreen locks it to portrait
 - Keyboard, touch, and gamepad controls with remappable keys
 - Ghost of your best run, or the world's best, with split deltas at each apple
 - Results screen with rank, personal best, flips, and gold/silver/bronze medal targets
 - The next medal still in reach shown quietly beside the timer while you ride
-- Watch replays: your own run from the results screen, and your device's best or the world's best from the leaderboard
+- Watch replays: your own run from the results screen, and your device's best or any world rider's best from the leaderboard
+- Race the world rider just ahead of you: their ghost rides with you on every retry of that trail
 - Reaching the finish with apples missing points out where they are
 - The run timer starts on your first input
 - Installable as an offline-capable web app
@@ -186,7 +188,7 @@ Current storage keys:
 
 Ghosts and local boards of a shipped trail's earlier versions are removed at start-up, as are ghosts from an older physics version; when storage is full the game says so and keeps going with what it has.
 
-The dashboard's Leaderboard view ranks the ten fastest finishes per official, bonus and custom trail across all savegames on the device. Runs remain on the board after their savegame is deleted. Step between trails with the arrows, or click the trail name to pick one from a list. Each run shows its date, including the year. Every trail is keyed by a hash of what decides a run (terrain, start, finish, apples, spikes, and water), and official and bonus trails also by their id (`official:<id>@<hash>`, `bonus:<id>@<hash>`). Editing a trail's gameplay starts fresh leaderboards, ghosts and best times, online and local, while renaming it or changing its props keeps them.
+The dashboard's Leaderboard view ranks the ten fastest finishes per official, bonus and custom trail across all savegames on the device. Runs remain on the board after their savegame is deleted. Step between trails with the arrows, or click the trail name to pick one from a list, which shows each trail's best time and the active rider's own, with their world rank for an online rider. Each run shows its date, including the year. Riders on the same time share a rank, and the older run is listed first. Every trail is keyed by a hash of what decides a run (terrain, start, finish, apples, spikes, and water), and official and bonus trails also by their id (`official:<id>@<hash>`, `bonus:<id>@<hash>`). Editing a trail's gameplay starts fresh leaderboards, ghosts and best times, online and local, while renaming it or changing its props keeps them.
 
 Clearing site data resets settings, progression, and recorded times. Online riders can get theirs back by logging in (see below).
 
@@ -201,7 +203,9 @@ Deleting a slot with × only frees it on that device; the online rider, their cl
 
 The world board doesn't trust times sent by the browser. A finished run is sent as its recorded inputs. The server replays them through the same deterministic simulation (`js/ride.js`) against the official or bonus trail, checks that it finishes, and uses its own time. It keeps each rider's best run per trail, and its replay becomes the ghost when restoring a save. A run that can't be posted (offline, or the server didn't answer) is kept in `hjulben-pending-runs-v1` and sent the next time the dashboard opens, the browser comes back online, or the rider logs in. A run ridden in slow motion, because the device couldn't keep up with the physics, is kept on the device but not posted. Each rider may post a dozen runs a minute, and each address may start twenty passkey ceremonies a minute (`netlify/lib/rate-limit.mjs`).
 
-When another rider beats an online rider's world record, the server keeps a notice for the rider who lost it, for 60 days, and the dashboard's bell shows it the next time they open the game. A record lost again on the same trail before they come back is one notice, with the latest time.
+On the world board, the trail line says how many riders it has, and an online rider below the top ten also sees their own row, with the riders just ahead and behind. The ▶ on a row plays that rider's run, fetched from the server only when asked for. After a run, the results name the rider just ahead, and **Race** loads their ghost: it replaces the usual ghost, whatever the Ghost setting, on every ride of that trail until the rider leaves it.
+
+When another rider beats an online rider's world record, the server keeps a notice for the rider who lost it, for 60 days, and the dashboard's bell shows it the next time they open the game. A record lost again on the same trail before they come back is one notice, with the latest time. A rider pushed out of a trail's top ten gets a notice the same way.
 
 The cloud save is merged on the server rather than replaced: best times keep the faster, progress and lifetime stats the higher, achievements and nisse finds the union, so a device that uploads a stale copy never wipes out another device's progress. Sessions last 180 days; one used in its last 30 days gets a fresh token with the reply, so a rider who keeps playing is never signed out.
 

@@ -537,6 +537,9 @@ function rankRuns(runs) {
     .slice(0, LEADERBOARD_SIZE);
 }
 
+/** Each run with its rank, which riders on the same time share, as on the world board. */
+const withRanks = runs => runs.map(run => ({ ...run, rank: runs.findIndex(other => other.time === run.time) + 1 }));
+
 function loadLeaderboards() {
   const stored = readJson(LEADERBOARD_KEY, {});
   return stored && typeof stored === 'object' && !Array.isArray(stored) ? stored : {};
@@ -551,7 +554,7 @@ export function readLeaderboard(trailId) {
   const online = cachedOnlineBoard(trailId);
   if (online) return online.slice(0, LEADERBOARD_SIZE);
   const runs = loadLeaderboards()[trailId];       // fallback: local board
-  return Array.isArray(runs) ? rankRuns(runs) : [];
+  return Array.isArray(runs) ? withRanks(rankRuns(runs)) : [];
 }
 
 const GHOST_KEY_PREFIX = 'hjulben-ghost-v1:';
@@ -618,7 +621,7 @@ export function pruneStaleTrailData(current) {
   pruneGhosts();
 }
 
-// Returns the 1-based rank of the new run, or null when it misses the board.
+// Returns the rank of the rider's best after the new run, or null when it misses the board.
 export function recordLeaderboardRun(trailId, run) {
   const boards = { ...loadLeaderboards() };
   const entry = normalizeRun({ ...run, date: Date.now() });
@@ -627,5 +630,5 @@ export function recordLeaderboardRun(trailId, run) {
   boards[trailId] = ranked;
   writeJson(LEADERBOARD_KEY, boards);
   // The rider's row, which is their best: a slower run doesn't get a row of its own.
-  return ranked.findIndex(item => runOwner(item) === runOwner(entry)) + 1 || null;
+  return withRanks(ranked).find(item => runOwner(item) === runOwner(entry))?.rank ?? null;
 }

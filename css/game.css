@@ -828,6 +828,10 @@ h2 {
     grid-template-columns: 1fr 1fr;
     gap: 10px;
 }
+/* Races the rider just ahead on the world board, under the usual pair. */
+#race-rival {
+    grid-column: 1 / -1;
+}
 /* Dev-server only: saves the run for the replay bot. */
 #save-reference {
     grid-column: 1 / -1;
@@ -2473,6 +2477,18 @@ h2 {
         white-space: nowrap;
     }
 }
+/* The trail's name, with the rider's own time and place under it. */
+.leaderboard-pick-copy {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    & small {
+        color: var(--color-accent);
+        font-size: var(--text-2xs);
+        letter-spacing: 0.6px;
+    }
+}
 .bonus-pick .trail-number {
     color: var(--color-gold);
 }
@@ -2539,6 +2555,14 @@ h2 {
             --px: 2px;
         }
     }
+}
+/* Between the top of the board and the rider's own row further down. */
+.leaderboard-gap {
+    color: var(--color-text-muted);
+    font-size: var(--text-md);
+    font-weight: var(--weight-heavy);
+    line-height: 1;
+    text-align: center;
 }
 .leaderboard-watch {
     width: 30px;

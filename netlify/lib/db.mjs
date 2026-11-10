@@ -64,6 +64,9 @@ begin
   -- once can't leave two.
   create unique index if not exists notifications_record_lost_key
     on notifications (player_id, (data->>'trail')) where kind = 'record-lost';
+  -- Likewise one notice per rider and trail for being pushed out of the top ten.
+  create unique index if not exists notifications_top_ten_lost_key
+    on notifications (player_id, (data->>'trail')) where kind = 'top-ten-lost';
 
   -- Fixed-window request counts (see rate-limit.mjs). Stale rows are harmless.
   create table if not exists rate_limits (

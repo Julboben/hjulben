@@ -5,16 +5,11 @@ Player-facing release notes. The game shows them under **What's new**, and each 
 ## 0.6.4 — 2026-11-09
 
 ### New
-- A bell on the dashboard opens a log of achievements, new gear, nisse finds, newly opened bonus trails and new versions of the game. It keeps up to 60 entries on this device, and tapping one opens where it points.
-- When another rider takes an online rider's world record, the bell tells them the next time they open the game.
+- A bell on the dashboard drops down a log of achievements, new gear, nisse finds, newly opened bonus trails and new versions of the game. It keeps up to 60 entries on this device, and tapping one opens where it points.
+- When another rider takes an online rider's world record, the bell tells them who took it the next time they open the game.
 
 ### Improved
-- The notification bell now drops a small panel down under it, instead of sliding a drawer in from the right side of the screen.
-- The notification log catches up on more than 20 items at a time.
 - The title screen no longer shows the MOMENTUM · BALANCE · CONTROL line above the Hjulben title.
-
-### Fixed
-- Losing a world record gives one notice, naming the rider who holds it, even when two runs take the record at once.
 
 ## 0.6.3 — 2026-11-09
 
@@ -25,7 +20,7 @@ Player-facing release notes. The game shows them under **What's new**, and each 
 - The Garage has new accessories and extra cosmetics, undo and redo, and a room that grows with your career. New gear is tagged NEW, and locked items show how close you are to earning them.
 - Picking a different bike in the Garage now lets you hear its engine, or the Pocket Classic's bell.
 - Earning an achievement or new Garage gear plays a sound.
-- Editor: There is a mini map of the whole trail. Click or drag it to move around, and press M to hide it.
+- Editor: There is a mini map of the whole trail, showing the riding line, the apples, spikes, start, finish and selection, and a dot for each problem. Click or drag it to move around, click a dot to go to the problem, and press M to hide it.
 - Editor: Blocks and props can be grouped into one named thing with Cmd+G, such as a house, which selects, moves, copies, flips and locks as one. Double-click to work on one part of it.
 - Editor: Blocks can be flipped (X, and Shift+X upside down), and blocks and props can be brought to the front or sent to the back.
 
@@ -39,16 +34,12 @@ Player-facing release notes. The game shows them under **What's new**, and each 
 - Marshals drop their flag and the camera operator ducks when you crash nearby, like the spectators.
 - Spectators, marshals, the camera operator and the prison guard turn their heads to watch you ride by, and look up as you jump over them.
 - The scarecrow, snowman, prisoners and skeleton look up and down at you as well as sideways.
-- Editor: Anything you drag snaps to the edges, middles and points of other things nearby and to the grid, with a guide showing what it lined up with. Hold Cmd/Ctrl mid-drag to move freely, and press N to turn snapping off or on.
-- Editor: Shift-dragging keeps a move straight across, up and down, or at 45°. A single point still snaps to 15° steps and the grid.
-- Editor: The mini map shows the trail's riding line clearly, marks the apples, spikes, start, finish and the selection, and shows a dot for each problem. Click a dot to go to it.
-- Editor: The inspector names what is selected the way warnings do (Block 3, Point 2). A block's width and height can be typed, and X and Y place it by its top-left corner.
-- Editor: An edge can be split in two from the inspector, and related fields such as X and Y share a line.
+- Editor: Anything you drag snaps to the edges, middles and points of other things nearby and to the grid, with a guide showing what it lined up with. Hold Cmd/Ctrl mid-drag to move freely, press N to turn snapping off or on, and hold Shift to keep a move straight across, up and down, or at 45°.
+- Editor: The inspector names what is selected the way warnings do (Block 3, Point 2), puts related fields such as X and Y on one line, and can split an edge in two. A block's width and height can be typed, and X and Y place it by its top-left corner.
 - Editor: Letting go of Alt mid-drag now drops the copy and moves the original again, as in Illustrator or Figma.
 - Editor: A trail only shows as edited once you let go of a drag.
 - Editor: A block's edges can only be dragged once it is selected, and the point or edge you would grab is highlighted, so outlines are no longer reshaped by accident. Escape cancels a drag.
-- Editor: Each tool's hint is a single line. Press ? for every shortcut.
-- Editor: The shortcuts dialog is easier to scan, with one line per shortcut, one key column, and only your machine's modifier shown.
+- Editor: Each tool's hint is a single line, and the shortcuts dialog (press ?) is easier to scan, with one line per shortcut and only your machine's modifier shown.
 - Editor: The Water tool draws water by dragging, with no size to set first.
 
 ### Fixed
@@ -72,7 +63,7 @@ Player-facing release notes. The game shows them under **What's new**, and each 
 - The Trails menu opens much faster, since trail thumbnails now draw only the part of the terrain you can see.
 
 ### Fixed
-- Fixed brief stalls while riding, most noticeably when landing a flip or jump, breaking a glass pane, or when new terrain is drawn.
+- Riding no longer stalls briefly when you land a flip or jump, break a glass pane, or new terrain is drawn.
 
 ## 0.6.0 — 2026-11-02
 
@@ -82,7 +73,7 @@ Player-facing release notes. The game shows them under **What's new**, and each 
 ### New
 - Sky Ladder is now trail 6 and Floating Fields is trail 8, both teaching floating islands in First Rides.
 - Windmill Hills joins First Rides as trail 5, with a row of tall, thin hills to fly over. High Orchard moves to trail 9 as the world's finale.
-- Copenhagen Rooftops joins The City as trail 36, with medals at 56, 73 and 98.
+- Copenhagen Rooftops joins The City as trail 36.
 - The rider now kick-starts the engine when you open a trail, and taps the gear lever with a clunk when setting off from a standstill. Retries start straight away.
 
 ### Improved
@@ -104,13 +95,13 @@ Player-facing release notes. The game shows them under **What's new**, and each 
 
 ### New
 - High Orchard joins the career as trail 5.
-- Fireworks and a new pop-up overlay have been added.
+- Fireworks go off when you take first place on a trail's world leaderboard.
 
 ### Improved
 - Trails are now tracked by name rather than by their place in the order, so leaderboards, best times, nisse finds and unlocks stay with a trail even if it moves, and trails you have already ridden stay open.
 - The sun glare looks better.
 - Editor: Drafts are now saved in your browser's database, and autosave is more reliable, including when you close the page.
-- Editor: The editor runs faster, with a few smaller improvements to the menu and inspector.
+- Editor: Large trails stay quick to edit.
 - Editor: Playtest shows your trail's size, tells you when it is too large to share as a link, and suggests medals.
 
 ### Fixed
@@ -129,7 +120,7 @@ Player-facing release notes. The game shows them under **What's new**, and each 
 
 ### Improved
 - The on-screen controls now animate more smoothly.
-- The results card, trail descriptions and tool hints have clearer wording, and several typos have been fixed.
+- The results card, trail descriptions and tool hints have clearer wording.
 
 ## 0.4.1 — 2026-10-19
 
@@ -139,14 +130,21 @@ Player-facing release notes. The game shows them under **What's new**, and each 
 ### Improved
 - Your online progress now syncs more safely. Fastest times, highest progress, achievements, finds and your rider's look are merged, so an out-of-date device can no longer wipe out progress from another. Runs that couldn't be posted are kept and sent later, and sessions renew or sign out cleanly.
 - Delete Online now removes your rider for good after you confirm with a passkey. The first rider you create now defaults to offline.
-- On-screen prompts now show the right keys for your setup: your own key bindings on a keyboard, the buttons on a gamepad, and none on a touch screen. Tapping the pause screen resumes the game on touch screens. There's also an offline note on the leaderboard, a toast when an update is available, and clearer messages when a trail fails to load.
+- On-screen prompts now show the right keys for your setup: your own key bindings on a keyboard, the buttons on a gamepad, and none on a touch screen.
+- Tapping the pause screen resumes the game on touch screens.
+- The leaderboard says when you're offline, and the game tells you when an update is ready.
+- Messages are clearer when a trail fails to load.
 - Being the only rider at #1 on a board now shows FIRST PLACE IN THE WORLD! The NEW badge also pulses to catch your eye.
-- Editor: Pinch to zoom, a fit trail option and shortcut labels that match your keyboard layout. The editor now also guards against several problems, such as undo in text fields, buried starts, apples and finishes, oversized share links, stale drafts and deleting the last terrain block.
+- Editor: Pinch to zoom, fit the whole trail on screen, and see shortcut labels that match your keyboard layout.
+- Editor: Warnings for a start, apple or finish buried in the ground and for share links that are too long, and the last terrain block can no longer be deleted.
 
 ### Fixed
-- Held keys now survive restarts and crashes. Replays no longer reset First Try or bypass unlocks, and runs ridden in slow motion stay local and aren't uploaded.
-- Audio now stops in hidden tabs and unlocks reliably on iOS, wheel spin no longer doubles, and the back gesture no longer leaves a ride.
-- Fixed iOS scrolling on the trails overview, and double taps no longer zoom in on buttons or open Safari's magnifier on touch controls.
+- Keys you hold now keep working through restarts and crashes.
+- Watching a replay no longer resets First Try or opens locked trails, and runs ridden in slow motion stay on your device.
+- Sound stops when you switch tabs and starts reliably on iPhone and iPad.
+- The wheel spin sound no longer plays twice.
+- The back gesture no longer leaves a ride.
+- The trails overview scrolls properly on iPhone and iPad, and double taps no longer zoom in on buttons or open Safari's magnifier on the touch controls.
 
 ## 0.4.0 — 2026-10-18
 
@@ -162,7 +160,8 @@ Player-facing release notes. The game shows them under **What's new**, and each 
 
 ### Improved
 - The engine sound now follows the real engine, and the old made-up 5-speed gearbox is gone. There are also new skid sounds that vary by surface, suspension clunks and tyre squish.
-- The main menu has been redesigned with credits, a new title font, gamepad settings tabs, new mobile control buttons, a new achievement toast and a nicer trail completed card. The results card also stays steady while your world rank loads.
+- The main menu has been redesigned, with a new title font, credits and tabs for the gamepad settings.
+- New touch control buttons, a new achievement pop-up and a nicer trail completed card, which stays steady while your world rank loads.
 - Apples no longer bob. They hold still with a shine sweep, so the hitbox is exactly the drawn apple.
 
 ## 0.3.5 — 2026-10-13
@@ -213,7 +212,6 @@ Player-facing release notes. The game shows them under **What's new**, and each 
 
 ### New
 - Meet Coda the Corgi! Coda is now part of the game and can be found on trails.
-- The changelog now has a Heads up section for important news you need to know about.
 
 ### Improved
 - Your rider customisations now sync between desktop and mobile without needing to log in again.
@@ -225,7 +223,7 @@ Player-facing release notes. The game shows them under **What's new**, and each 
 - The leaderboard has been reset, because the new bike handling makes old times incomparable. Time to set new records!
 
 ### New
-- Snow props now appear on trails, and the vulture and pylon in the desert and mountain trails have been improved.
+- Snow props now appear on trails, and can be placed and previewed in the editor.
 
 ### Improved
 - Bike suspension has been reworked. Each wheel now hangs from the bike on its own leg and the suspension stretches, so the bike handles more realistically.
@@ -233,7 +231,7 @@ Player-facing release notes. The game shows them under **What's new**, and each 
 - Your rider now turns more smoothly.
 - Hanging from a ledge now feels better, and you can swing while you hang.
 - Braking dive now behaves more naturally.
-- Editor: Snow props can now be placed and previewed in the trail editor.
+- The vulture and pylon in the desert and mountain trails look better.
 
 ### Fixed
 - Holding gas in the air no longer turns the bike at all.
@@ -254,39 +252,39 @@ Player-facing release notes. The game shows them under **What's new**, and each 
 ## 0.1.2 — 2026-10-10
 
 ### New
-- The Garage: pick your rider, helmet, outfit and bike, and choose their colours.
-- Unlock new gear by finishing trails and earning gold medals, like the Motocross helmet and the original Pocket Classic bike.
-- New bike graphics.
-- New desert props.
-- Pick any trail straight from a list on the leaderboard.
-- Editor: rotate blocks and props.
+- In the Garage, pick your rider, helmet, outfit and bike, and choose their colours.
+- Finishing trails and earning gold medals unlocks new gear, like the Motocross helmet and the original Pocket Classic bike.
+- The bike has new graphics.
+- New desert props line the trails.
+- The leaderboard lets you pick any trail straight from a list.
+- Editor: Blocks and props can be rotated.
 
 ### Improved
-- Redrawn rider with better hands, head and riding pose.
-- Clearer menu order.
-- Editor: easier selection.
+- The rider has been redrawn, with better hands, head and riding pose.
+- The menu is in a clearer order.
+- Editor: Selecting things is easier.
 
 ## 0.1.1 — 2026-10-08
 
 ### New
-- Water to splash through, with new waterside props.
-- Glass blocks that shatter if you hit them hard enough.
-- Weather: fog, rain that hits the ground, thunderstorms and snow, all with their own sounds.
-- New engine sounds that follow the throttle.
-- Bonus trails, plus new trails including The Orchard.
-- Apple trees, squirrels, crates and wheelbarrows along the trails.
-- A new stone material. Rock is now called concrete.
-- Trail previews and a better How to Play guide.
-- Editor: autosave, a new finish object, and searchable prop and trail pickers.
+- There is water to splash through, with new waterside props.
+- Glass blocks shatter if you hit them hard enough.
+- Weather arrives: fog, rain that hits the ground, thunderstorms and snow, all with their own sounds.
+- New engine sounds follow the throttle.
+- Bonus trails arrive, plus new trails including The Orchard.
+- Apple trees, squirrels, crates and wheelbarrows line the trails.
+- There is a new stone material, and rock is now called concrete.
+- Trails have previews, and the How to Play guide is better.
+- Editor: Autosave, a new finish object, and searchable prop and trail pickers.
 
 ### Improved
-- Crashes feel more physical: better ragdoll, and your helmet can come off.
+- Crashes feel more physical, with a better ragdoll, and your helmet can come off.
 - Apples and spikes now react to your actual rider, not a rough box.
-- Nicer clouds, sun, moon, hills and wheels.
-- Clearer rider name rules and a smoother login.
+- Clouds, the sun, the moon, hills and wheels look nicer.
+- The rules for rider names are clearer, and signing in is smoother.
 
 ### Fixed
-- Engine sound at the finish, flickering ghosts, rain and snow particles, and the camera at the left edge of a trail.
+- The engine sound at the finish, flickering ghosts and the camera at the left edge of a trail all behave now.
 
 ## 0.1.0 — 2026-10-03
 

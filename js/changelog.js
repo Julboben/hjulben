@@ -7,27 +7,15 @@ export const RELEASES = [
     "changes": [
       {
         "type": "new",
-        "text": "A bell on the dashboard opens a log of achievements, new gear, nisse finds, newly opened bonus trails and new versions of the game. It keeps up to 60 entries on this device, and tapping one opens where it points."
+        "text": "A bell on the dashboard drops down a log of achievements, new gear, nisse finds, newly opened bonus trails and new versions of the game. It keeps up to 60 entries on this device, and tapping one opens where it points."
       },
       {
         "type": "new",
-        "text": "When another rider takes an online rider's world record, the bell tells them the next time they open the game."
-      },
-      {
-        "type": "improved",
-        "text": "The notification bell now drops a small panel down under it, instead of sliding a drawer in from the right side of the screen."
-      },
-      {
-        "type": "improved",
-        "text": "The notification log catches up on more than 20 items at a time."
+        "text": "When another rider takes an online rider's world record, the bell tells them who took it the next time they open the game."
       },
       {
         "type": "improved",
         "text": "The title screen no longer shows the MOMENTUM · BALANCE · CONTROL line above the Hjulben title."
-      },
-      {
-        "type": "fixed",
-        "text": "Losing a world record gives one notice, naming the rider who holds it, even when two runs take the record at once."
       }
     ]
   },
@@ -53,7 +41,7 @@ export const RELEASES = [
       },
       {
         "type": "new",
-        "text": "Editor: There is a mini map of the whole trail. Click or drag it to move around, and press M to hide it."
+        "text": "Editor: There is a mini map of the whole trail, showing the riding line, the apples, spikes, start, finish and selection, and a dot for each problem. Click or drag it to move around, click a dot to go to the problem, and press M to hide it."
       },
       {
         "type": "new",
@@ -101,23 +89,11 @@ export const RELEASES = [
       },
       {
         "type": "improved",
-        "text": "Editor: Anything you drag snaps to the edges, middles and points of other things nearby and to the grid, with a guide showing what it lined up with. Hold Cmd/Ctrl mid-drag to move freely, and press N to turn snapping off or on."
+        "text": "Editor: Anything you drag snaps to the edges, middles and points of other things nearby and to the grid, with a guide showing what it lined up with. Hold Cmd/Ctrl mid-drag to move freely, press N to turn snapping off or on, and hold Shift to keep a move straight across, up and down, or at 45°."
       },
       {
         "type": "improved",
-        "text": "Editor: Shift-dragging keeps a move straight across, up and down, or at 45°. A single point still snaps to 15° steps and the grid."
-      },
-      {
-        "type": "improved",
-        "text": "Editor: The mini map shows the trail's riding line clearly, marks the apples, spikes, start, finish and the selection, and shows a dot for each problem. Click a dot to go to it."
-      },
-      {
-        "type": "improved",
-        "text": "Editor: The inspector names what is selected the way warnings do (Block 3, Point 2). A block's width and height can be typed, and X and Y place it by its top-left corner."
-      },
-      {
-        "type": "improved",
-        "text": "Editor: An edge can be split in two from the inspector, and related fields such as X and Y share a line."
+        "text": "Editor: The inspector names what is selected the way warnings do (Block 3, Point 2), puts related fields such as X and Y on one line, and can split an edge in two. A block's width and height can be typed, and X and Y place it by its top-left corner."
       },
       {
         "type": "improved",
@@ -133,11 +109,7 @@ export const RELEASES = [
       },
       {
         "type": "improved",
-        "text": "Editor: Each tool's hint is a single line. Press ? for every shortcut."
-      },
-      {
-        "type": "improved",
-        "text": "Editor: The shortcuts dialog is easier to scan, with one line per shortcut, one key column, and only your machine's modifier shown."
+        "text": "Editor: Each tool's hint is a single line, and the shortcuts dialog (press ?) is easier to scan, with one line per shortcut and only your machine's modifier shown."
       },
       {
         "type": "improved",
@@ -181,7 +153,7 @@ export const RELEASES = [
       },
       {
         "type": "fixed",
-        "text": "Fixed brief stalls while riding, most noticeably when landing a flip or jump, breaking a glass pane, or when new terrain is drawn."
+        "text": "Riding no longer stalls briefly when you land a flip or jump, break a glass pane, or new terrain is drawn."
       }
     ]
   },
@@ -203,7 +175,7 @@ export const RELEASES = [
       },
       {
         "type": "new",
-        "text": "Copenhagen Rooftops joins The City as trail 36, with medals at 56, 73 and 98."
+        "text": "Copenhagen Rooftops joins The City as trail 36."
       },
       {
         "type": "new",
@@ -265,7 +237,7 @@ export const RELEASES = [
       },
       {
         "type": "new",
-        "text": "Fireworks and a new pop-up overlay have been added."
+        "text": "Fireworks go off when you take first place on a trail's world leaderboard."
       },
       {
         "type": "improved",
@@ -281,7 +253,7 @@ export const RELEASES = [
       },
       {
         "type": "improved",
-        "text": "Editor: The editor runs faster, with a few smaller improvements to the menu and inspector."
+        "text": "Editor: Large trails stay quick to edit."
       },
       {
         "type": "improved",
@@ -321,7 +293,7 @@ export const RELEASES = [
       },
       {
         "type": "improved",
-        "text": "The results card, trail descriptions and tool hints have clearer wording, and several typos have been fixed."
+        "text": "The results card, trail descriptions and tool hints have clearer wording."
       }
     ]
   },
@@ -343,7 +315,19 @@ export const RELEASES = [
       },
       {
         "type": "improved",
-        "text": "On-screen prompts now show the right keys for your setup: your own key bindings on a keyboard, the buttons on a gamepad, and none on a touch screen. Tapping the pause screen resumes the game on touch screens. There's also an offline note on the leaderboard, a toast when an update is available, and clearer messages when a trail fails to load."
+        "text": "On-screen prompts now show the right keys for your setup: your own key bindings on a keyboard, the buttons on a gamepad, and none on a touch screen."
+      },
+      {
+        "type": "improved",
+        "text": "Tapping the pause screen resumes the game on touch screens."
+      },
+      {
+        "type": "improved",
+        "text": "The leaderboard says when you're offline, and the game tells you when an update is ready."
+      },
+      {
+        "type": "improved",
+        "text": "Messages are clearer when a trail fails to load."
       },
       {
         "type": "improved",
@@ -351,19 +335,35 @@ export const RELEASES = [
       },
       {
         "type": "improved",
-        "text": "Editor: Pinch to zoom, a fit trail option and shortcut labels that match your keyboard layout. The editor now also guards against several problems, such as undo in text fields, buried starts, apples and finishes, oversized share links, stale drafts and deleting the last terrain block."
+        "text": "Editor: Pinch to zoom, fit the whole trail on screen, and see shortcut labels that match your keyboard layout."
+      },
+      {
+        "type": "improved",
+        "text": "Editor: Warnings for a start, apple or finish buried in the ground and for share links that are too long, and the last terrain block can no longer be deleted."
       },
       {
         "type": "fixed",
-        "text": "Held keys now survive restarts and crashes. Replays no longer reset First Try or bypass unlocks, and runs ridden in slow motion stay local and aren't uploaded."
+        "text": "Keys you hold now keep working through restarts and crashes."
       },
       {
         "type": "fixed",
-        "text": "Audio now stops in hidden tabs and unlocks reliably on iOS, wheel spin no longer doubles, and the back gesture no longer leaves a ride."
+        "text": "Watching a replay no longer resets First Try or opens locked trails, and runs ridden in slow motion stay on your device."
       },
       {
         "type": "fixed",
-        "text": "Fixed iOS scrolling on the trails overview, and double taps no longer zoom in on buttons or open Safari's magnifier on touch controls."
+        "text": "Sound stops when you switch tabs and starts reliably on iPhone and iPad."
+      },
+      {
+        "type": "fixed",
+        "text": "The wheel spin sound no longer plays twice."
+      },
+      {
+        "type": "fixed",
+        "text": "The back gesture no longer leaves a ride."
+      },
+      {
+        "type": "fixed",
+        "text": "The trails overview scrolls properly on iPhone and iPad, and double taps no longer zoom in on buttons or open Safari's magnifier on the touch controls."
       }
     ]
   },
@@ -401,7 +401,11 @@ export const RELEASES = [
       },
       {
         "type": "improved",
-        "text": "The main menu has been redesigned with credits, a new title font, gamepad settings tabs, new mobile control buttons, a new achievement toast and a nicer trail completed card. The results card also stays steady while your world rank loads."
+        "text": "The main menu has been redesigned, with a new title font, credits and tabs for the gamepad settings."
+      },
+      {
+        "type": "improved",
+        "text": "New touch control buttons, a new achievement pop-up and a nicer trail completed card, which stays steady while your world rank loads."
       },
       {
         "type": "improved",
@@ -506,10 +510,6 @@ export const RELEASES = [
         "text": "Meet Coda the Corgi! Coda is now part of the game and can be found on trails."
       },
       {
-        "type": "new",
-        "text": "The changelog now has a Heads up section for important news you need to know about."
-      },
-      {
         "type": "improved",
         "text": "Your rider customisations now sync between desktop and mobile without needing to log in again."
       },
@@ -529,7 +529,7 @@ export const RELEASES = [
       },
       {
         "type": "new",
-        "text": "Snow props now appear on trails, and the vulture and pylon in the desert and mountain trails have been improved."
+        "text": "Snow props now appear on trails, and can be placed and previewed in the editor."
       },
       {
         "type": "improved",
@@ -553,7 +553,7 @@ export const RELEASES = [
       },
       {
         "type": "improved",
-        "text": "Editor: Snow props can now be placed and previewed in the trail editor."
+        "text": "The vulture and pylon in the desert and mountain trails look better."
       },
       {
         "type": "fixed",
@@ -593,39 +593,39 @@ export const RELEASES = [
     "changes": [
       {
         "type": "new",
-        "text": "The Garage: pick your rider, helmet, outfit and bike, and choose their colours."
+        "text": "In the Garage, pick your rider, helmet, outfit and bike, and choose their colours."
       },
       {
         "type": "new",
-        "text": "Unlock new gear by finishing trails and earning gold medals, like the Motocross helmet and the original Pocket Classic bike."
+        "text": "Finishing trails and earning gold medals unlocks new gear, like the Motocross helmet and the original Pocket Classic bike."
       },
       {
         "type": "new",
-        "text": "New bike graphics."
+        "text": "The bike has new graphics."
       },
       {
         "type": "new",
-        "text": "New desert props."
+        "text": "New desert props line the trails."
       },
       {
         "type": "new",
-        "text": "Pick any trail straight from a list on the leaderboard."
+        "text": "The leaderboard lets you pick any trail straight from a list."
       },
       {
         "type": "new",
-        "text": "Editor: rotate blocks and props."
+        "text": "Editor: Blocks and props can be rotated."
       },
       {
         "type": "improved",
-        "text": "Redrawn rider with better hands, head and riding pose."
+        "text": "The rider has been redrawn, with better hands, head and riding pose."
       },
       {
         "type": "improved",
-        "text": "Clearer menu order."
+        "text": "The menu is in a clearer order."
       },
       {
         "type": "improved",
-        "text": "Editor: easier selection."
+        "text": "Editor: Selecting things is easier."
       }
     ]
   },
@@ -635,43 +635,43 @@ export const RELEASES = [
     "changes": [
       {
         "type": "new",
-        "text": "Water to splash through, with new waterside props."
+        "text": "There is water to splash through, with new waterside props."
       },
       {
         "type": "new",
-        "text": "Glass blocks that shatter if you hit them hard enough."
+        "text": "Glass blocks shatter if you hit them hard enough."
       },
       {
         "type": "new",
-        "text": "Weather: fog, rain that hits the ground, thunderstorms and snow, all with their own sounds."
+        "text": "Weather arrives: fog, rain that hits the ground, thunderstorms and snow, all with their own sounds."
       },
       {
         "type": "new",
-        "text": "New engine sounds that follow the throttle."
+        "text": "New engine sounds follow the throttle."
       },
       {
         "type": "new",
-        "text": "Bonus trails, plus new trails including The Orchard."
+        "text": "Bonus trails arrive, plus new trails including The Orchard."
       },
       {
         "type": "new",
-        "text": "Apple trees, squirrels, crates and wheelbarrows along the trails."
+        "text": "Apple trees, squirrels, crates and wheelbarrows line the trails."
       },
       {
         "type": "new",
-        "text": "A new stone material. Rock is now called concrete."
+        "text": "There is a new stone material, and rock is now called concrete."
       },
       {
         "type": "new",
-        "text": "Trail previews and a better How to Play guide."
+        "text": "Trails have previews, and the How to Play guide is better."
       },
       {
         "type": "new",
-        "text": "Editor: autosave, a new finish object, and searchable prop and trail pickers."
+        "text": "Editor: Autosave, a new finish object, and searchable prop and trail pickers."
       },
       {
         "type": "improved",
-        "text": "Crashes feel more physical: better ragdoll, and your helmet can come off."
+        "text": "Crashes feel more physical, with a better ragdoll, and your helmet can come off."
       },
       {
         "type": "improved",
@@ -679,15 +679,15 @@ export const RELEASES = [
       },
       {
         "type": "improved",
-        "text": "Nicer clouds, sun, moon, hills and wheels."
+        "text": "Clouds, the sun, the moon, hills and wheels look nicer."
       },
       {
         "type": "improved",
-        "text": "Clearer rider name rules and a smoother login."
+        "text": "The rules for rider names are clearer, and signing in is smoother."
       },
       {
         "type": "fixed",
-        "text": "Engine sound at the finish, flickering ghosts, rain and snow particles, and the camera at the left edge of a trail."
+        "text": "The engine sound at the finish, flickering ghosts and the camera at the left edge of a trail all behave now."
       }
     ]
   },
