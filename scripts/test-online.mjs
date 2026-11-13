@@ -12,7 +12,7 @@ import account from '../netlify/functions/account.mjs';
 import leaderboard from '../netlify/functions/leaderboard.mjs';
 import { trailHash } from '../js/trail-hash.js';
 import { RIDE_VERSION } from '../js/ride.js';
-import { DEFAULT_LOOK, legacyLook } from '../js/cosmetics.js';
+import { legacyLook } from '../js/cosmetics.js';
 import { loadCatalogTrails, readJson, replayFile } from './lib/trails.mjs';
 
 process.env.AUTH_SECRET = randomBytes(32).toString('hex');
@@ -292,7 +292,9 @@ const run = (replay = firstTrailRun) => ({ inputs: replay.inputs, seed: replay.s
   assert.equal(styled.body.runs[0].rider, 'female', 'and a rider for older clients');
   await sql`update runs set time_ms = 60000 where trail = ${firstKey}`;
   const odd = await submit({ body: { trail: firstKey, look: { ...bareLook, helmet: 'golden-crown', outfit: 7 }, run: run() }, token: julianToken });
-  assert.deepEqual(odd.body.runs[0].look, { ...bareLook, helmet: DEFAULT_LOOK.helmet, outfit: DEFAULT_LOOK.outfit }, 'unknown items fall back to the defaults');
+  // A run sent without a rider takes the male rider's old look for them.
+  const oldLook = legacyLook('male');
+  assert.deepEqual(odd.body.runs[0].look, { ...bareLook, helmet: oldLook.helmet, outfit: oldLook.outfit }, 'unknown items fall back to the old rider\'s look');
   await sql`update runs set time_ms = 60000 where trail = ${firstKey}`;
   await submit({ body: { trail: firstKey, rider: 'female', run: run() }, token: julianToken });
 
