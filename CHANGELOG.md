@@ -5,24 +5,17 @@ Player-facing release notes. The game shows them under **What's new**, and each 
 ## 0.6.6 — 2026-11-13
 
 ### Heads up
-- The street jacket is now won by landing your first flip ("Head over Heels"). Until then, riders who wore it show in the MX kit.
+- The street jacket is now won by landing your first flip ("Head over Heels"). Until then, riders who wore it ride in the MX kit.
 
 ### New
-- New riders start in the MX kit, now with pants that match the jersey, a knee guard in the trim colour, and boots with grey soles and straps.
-- A new Braid hairstyle is available.
+- New riders start in a fresh MX kit.
+- A new braid hairstyle.
 
 ### Improved
-- The rider moves more on the bike: rising forward, sitting back and flexing on hard landings.
-- Jackets are shaded to match the light, and a ponytail now comes out from under a full helmet.
-- Shoes and boots look better, with pointed toes, dark outlines at the back, light catching the toe and rounder shading on tall boots.
-- The ponytail, braid and space buns hang and pull back more naturally, and stay hanging towards the ground in a wheelie or when the rider hangs off a cliff.
-- No helmet now comes first in the helmet choices.
-- The touch button for turning around now reads TURN, like the keyboard and gamepad controls.
-
-### Fixed
-- Gloves no longer show a highlight in the jacket's colour.
-- Trousers, socks and the flannel outfit's shorts no longer show under or on top of the rider's boots.
-- The rider's back no longer has a stray pixel sticking out at the seat.
+- Your rider moves more on the bike, leaning with you and flexing on hard landings.
+- Ponytails and braids swing and hang more naturally, even under a full helmet and in a wheelie.
+- Rider outfits look better, from the jacket down to the boots.
+- The touch button for turning around now reads TURN.
 
 ## 0.6.5 — 2026-11-10
 
