@@ -2,6 +2,21 @@
 
 Player-facing release notes. The game shows them under **What's new**, and each GitHub Release uses its section.
 
+## 0.6.6 — 2026-11-13
+
+### Heads up
+- The street jacket is now won by landing your first flip ("Head over Heels"). Until then, riders who wore it ride in the MX kit.
+
+### New
+- New riders start in a fresh MX kit.
+- A new braid hairstyle.
+
+### Improved
+- Your rider moves more on the bike, leaning with you and flexing on hard landings.
+- Ponytails and braids swing and hang more naturally, even under a full helmet and in a wheelie.
+- Rider outfits look better, from the jacket down to the boots.
+- The touch button for turning around now reads TURN.
+
 ## 0.6.5 — 2026-11-10
 
 ### New

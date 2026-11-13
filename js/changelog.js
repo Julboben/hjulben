@@ -2,6 +2,40 @@
 /** @type {{ version: string, date: string, changes: { type: 'new' | 'improved' | 'fixed', text: string }[] }[]} */
 export const RELEASES = [
   {
+    "version": "0.6.6",
+    "date": "2026-11-13",
+    "changes": [
+      {
+        "type": "heads-up",
+        "text": "The street jacket is now won by landing your first flip (\"Head over Heels\"). Until then, riders who wore it ride in the MX kit."
+      },
+      {
+        "type": "new",
+        "text": "New riders start in a fresh MX kit."
+      },
+      {
+        "type": "new",
+        "text": "A new braid hairstyle."
+      },
+      {
+        "type": "improved",
+        "text": "Your rider moves more on the bike, leaning with you and flexing on hard landings."
+      },
+      {
+        "type": "improved",
+        "text": "Ponytails and braids swing and hang more naturally, even under a full helmet and in a wheelie."
+      },
+      {
+        "type": "improved",
+        "text": "Rider outfits look better, from the jacket down to the boots."
+      },
+      {
+        "type": "improved",
+        "text": "The touch button for turning around now reads TURN."
+      }
+    ]
+  },
+  {
     "version": "0.6.5",
     "date": "2026-11-10",
     "changes": [
