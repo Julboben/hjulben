@@ -2393,11 +2393,13 @@ const BARE_HEAD = [
 
 // Hair over the bare head, as rows over BARE_HEAD: H the hair, h its shine,
 // b its shade, and O its outline. A 'short' cap stops above the ear, a 'long'
-// one has bangs and kicks out outlined to the nape (where a ponytail starts),
-// a 'buzz' is a matte clipped hairline, and a 'bald' head catches the light.
+// one has bangs and kicks out outlined to the nape, a 'tied' one keeps the
+// bangs but is pulled back off the nape (into a ponytail or buns), a 'buzz'
+// is a matte clipped hairline, and a 'bald' head catches the light.
 const HAIR_CAPS = {
   short: { x: -6, rows: ["", " HhhHH ", " HHH", " H"] },
   long: { x: -8, rows: ["", "  HhhHH ", "  HHHH", "  H", "OHb", "OHb", " O"] },
+  tied: { x: -8, rows: ["", "  HhhHH ", "  HHHH", "  H"] },
   buzz: { x: -6, rows: ["", " bHHHb ", " b"] },
   bald: { x: -6, rows: ["", "  ll"] },
 };

@@ -78,10 +78,10 @@ const hairColor = (id, name, [hair, hairLight, hairShade, hairDark], lean) =>
   ({ id, slot: 'hairColor', name, lean, chip: [hair, hairShade], colors: { hair, hairLight, hairShade, hairDark } });
 
 // Hair cuts, as drawn by drawBareHead: `cap` covers the crown ('short' stops
-// above the ear, 'long' falls to the nape, 'buzz' is the top row only, 'bald'
-// has none), `ponytail` adds the swinging tail and `extra` draws more hair
-// over the head ('bun', 'buns', 'mohawk', 'afro',
-// 'mane' or 'mullet'; see HAIR_EXTRAS in drawing.js).
+// above the ear, 'long' falls to the nape, 'tied' is pulled back off it,
+// 'buzz' is the top row only, 'bald' has none), `ponytail` adds the swinging
+// tail and `extra` draws more hair over the head ('bun', 'buns', 'mohawk',
+// 'afro', 'mane' or 'mullet'; see HAIR_EXTRAS in drawing.js).
 const hairStyle = (id, name, style, blurb, extra = {}) =>
   ({ id, slot: 'hair', name, blurb, style, shape: id, ...extra });
 
@@ -144,12 +144,12 @@ export const LOOK_ITEMS = /** @type {LookItem[]} */ ([
   skin('deep', 'Deep', ['#5e3726', '#7e4c35', '#45271b'], '#2c140c', '#5a2232', 'Rides from dawn to dusk.'),
 
   hairStyle('short', 'Short', { cap: 'short', ponytail: false }, 'Neat under any helmet.', { lean: 'male' }),
-  hairStyle('ponytail', 'Ponytail', { cap: 'long', ponytail: true }, 'Long hair. More wind.', { lean: 'female' }),
-  hairStyle('bob', 'Bob', { cap: 'long', ponytail: false }, 'Swings on every landing.', { lean: 'female' }),
+  hairStyle('ponytail', 'Ponytail', { cap: 'tied', ponytail: true }, 'Long hair. More wind.', { lean: 'female' }),
+  hairStyle('bob', 'Bob', { cap: 'long', ponytail: false }, 'Chin length, sharp lines.', { lean: 'female' }),
   hairStyle('buzz', 'Buzz cut', { cap: 'buzz', ponytail: false }, 'Low drag, no fuss.', { lean: 'male' }),
   hairStyle('bald', 'Bald', { cap: 'bald', ponytail: false }, 'Nothing to mess up.', { colorless: true }),
   hairStyle('man-bun', 'Man bun', { cap: 'short', ponytail: false, extra: 'bun' }, 'Tied up and out of the way.', { lean: 'male' }),
-  hairStyle('space-buns', 'Space buns', { cap: 'long', ponytail: false, extra: 'buns' }, 'Two buns, twice the style.', { lean: 'female' }),
+  hairStyle('space-buns', 'Space buns', { cap: 'tied', ponytail: false, extra: 'buns' }, 'Two buns, twice the style.', { lean: 'female' }),
   hairStyle('mohawk', 'Mohawk', { cap: 'bald', ponytail: false, extra: 'mohawk' }, 'Built for headwinds.'),
   hairStyle('afro', 'Afro', { cap: 'bald', ponytail: false, extra: 'afro' }, 'Big hair, soft landings.'),
   hairStyle('big-curls', 'Total Eclipse', { cap: 'long', ponytail: false, extra: 'mane' }, 'Turn around, bright eyes.', { lean: 'female' }),
@@ -170,10 +170,10 @@ export const LOOK_ITEMS = /** @type {LookItem[]} */ ([
   hairColor('grey', 'Grey', ['#9b9a95', '#c9c8c1', '#727169', '#45443f']),
   hairColor('pink', 'Pink', ['#d97a9c', '#f2a6c0', '#ab5576', '#5e2a3d'], 'female'),
 
-  { id: 'mx', slot: 'helmet', name: 'Motocross', shape: 'mx', blurb: 'Long peak, goggles, chin bar out front.' },
-  { id: 'classic', slot: 'helmet', name: 'Full face', shape: 'classic', blurb: 'Tinted visor, stripe on top.' },
   // No helmet: the bare head shows while riding, and a crash has none to knock off.
   { id: 'none', slot: 'helmet', name: 'No helmet', bare: true, colorless: true, blurb: 'Wind in your hair. Mind the rocks.' },
+  { id: 'mx', slot: 'helmet', name: 'Motocross', shape: 'mx', blurb: 'Long peak, goggles, chin bar out front.' },
+  { id: 'classic', slot: 'helmet', name: 'Full face', shape: 'classic', blurb: 'Tinted visor, stripe on top.' },
   // Headwear over the bare head: the face shows, and it still comes off in a crash.
   { id: 'cap', slot: 'helmet', name: 'Cap', shape: 'cap', showsHead: true, blurb: 'Peak forward, eyes on the trail.' },
   { id: 'cap-back', slot: 'helmet', name: 'Backwards cap', shape: 'cap-back', showsHead: true, blurb: 'Peak back. Maximum attitude.' },
