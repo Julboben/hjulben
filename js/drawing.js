@@ -7298,17 +7298,22 @@ export function createGameArt(ctx) {
           bodyPath([[at[0] - nx, at[1] - ny], [at[0] + nx, at[1] + ny]], colors[bands.color], 2);
         }
       };
-      const leg = [hip, knee, ankle];
+      // The leg runs into the boot and stops on the sole's row, which is
+      // drawn over it, so no trouser shows under the foot.
+      const legEnd = [ankle[0], ankle[1] - 2];
+      const leg = [hip, knee, legEnd];
       const arm = [shoulder, elbow, hand];
 
       // Trousers: outlined silhouette with a narrow lit edge.
       bodyPath(leg, outline, 4);
       bodyPath(leg, colors.trousers, 3);
       if (style.legs === "shorts") {
-        // Bare from the hem above the knee, long socks from mid-shin.
-        const hem = along(leg, 0.42).at, sock = along(leg, 0.7).at;
-        bodyPath([hem, knee, sock], colors.skin, 3);
-        bodyPath([sock, ankle], colors.socks, 3);
+        // Bare from the hem down over the knee, long socks below it. The
+        // socks run on the same line as the trousers, so no trouser shows
+        // past their edges.
+        const hem = along(leg, 0.42).at;
+        bodyPath([knee, legEnd], colors.socks, 3);
+        bodyPath([hem, knee], colors.skin, 3);
         bodyPath([hem, knee], colors.skinLight, 1);
       }
       bodyPath(
@@ -7335,8 +7340,8 @@ export function createGameArt(ctx) {
       // Boots follow the ankle, on the peg or off it.
       if (style.boots === "tall" || style.boots === "welly") {
         const top = along(leg, 0.72).at;
-        bodyPath([top, ankle], outline, 4);
-        bodyPath([top, ankle], colors.boots, 3);
+        bodyPath([top, legEnd], outline, 4);
+        bodyPath([top, legEnd], colors.boots, 3);
         if (style.boots === "tall") limbBands(leg, { color: "sole", at: [0.86] }, 1.5);
       }
       if (style.boots === "trainer") {
@@ -7354,6 +7359,8 @@ export function createGameArt(ctx) {
         }
         if (style.boots === "snow") bootRect(-7, -9, 10, 2, colors[style.bootRim]);
       }
+      // The top of the toe, in front of the shaft, catches the sun.
+      bootRect(1, -5, 4, 2, colors.bootsLight);
 
       // Neck, slanting forward with the back from inside the collar, which
       // covers its foot, up under the back of the skull rather than the chin.
@@ -7598,6 +7605,19 @@ export function createGameArt(ctx) {
     if (style.bootRim)
       pixelPath([between(p.knee, p.foot, 0.7), between(p.knee, p.foot, 0.78)], colors[style.bootRim], 4, 2);
     pixelPath([heel, toe], colors.boots, 2, 2);
+    // The top of the toe catches the sun, as on the bike. The boot is two
+    // pixels thick only up or left of its line, so its top is that extra
+    // pixel when the sole is on the other side, and the line itself otherwise.
+    const lift = (Math.abs(toeX) >= Math.abs(toeY) ? downY : downX) > 0 ? 2 : 0;
+    pixelPath(
+      [
+        [p.foot.x + toeX * 2 - downX * lift, p.foot.y + toeY * 2 - downY * lift],
+        [toe[0] - downX * lift, toe[1] - downY * lift],
+      ],
+      colors.bootsLight,
+      1,
+      2,
+    );
     pixelPath(
       [
         [heel[0] + downX * 2, heel[1] + downY * 2],

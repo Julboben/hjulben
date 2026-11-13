@@ -243,6 +243,19 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     return avatar;
   }
 
+  // The rider's gender symbol in a small box tinted blue or pink, before or
+  // after their name; the name's own text says the gender to screen readers.
+  function genderBadge(gender) {
+    const badge = document.createElement('span');
+    badge.className = 'save-gender';
+    badge.dataset.gender = gender;
+    badge.setAttribute('aria-hidden', 'true');
+    const symbol = document.createElement('span');
+    symbol.dataset.icon = gender;
+    badge.append(symbol);
+    return badge;
+  }
+
   function drawActiveSaveIllustration() {
     const canvasElement = $('active-save-bike');
     if (canResume()) { drawRideSnapshot(canvasElement); return; }
@@ -359,11 +372,7 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     if (!session.saveGame) return;
     // The rider's name, then their gender, in the rider list's symbols.
     const gender = session.look.gender === 'female' ? 'female' : 'male';
-    const genderMark = document.createElement('span');
-    genderMark.className = 'save-gender';
-    genderMark.dataset.gender = gender;
-    genderMark.dataset.icon = gender;
-    genderMark.setAttribute('aria-hidden', 'true');
+    const genderMark = genderBadge(gender);
     const genderText = document.createElement('span');
     genderText.className = 'sr-only';
     genderText.textContent = ', ' + gender;
@@ -527,11 +536,7 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
         // The rider's gender before their name, in the creator's symbols.
         const nameLine = document.createElement('span');
         nameLine.className = 'save-slot-name';
-        const genderMark = document.createElement('span');
-        genderMark.className = 'save-gender';
-        genderMark.dataset.gender = gender;
-        genderMark.dataset.icon = gender;
-        genderMark.setAttribute('aria-hidden', 'true');
+        const genderMark = genderBadge(gender);
         const spoken = document.createElement('span');
         spoken.className = 'sr-only';
         spoken.textContent = ', ' + gender;
@@ -1491,11 +1496,7 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     const avatar = riderAvatar(run.look);
     // The rider's gender before their name, as in the rider list.
     const gender = run.look?.gender === 'female' ? 'female' : 'male';
-    const genderMark = document.createElement('span');
-    genderMark.className = 'save-gender';
-    genderMark.dataset.gender = gender;
-    genderMark.dataset.icon = gender;
-    genderMark.setAttribute('aria-hidden', 'true');
+    const genderMark = genderBadge(gender);
     const copy = document.createElement('span');
     copy.className = 'leaderboard-copy';
     const name = document.createElement('strong');
