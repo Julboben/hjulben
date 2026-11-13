@@ -73,15 +73,16 @@ export const LOOK_ART = 'pocket';
 const skin = (id, name, [skin, skinLight, skinShade], mouth, lips, blurb) =>
   ({ id, slot: 'skin', name, blurb, chip: [skinLight, skin], colors: { skin, skinLight, skinShade, mouth, lips } });
 
-// Hair colour: the cap, its highlight and shadow, and the ponytail's outline.
+// Hair colour: the cap, its highlight and shadow, and the tail's outline.
 const hairColor = (id, name, [hair, hairLight, hairShade, hairDark], lean) =>
   ({ id, slot: 'hairColor', name, lean, chip: [hair, hairShade], colors: { hair, hairLight, hairShade, hairDark } });
 
 // Hair cuts, as drawn by drawBareHead: `cap` covers the crown ('short' stops
 // above the ear, 'long' falls to the nape, 'tied' is pulled back off it,
-// 'buzz' is the top row only, 'bald' has none), `ponytail` adds the swinging
-// tail and `extra` draws more hair over the head ('bun', 'buns', 'mohawk',
-// 'afro', 'mane' or 'mullet'; see HAIR_EXTRAS in drawing.js).
+// 'buzz' is the top row only, 'bald' has none), `tail` adds a swinging
+// 'ponytail' or 'braid' (HAIR_TAILS in rider-hair.js) and `extra` draws more
+// hair over the head ('bun', 'buns', 'mohawk', 'afro', 'mane' or 'mullet';
+// see HAIR_EXTRAS in drawing.js).
 const hairStyle = (id, name, style, blurb, extra = {}) =>
   ({ id, slot: 'hair', name, blurb, style, shape: id, ...extra });
 
@@ -143,17 +144,18 @@ export const LOOK_ITEMS = /** @type {LookItem[]} */ ([
   skin('brown', 'Brown', ['#8f5638', '#b0714c', '#6d3f28'], '#4f2519', '#7a3040', 'Just right for the big rides.'),
   skin('deep', 'Deep', ['#5e3726', '#7e4c35', '#45271b'], '#2c140c', '#5a2232', 'Rides from dawn to dusk.'),
 
-  hairStyle('short', 'Short', { cap: 'short', ponytail: false }, 'Neat under any helmet.', { lean: 'male' }),
-  hairStyle('ponytail', 'Ponytail', { cap: 'tied', ponytail: true }, 'Long hair. More wind.', { lean: 'female' }),
-  hairStyle('bob', 'Bob', { cap: 'long', ponytail: false }, 'Chin length, sharp lines.', { lean: 'female' }),
-  hairStyle('buzz', 'Buzz cut', { cap: 'buzz', ponytail: false }, 'Low drag, no fuss.', { lean: 'male' }),
-  hairStyle('bald', 'Bald', { cap: 'bald', ponytail: false }, 'Nothing to mess up.', { colorless: true }),
-  hairStyle('man-bun', 'Man bun', { cap: 'short', ponytail: false, extra: 'bun' }, 'Tied up and out of the way.', { lean: 'male' }),
-  hairStyle('space-buns', 'Space buns', { cap: 'tied', ponytail: false, extra: 'buns' }, 'Two buns, twice the style.', { lean: 'female' }),
-  hairStyle('mohawk', 'Mohawk', { cap: 'bald', ponytail: false, extra: 'mohawk' }, 'Built for headwinds.'),
-  hairStyle('afro', 'Afro', { cap: 'bald', ponytail: false, extra: 'afro' }, 'Big hair, soft landings.'),
-  hairStyle('big-curls', 'Total Eclipse', { cap: 'long', ponytail: false, extra: 'mane' }, 'Turn around, bright eyes.', { lean: 'female' }),
-  hairStyle('mullet', 'Mullet', { cap: 'short', ponytail: false, extra: 'mullet' }, 'Business up front, trails out back.', { lean: 'male' }),
+  hairStyle('short', 'Short', { cap: 'short' }, 'Neat under any helmet.', { lean: 'male' }),
+  hairStyle('ponytail', 'Ponytail', { cap: 'tied', tail: 'ponytail' }, 'Long hair. More wind.', { lean: 'female' }),
+  hairStyle('braid', 'Braid', { cap: 'tied', tail: 'braid' }, 'Plaited tight for the long rides.', { lean: 'female' }),
+  hairStyle('bob', 'Bob', { cap: 'long' }, 'Chin length, sharp lines.', { lean: 'female' }),
+  hairStyle('buzz', 'Buzz cut', { cap: 'buzz' }, 'Low drag, no fuss.', { lean: 'male' }),
+  hairStyle('bald', 'Bald', { cap: 'bald' }, 'Nothing to mess up.', { colorless: true }),
+  hairStyle('man-bun', 'Man bun', { cap: 'short', extra: 'bun' }, 'Tied up and out of the way.', { lean: 'male' }),
+  hairStyle('space-buns', 'Space buns', { cap: 'tied', extra: 'buns' }, 'Two buns, twice the style.', { lean: 'female' }),
+  hairStyle('mohawk', 'Mohawk', { cap: 'bald', extra: 'mohawk' }, 'Built for headwinds.'),
+  hairStyle('afro', 'Afro', { cap: 'bald', extra: 'afro' }, 'Big hair, soft landings.'),
+  hairStyle('big-curls', 'Total Eclipse', { cap: 'long', extra: 'mane' }, 'Turn around, bright eyes.', { lean: 'female' }),
+  hairStyle('mullet', 'Mullet', { cap: 'short', extra: 'mullet' }, 'Business up front, trails out back.', { lean: 'male' }),
 
   beard('none', 'Clean shaven', 'Smooth as fresh tarmac.'),
   beard('stubble', 'Stubble', 'Three days on the trail.'),
@@ -514,7 +516,7 @@ export function randomLook(identity = DEFAULT_LOOK, { random = Math.random, owns
  *   roles: Record<string, Record<string, string> | null>,
  *   shapes: { hair: string, beard: string, helmet: string, outfit: string, accessory: string | null, bike: string },
  *   face: { lips: boolean },
- *   hair: { cap: string, ponytail: boolean, beard: string | null, strands: string[], outline: string, shine: string },
+ *   hair: { cap: string, tail: string | null, beard: string | null, strands: string[], outline: string, shine: string },
  *   accessory: { shape: string, fill: string, light: string, shade: string, outline: string, wrap?: boolean } | null,
  *   faceWear: { shape: string, base: string, light: string, shade: string } | null,
  *   helmet: boolean,
@@ -616,7 +618,7 @@ export function lookParts(look) {
       outfit: outfitItem.shape, accessory: accessory?.shape ?? null, bike: item('bike').shape
     }),
     face: Object.freeze({ ...face }),
-    hair: Object.freeze({ ...hairStyleItem.style, beard: beardShape, strands: [hairShade, hairShade, hair], outline: hairDark, shine: hairLight }),
+    hair: Object.freeze({ tail: null, ...hairStyleItem.style, beard: beardShape, strands: [hairShade, hairShade, hair], outline: hairDark, shine: hairLight }),
     accessory,
     faceWear,
     helmet: !bare,

@@ -1173,12 +1173,12 @@ export function createRenderer(canvas, { still = false } = {}) {
   }
 
   /**
-   * Steps what trails behind the rider of `ride` (a ponytail, a cape); returns
+   * Steps what trails behind the rider of `ride` (a ponytail, a braid, a cape); returns
    * it, or null for a look with neither.
    */
   function updateHair(current, ride, look, dt, flip = flipVisual) {
     const parts = lookParts(look);
-    if (!parts.hair.ponytail && !parts.accessory) return null;
+    if (!parts.hair.tail && !parts.accessory) return null;
     const state = hairState(ride, flip, look);
     let next = current;
     if (

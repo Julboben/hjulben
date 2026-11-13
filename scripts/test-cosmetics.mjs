@@ -8,7 +8,7 @@ import {
   sameLook, isColorless, partName, randomLook, lookParts, ownsWith, ownedLook, shownItemsForSlot, newlyUnlockedItems, gearCard,
   extraHiddenBy
 } from '../js/cosmetics.js';
-import { hasTrailArt, hairRoot } from '../js/rider-hair.js';
+import { hasHairTail, hasTrailArt, hairRoot } from '../js/rider-hair.js';
 import { lookUnlock } from '../js/unlocks.js';
 import { readFileSync } from 'node:fs';
 import { BIKE_MODELS, createGameArt, drawBareHead, hasBeardArt, hasFaceWearArt, hasOutfitStyle, isHeadwear } from '../js/drawing.js';
@@ -143,7 +143,7 @@ const random = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
     assert.equal(parts.bike, 'elasto');
   }
   assert.deepEqual(lookParts(legacyLook('female')).hair.strands, ['#54362d', '#54362d', '#684438'], 'the old ponytail');
-  assert.equal(lookParts(legacyLook('male')).hair.ponytail, false);
+  assert.equal(lookParts(legacyLook('male')).hair.tail, null);
   assert.deepEqual(legacyLook('robot'), legacyLook('male'));
   // Gender is who the rider is, not what they wear.
   assert.equal(legacyRider({ ...STARTER_LOOKS.male, hair: 'ponytail' }), 'male');
@@ -290,6 +290,9 @@ const random = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
   }
   for (const item of itemsForSlot('trail')) {
     if (item.id !== 'none') assert.ok(hasTrailArt(item.shape), `${item.id} has a trail`);
+  }
+  for (const item of itemsForSlot('hair')) {
+    if (item.style.tail) assert.ok(hasHairTail(item.style.tail), `${item.id} has a tail`);
   }
 
   assert.deepEqual(lookOf({ rider: 'female' }), legacyLook('female'), 'old records keep their rider');

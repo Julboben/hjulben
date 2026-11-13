@@ -2394,7 +2394,7 @@ const BARE_HEAD = [
 // Hair over the bare head, as rows over BARE_HEAD: H the hair, h its shine,
 // b its shade, and O its outline. A 'short' cap stops above the ear, a 'long'
 // one has bangs and kicks out outlined to the nape, a 'tied' one keeps the
-// bangs but is pulled back off the nape (into a ponytail or buns), a 'buzz'
+// bangs but is pulled back off the nape (into a ponytail, a braid or buns), a 'buzz'
 // is a matte clipped hairline, and a 'bald' head catches the light.
 const HAIR_CAPS = {
   short: { x: -6, rows: ["", " HhhHH ", " HHH", " H"] },
@@ -2497,7 +2497,7 @@ export function drawBareHead(rect, colors, hair, face = null) {
 // The riding pose, in bike body coordinates before lean: where the helmet's
 // centre sits at rest, over the collar, and the hand on the handlebar every
 // bike model shares. riderSeatedPose in bike-lamps.js moves the joints with
-// lean and landing flex, and the ponytail's root follows the head.
+// lean and landing flex, and the root of the hair's tail follows the head.
 const RIDER_HEAD = [-1, -44];
 const RIDER_HAND = [16, -28];
 // Kick-starting, the foot goes up from RIDER_PEG onto the kick lever and
