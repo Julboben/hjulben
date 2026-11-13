@@ -1,4 +1,4 @@
-import { bodyPose } from './bike-lamps.js';
+import { bodyPose, riderSeatedPose } from './bike-lamps.js';
 
 const HAIR_STEP = 1 / 120;
 const HAIR_MAX_STEPS = 4;
@@ -43,35 +43,6 @@ const STRING = '#e8e5d9';
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 const lerp = (a, b, t) => a + (b - a) * t;
-
-/**
- * The seated rider's joint positions and body offsets in bike-body coordinates
- * (before suspension pitch and drop), shared by drawBike and riderBodyFrame.
- * Leaning forward rises into an elbows-up attack stance clear of the tank;
- * leaning back shifts over the rear fender with braced legs and taut arms;
- * heavy landings past sag flex the hips, shoulders and elbows.
- */
-export function riderSeatedPose({ leanVisual = 0, drop = 0 }, exact = false) {
-  const snap = value => exact ? value : Math.round(value / 2) * 2;
-  const fwd = Math.max(0, leanVisual), back = Math.max(0, -leanVisual);
-  const flex = snap(clamp((drop - 5) / 10, 0, 1) * 3);
-  const hipDX = snap(fwd * 6 - back * 6);
-  const hipDY = snap(-fwd * 2 + back * 2) + flex;
-  const torsoDX = snap(fwd * 8 - back * 6);
-  const torsoDY = snap(-fwd * 2 + back * 2) + flex;
-  const headDX = torsoDX + snap(fwd * 2);
-  const headDY = snap(back * 2) + flex;
-  return {
-    hip: [-11 + hipDX, -26 + hipDY],
-    shoulder: [-4 + torsoDX, -36 + torsoDY],
-    elbow: [8 + fwd * 3 - back * 4.5, -32 - fwd * 3 + back * 0.5 + flex * 0.5],
-    head: [-1 + headDX, -44 + headDY],
-    torsoDX,
-    torsoDY,
-    headDX,
-    headDY,
-  };
-}
 
 // Maps rider-local coordinates onto a bike pose the same way drawBike does.
 // Without `exact`, positions snap to the pixel grid drawBike renders on.

@@ -6,8 +6,16 @@ import {
 } from "./terrain.js";
 import { terrainMaterials } from "./materials.js";
 import { lookParts } from "./cosmetics.js";
-import { BIKE_LAMPS, bodyPose, lampColors, lampLenses, posedBodyPoint } from "./bike-lamps.js";
-import { riderSeatedPose } from "./rider-hair.js";
+import {
+  BIKE_LAMPS,
+  RIDER_PEG,
+  bodyPose,
+  lampColors,
+  lampLenses,
+  posedBodyPoint,
+  riderKnee,
+  riderSeatedPose,
+} from "./bike-lamps.js";
 import { FINISH_FLOWER_LIFT } from "./finish.js";
 import { APPLE_SPRITE } from "./apple.js";
 import { SPIKE_CORE, SPIKE_TIP, spikePoints } from "./spike.js";
@@ -2482,16 +2490,12 @@ export function drawBareHead(rect, colors, hair) {
 
 // The riding pose, in bike body coordinates before lean: where the helmet's
 // centre sits at rest, over the collar, and the hand on the handlebar every
-// bike model shares. riderSeatedPose in rider-hair.js moves the joints with
+// bike model shares. riderSeatedPose in bike-lamps.js moves the joints with
 // lean and landing flex, and the ponytail's root follows the head.
 const RIDER_HEAD = [-1, -44];
 const RIDER_HAND = [16, -28];
-// Where the ankle goes off the footpeg, in the body's frame, and the resting
-// thigh and shin lengths from [-11, -26] through [2, -16] to RIDER_PEG.
-// Kick-starting, the foot goes up onto the kick lever and stamps it down.
-const RIDER_PEG = [-2, -3];
-const RIDER_THIGH = Math.hypot(13, 10);
-const RIDER_SHIN = Math.hypot(4, 13);
+// Kick-starting, the foot goes up from RIDER_PEG onto the kick lever and
+// stamps it down through its swing.
 const RIDER_KICK_TOP = [-8, -10];
 const RIDER_KICK_BOTTOM = [-6, 0];
 // The Pocket Classic's cranks: the bottom bracket, the arm's length, and
@@ -2533,20 +2537,6 @@ function riderAnkle(foot, pedalled = false) {
     ankle = [ankle[0] + 3 * press, ankle[1] + 2 * press];
   }
   return ankle;
-}
-
-/**
- * The knee of a leg from `hip` to `ankle` with the thigh and shin the given
- * lengths, bent forward.
- */
-function riderKnee(hip, ankle, thigh, shin) {
-  const dx = ankle[0] - hip[0], dy = ankle[1] - hip[1];
-  const raw = Math.hypot(dx, dy) || 1;
-  const reach = Math.min(thigh + shin - 0.05, raw);
-  const along = (reach * reach + thigh * thigh - shin * shin) / (2 * reach);
-  const out = Math.sqrt(Math.max(0, thigh * thigh - along * along));
-  const ux = dx / raw, uy = dy / raw;
-  return [hip[0] + ux * along + uy * out, hip[1] + uy * along - ux * out];
 }
 
 // The jersey, leaning forward from the hip on the seat to the shoulder, lit
@@ -7273,7 +7263,7 @@ export function createGameArt(ctx) {
 
       const { hip, shoulder, elbow } = seated;
       const ankle = riderAnkle(foot, modelId === "classic");
-      const knee = riderKnee(hip, ankle, RIDER_THIGH, RIDER_SHIN);
+      const knee = riderKnee(hip, ankle);
       // The boot moves with the ankle by whole art pixels.
       const bootX = Math.round((ankle[0] - RIDER_PEG[0]) / 2) * 2,
         bootY = Math.round((ankle[1] - RIDER_PEG[1]) / 2) * 2;
@@ -7383,7 +7373,7 @@ export function createGameArt(ctx) {
         bodyRect(-2 + seated.torsoDX, torsoTop, 2, 2, parts.accessory.light);
       }
 
-      // Arm reaching to the raised handlebar, elbows up when leaning forward.
+      // Arm reaching to the raised handlebar, tucked over the bars when leaning forward.
       const sleeve = colors[style.sleeveColor];
       bodyPath(arm, outline, 3);
       bodyPath([shoulder, elbow], sleeve, 2);

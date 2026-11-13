@@ -8,11 +8,11 @@ import {
   sameLook, isColorless, partName, randomLook, lookParts, ownsWith, ownedLook, shownItemsForSlot, newlyUnlockedItems, gearCard,
   extraHiddenBy
 } from '../js/cosmetics.js';
-import { hasTrailArt, hairRoot, riderSeatedPose } from '../js/rider-hair.js';
+import { hasTrailArt, hairRoot } from '../js/rider-hair.js';
 import { lookUnlock } from '../js/unlocks.js';
 import { readFileSync } from 'node:fs';
-import { BIKE_MODELS, hasBeardArt, hasFaceWearArt, hasOutfitStyle, isHeadwear } from '../js/drawing.js';
-import { BIKE_LAMPS } from '../js/bike-lamps.js';
+import { BIKE_MODELS, createGameArt, hasBeardArt, hasFaceWearArt, hasOutfitStyle, isHeadwear } from '../js/drawing.js';
+import { BIKE_LAMPS, riderSeatedPose } from '../js/bike-lamps.js';
 import { createRagdoll } from '../js/ragdoll.js';
 
 let seed = 7;
@@ -376,18 +376,20 @@ const random = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
   }
 }
 
-// --- Seated pose, ponytail root and glove highlight ------------------------------
+// --- Seated pose, ragdoll alignment, ponytail root and drawing ------------------
 
 {
   const rest = riderSeatedPose({ leanVisual: 0, drop: 0 });
   assert.deepEqual(rest.hip, [-11, -26]);
   assert.deepEqual(rest.shoulder, [-4, -36]);
   assert.deepEqual(rest.elbow, [8, -32]);
-  assert.deepEqual(rest.head, [-1, -44]);
+  assert.equal(rest.headDX, 0);
+  assert.equal(rest.headDY, 0);
 
   const forward = riderSeatedPose({ leanVisual: 1, drop: 0 });
   assert.ok(forward.hip[0] <= -5 && forward.hip[1] < rest.hip[1], 'leaning forward rises off the saddle clear of the tank');
-  assert.ok(forward.shoulder[1] < rest.shoulder[1] && forward.elbow[1] < rest.elbow[1], 'elbows stay up above the bars');
+  assert.ok(forward.shoulder[1] < rest.shoulder[1] && forward.elbow[1] < rest.elbow[1], 'arms tuck above the bars when leaning forward');
+  assert.ok(forward.headDX > forward.torsoDX && forward.headDY === 0, 'head reaches forward over the bars');
 
   const back = riderSeatedPose({ leanVisual: -1, drop: 0 });
   const hand = [16, -28];
@@ -398,6 +400,30 @@ const random = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
   const landed = riderSeatedPose({ leanVisual: 0, drop: 15 });
   assert.ok(landed.hip[1] > rest.hip[1] && landed.shoulder[1] > rest.shoulder[1], 'heavy landings flex the rider');
 
+  // Ragdoll joints move by the exact offsets riderSeatedPose gives drawBike.
+  const rear = { x: 100, y: 200, ox: 100, oy: 200, compression: 14 };
+  const front = { x: 150, y: 200, ox: 150, oy: 200, compression: 14 };
+  const neutralThrow = createRagdoll(
+    { ...rear, compression: 0 },
+    { ...front, compression: 0 },
+    1,
+    random,
+    { leanVisual: 0 },
+  );
+  for (const leanVisual of [-1, 1]) {
+    const expected = riderSeatedPose({ leanVisual, drop: 14 });
+    const thrown = createRagdoll(rear, front, 1, random, { leanVisual });
+    const bodyDrop = 14;
+    assert.equal(thrown.points.head.x - neutralThrow.points.head.x, expected.headDX);
+    assert.equal(thrown.points.head.y - neutralThrow.points.head.y, expected.headDY + bodyDrop);
+    assert.equal(thrown.points.shoulder.x - neutralThrow.points.shoulder.x, expected.torsoDX);
+    assert.equal(thrown.points.shoulder.y - neutralThrow.points.shoulder.y, expected.torsoDY + bodyDrop);
+    assert.equal(thrown.points.hip.x - neutralThrow.points.hip.x, expected.hipDX);
+    assert.equal(thrown.points.hip.y - neutralThrow.points.hip.y, expected.hipDY + bodyDrop);
+    assert.equal(thrown.points.elbow.x - neutralThrow.points.elbow.x, expected.elbowDX);
+    assert.equal(thrown.points.elbow.y - neutralThrow.points.elbow.y, expected.elbowDY + bodyDrop);
+  }
+
   const levelPose = { rear: { x: 0, y: 0, compression: 0 }, front: { x: 50, y: 0, compression: 0 }, facing: 1, flipVisual: 1, leanVisual: 0 };
   const openRoot = hairRoot(levelPose, true, false);
   const shellRoot = hairRoot(levelPose, true, true);
@@ -406,6 +432,49 @@ const random = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
 
   const nisse = lookParts({ ...STARTER_LOOKS.male, outfit: 'nisse' }).palette;
   assert.notEqual(nisse.glovesLight, nisse.jacketLight, 'dark gloves do not take a bright jacket highlight');
+
+  // Every outfit, helmet (bare, headwear, full-shell and secret) and bike model
+  // draws on the bike across lean and landing states, and thrown as a ragdoll.
+  const styleKeys = new Set(['fillStyle', 'strokeStyle', 'globalAlpha', 'lineWidth', 'globalCompositeOperation', 'imageSmoothingEnabled']);
+  const anyContext = () => new Proxy({ getTransform: () => ({ a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 }) }, {
+    get: (target, key) => (key in target ? target[key] : typeof key === 'string' && !styleKeys.has(key) ? () => {} : target[key]),
+    set: (target, key, value) => { target[key] = value; return true; },
+  });
+  globalThis.OffscreenCanvas = /** @type {any} */ (class {
+    constructor(width, height) { Object.assign(this, { width, height }); }
+    getContext() { return anyContext(); }
+  });
+  const art = createGameArt(/** @type {any} */ (anyContext()));
+  const helmets = LOOK_ITEMS.filter(item => item.slot === 'helmet');
+  const outfits = itemsForSlot('outfit');
+  const bikes = itemsForSlot('bike');
+  const steps = Math.max(helmets.length, outfits.length, bikes.length);
+  for (let index = 0; index < steps; index++) {
+    const helmet = helmets[index % helmets.length];
+    const outfit = outfits[index % outfits.length];
+    const bike = bikes[index % bikes.length];
+    const look = { ...STARTER_LOOKS.female, helmet: helmet.id, outfit: outfit.id, bike: bike.id };
+    for (const leanVisual of [-1, 0, 1]) {
+      art.drawBike({
+        rear: { x: 100, y: 200, spin: 0.4, compression: leanVisual === 0 ? 14 : 2 },
+        front: { x: 150, y: 200, spin: 0.4, compression: leanVisual === 0 ? 14 : 2 },
+        mx: 125, my: 200, angle: 0, length: 50, facing: 1, flipVisual: 1,
+        leanVisual, look, state: 'running', foot: { crank: 0.8, kick: null, tap: null },
+      });
+    }
+    const ragdoll = createRagdoll(
+      { x: 100, y: 200, ox: 98, oy: 200 },
+      { x: 150, y: 200, ox: 148, oy: 200 },
+      1,
+      random,
+      { helmet: !helmet.bare },
+    );
+    art.drawRagdoll(ragdoll, look);
+    if (!helmet.bare) {
+      ragdoll.helmet = { x: 120, y: 190, spin: 0.5, facing: 1 };
+      art.drawRagdoll(ragdoll, look);
+    }
+  }
 }
 
 console.log('Cosmetics tests passed.');

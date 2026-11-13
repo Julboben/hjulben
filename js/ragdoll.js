@@ -4,7 +4,7 @@ import { collideFreePoint, collideWithBike } from "./vehicle-physics.js";
 import { terrainCollisionsAt } from "./terrain.js";
 import { atan2, cos, hypot, sin } from "./det-math.js";
 import { RAGDOLL_WATER, RAGDOLL_WATER_RADIUS, applyWater } from "./water.js";
-import { bodyPose } from "./bike-lamps.js";
+import { bodyPose, riderSeatedPose } from "./bike-lamps.js";
 
 // `grip` lets a resting body hold on slopes up to about 35 degrees. Once
 // sliding, kinetic friction (`slide`) is lower, so a thrown rider skids a
@@ -133,24 +133,28 @@ export function createRagdoll(rear, front, facing, random, visual = {}) {
 
   // This must match the value passed to drawBike().
   const flipVisual = visual.flipVisual ?? facing;
-  const shift = Math.round((visual.leanVisual ?? 0) * 4.5) * 2;
 
-  // Same suspension pose as drawBike().
+  // Same suspension and seated lean/landing pose as drawBike().
   const suspension = bodyPose(rear, front, facing);
+  const seated = riderSeatedPose({
+    leanVisual: visual.leanVisual ?? 0,
+    drop: suspension.drop,
+  });
   const bodyDrop = Math.round(suspension.drop / 2) * 2;
   const bodyPitch = suspension.pitch;
   const pc = cos(bodyPitch);
   const ps = sin(bodyPitch);
 
-  // Joint anchors from the first redesigned rider.
+  // Joint anchors from the first redesigned rider, moved by riderSeatedPose's
+  // offsets so the thrown body starts where the rider was drawn.
   // The head anchor is the helmet's center, not the neck.
   const pose = {
-    head: [3 + shift, -46],
-    shoulder: [2 + shift, -36],
-    hip: [-8 + shift, -24],
-    elbow: [11 + shift * 0.45, -30],
+    head: [3 + seated.headDX, -46 + seated.headDY],
+    shoulder: [2 + seated.torsoDX, -36 + seated.torsoDY],
+    hip: [-8 + seated.hipDX, -24 + seated.hipDY],
+    elbow: [11 + seated.elbowDX, -30 + seated.elbowDY],
     hand: [20, -25],
-    knee: [4 + shift * 0.45, -14],
+    knee: [4 + seated.kneeDX, -14 + seated.kneeDY],
     foot: [-2, -3],
   };
 
@@ -209,11 +213,14 @@ export function createRagdoll(rear, front, facing, random, visual = {}) {
       points[b].y - points[joint].y,
     );
 
+    // The side each joint folds to is fixed rather than read from the start
+    // pose: leaning forward puts the elbow just past straight, and reading it
+    // there would lock the arm bent backwards for the whole fall.
     return {
       a,
       joint,
       b,
-      side: Math.sign(cross(points[a], points[joint], points[b])) || 1,
+      side: (a === "shoulder" ? -1 : 1) * (flipVisual < 0 ? -1 : 1),
       minSpan: (upper + lower) * MIN_FOLD,
     };
   });
