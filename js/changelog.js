@@ -2,6 +2,60 @@
 /** @type {{ version: string, date: string, changes: { type: 'new' | 'improved' | 'fixed', text: string }[] }[]} */
 export const RELEASES = [
   {
+    "version": "0.6.6",
+    "date": "2026-11-13",
+    "changes": [
+      {
+        "type": "heads-up",
+        "text": "The street jacket is now won by landing your first flip (\"Head over Heels\"). Until then, riders who wore it show in the MX kit."
+      },
+      {
+        "type": "new",
+        "text": "New riders start in the MX kit, now with pants that match the jersey, a knee guard in the trim colour, and boots with grey soles and straps."
+      },
+      {
+        "type": "new",
+        "text": "A new Braid hairstyle is available."
+      },
+      {
+        "type": "improved",
+        "text": "The rider moves more on the bike: rising forward, sitting back and flexing on hard landings."
+      },
+      {
+        "type": "improved",
+        "text": "Jackets are shaded to match the light, and a ponytail now comes out from under a full helmet."
+      },
+      {
+        "type": "improved",
+        "text": "Shoes and boots look better, with pointed toes, dark outlines at the back, light catching the toe and rounder shading on tall boots."
+      },
+      {
+        "type": "improved",
+        "text": "The ponytail, braid and space buns hang and pull back more naturally, and stay hanging towards the ground in a wheelie or when the rider hangs off a cliff."
+      },
+      {
+        "type": "improved",
+        "text": "No helmet now comes first in the helmet choices."
+      },
+      {
+        "type": "improved",
+        "text": "The touch button for turning around now reads TURN, like the keyboard and gamepad controls."
+      },
+      {
+        "type": "fixed",
+        "text": "Gloves no longer show a highlight in the jacket's colour."
+      },
+      {
+        "type": "fixed",
+        "text": "Trousers, socks and the flannel outfit's shorts no longer show under or on top of the rider's boots."
+      },
+      {
+        "type": "fixed",
+        "text": "The rider's back no longer has a stray pixel sticking out at the seat."
+      }
+    ]
+  },
+  {
     "version": "0.6.5",
     "date": "2026-11-10",
     "changes": [
