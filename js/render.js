@@ -1141,7 +1141,7 @@ export function createRenderer(canvas, { still = false } = {}) {
   function currentHairRoot(ride, exact, flip = flipVisual, look = null) {
     if (ride.ragdoll) {
       const head = ride.ragdoll.points.head;
-      return { x: head.x - ride.facing * 6, y: head.y };
+      return { x: head.x - ride.facing * 6, y: head.y, forward: { x: ride.facing, y: 0 } };
     }
     const shelled = look ? !lookParts(look).bareHead : false;
     return hairRoot(riderPose(ride, flip), exact, shelled);

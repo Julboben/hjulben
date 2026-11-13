@@ -7,6 +7,11 @@ const HAIR_MAX_STEPS = 4;
 const HAIR_ROOT = [-9, -46];
 const HAIR_SHELL_ROOT = [-9, -40];
 const HAIR_REST = [-.55, .84];
+// How much the hair hangs the way HAIR_REST points in the world rather than
+// on the rider's body. Upright the two agree; as the rider tips, in a
+// wheelie or hanging off a cliff, the hair keeps hanging towards the ground
+// as it does once they are thrown off, instead of turning with them.
+const HAIR_WORLD = .9;
 // The tails a hair cut can have (see lookParts().hair.tail): the lengths of
 // their chain's links, from the root out. A braid is longer than a ponytail.
 const HAIR_TAILS = {
@@ -88,13 +93,24 @@ export function riderBodyFrame({ rear, front, facing = 1, flipVisual = facing, l
   };
 }
 
+/**
+ * Where the hair's tail leaves the head on a bike pose, with `forward`, the
+ * unit direction the rider faces along their body, which points from the
+ * root into the head however the rider is turned.
+ */
 export function hairRoot(pose, exact, shelled = false) {
   const [x, y] = shelled ? HAIR_SHELL_ROOT : HAIR_ROOT;
-  return riderBodyFrame(pose, exact).headPoint(x, y);
+  const frame = riderBodyFrame(pose, exact);
+  return { ...frame.headPoint(x, y), forward: frame.direction(1, 0) };
 }
 
 export function hairRestDirection(pose) {
-  return riderBodyFrame(pose, true).direction(HAIR_REST[0], HAIR_REST[1]);
+  const body = riderBodyFrame(pose, true).direction(HAIR_REST[0], HAIR_REST[1]);
+  const world = freeHairRestDirection(pose.flipVisual ?? pose.facing);
+  const x = body.x * (1 - HAIR_WORLD) + world.x * HAIR_WORLD;
+  const y = body.y * (1 - HAIR_WORLD) + world.y * HAIR_WORLD;
+  const length = Math.hypot(x, y) || 1;
+  return { x: x / length, y: y / length };
 }
 
 export function freeHairRestDirection(facing) {
@@ -278,7 +294,7 @@ export function createRiderHair(root, rest, tail, colors) {
     settle: chain.settle,
     draw(pixelPath, drawnRoot) {
       const spine = chain.spine(drawnRoot);
-      if (tail === 'braid') drawBraid(pixelPath, spine, colors);
+      if (tail === 'braid') drawBraid(pixelPath, spine, colors, drawnRoot.forward);
       else drawPonytail(pixelPath, spine, colors);
     }
   };
@@ -321,13 +337,13 @@ function drawPonytail(pixelPath, spine, colors) {
  * line and the strands seem to cross. A dark tie crosses it a little above
  * the end, and below it the loose end is plain hair.
  */
-function drawBraid(pixelPath, spine, colors) {
+function drawBraid(pixelPath, spine, colors, forward) {
   // The spine again, one art pixel (two units) between points, starting two
-  // pixels forward of the root, inside the head: the hair is drawn behind
-  // the rider, so the braid comes out of the back of the head with no gap.
-  // Forward is the way the braid doesn't trail.
-  const forward = spine.at(-1)[0] > spine[0][0] ? -1 : 1;
-  const rope = [[spine[0][0] + forward * 4, spine[0][1]], [spine[0][0] + forward * 2, spine[0][1]], spine[0]];
+  // pixels `forward` of the root, inside the head: the hair is drawn behind
+  // the rider, so the braid comes out of the back of the head with no gap
+  // however the rider is turned.
+  const [x, y] = spine[0];
+  const rope = [[x + forward.x * 4, y + forward.y * 4], [x + forward.x * 2, y + forward.y * 2], spine[0]];
   let carried = 0;
   for (let i = 1; i < spine.length; i++) {
     const [ax, ay] = spine[i - 1], [bx, by] = spine[i];
