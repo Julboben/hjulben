@@ -2547,14 +2547,17 @@ function riderAnkle(foot, pedalled = false) {
 
 // The jersey, leaning forward from the hip on the seat to the shoulder, lit
 // along the sky-facing back and shaded under the chest and arm. Top left at
-// (-16, -38), moved with riderSeatedPose.
+// (-16, -38), moved with riderSeatedPose. Its back runs straight down to the
+// seat. Moving the rows above the hem a pixel right as a whole, front edge
+// and all, pushes the front out into a belly: a heavier rider, or a fuller
+// jacket.
 const RIDER_TORSO = [
   "    OPPPPO ",
   "   OjjjjJdO",
   "   OjjJJddO",
   "  OjjJJJddO",
   " OjjJJddO  ",
-  "OPPPPPPO   ",
+  " OPPPPPO   ",
   " OPPPPO    ",
 ];
 
@@ -2606,7 +2609,7 @@ const OUTFIT_STYLES = {
       "  OjjjJJddO",
       "  OjjJJJddO",
       " OjjJdddO  ",
-      "OddddddO   ",
+      " OdddddO   ",
       " OddddO    ",
     ],
     torsoY: -42,
@@ -2624,7 +2627,7 @@ const OUTFIT_STYLES = {
       "   OjjJJddO",
       "  OPPPPPPdO",
       " OjjJJddO  ",
-      "OJJJJddO   ",
+      " OJJJddO   ",
       " OddddO    ",
     ],
     sleeve: "long",
@@ -2641,7 +2644,7 @@ const OUTFIT_STYLES = {
       "   OjjJJdPO",
       "  OjjJJJdPO",
       " OjjJJdPO  ",
-      "OddddddO   ",
+      " OdddddO   ",
       " OddddO    ",
     ],
     sleeve: "long",
@@ -2660,7 +2663,7 @@ const OUTFIT_STYLES = {
       "   OjjBbBkO",
       "  OjbBBBBkO",
       " OjbBBBkO  ",
-      "OkkkkkkO   ",
+      " OkkkkkO   ",
       " OkkkkO    ",
     ],
     keys: { B: "denim", b: "denimLight", k: "denimShade" },
@@ -2678,7 +2681,7 @@ const OUTFIT_STYLES = {
       "   OddddddO",
       "  OJdJJdJJO",
       " OJdJJdJO  ",
-      "OddddddO   ",
+      " OdddddO   ",
       " OJdJJO    ",
     ],
     cuff: "jacketShade",
@@ -2710,7 +2713,7 @@ const OUTFIT_STYLES = {
       "   OJkkKKKO",
       "  OJJKKKKKO",
       " OJJKKKKO  ",
-      "OKKKKKKO   ",
+      " OKKKKKO   ",
       " OKKKKO    ",
     ],
     keys: { K: "rubber", k: "rubberLight" },
@@ -2731,7 +2734,7 @@ const OUTFIT_STYLES = {
       "   OjjJJddO",
       "  ORRRRRRRO",
       " OjjJJddO  ",
-      "OddddddO   ",
+      " OdddddO   ",
       " OJJJJO    ",
     ],
     keys: { R: "reflect" },
@@ -2749,7 +2752,7 @@ const OUTFIT_STYLES = {
       " OjjjjJJddO",
       " OjjPPJJddO",
       " OjjPPJdO  ",
-      "OPJJJJdO   ",
+      " OJJJJdO   ",
       " OJJJJO    ",
     ],
     sleeve: "long",
@@ -2786,7 +2789,7 @@ const OUTFIT_STYLES = {
       "   OjjJJPdO",
       "  OjjJPPPdO",
       " OjjJJPdO  ",
-      "OPPPPPPO   ",
+      " OPPPPPO   ",
       " OJJJJO    ",
     ],
     sleeve: "long",
@@ -2802,7 +2805,7 @@ const OUTFIT_STYLES = {
       "   OPPJJJdO",
       "  OjjJPPJdO",
       " OjjJPPO   ",
-      "OJJJJJdO   ",
+      " OJJJJdO   ",
       " OPPPPO    ",
     ],
     sleeve: "long",
@@ -2821,7 +2824,7 @@ const OUTFIT_STYLES = {
       "   OjjJJPdO",
       "  OjjJJJPdO",
       " OjjJJJPO  ",
-      "OJJJJJdO   ",
+      " OJJJJdO   ",
       " OJJJJO    ",
     ],
     keys: { b: "bow" },
@@ -2839,7 +2842,7 @@ const OUTFIT_STYLES = {
       "   OPPPPPPO",
       "  OjjJJJddO",
       " OPPPPPPO  ",
-      "OJJJJJdO   ",
+      " OJJJJdO   ",
       " OPPPPO    ",
     ],
     sleeve: "long",
@@ -2857,7 +2860,7 @@ const OUTFIT_STYLES = {
       "   OjjJJddO",
       "  OjjJJPJdO",
       " OBBBBYBO  ",
-      "OPPPPPPO   ",
+      " OPPPPPO   ",
       " OJJJJO    ",
     ],
     keys: { B: "belt", Y: "buckle" },
@@ -2874,7 +2877,7 @@ const OUTFIT_STYLES = {
       "   OPjjJJdO",
       "  OjjJJJddO",
       " OBBBBYBO  ",
-      "OJJJJJdO   ",
+      " OJJJJdO   ",
       " OJdJJO    ",
     ],
     keys: { p: "furShade", B: "belt", Y: "buckle" },
@@ -2895,7 +2898,7 @@ const OUTFIT_STYLES = {
       "   OjJJdddO",
       "  OjJJddddO",
       " OjJJdddO  ",
-      "OBBBBBbO   ",
+      " OBBBBbO   ",
       " OBBbbO    ",
     ],
     keys: { B: "trousers", b: "briefsShade" },
@@ -7351,12 +7354,18 @@ export function createGameArt(ctx) {
         colors[style.legLight],
         1,
       );
-      limbBands(leg, style.legBands, 2);
+      // Bands round the leg are short pieces of its own line, as wide as the
+      // trousers, so they stay inside the outline.
+      const legBands = (bands) => {
+        if (!bands) return;
+        for (const t of bands.at) bodyPath([along(leg, t - 0.03).at, along(leg, t + 0.03).at], colors[bands.color], 2);
+      };
+      legBands(style.legBands);
 
       // The knee: a compact reinforced pad, a big guard or a race slider.
       if (style.knee === "pad") {
-        bodyRect(knee[0] - 2, knee[1] - 2, 6, 4, colors.trousersLight);
-        bodyRect(knee[0], knee[1], 4, 2, colors.panel);
+        bodyRect(knee[0] - 2, knee[1] - 2, 4, 4, colors.trousersLight);
+        bodyRect(knee[0], knee[1], 2, 2, colors.panel);
       } else if (style.knee === "big") {
         bodyRect(knee[0] - 2, knee[1] - 4, 6, 6, colors.panel);
         bodyRect(knee[0], knee[1] - 2, 4, 2, colors.trousersLight);
@@ -7369,7 +7378,7 @@ export function createGameArt(ctx) {
         const top = along(leg, 0.72).at;
         bodyPath([top, legEnd], outline, 4);
         bodyPath([top, legEnd], colors.boots, 2);
-        if (style.boots === "tall") limbBands(leg, { color: "sole", at: [0.86] }, 1.5);
+        if (style.boots === "tall") legBands({ color: "sole", at: [0.86] });
       }
       // Above a low boot shows the trousers' hem, or the sock or skin under
       // shorts and briefs.
@@ -7383,14 +7392,16 @@ export function createGameArt(ctx) {
         bootRect(-5, -5, 10, 4, colors.boots);
         bootRect(-5, -3, 10, 2, colors.sole);
         if (style.boots === "boot") bootRect(-3, -7, 4, 2, bareShin ?? colors.trousersLight);
-        if (style.boots === "heel") {
-          bootRect(-5, -1, 4, 2, colors.sole);
-          bootRect(5, -3, 2, 2, colors.boots);
-        }
+        if (style.boots === "heel") bootRect(-5, -1, 4, 2, colors.sole);
         if (style.boots === "snow") bootRect(-7, -9, 10, 2, colors[style.bootRim]);
       }
-      // The top of the toe, in front of the shaft, catches the sun.
-      bootRect(1, -5, 4, 2, colors.bootsLight);
+      // The toe is outlined over its top and front, inside the boot's size
+      // (a heel boot's pointed toe one further out), and catches the sun on
+      // top just behind that. The sole's heel end is outlined under the leg's.
+      bootRect(1, -7, 4, 2, outline);
+      bootRect(3, -5, 2, 2, outline);
+      bootRect(style.boots === "heel" ? 5 : 3, -3, 2, 2, outline);
+      bootRect(-1, -5, 4, 2, colors.bootsLight);
       bootRect(-5, -3, 2, 2, outline);
 
       // Neck, slanting forward with the back from inside the collar, which
