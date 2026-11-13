@@ -204,7 +204,7 @@ export const LOOK_ITEMS = /** @type {LookItem[]} */ ([
   helmetColor('purple', 'Purple', ['#7b5cc0', '#a98be6', '#53398a'], '#fff8e7', '#b0dfd4', 'female'),
 
   outfit('mx', 'MX kit', 'mx', 'Race jersey, matching pants, tall boots.',
-    { boots: '#e8e5d9', sole: '#3a4144' },
+    { boots: '#e8e5d9', sole: '#9aa39a' },
     { match: { gloves: 'panel', trousers: 'jacket', trousersLight: 'jacketLight' } }),
   outfit('street', 'Street jacket', 'jacket', 'Dark jeans, sturdy boots.',
     { trousers: '#29464e', trousersLight: '#42616a', gloves: '#304a42', boots: '#263b36', sole: '#657a70' }),

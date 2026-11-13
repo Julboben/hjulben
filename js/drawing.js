@@ -7386,8 +7386,8 @@ export function createGameArt(ctx) {
 
       // Boots follow the ankle, on the peg or off it.
       if (style.boots === "tall" || style.boots === "welly") {
+        // The shaft fills the leg's own outline from below the knee down.
         const top = along(leg, 0.72).at;
-        bodyPath([top, legEnd], outline, 4);
         bodyPath([top, legEnd], colors.boots, 2);
         if (style.bootStrap) legBands({ color: "sole", at: [0.86] });
         // A welly's rolled rim, along the top row of its shaft (which spreads
