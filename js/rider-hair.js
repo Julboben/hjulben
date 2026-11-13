@@ -23,9 +23,10 @@ const DEFAULT_COLORS = { strands: ['#54362d', '#54362d', '#684438'], outline: '#
 // from the neck, and a ribbon from the shoulder. `gravity` scales the pull
 // down: a balloon's string, below zero, floats up, with the balloon drawn
 // at its end. A `tip` is the share of the length, from the end, in white,
-// like a corgi's tail.
+// like a corgi's tail. A cape is drawn `behindHair`, under the ponytail;
+// the rest go over it, so the hair doesn't cut a thin one into pieces.
 const ACCESSORIES = {
-  cape: { root: [-9, -37], rest: [-.8, .6], lengths: [5, 5, 5, 5, 5, 5], width: [3, 8], ragdoll: 2 },
+  cape: { root: [-9, -37], rest: [-.95, .3], lengths: [4, 4, 4, 4, 4], width: [3, 5], ragdoll: 2, gravity: .3, behindHair: true },
   scarf: { root: [-6, -38], rest: [-.9, .25], lengths: [3, 3, 3, 3, 3], width: [2, 2], ragdoll: 0 },
   ribbon: { root: [-7, -37], rest: [-.95, .15], lengths: [4, 4, 4, 4, 4, 4, 4], width: [2, 2], ragdoll: 0 },
   balloon: { root: [-10, -34], rest: [-.45, -.9], lengths: [4, 4, 4, 4], width: [1, 1], ragdoll: 0, gravity: -.6, balloon: true },
@@ -303,6 +304,7 @@ export function createRiderAccessory(root, rest, accessory) {
   const { lengths, width: [rootWidth, tipWidth], gravity = 1, balloon = false, tip = 0 } = ACCESSORIES[accessory.shape];
   const chain = createChain(root, rest, lengths, gravity);
   return {
+    behindHair: Boolean(ACCESSORIES[accessory.shape].behindHair),
     get root() { return chain.root; },
     update: chain.update,
     settle: chain.settle,
@@ -375,11 +377,13 @@ export function createRiderTrails(state, parts) {
       if (accessory && next.accessory) accessory.settle(seconds, accessoryState(next));
     },
     draw(pixelPath, drawnRoot) {
-      if (accessory) {
+      const drawAccessory = () => {
         const { x, y } = accessory.root;
         accessory.draw(pixelPath, { x: x + drawnRoot.x - root.x, y: y + drawnRoot.y - root.y });
-      }
+      };
+      if (accessory?.behindHair) drawAccessory();
       ponytail?.draw(pixelPath, drawnRoot);
+      if (accessory && !accessory.behindHair) drawAccessory();
     }
   };
 }

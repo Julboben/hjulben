@@ -97,7 +97,7 @@ const helmetColor = (id, name, [helmet, helmetLight, helmetShade], stripe, visor
 // fills or overrides the outfit colour's keys, `match` copies one key from
 // another once they are merged (trousers the colour of the jacket, say) or
 // from the rider's skin, and `accessory` adds a piece that trails behind
-// the rider (a cape, a scarf) in the outfit colour's panel.
+// the rider (a cape) in the outfit colour's panel.
 const outfit = (id, name, shape, blurb, colors, extra = {}) =>
   ({ id, slot: 'outfit', name, shape, blurb, colors, ...extra });
 
@@ -107,8 +107,8 @@ const outfitColor = (id, name, [jacket, jacketLight, jacketShade], panel, lean) 
 
 // Extras. Face wear is drawn over the bare head by drawFaceWear in
 // drawing.js, so a full-face helmet hides it; a trail streams behind the
-// rider (ACCESSORIES in rider-hair.js), and an outfit's own cape or scarf
-// wins over it. Each `shape` is drawn in its own colour slot.
+// rider (ACCESSORIES in rider-hair.js), and an outfit's own cape wins
+// over it. Each `shape` is drawn in its own colour slot.
 const faceWear = (id, name, blurb, extra = {}) => ({ id, slot: 'faceWear', name, blurb, shape: id, ...extra });
 const trail = (id, name, blurb, extra = {}) => ({ id, slot: 'trail', name, blurb, shape: id, ...extra });
 
@@ -203,13 +203,13 @@ export const LOOK_ITEMS = /** @type {LookItem[]} */ ([
   helmetColor('pink', 'Pink', ['#e07a9a', '#f7b0c6', '#a8506e'], '#fff8e7', '#b0dfd4', 'female'),
   helmetColor('purple', 'Purple', ['#7b5cc0', '#a98be6', '#53398a'], '#fff8e7', '#b0dfd4', 'female'),
 
+  outfit('mx', 'MX kit', 'mx', 'Race jersey, matching pants, tall boots.',
+    { boots: '#e8e5d9', sole: '#3a4144' },
+    { match: { gloves: 'panel', trousers: 'jacket', trousersLight: 'jacketLight' } }),
   outfit('street', 'Street jacket', 'jacket', 'Dark jeans, sturdy boots.',
     { trousers: '#29464e', trousersLight: '#42616a', gloves: '#304a42', boots: '#263b36', sole: '#657a70' }),
   outfit('hoodie', 'Hoodie', 'hoodie', 'Hood up at the back, joggers, trainers.',
     { trousers: '#3d4448', trousersLight: '#5d666a', gloves: '#304a42', boots: '#e8e5d9', sole: '#9aa39a' }),
-  outfit('mx', 'MX kit', 'mx', 'Race jersey, panelled pants, tall boots.',
-    { trousers: '#e8e5d9', trousersLight: '#fff8e7', boots: '#e8e5d9', sole: '#3a4144', buckle: '#9aa39a' },
-    { match: { gloves: 'panel' } }),
   outfit('tracksuit', 'Tracksuit', 'tracksuit', 'Zipped up, stripes down the side.',
     { gloves: '#304a42', boots: '#fff8e7', sole: '#b5bcae' },
     { match: { trousers: 'jacket', trousersLight: 'jacketLight' } }),
@@ -229,9 +229,8 @@ export const LOOK_ITEMS = /** @type {LookItem[]} */ ([
   outfit('leathers', 'Racing leathers', 'leathers', 'One-piece suit, back hump, knee sliders.',
     { gloves: '#2c3133', boots: '#2c3133', sole: '#646d70' },
     { match: { trousers: 'jacket', trousersLight: 'jacketLight' } }),
-  outfit('puffer', 'Puffer', 'puffer', 'Quilted jacket, snow boots, a long scarf.',
-    { trousers: '#3a4144', trousersLight: '#5d6468', gloves: '#3a4144', boots: '#6b4a32', fur: '#e8e5d9', sole: '#2c3133' },
-    { accessory: 'scarf' }),
+  outfit('puffer', 'Puffer', 'puffer', 'Quilted jacket, high collar, snow boots.',
+    { trousers: '#3a4144', trousersLight: '#5d6468', gloves: '#3a4144', boots: '#6b4a32', fur: '#e8e5d9', sole: '#2c3133' }),
   outfit('superhero', 'Superhero', 'superhero', 'Emblem on the chest, cape in the wind.',
     { sole: '#263b36' },
     { match: { trousers: 'jacket', trousersLight: 'jacketLight', gloves: 'panel', boots: 'panel' }, accessory: 'cape' }),
@@ -244,7 +243,7 @@ export const LOOK_ITEMS = /** @type {LookItem[]} */ ([
       trousers: '#2c3034', trousersLight: '#4a5056', gloves: '#fff8e7', boots: '#1d2023', sole: '#4a5056' },
     { colorless: true }),
   outfit('prisoner', 'Prison stripes', 'prisoner', 'Doing time on every trail.',
-    { jacket: '#e8e5d9', jacketLight: '#fff8e7', jacketShade: '#b5bcae', panel: '#2c3133',
+    { jacket: '#e8e5d9', jacketLight: '#fff8e7', jacketShade: '#b5bcae', panel: '#4a5154',
       trousers: '#e8e5d9', trousersLight: '#fff8e7', gloves: '#b5bcae', boots: '#2c3133', sole: '#646d70' },
     { colorless: true, secret: true }),
   outfit('nisse', 'Nisse suit', 'nisse', 'Red wool, white trim, and a belt for the porridge.',
@@ -254,7 +253,7 @@ export const LOOK_ITEMS = /** @type {LookItem[]} */ ([
   outfit('viking', 'Viking furs', 'viking', 'Fur collar, wrapped legs. Raid in comfort.',
     { jacket: '#7a5a3a', jacketLight: '#9a7a52', jacketShade: '#5a4029', panel: '#d9c8a5', furShade: '#a8956d',
       trousers: '#5d6450', trousersLight: '#7a826a', wrap: '#8a6a48', belt: '#3a2a1e', buckle: '#b5bcae',
-      gloves: '#5a4029', boots: '#a8956d', sole: '#5a4029' },
+      gloves: '#5a4029', boots: '#6b4a32', sole: '#3a2a1e' },
     { colorless: true }),
   // Bare skin in the rider's own colour, with briefs in the outfit colour.
   outfit('underwear', 'Underwear', 'underwear', 'Nothing between you and the wind.', {},
@@ -360,13 +359,13 @@ export const STARTER_LOOKS = Object.freeze({
   female: Object.freeze({
     gender: 'female', skin: 'light',
     hair: 'ponytail', hairColor: 'auburn', beard: 'none', helmet: 'mx', helmetColor: 'teal',
-    outfit: 'street', outfitColor: 'pink', bike: 'elasto', bikeColor: 'green',
+    outfit: 'mx', outfitColor: 'pink', bike: 'elasto', bikeColor: 'green',
     faceWear: 'none', faceWearColor: 'black', trail: 'none', trailColor: 'red'
   }),
   male: Object.freeze({
     gender: 'male', skin: 'light',
     hair: 'short', hairColor: 'brown', beard: 'none', helmet: 'mx', helmetColor: 'orange',
-    outfit: 'street', outfitColor: 'white', bike: 'elasto', bikeColor: 'green',
+    outfit: 'mx', outfitColor: 'white', bike: 'elasto', bikeColor: 'green',
     faceWear: 'none', faceWearColor: 'black', trail: 'none', trailColor: 'red'
   }),
 });
@@ -378,10 +377,11 @@ export const DEFAULT_LOOK = /** @type {Look} */ (STARTER_LOOKS.male);
 export const starterLook = (gender, skin = DEFAULT_LOOK.skin) =>
   /** @type {Look} */ ({ ...(STARTER_LOOKS[gender] ?? DEFAULT_LOOK), skin: lookItem('skin', skin) ? skin : DEFAULT_LOOK.skin });
 
-// The two riders from before looks existed, item for item.
+// The two riders from before looks existed, item for item: the starter
+// looks of the time, in the street jacket.
 const LEGACY_LOOKS = {
-  male: Object.freeze({ ...STARTER_LOOKS.male, skin: 'tan' }),
-  female: Object.freeze({ ...STARTER_LOOKS.female, skin: 'tan' }),
+  male: Object.freeze({ ...STARTER_LOOKS.male, skin: 'tan', outfit: 'street' }),
+  female: Object.freeze({ ...STARTER_LOOKS.female, skin: 'tan', outfit: 'street' }),
 };
 
 /** The look of a rider saved as 'male' or 'female' before looks existed. */
@@ -454,8 +454,8 @@ export const isColorless = (look, part) => Boolean(lookItem(part.style, look?.[p
 
 /**
  * The item that hides `look`'s extra in `slot`, or null when it shows: a
- * helmet over the face hides face wear, and an outfit's own cape or scarf
- * trails instead of a trail.
+ * helmet over the face hides face wear, and an outfit's own cape trails
+ * instead of a trail.
  * @returns {LookItem | null}
  */
 export function extraHiddenBy(look, slot) {
@@ -570,11 +570,12 @@ export function lookParts(look) {
   for (const [key, from] of Object.entries(outfitItem.match ?? {})) outfitColors[key] = matchable[from];
   outfitColors.glovesLight = mix(outfitColors.gloves, '#fff8e7', 0.22);
   outfitColors.bootsLight = mix(outfitColors.boots, '#fff8e7', 0.22);
+  outfitColors.bootsShade = mix(outfitColors.boots, OUTLINE, 0.3);
   const beardShape = hasBeard(valid) ? item('beard').shape : null;
   // What trails behind the rider: the outfit's own piece in its panel
   // colour, or else the look's trail in its colour.
   const trailItem = item('trail'), faceItem = item('faceWear');
-  // A worn scarf also `wrap`s the neck, as an outfit's own scarf is drawn into it.
+  // A worn scarf also `wrap`s the neck.
   const trailing = outfitItem.accessory ? { shape: outfitItem.accessory, fill: outfitColors.panel }
     : trailItem.id !== 'none' ? { shape: trailItem.shape, fill: item('trailColor').colors.base, wrap: trailItem.shape === 'scarf' } : null;
   const accessory = trailing ? Object.freeze({
@@ -607,7 +608,7 @@ export function lookParts(look) {
         jersey: outfitColors.jacket, jerseyLight: outfitColors.jacketLight, jerseyShade: outfitColors.jacketShade,
         panel: outfitColors.panel, pants: outfitColors.trousers, pantsLight: outfitColors.trousersLight,
         gloves: outfitColors.gloves, glovesLight: outfitColors.glovesLight, boots: outfitColors.boots,
-        bootsLight: outfitColors.bootsLight, sole: outfitColors.sole
+        bootsLight: outfitColors.bootsLight, bootsShade: outfitColors.bootsShade, sole: outfitColors.sole
       },
       bike: { ...bikeColors },
     }),

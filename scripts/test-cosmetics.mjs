@@ -54,10 +54,10 @@ const random = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
   assert.ok(lookItem('hair', 'bald')?.colorless);
   assert.equal(lookItem('gender', 'female').face.lips, true);
   for (const item of itemsForSlot('bike')) assert.ok(BIKE_MODELS.includes(item.model), `bike ${item.id} has a model`);
-  // Every outfit has art, and every new one is won rather than given.
+  // Every outfit has art, and every one but the starter's is won rather than given.
   for (const item of itemsForSlot('outfit')) {
     assert.ok(hasOutfitStyle(item.shape), `outfit ${item.id} has art`);
-    if (item.id !== 'street') assert.ok(lookUnlock('outfit', item.id), `outfit ${item.id} is won`);
+    if (item.id !== 'mx') assert.ok(lookUnlock('outfit', item.id), `outfit ${item.id} is won`);
   }
   // Beards: everyone's, drawn, only grown where the gender allows, and in the hair colour.
   for (const item of itemsForSlot('beard')) {
@@ -264,12 +264,12 @@ const random = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
   // A worn look keeps the rider's identity and swaps locked items for their starter ones.
   const worn = ownedLook({ ...look, hair: 'big-curls' }, isDefaultItem);
   const starter = STARTER_LOOKS.female;
-  assert.deepEqual(worn, { ...look, hair: starter.hair, outfitColor: starter.outfitColor, bike: starter.bike });
+  assert.deepEqual(worn, { ...look, hair: starter.hair, outfit: starter.outfit, outfitColor: starter.outfitColor, bike: starter.bike });
   assert.ok(!Object.hasOwn(normalizeLook({ ...look, extra: 1 }), 'extra'));
 
   // Face wear shows on a bare head or under headwear; a full-face helmet
-  // hides it. A trail streams behind, unless the outfit trails its own cape
-  // or scarf. Each takes its own colour, and both can be worn together.
+  // hides it. A trail streams behind, unless the outfit trails its own cape.
+  // Each takes its own colour, and both can be worn together.
   assert.equal(extraHiddenBy(look, 'faceWear'), null);
   assert.equal(extraHiddenBy({ ...look, helmet: 'cap' }, 'faceWear'), null);
   assert.equal(extraHiddenBy({ ...look, helmet: 'mx' }, 'faceWear')?.id, 'mx');
@@ -333,7 +333,7 @@ const random = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
   assert.equal(old.rider, 'female');
   assert.equal(broken?.name, 'BROKEN', 'a save with neither a look nor a rider is repaired, not dropped');
   assert.deepEqual(broken.look, legacyLook('male'), 'and rides in the default look');
-  assert.deepEqual(newer.look, { ...DEFAULT_LOOK, skin: 'deep', helmet: 'none' });
+  assert.deepEqual(newer.look, { ...legacyLook('male'), skin: 'deep', helmet: 'none' }, 'a look missing slots fills them from the old rider');
 
   const look = { ...starterLook('male', 'fair'), hair: 'buzz', hairColor: 'red', helmet: 'none', bike: 'classic', bikeColor: 'blue' };
   storage.deleteSave(1, 9);

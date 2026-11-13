@@ -32,7 +32,7 @@ const SWATCH_VIEWS = {
 
 // Which view each part's style swatches use (a slot of SLOT_VIEWS its own),
 // and what their swatches take off so the item shows: hair and face wear
-// hide under a helmet, and a trail behind an outfit's own cape or scarf.
+// hide under a helmet, and a trail behind an outfit's own cape.
 const PART_VIEWS = { hair: 'head', helmet: 'head', outfit: 'outfit', bike: 'bike', extras: 'neck' };
 const SLOT_VIEWS = { trail: 'trail' };
 const SWATCH_CLEAR = {

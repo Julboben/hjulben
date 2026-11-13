@@ -78,7 +78,7 @@ const gearProgress = (slot, id, save) => lookItemProgress(lookItem(slot, id), pr
 assert.equal(gearProgress('outfit', 'dungarees', { stats: { apples: 137 } }), '137 / 500', 'a locked item counts towards its lifetime goal');
 assert.equal(gearProgress('bike', 'classic', finished(0, 1)), '2 / ' + officialTrailEntries.length, 'and towards a career goal');
 assert.equal(gearProgress('outfit', 'prisoner', {}), '', 'a secret achievement keeps its goal to itself');
-assert.equal(gearProgress('outfit', 'street', {}), '', 'an item everyone has counts nothing');
+assert.equal(gearProgress('outfit', 'mx', {}), '', 'an item everyone has counts nothing');
 
 // A rider with no record has seen what they had won; what they win after is new until seen.
 assert.deepEqual(unseenGear(rider()), [], 'a rider from before the badges starts with nothing new');

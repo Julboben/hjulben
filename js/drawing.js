@@ -2578,6 +2578,7 @@ const RIDER_TORSO = [
 //   legBands       { color, at }: bands across the leg, hip (0), knee (.5), ankle (1)
 //   knee           'pad', 'big', 'slider' or 'none'
 //   boots          'boot', 'tall', 'welly', 'trainer', 'heel' or 'snow'
+//   bootStrap      whether tall boots have a strap across, in the sole colour
 //   bootRim        the palette key of a snow boot's rim
 //   hem            the ragdoll's hem colour; bands { color, at } across its torso
 const OUTFIT_STYLES = {
@@ -2596,6 +2597,7 @@ const OUTFIT_STYLES = {
     knee: "pad",
     boots: "boot",
     bootRim: null,
+    bootStrap: false,
     hem: "panel",
     bands: null,
   },
@@ -2619,7 +2621,8 @@ const OUTFIT_STYLES = {
     boots: "trainer",
     hem: "jacketShade",
   },
-  // A race jersey with a side panel, worn loose over pants panelled to match.
+  // A race jersey with a side panel, worn loose over matching pants with a
+  // knee guard in the panel colour.
   mx: {
     torso: [
       "    OPPPPO ",
@@ -2631,9 +2634,10 @@ const OUTFIT_STYLES = {
       " OddddO    ",
     ],
     sleeve: "long",
-    legLight: "panel",
+    cuff: "jacketShade",
     knee: "big",
     boots: "tall",
+    bootStrap: true,
     hem: "jacket",
   },
   // Zipped to the chin, with a stripe down the sleeves and legs.
@@ -2690,16 +2694,16 @@ const OUTFIT_STYLES = {
     hem: "jacketShade",
     bands: { color: "jacketShade", at: [0.4, 0.7] },
   },
-  // A yoke across the chest, fringe down the back and under the hem.
+  // A yoke across the chest, and leather fringe down the back and under the hem.
   western: {
     torso: [
       "    OPPPPO ",
       "   OPPjPPPO",
-      "  POjjJPJdO",
-      " P OjjJJddO",
-      "P OjjJJdO  ",
-      " OPJPJPO   ",
-      " P P P     ",
+      "  dOjjJPJdO",
+      " d OjjJJddO",
+      "d OjjJJdO  ",
+      " OdJdJdO   ",
+      " d d d     ",
     ],
     sleeve: "long",
     knee: "none",
@@ -2744,27 +2748,28 @@ const OUTFIT_STYLES = {
     hem: "jacketShade",
     bands: { color: "reflect", at: [0.65] },
   },
-  // A one-piece suit with a hump on the back and a stripe down the side.
+  // A one-piece suit with a hump behind the helmet and a stripe down the side.
   leathers: {
     torso: [
-      "  OOOOPPPO ",
-      " OjjjjjjJdO",
-      " OjjjjJJddO",
-      " OjjPPJJddO",
-      " OjjPPJdO  ",
-      " OJJJJdO   ",
+      "   OOPPPPO ",
+      "  OjjjjjJdO",
+      "  OjjjjJddO",
+      "  OjjPJJddO",
+      " OjjPJddO  ",
+      " OJPJJdO   ",
       " OJJJJO    ",
     ],
     sleeve: "long",
     legLight: "panel",
     knee: "slider",
     boots: "tall",
+    bootStrap: true,
     hem: "jacket",
   },
-  // A quilted jacket, puffed out, with the scarf wrapped round the neck.
+  // A quilted jacket, puffed out, with a high collar.
   puffer: {
     torso: [
-      "   OPPPPPO ",
+      "   OJJJJdO ",
       "  OjjjjjJdO",
       " OjjjjJJddO",
       " OddddddddO",
@@ -2881,7 +2886,7 @@ const OUTFIT_STYLES = {
       " OJdJJO    ",
     ],
     keys: { p: "furShade", B: "belt", Y: "buckle" },
-    legBands: { color: "wrap", at: [0.6, 0.72, 0.84] },
+    legBands: { color: "wrap", at: [0.6, 0.8] },
     knee: "none",
     boots: "snow",
     bootRim: "panel",
@@ -7354,11 +7359,17 @@ export function createGameArt(ctx) {
         colors[style.legLight],
         1,
       );
-      // Bands round the leg are short pieces of its own line, as wide as the
-      // trousers, so they stay inside the outline.
+      // Bands round the leg are a pixel line across its two trouser pixels,
+      // so they stay inside the outline. The trousers spread a pixel left of
+      // a steep line and above a flat one, so a band runs level across a
+      // steep stretch of leg and upright across a flat one.
       const legBands = (bands) => {
         if (!bands) return;
-        for (const t of bands.at) bodyPath([along(leg, t - 0.03).at, along(leg, t + 0.03).at], colors[bands.color], 2);
+        for (const t of bands.at) {
+          const { at, dx, dy } = along(leg, t);
+          const across = Math.abs(dx) < Math.abs(dy) ? [at[0] - 2, at[1]] : [at[0], at[1] - 2];
+          bodyPath([across, at], colors[bands.color], 1);
+        }
       };
       legBands(style.legBands);
 
@@ -7367,8 +7378,8 @@ export function createGameArt(ctx) {
         bodyRect(knee[0] - 2, knee[1] - 2, 4, 4, colors.trousersLight);
         bodyRect(knee[0], knee[1], 2, 2, colors.panel);
       } else if (style.knee === "big") {
-        bodyRect(knee[0] - 2, knee[1] - 4, 6, 6, colors.panel);
-        bodyRect(knee[0], knee[1] - 2, 4, 2, colors.trousersLight);
+        bodyRect(knee[0] - 2, knee[1] - 4, 4, 6, colors.panel);
+        bodyRect(knee[0], knee[1] - 2, 2, 2, colors.trousersLight);
       } else if (style.knee === "slider") {
         bodyRect(knee[0] + 2, knee[1] - 2, 4, 4, colors.panel);
       }
@@ -7378,7 +7389,12 @@ export function createGameArt(ctx) {
         const top = along(leg, 0.72).at;
         bodyPath([top, legEnd], outline, 4);
         bodyPath([top, legEnd], colors.boots, 2);
-        if (style.boots === "tall") legBands({ color: "sole", at: [0.86] });
+        // The shaft's back is in shade, so it reads round.
+        bodyPath([[top[0] - 2, top[1]], [legEnd[0] - 2, legEnd[1]]], colors.bootsShade, 1);
+        if (style.bootStrap) legBands({ color: "sole", at: [0.86] });
+        // A welly's rolled rim, along the top row of its shaft (which spreads
+        // a pixel up and left of its line), catches the light.
+        if (style.boots === "welly") bodyPath([[top[0] - 2, top[1] - 2], [top[0], top[1] - 2]], colors.bootsLight, 1);
       }
       // Above a low boot shows the trousers' hem, or the sock or skin under
       // shorts and briefs.
@@ -7420,8 +7436,8 @@ export function createGameArt(ctx) {
       for (const [key, color] of Object.entries(style.keys)) torsoKeys[key] = colors[color];
       const torsoTop = style.torsoY + seated.torsoDY;
       bodyRows(-16 + seated.torsoDX, torsoTop, style.torso, torsoKeys);
-      // A scarf worn as an accessory wraps the neck above the collar, the
-      // way the puffer's does; its loose end trails from there.
+      // A scarf worn as an accessory wraps the neck above the collar; its
+      // loose end trails from there.
       if (parts.accessory?.wrap) {
         bodyRect(-6 + seated.torsoDX, torsoTop - 2, 8, 2, parts.accessory.shade);
         bodyRect(-6 + seated.torsoDX, torsoTop, 8, 2, parts.accessory.fill);

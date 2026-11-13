@@ -44,7 +44,7 @@ export const UNLOCKS = Object.freeze({
   'look:outfit:leathers': { trail: 'official:rooftops' }, // City
   'look:outfit:puffer': { trail: 'official:long-way-up' }, // The first snow, with the beanie
   'look:outfit:hoodie': { achievement: 'first-steps' },
-  'look:outfit:mx': { achievement: 'head-over-heels' },
+  'look:outfit:street': { achievement: 'head-over-heels' },
   'look:outfit:tracksuit': { achievement: 'leaps-and-bounds' },
   'look:outfit:dungarees': { achievement: 'an-apple-a-day' },
   'look:outfit:superhero': { achievement: 'hang-time' },
