@@ -159,7 +159,7 @@ export function announceVersion() {
     const at = editor.version.shadowedDraftAt || editor.version.rescuedAt;
     showStatus(
       "warning",
-      `${savedName(currentEntry())} has changed since your ${editor.version.shadowedDraftAt ? "draft" : "unsaved edits"} (${formatDraftTime(at)}), so it opened instead. The ${editor.version.shadowedDraftAt ? "draft is" : "edits are kept as a draft"} in Versions.`,
+      `Opened the ${savedName(currentEntry()).toLowerCase()} because it changed after your ${editor.version.shadowedDraftAt ? "draft" : "unsaved edits"} (${formatDraftTime(at)}). Your ${editor.version.shadowedDraftAt ? "draft is" : "edits are saved as a draft"} in Versions.`,
     );
     return;
   }

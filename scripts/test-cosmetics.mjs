@@ -8,11 +8,11 @@ import {
   sameLook, isColorless, partName, randomLook, lookParts, ownsWith, ownedLook, shownItemsForSlot, newlyUnlockedItems, gearCard,
   extraHiddenBy
 } from '../js/cosmetics.js';
-import { hasTrailArt } from '../js/rider-hair.js';
+import { hasHairTail, hasTrailArt, hairRoot } from '../js/rider-hair.js';
 import { lookUnlock } from '../js/unlocks.js';
 import { readFileSync } from 'node:fs';
-import { BIKE_MODELS, hasBeardArt, hasFaceWearArt, hasOutfitStyle, isHeadwear } from '../js/drawing.js';
-import { BIKE_LAMPS } from '../js/bike-lamps.js';
+import { BIKE_MODELS, createGameArt, drawBareHead, hasBeardArt, hasFaceWearArt, hasOutfitStyle, isHeadwear } from '../js/drawing.js';
+import { BIKE_LAMPS, riderSeatedPose } from '../js/bike-lamps.js';
 import { createRagdoll } from '../js/ragdoll.js';
 
 let seed = 7;
@@ -54,10 +54,10 @@ const random = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
   assert.ok(lookItem('hair', 'bald')?.colorless);
   assert.equal(lookItem('gender', 'female').face.lips, true);
   for (const item of itemsForSlot('bike')) assert.ok(BIKE_MODELS.includes(item.model), `bike ${item.id} has a model`);
-  // Every outfit has art, and every new one is won rather than given.
+  // Every outfit has art, and every one but the starter's is won rather than given.
   for (const item of itemsForSlot('outfit')) {
     assert.ok(hasOutfitStyle(item.shape), `outfit ${item.id} has art`);
-    if (item.id !== 'street') assert.ok(lookUnlock('outfit', item.id), `outfit ${item.id} is won`);
+    if (item.id !== 'mx') assert.ok(lookUnlock('outfit', item.id), `outfit ${item.id} is won`);
   }
   // Beards: everyone's, drawn, only grown where the gender allows, and in the hair colour.
   for (const item of itemsForSlot('beard')) {
@@ -77,6 +77,11 @@ const random = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
   assert.equal(suit.accessory.shape, 'cape');
   assert.equal(suit.accessory.fill, suit.palette.panel);
   assert.equal(lookParts(STARTER_LOOKS.male).accessory, null);
+  // Underwear is bare skin in the rider's own colour, with briefs in the outfit colour.
+  const bare = lookParts({ ...STARTER_LOOKS.male, skin: 'deep', outfit: 'underwear', outfitColor: 'blue' }).palette;
+  const deep = lookItem('skin', 'deep').colors, blue = lookItem('outfitColor', 'blue').colors;
+  for (const key of ['jacket', 'gloves', 'boots']) assert.equal(bare[key], deep.skin, `underwear ${key} is skin`);
+  assert.equal(bare.trousers, blue.jacket, 'the briefs are the trousers, in the outfit colour');
   // Every helmet has art: a shell, or headwear drawn over the bare head, which shows under it.
   for (const item of LOOK_ITEMS.filter(item => item.slot === 'helmet' && !item.bare)) {
     assert.ok(['classic', 'mx'].includes(item.shape) || isHeadwear(item.shape), `helmet ${item.id} has art`);
@@ -138,7 +143,7 @@ const random = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
     assert.equal(parts.bike, 'elasto');
   }
   assert.deepEqual(lookParts(legacyLook('female')).hair.strands, ['#54362d', '#54362d', '#684438'], 'the old ponytail');
-  assert.equal(lookParts(legacyLook('male')).hair.ponytail, false);
+  assert.equal(lookParts(legacyLook('male')).hair.tail, null);
   assert.deepEqual(legacyLook('robot'), legacyLook('male'));
   // Gender is who the rider is, not what they wear.
   assert.equal(legacyRider({ ...STARTER_LOOKS.male, hair: 'ponytail' }), 'male');
@@ -259,12 +264,12 @@ const random = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
   // A worn look keeps the rider's identity and swaps locked items for their starter ones.
   const worn = ownedLook({ ...look, hair: 'big-curls' }, isDefaultItem);
   const starter = STARTER_LOOKS.female;
-  assert.deepEqual(worn, { ...look, hair: starter.hair, outfitColor: starter.outfitColor, bike: starter.bike });
+  assert.deepEqual(worn, { ...look, hair: starter.hair, outfit: starter.outfit, outfitColor: starter.outfitColor, bike: starter.bike });
   assert.ok(!Object.hasOwn(normalizeLook({ ...look, extra: 1 }), 'extra'));
 
   // Face wear shows on a bare head or under headwear; a full-face helmet
-  // hides it. A trail streams behind, unless the outfit trails its own cape
-  // or scarf. Each takes its own colour, and both can be worn together.
+  // hides it. A trail streams behind, unless the outfit trails its own cape.
+  // Each takes its own colour, and both can be worn together.
   assert.equal(extraHiddenBy(look, 'faceWear'), null);
   assert.equal(extraHiddenBy({ ...look, helmet: 'cap' }, 'faceWear'), null);
   assert.equal(extraHiddenBy({ ...look, helmet: 'mx' }, 'faceWear')?.id, 'mx');
@@ -285,6 +290,9 @@ const random = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
   }
   for (const item of itemsForSlot('trail')) {
     if (item.id !== 'none') assert.ok(hasTrailArt(item.shape), `${item.id} has a trail`);
+  }
+  for (const item of itemsForSlot('hair')) {
+    if (item.style.tail) assert.ok(hasHairTail(item.style.tail), `${item.id} has a tail`);
   }
 
   assert.deepEqual(lookOf({ rider: 'female' }), legacyLook('female'), 'old records keep their rider');
@@ -328,7 +336,7 @@ const random = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
   assert.equal(old.rider, 'female');
   assert.equal(broken?.name, 'BROKEN', 'a save with neither a look nor a rider is repaired, not dropped');
   assert.deepEqual(broken.look, legacyLook('male'), 'and rides in the default look');
-  assert.deepEqual(newer.look, { ...DEFAULT_LOOK, skin: 'deep', helmet: 'none' });
+  assert.deepEqual(newer.look, { ...legacyLook('male'), skin: 'deep', helmet: 'none' }, 'a look missing slots fills them from the old rider');
 
   const look = { ...starterLook('male', 'fair'), hair: 'buzz', hairColor: 'red', helmet: 'none', bike: 'classic', bikeColor: 'blue' };
   storage.deleteSave(1, 9);
@@ -374,6 +382,131 @@ const random = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
     if (name === 'head') continue;
     assert.deepEqual(without.points[name], withHelmet.points[name], `${name} is thrown the same`);
   }
+}
+
+// --- Seated pose, ragdoll alignment, ponytail root and drawing ------------------
+
+{
+  const rest = riderSeatedPose({ leanVisual: 0, drop: 0 });
+  assert.deepEqual(rest.hip, [-11, -26]);
+  assert.deepEqual(rest.shoulder, [-4, -36]);
+  assert.deepEqual(rest.elbow, [8, -32]);
+  assert.equal(rest.headDX, 0);
+  assert.equal(rest.headDY, 0);
+
+  const forward = riderSeatedPose({ leanVisual: 1, drop: 0 });
+  assert.ok(forward.hip[0] <= -5 && forward.hip[1] < rest.hip[1], 'leaning forward rises off the saddle clear of the tank');
+  assert.ok(forward.shoulder[1] < rest.shoulder[1] && forward.elbow[1] < rest.elbow[1], 'arms tuck above the bars when leaning forward');
+  assert.ok(forward.headDX > forward.torsoDX && forward.headDY === 0, 'head reaches forward over the bars');
+
+  const back = riderSeatedPose({ leanVisual: -1, drop: 0 });
+  const hand = [16, -28];
+  const armLength = Math.hypot(back.elbow[0] - back.shoulder[0], back.elbow[1] - back.shoulder[1])
+    + Math.hypot(hand[0] - back.elbow[0], hand[1] - back.elbow[1]);
+  assert.ok(back.hip[0] < rest.hip[0] && armLength < 27, `leaning back keeps a taut arm (${armLength.toFixed(1)})`);
+
+  const landed = riderSeatedPose({ leanVisual: 0, drop: 15 });
+  assert.ok(landed.hip[1] > rest.hip[1] && landed.shoulder[1] > rest.shoulder[1], 'heavy landings flex the rider');
+
+  // Ragdoll joints move by the exact offsets riderSeatedPose gives drawBike.
+  const rear = { x: 100, y: 200, ox: 100, oy: 200, compression: 14 };
+  const front = { x: 150, y: 200, ox: 150, oy: 200, compression: 14 };
+  const neutralThrow = createRagdoll(
+    { ...rear, compression: 0 },
+    { ...front, compression: 0 },
+    1,
+    random,
+    { leanVisual: 0 },
+  );
+  for (const leanVisual of [-1, 1]) {
+    const expected = riderSeatedPose({ leanVisual, drop: 14 });
+    const thrown = createRagdoll(rear, front, 1, random, { leanVisual });
+    const bodyDrop = 14;
+    assert.equal(thrown.points.head.x - neutralThrow.points.head.x, expected.headDX);
+    assert.equal(thrown.points.head.y - neutralThrow.points.head.y, expected.headDY + bodyDrop);
+    assert.equal(thrown.points.shoulder.x - neutralThrow.points.shoulder.x, expected.torsoDX);
+    assert.equal(thrown.points.shoulder.y - neutralThrow.points.shoulder.y, expected.torsoDY + bodyDrop);
+    assert.equal(thrown.points.hip.x - neutralThrow.points.hip.x, expected.hipDX);
+    assert.equal(thrown.points.hip.y - neutralThrow.points.hip.y, expected.hipDY + bodyDrop);
+    assert.equal(thrown.points.elbow.x - neutralThrow.points.elbow.x, expected.elbowDX);
+    assert.equal(thrown.points.elbow.y - neutralThrow.points.elbow.y, expected.elbowDY + bodyDrop);
+  }
+
+  const levelPose = { rear: { x: 0, y: 0, compression: 0 }, front: { x: 50, y: 0, compression: 0 }, facing: 1, flipVisual: 1, leanVisual: 0 };
+  const openRoot = hairRoot(levelPose, true, false);
+  const shellRoot = hairRoot(levelPose, true, true);
+  assert.equal(shellRoot.x, openRoot.x);
+  assert.equal(shellRoot.y - openRoot.y, 6, 'a full-shell helmet drops the ponytail root to the nape');
+
+  const nisse = lookParts({ ...STARTER_LOOKS.male, outfit: 'nisse' }).palette;
+  assert.notEqual(nisse.glovesLight, nisse.jacketLight, 'dark gloves do not take a bright jacket highlight');
+
+  // Every outfit, helmet (bare, headwear, full-shell and secret) and bike model
+  // draws on the bike across lean and landing states, and thrown as a ragdoll.
+  const styleKeys = new Set(['fillStyle', 'strokeStyle', 'globalAlpha', 'lineWidth', 'globalCompositeOperation', 'imageSmoothingEnabled']);
+  const anyContext = () => new Proxy({ getTransform: () => ({ a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 }) }, {
+    get: (target, key) => (key in target ? target[key] : typeof key === 'string' && !styleKeys.has(key) ? () => {} : target[key]),
+    set: (target, key, value) => { target[key] = value; return true; },
+  });
+  globalThis.OffscreenCanvas = /** @type {any} */ (class {
+    constructor(width, height) { Object.assign(this, { width, height }); }
+    getContext() { return anyContext(); }
+  });
+  const art = createGameArt(/** @type {any} */ (anyContext()));
+  const helmets = LOOK_ITEMS.filter(item => item.slot === 'helmet');
+  const outfits = itemsForSlot('outfit');
+  const bikes = itemsForSlot('bike');
+  const hairs = itemsForSlot('hair');
+  const beards = itemsForSlot('beard');
+  const steps = Math.max(helmets.length, outfits.length, bikes.length, hairs.length, beards.length);
+  for (let index = 0; index < steps; index++) {
+    const helmet = helmets[index % helmets.length];
+    const outfit = outfits[index % outfits.length];
+    const bike = bikes[index % bikes.length];
+    const hair = hairs[index % hairs.length];
+    const beard = beards[index % beards.length];
+    const gender = index % 2 === 0 ? 'male' : 'female';
+    const look = { ...STARTER_LOOKS[gender], hair: hair.id, beard: beard.id, helmet: helmet.id, outfit: outfit.id, bike: bike.id };
+    for (const leanVisual of [-1, 0, 1]) {
+      art.drawBike({
+        rear: { x: 100, y: 200, spin: 0.4, compression: leanVisual === 0 ? 14 : 2 },
+        front: { x: 150, y: 200, spin: 0.4, compression: leanVisual === 0 ? 14 : 2 },
+        mx: 125, my: 200, angle: 0, length: 50, facing: 1, flipVisual: 1,
+        leanVisual, look, state: 'running', foot: { crank: 0.8, kick: null, tap: null },
+      });
+    }
+    const ragdoll = createRagdoll(
+      { x: 100, y: 200, ox: 98, oy: 200 },
+      { x: 150, y: 200, ox: 148, oy: 200 },
+      1,
+      random,
+      { helmet: !helmet.bare },
+    );
+    art.drawRagdoll(ragdoll, look);
+    if (!helmet.bare) {
+      ragdoll.helmet = { x: 120, y: 190, spin: 0.5, facing: 1 };
+      art.drawRagdoll(ragdoll, look);
+    }
+  }
+
+  // Bare head art: female vs male temple highlight/brow, matte buzz vs glossy
+  // short, and outlined long hair kick-out at x = -8.
+  const drawnPixels = (look) => {
+    const parts = lookParts(look);
+    const pixels = new Map();
+    drawBareHead((x, y, width, height, color) => {
+      for (let px = x; px < x + width; px += 2)
+        for (let py = y; py < y + height; py += 2) pixels.set(`${px},${py}`, color);
+    }, parts.palette, parts.hair, parts.face);
+    return pixels;
+  };
+  const femaleBare = drawnPixels({ ...STARTER_LOOKS.female, hair: 'bob', helmet: 'none' });
+  const maleBare = drawnPixels({ ...STARTER_LOOKS.male, hair: 'short', helmet: 'none' });
+  const buzzBare = drawnPixels({ ...STARTER_LOOKS.male, hair: 'buzz', helmet: 'none' });
+  assert.equal(femaleBare.get('4,-4'), lookParts(STARTER_LOOKS.female).palette.skinLight, 'female temple catches skinLight');
+  assert.equal(maleBare.get('4,-4'), lookParts(STARTER_LOOKS.male).palette.skinShade, 'male temple gets a soft skinShade brow');
+  assert.equal(femaleBare.get('-8,0'), '#263b36', 'long hair kicks out 1px at the back with an outline');
+  assert.notEqual(buzzBare.get('-2,-6'), maleBare.get('-2,-6'), 'buzz cut differs from short hair');
 }
 
 console.log('Cosmetics tests passed.');

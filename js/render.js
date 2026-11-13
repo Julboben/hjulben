@@ -1141,9 +1141,10 @@ export function createRenderer(canvas, { still = false } = {}) {
   function currentHairRoot(ride, exact, flip = flipVisual, look = null) {
     if (ride.ragdoll) {
       const head = ride.ragdoll.points.head;
-      return { x: head.x - ride.facing * 6, y: head.y };
+      return { x: head.x - ride.facing * 6, y: head.y, forward: { x: ride.facing, y: 0 } };
     }
-    return hairRoot(riderPose(ride, flip), exact);
+    const shelled = look ? !lookParts(look).bareHead : false;
+    return hairRoot(riderPose(ride, flip), exact, shelled);
   }
 
   function hairState(ride, flip, look) {
@@ -1172,12 +1173,12 @@ export function createRenderer(canvas, { still = false } = {}) {
   }
 
   /**
-   * Steps what trails behind the rider of `ride` (a ponytail, a cape); returns
+   * Steps what trails behind the rider of `ride` (a ponytail, a braid, a cape); returns
    * it, or null for a look with neither.
    */
   function updateHair(current, ride, look, dt, flip = flipVisual) {
     const parts = lookParts(look);
-    if (!parts.hair.ponytail && !parts.accessory) return null;
+    if (!parts.hair.tail && !parts.accessory) return null;
     const state = hairState(ride, flip, look);
     let next = current;
     if (

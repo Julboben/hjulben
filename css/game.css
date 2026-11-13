@@ -2038,9 +2038,16 @@ h2 {
     align-items: center;
     gap: 6px;
 }
-/* The rider's gender symbol before their name, in blue or pink. */
+/* The rider's gender symbol before their name, in blue or pink, in a box
+   washed and edged in the same colour. */
 .save-gender {
     --px: 1px;
+    flex: none;
+    padding: 3px;
+    display: inline-flex;
+    border: 1px solid color-mix(in srgb, currentColor 45%, transparent);
+    border-radius: var(--radius-pixel);
+    background: color-mix(in srgb, currentColor 18%, transparent);
     color: var(--color-gender-male);
     &[data-gender="female"] {
         color: var(--color-gender-female);
@@ -2061,6 +2068,7 @@ h2 {
     }
     & .save-gender {
         --px: 2px;
+        padding: 4px;
     }
 }
 .save-slot-copy {
