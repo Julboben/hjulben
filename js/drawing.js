@@ -2285,14 +2285,14 @@ function drawHeadwear(rect, shape, colors) {
 function drawRiderHead(rect, parts, colors, { bare = !parts.helmet, loose = false } = {}) {
   const shape = parts.shapes.helmet;
   if (bare) {
-    drawBareHead(rect, colors, parts.hair);
+    drawBareHead(rect, colors, parts.hair, parts.face);
     drawFaceWear(rect, parts.faceWear);
   } else if (shape === "mx") drawMxHelmet(rect, colors);
   else if (isHeadwear(shape)) {
     if (!loose) {
       const { extra } = parts.hair;
       const hair = extra && !HAIR_UNDER_HEADWEAR.has(extra) ? { ...parts.hair, extra: null } : parts.hair;
-      drawBareHead(rect, colors, hair);
+      drawBareHead(rect, colors, hair, parts.face);
       drawFaceWear(rect, parts.faceWear);
     }
     drawHeadwear(rect, shape, colors);
@@ -2378,28 +2378,28 @@ const HAIR_EXTRAS = {
   mullet: { x: -4, y: -2, rows: ["Oh ", "Ohh", "Ohh", "Ohd", "Odd", " OO"] },
 };
 
-// The rider's bare head facing right: the face with its outline, ear, eye
-// under a dark brow, nose and mouth, and no hair. Top left at (-6, -8), so
-// it is centred on (0, 0).
+// The rider's bare head facing right: the face with its outline, ear, eye,
+// nose, mouth, a soft temple brow (`B`, skinShade or skinLight by face.lips),
+// and nape shade. Top left at (-6, -8), so it is centred on (0, 0).
 const BARE_HEAD = [
   " OOOOO ",
   "OsssssO",
-  "OssssOO",
+  "OssssBO",
   "OsdselO",
   "Osslsss",
-  "OssssmO",
+  "OdsssmO",
   " OOOOO ",
 ];
 
-// Hair over the bare head, as rows over BARE_HEAD: H the hair, h its shine.
-// A 'short' cap stops above the ear, a 'long' one has bangs and falls to
-// the nape, where a ponytail starts, a 'buzz' is the top row only, and a
-// 'bald' head only catches the light.
+// Hair over the bare head, as rows over BARE_HEAD: H the hair, h its shine,
+// b its shade, and O its outline. A 'short' cap stops above the ear, a 'long'
+// one has bangs and kicks out outlined to the nape (where a ponytail starts),
+// a 'buzz' is a matte clipped hairline, and a 'bald' head catches the light.
 const HAIR_CAPS = {
-  short: ["", " HhhHH ", " HHH", " H"],
-  long: ["", " HhhHH ", " HHHH", " H", "HH", "HH"],
-  buzz: ["", " HhhHH "],
-  bald: ["", "  ll"],
+  short: { x: -6, rows: ["", " HhhHH ", " HHH", " H"] },
+  long: { x: -8, rows: ["", "  HhhHH ", "  HHHH", "  H", "OHb", "OHb", " O"] },
+  buzz: { x: -6, rows: ["", " bHHHb ", " b"] },
+  bald: { x: -6, rows: ["", "  ll"] },
 };
 
 // Beards, as rows over BARE_HEAD: H the hair colour, h its shine, b its
@@ -2408,7 +2408,7 @@ const BEARDS = {
   stubble: ["", "", "", "", "   b   ", "  b b  "],
   moustache: ["", "", "", "", "", "    HH "],
   goatee: ["", "", "", "", "", "    H  ", "    HHO", "    OO "],
-  full: ["", "", "", "", "  Hh   ", "  HHHmH", " OHHbHH", "  OOOOO"],
+  full: ["", "", "", "", "  Hh   ", "  HHHmH", " OHHbHHO", "  OOOOO "],
   lumberjack: ["", "", "", "", "  Hh   ", "  HHHmH", " OHhHHH", "  OHHbHO", "   OHHO", "    OO "],
 };
 
@@ -2460,23 +2460,27 @@ export const hasBeardArt = (shape) => Object.hasOwn(BEARDS, shape);
  * The rider's bare head, without a helmet or once it has come off, centred
  * where the helmet's centre is and facing right, in the same units as
  * drawHelmetShell. `hair` is the cut from lookParts: its cap (HAIR_CAPS),
- * any extra hair over it (HAIR_EXTRAS) and its beard (BEARDS).
+ * any extra hair over it (HAIR_EXTRAS) and its beard (BEARDS); `face` sets
+ * whether the temple catches a highlight (`lips: true`) or a soft brow shade.
  */
-export function drawBareHead(rect, colors, hair) {
+export function drawBareHead(rect, colors, hair, face = null) {
   const { cap = "short", extra = null, beard = null } = hair ?? {};
   const palette = {
     O: RIDER_OUTLINE,
     s: colors.skin,
     l: colors.skinLight,
     d: colors.skinShade,
+    B: face?.lips ? colors.skinLight : colors.skinShade,
     e: colors.eye,
     m: colors.mouth,
     H: colors.hair,
     h: colors.hairLight,
+    b: colors.hairShade,
   };
   drawPixelRows(rect, -6, -8, BARE_HEAD, palette);
-  if (HAIR_CAPS[cap]) drawPixelRows(rect, -6, -8, HAIR_CAPS[cap], palette);
-  if (BEARDS[beard]) drawPixelRows(rect, -6, -8, BEARDS[beard], { ...palette, b: colors.hairShade });
+  const hairCap = HAIR_CAPS[cap];
+  if (hairCap) drawPixelRows(rect, hairCap.x, -8, hairCap.rows, palette);
+  if (BEARDS[beard]) drawPixelRows(rect, -6, -8, BEARDS[beard], palette);
 
   const more = HAIR_EXTRAS[extra];
   if (more)

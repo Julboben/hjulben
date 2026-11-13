@@ -11,7 +11,7 @@ import {
 import { hasTrailArt, hairRoot } from '../js/rider-hair.js';
 import { lookUnlock } from '../js/unlocks.js';
 import { readFileSync } from 'node:fs';
-import { BIKE_MODELS, createGameArt, hasBeardArt, hasFaceWearArt, hasOutfitStyle, isHeadwear } from '../js/drawing.js';
+import { BIKE_MODELS, createGameArt, drawBareHead, hasBeardArt, hasFaceWearArt, hasOutfitStyle, isHeadwear } from '../js/drawing.js';
 import { BIKE_LAMPS, riderSeatedPose } from '../js/bike-lamps.js';
 import { createRagdoll } from '../js/ragdoll.js';
 
@@ -448,12 +448,17 @@ const random = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
   const helmets = LOOK_ITEMS.filter(item => item.slot === 'helmet');
   const outfits = itemsForSlot('outfit');
   const bikes = itemsForSlot('bike');
-  const steps = Math.max(helmets.length, outfits.length, bikes.length);
+  const hairs = itemsForSlot('hair');
+  const beards = itemsForSlot('beard');
+  const steps = Math.max(helmets.length, outfits.length, bikes.length, hairs.length, beards.length);
   for (let index = 0; index < steps; index++) {
     const helmet = helmets[index % helmets.length];
     const outfit = outfits[index % outfits.length];
     const bike = bikes[index % bikes.length];
-    const look = { ...STARTER_LOOKS.female, helmet: helmet.id, outfit: outfit.id, bike: bike.id };
+    const hair = hairs[index % hairs.length];
+    const beard = beards[index % beards.length];
+    const gender = index % 2 === 0 ? 'male' : 'female';
+    const look = { ...STARTER_LOOKS[gender], hair: hair.id, beard: beard.id, helmet: helmet.id, outfit: outfit.id, bike: bike.id };
     for (const leanVisual of [-1, 0, 1]) {
       art.drawBike({
         rear: { x: 100, y: 200, spin: 0.4, compression: leanVisual === 0 ? 14 : 2 },
@@ -475,6 +480,25 @@ const random = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
       art.drawRagdoll(ragdoll, look);
     }
   }
+
+  // Bare head art: female vs male temple highlight/brow, matte buzz vs glossy
+  // short, and outlined long hair kick-out at x = -8.
+  const drawnPixels = (look) => {
+    const parts = lookParts(look);
+    const pixels = new Map();
+    drawBareHead((x, y, width, height, color) => {
+      for (let px = x; px < x + width; px += 2)
+        for (let py = y; py < y + height; py += 2) pixels.set(`${px},${py}`, color);
+    }, parts.palette, parts.hair, parts.face);
+    return pixels;
+  };
+  const femaleBare = drawnPixels({ ...STARTER_LOOKS.female, hair: 'bob', helmet: 'none' });
+  const maleBare = drawnPixels({ ...STARTER_LOOKS.male, hair: 'short', helmet: 'none' });
+  const buzzBare = drawnPixels({ ...STARTER_LOOKS.male, hair: 'buzz', helmet: 'none' });
+  assert.equal(femaleBare.get('4,-4'), lookParts(STARTER_LOOKS.female).palette.skinLight, 'female temple catches skinLight');
+  assert.equal(maleBare.get('4,-4'), lookParts(STARTER_LOOKS.male).palette.skinShade, 'male temple gets a soft skinShade brow');
+  assert.equal(femaleBare.get('-8,0'), '#263b36', 'long hair kicks out 1px at the back with an outline');
+  assert.notEqual(buzzBare.get('-2,-6'), maleBare.get('-2,-6'), 'buzz cut differs from short hair');
 }
 
 console.log('Cosmetics tests passed.');
