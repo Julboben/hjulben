@@ -7389,8 +7389,6 @@ export function createGameArt(ctx) {
         const top = along(leg, 0.72).at;
         bodyPath([top, legEnd], outline, 4);
         bodyPath([top, legEnd], colors.boots, 2);
-        // The shaft's back is in shade, so it reads round.
-        bodyPath([[top[0] - 2, top[1]], [legEnd[0] - 2, legEnd[1]]], colors.bootsShade, 1);
         if (style.bootStrap) legBands({ color: "sole", at: [0.86] });
         // A welly's rolled rim, along the top row of its shaft (which spreads
         // a pixel up and left of its line), catches the light.
@@ -7411,12 +7409,12 @@ export function createGameArt(ctx) {
         if (style.boots === "heel") bootRect(-5, -1, 4, 2, colors.sole);
         if (style.boots === "snow") bootRect(-7, -9, 10, 2, colors[style.bootRim]);
       }
-      // The toe is outlined over its top and front, inside the boot's size
-      // (a heel boot's pointed toe one further out), and catches the sun on
-      // top just behind that. The sole's heel end is outlined under the leg's.
+      // The toe is outlined over its top and front, its tip on the sole's
+      // row a pixel further out, and catches the sun on top just behind
+      // that. The sole's heel end is outlined under the leg's.
       bootRect(1, -7, 4, 2, outline);
       bootRect(3, -5, 2, 2, outline);
-      bootRect(style.boots === "heel" ? 5 : 3, -3, 2, 2, outline);
+      bootRect(5, -3, 2, 2, outline);
       bootRect(-1, -5, 4, 2, colors.bootsLight);
       bootRect(-5, -3, 2, 2, outline);
 
