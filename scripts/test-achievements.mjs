@@ -48,8 +48,9 @@ const trailIds = new Set(catalog.trails.map(entry => entry.id));
     else if (kind === 'look') assert.ok(lookItem(rest[0], rest[1]), `${key} is a rider item`);
     else assert.fail(`${key} is a trail or look reward`);
     for (const [part, value] of Object.entries(rule)) {
-      assert.ok(['trails', 'golds', 'trail', 'achievement'].includes(part), `${key}.${part} is a rule part`);
-      if (part === 'trail') assert.ok(trailIds.has(value), `${key} asks for a trail in the catalog`);
+      assert.ok(['trails', 'golds', 'trail', 'achievement', 'soon'].includes(part), `${key}.${part} is a rule part`);
+      if (part === 'soon') assert.equal(value, true, `${key}.soon is true`);
+      else if (part === 'trail') assert.ok(trailIds.has(value), `${key} asks for a trail in the catalog`);
       else if (part === 'achievement') assert.ok(achievement(value), `${key} asks for a known achievement`);
       else assert.ok(Number.isInteger(value) && value > 0, `${key}.${part} is a positive count`);
     }
@@ -71,6 +72,9 @@ const trailIds = new Set(catalog.trails.map(entry => entry.id));
   assert.equal(unlockStatus({ trails: 3 }, progress({ trails: 3 })).open, true);
   assert.equal(unlockStatus({ trails: 3, golds: 2 }, progress({ trails: 5, golds: 1 })).open, false, 'every part must be met');
   assert.equal(unlockStatus({ trails: 1, golds: 2 }, null).hint, 'FINISH 1 TRAIL & WIN 2 GOLD MEDALS TO UNLOCK');
+
+  const everything = progress({ trails: 99, golds: 99, finished: ['bonus:the-bonny-tyler'], has: ['career-rider'] });
+  assert.deepEqual(unlockStatus({ soon: true }, everything), { open: false, hint: 'COMING SOON' }, 'nothing wins a reward that comes later');
 
   const trailRule = { trail: 'bonus:the-bonny-tyler' };
   assert.equal(unlockStatus(trailRule, progress()).open, false);

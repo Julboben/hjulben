@@ -95,9 +95,9 @@ const helmetColor = (id, name, [helmet, helmetLight, helmetShade], stripe, visor
 // Outfits: what goes with the jacket, from the gloves down, drawn by the
 // outfit style of the same `shape` (OUTFIT_STYLES in drawing.js). `colors`
 // fills or overrides the outfit colour's keys, `match` copies one key from
-// another once they are merged (trousers the colour of the jacket, say),
-// and `accessory` adds a piece that trails behind the rider (a cape, a
-// scarf) in the outfit colour's panel.
+// another once they are merged (trousers the colour of the jacket, say) or
+// from the rider's skin, and `accessory` adds a piece that trails behind
+// the rider (a cape, a scarf) in the outfit colour's panel.
 const outfit = (id, name, shape, blurb, colors, extra = {}) =>
   ({ id, slot: 'outfit', name, shape, blurb, colors, ...extra });
 
@@ -256,6 +256,10 @@ export const LOOK_ITEMS = /** @type {LookItem[]} */ ([
       trousers: '#5d6450', trousersLight: '#7a826a', wrap: '#8a6a48', belt: '#3a2a1e', buckle: '#b5bcae',
       gloves: '#5a4029', boots: '#a8956d', sole: '#5a4029' },
     { colorless: true }),
+  // Bare skin in the rider's own colour, with briefs in the outfit colour.
+  outfit('underwear', 'Underwear', 'underwear', 'Nothing between you and the wind.', {},
+    { match: { trousers: 'jacket', trousersLight: 'jacketLight', briefsShade: 'jacketShade',
+      jacket: 'skin', jacketLight: 'skinLight', jacketShade: 'skinShade', gloves: 'skin', boots: 'skin', sole: 'skinShade' } }),
 
   outfitColor('white', 'White', ['#e8e5d9', '#fff8e7', '#b5bcae'], '#29464e', 'male'),
   outfitColor('pink', 'Pink', ['#d86f82', '#ef9aa8', '#a94f69'], '#59415c', 'female'),
@@ -562,7 +566,8 @@ export function lookParts(look) {
   const helmetItem = item('helmet'), helmetColors = item('helmetColor').colors;
   const outfitItem = item('outfit');
   const outfitColors = { ...item('outfitColor').colors, ...outfitItem.colors };
-  for (const [key, from] of Object.entries(outfitItem.match ?? {})) outfitColors[key] = outfitColors[from];
+  const matchable = { ...skinColors, ...outfitColors };
+  for (const [key, from] of Object.entries(outfitItem.match ?? {})) outfitColors[key] = matchable[from];
   outfitColors.glovesLight = mix(outfitColors.gloves, '#fff8e7', 0.22);
   outfitColors.bootsLight = mix(outfitColors.boots, '#fff8e7', 0.22);
   const beardShape = hasBeard(valid) ? item('beard').shape : null;

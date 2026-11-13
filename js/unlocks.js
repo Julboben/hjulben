@@ -8,6 +8,8 @@
 //   golds        gold medals won on official trails
 //   trail        a trail (by catalog id) finished
 //   achievement  an achievement (see achievements.js) earned
+//   soon         nothing yet: the reward is in the game, but its way to win
+//                it comes later
 // Every part given must be met. Keeping every rule here shows the whole
 // progression in one place; scripts/test-achievements.mjs checks that each
 // key and rule points at something that exists.
@@ -51,6 +53,7 @@ export const UNLOCKS = Object.freeze({
   'look:outfit:nisse': { achievement: 'nisse-hunter' },
   'look:outfit:viking': { achievement: 'gold-rush' }, // With the Viking helmet
   'look:outfit:prisoner': { achievement: 'never-give-up' }, // Secret: doing time
+  'look:outfit:underwear': { soon: true },
 
   'look:hair:big-curls': { trail: 'bonus:the-bonny-tyler' },
   'look:helmet:dunce': { achievement: 'i-saw-that' },
@@ -68,7 +71,7 @@ export const UNLOCKS = Object.freeze({
 });
 
 /**
- * @typedef {{ trails?: number, golds?: number, trail?: string, achievement?: string }} UnlockRule
+ * @typedef {{ trails?: number, golds?: number, trail?: string, achievement?: string, soon?: true }} UnlockRule
  * @typedef {{
  *   trails: number, golds: number,
  *   finished: (trailId: string) => boolean,
@@ -97,6 +100,7 @@ const plural = (count, word) => `${count} ${word}${count === 1 ? '' : 'S'}`;
  */
 export function unlockStatus(rule, progress, trailName = () => 'a trail') {
   if (!rule) return { open: true, hint: '' };
+  if (rule.soon) return { open: false, hint: 'COMING SOON' };
   const parts = [];
   if (rule.trails) parts.push('FINISH ' + plural(rule.trails, 'TRAIL'));
   if (rule.golds) parts.push('WIN ' + plural(rule.golds, 'GOLD MEDAL'));

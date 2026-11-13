@@ -2569,7 +2569,8 @@ const RIDER_TORSO = [
 //   cuff           the cuff's palette key, or null for none
 //   armBands       { color, at }: bands across the arm, at fractions of the
 //                  way from the shoulder (0) through the elbow (.5) to the hand (1)
-//   legs           'trousers', or 'shorts' (bare knee, `socks` below it)
+//   legs           'trousers', 'shorts' (bare knee, `socks` below it) or
+//                  'briefs' (bare from the top of the thigh)
 //   legLight       the trousers' lit edge
 //   legBands       { color, at }: bands across the leg, hip (0), knee (.5), ankle (1)
 //   knee           'pad', 'big', 'slider' or 'none'
@@ -2883,6 +2884,27 @@ const OUTFIT_STYLES = {
     bootRim: "panel",
     hem: "jacketShade",
     bands: { color: "belt", at: [0.3] },
+  },
+  // Bare skin (the outfit's jacket, gloves and boots are the skin's colours)
+  // and briefs, the trousers' colour. The body is shaded a step darker than
+  // the near arm, so the arm stands out against it.
+  underwear: {
+    torso: [
+      "    OJJJdO ",
+      "   OjJJJddO",
+      "   OjJJdddO",
+      "  OjJJddddO",
+      " OjJJdddO  ",
+      "OBBBBBbO   ",
+      " OBBbbO    ",
+    ],
+    keys: { B: "trousers", b: "briefsShade" },
+    sleeve: "long",
+    cuff: null,
+    legs: "briefs",
+    knee: "none",
+    boots: "trainer",
+    hem: "trousers",
   },
 };
 
@@ -7298,28 +7320,33 @@ export function createGameArt(ctx) {
           bodyPath([[at[0] - nx, at[1] - ny], [at[0] + nx, at[1] + ny]], colors[bands.color], 2);
         }
       };
-      // The leg runs into the boot and stops on the sole's row, which is
-      // drawn over it, so no trouser shows under the foot.
-      const legEnd = [ankle[0], ankle[1] - 2];
+      // The leg runs into the boot and stops above the sole, so its outline
+      // doesn't stick out behind the heel: the sole's heel end is outlined
+      // instead.
+      const legEnd = [ankle[0], ankle[1] - 4];
       const leg = [hip, knee, legEnd];
       const arm = [shoulder, elbow, hand];
 
-      // Trousers: outlined silhouette with a narrow lit edge.
+      // Trousers with a narrow lit edge. The outline is a pixel wider than
+      // them on both sides, so the leg stands out from the bike behind it.
       bodyPath(leg, outline, 4);
-      bodyPath(leg, colors.trousers, 3);
-      if (style.legs === "shorts") {
-        // Bare from the hem down over the knee, long socks below it. The
-        // socks run on the same line as the trousers, so no trouser shows
-        // past their edges.
-        const hem = along(leg, 0.42).at;
-        bodyPath([knee, legEnd], colors.socks, 3);
-        bodyPath([hem, knee], colors.skin, 3);
+      bodyPath(leg, colors.trousers, 2);
+      // Shorts and briefs stop at a hem on the thigh, bare below it, with
+      // long socks from the knee under shorts. The skin and socks run on the
+      // trousers' own line, so none of them shows past their edges, and the
+      // shorts are drawn back over the top of the thigh.
+      const bareFrom = { shorts: 0.42, briefs: 0.15 }[style.legs];
+      const hem = bareFrom ? along(leg, bareFrom).at : knee;
+      if (bareFrom) {
+        bodyPath([hip, knee], colors.skin, 2);
+        bodyPath([knee, legEnd], colors[style.legs === "shorts" ? "socks" : "skin"], 2);
+        bodyPath([hip, hem], colors.trousers, 2);
         bodyPath([hem, knee], colors.skinLight, 1);
       }
       bodyPath(
         [
           [hip[0] + 1, hip[1] - 1],
-          [knee[0] - 2, knee[1] - 2],
+          [hem[0] - 2, hem[1] - 2],
         ],
         colors[style.legLight],
         1,
@@ -7341,18 +7368,21 @@ export function createGameArt(ctx) {
       if (style.boots === "tall" || style.boots === "welly") {
         const top = along(leg, 0.72).at;
         bodyPath([top, legEnd], outline, 4);
-        bodyPath([top, legEnd], colors.boots, 3);
+        bodyPath([top, legEnd], colors.boots, 2);
         if (style.boots === "tall") limbBands(leg, { color: "sole", at: [0.86] }, 1.5);
       }
+      // Above a low boot shows the trousers' hem, or the sock or skin under
+      // shorts and briefs.
+      const bareShin = { shorts: colors.socks, briefs: colors.skin }[style.legs];
       if (style.boots === "trainer") {
-        bootRect(-3, -7, 4, 2, colors.trousers);
+        bootRect(-3, -7, 4, 2, bareShin ?? colors.trousers);
         bootRect(-5, -5, 10, 4, colors.boots);
         bootRect(-5, -3, 10, 2, colors.sole);
       } else {
         bootRect(-5, -7, 6, 6, colors.boots);
         bootRect(-5, -5, 10, 4, colors.boots);
         bootRect(-5, -3, 10, 2, colors.sole);
-        if (style.boots === "boot") bootRect(-3, -7, 4, 2, colors.trousersLight);
+        if (style.boots === "boot") bootRect(-3, -7, 4, 2, bareShin ?? colors.trousersLight);
         if (style.boots === "heel") {
           bootRect(-5, -1, 4, 2, colors.sole);
           bootRect(5, -3, 2, 2, colors.boots);
@@ -7361,6 +7391,7 @@ export function createGameArt(ctx) {
       }
       // The top of the toe, in front of the shaft, catches the sun.
       bootRect(1, -5, 4, 2, colors.bootsLight);
+      bootRect(-5, -3, 2, 2, outline);
 
       // Neck, slanting forward with the back from inside the collar, which
       // covers its foot, up under the back of the skull rather than the chin.
@@ -7543,21 +7574,25 @@ export function createGameArt(ctx) {
       limbBands(joint, last, bands.at.filter((t) => t >= 0.5).map((t) => t * 2 - 1), color, width);
     };
 
-    // TROUSERS
+    // TROUSERS, outlined on both sides as on the bike.
     pixelPath([point(p.hip), point(p.knee), point(p.foot)], outline, 4, 2);
     pixelPath(
       [point(p.hip), point(p.knee), point(p.foot)],
       colors.trousers,
-      3,
+      2,
       2,
     );
-    if (style.legs === "shorts") {
-      pixelPath([between(p.hip, p.knee, 0.8), point(p.knee), between(p.knee, p.foot, 0.4)], colors.skin, 3, 2);
-      pixelPath([between(p.knee, p.foot, 0.4), point(p.foot)], colors.socks, 3, 2);
+    // Bare below the hem of shorts or briefs, on the trousers' own line, as
+    // on the bike.
+    const bareFrom = { shorts: 0.8, briefs: 0.3 }[style.legs];
+    if (bareFrom) {
+      pixelPath([point(p.hip), point(p.knee), point(p.foot)], colors.skin, 2, 2);
+      if (style.legs === "shorts") pixelPath([between(p.knee, p.foot, 0.4), point(p.foot)], colors.socks, 2, 2);
+      pixelPath([point(p.hip), between(p.hip, p.knee, bareFrom)], colors.trousers, 2, 2);
     }
 
     const thighStart = between(p.hip, p.knee, 0.15);
-    const thighEnd = between(p.hip, p.knee, 0.85);
+    const thighEnd = between(p.hip, p.knee, Math.min(bareFrom ?? 1, 0.85));
 
     pixelPath(
       [
@@ -7599,7 +7634,7 @@ export function createGameArt(ctx) {
     pixelPath(
       [between(p.knee, p.foot, shaft), point(p.foot)],
       colors.boots,
-      3,
+      2,
       2,
     );
     if (style.bootRim)

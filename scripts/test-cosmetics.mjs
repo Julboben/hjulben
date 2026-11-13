@@ -77,6 +77,11 @@ const random = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
   assert.equal(suit.accessory.shape, 'cape');
   assert.equal(suit.accessory.fill, suit.palette.panel);
   assert.equal(lookParts(STARTER_LOOKS.male).accessory, null);
+  // Underwear is bare skin in the rider's own colour, with briefs in the outfit colour.
+  const bare = lookParts({ ...STARTER_LOOKS.male, skin: 'deep', outfit: 'underwear', outfitColor: 'blue' }).palette;
+  const deep = lookItem('skin', 'deep').colors, blue = lookItem('outfitColor', 'blue').colors;
+  for (const key of ['jacket', 'gloves', 'boots']) assert.equal(bare[key], deep.skin, `underwear ${key} is skin`);
+  assert.equal(bare.trousers, blue.jacket, 'the briefs are the trousers, in the outfit colour');
   // Every helmet has art: a shell, or headwear drawn over the bare head, which shows under it.
   for (const item of LOOK_ITEMS.filter(item => item.slot === 'helmet' && !item.bare)) {
     assert.ok(['classic', 'mx'].includes(item.shape) || isHeadwear(item.shape), `helmet ${item.id} has art`);
