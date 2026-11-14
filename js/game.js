@@ -26,12 +26,12 @@ import { createFireworks } from './fireworks.js';
 import { offerUpdate, reloadNow, setUpdatePrompt, updatePromptOpen } from './update-prompt.js';
 import { createRenderer } from './render.js';
 import { createDebugHud } from './debug-hud.js';
-import { riderPalette } from './drawing.js';
+import { bikeExhaustPoint, riderPalette } from './drawing.js';
 import { gearCard, legacyRider, lookOf, lookParts, newlyUnlockedItems } from './cosmetics.js';
 import { createOverlay } from './ui/overlay.js';
 import { keyChoices, keyTextNodes } from './ui/key-text.js';
 import { createMenu, loadStoredState, showSwitch } from './ui/menu.js';
-import { $, session, currentTrailEntry, trailKey, nisseKey, timeText, isRankedSource, bonusUnlock, riderLook, progressOf, debugMode, ghostMode, newlyOpenedBonusTrails } from './state.js';
+import { $, session, currentTrailEntry, trailKey, nisseKey, timeText, isRankedSource, bonusUnlock, riderLook, progressOf, debugMode, ghostMode, newlyOpenedBonusTrails, reducedMotion } from './state.js';
 import { notify } from './notifications.js';
 import { isNight } from './time-of-day.js';
 
@@ -1193,6 +1193,11 @@ export function startGame({ shared = null } = {}) {
         }
         // Measured from the rider setting off, as waiting at the line is free.
         if (ride.started && state === 'running') { simulatedTime += steps * STEP; passedTime += elapsed; }
+        // As the kick catches, the engine coughs smoke out of the exhaust.
+        if (kick !== null && !ride.started && kick < KICK_CATCHES && kick + dt >= KICK_CATCHES && !reducedMotion) {
+          const exhaust = bikeExhaustPoint({ rear: ride.rear, front: ride.front, facing: ride.facing, look: session.look });
+          if (exhaust) effects.exhaustPuff(exhaust, ride.facing);
+        }
         if (kick !== null) kick = ride.started || kick + dt >= KICK_SECONDS ? null : kick + dt;
       } else if (state === 'won' && ghostRiding()) {
         // A ghost the player beat rides on to the finish while all else stays frozen.

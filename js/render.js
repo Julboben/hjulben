@@ -1123,7 +1123,11 @@ export function createRenderer(canvas, { still = false } = {}) {
     for (const p of particles) {
       if (Boolean(p.splatter) !== splatter) continue;
       ctx.globalAlpha = clamp(p.life / p.max, 0, 1);
-      pixelRect(p.x, p.y, p.size || 4, p.size || 4, p.color, 2);
+      // A particle that grows (smoke) swells round its centre by whole art
+      // pixels, up to `grow` more by the end of its life.
+      const grown = p.grow ? Math.round(((1 - p.life / p.max) * p.grow) / 2) * 2 : 0;
+      const size = (p.size || 4) + grown;
+      pixelRect(p.x - grown / 2, p.y - grown / 2, size, size, p.color, 2);
     }
     ctx.globalAlpha = 1;
   }

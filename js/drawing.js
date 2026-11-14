@@ -2509,6 +2509,9 @@ const RIDER_KICK_BOTTOM = [-6, 0];
 const CLASSIC_CRANK = [-3, -1];
 const CLASSIC_CRANK_ARM = 6;
 const CLASSIC_ANKLE_OVER_PEDAL = [-3, -7];
+// The far leg pedals the far crank and is shaded this far towards the
+// outline, a step further from the eye than the near one.
+const CLASSIC_FAR_LEG_SHADE = 0.35;
 const classicPedal = (crank) => [
   CLASSIC_CRANK[0] + Math.cos(crank) * CLASSIC_CRANK_ARM,
   CLASSIC_CRANK[1] + Math.sin(crank) * CLASSIC_CRANK_ARM,
@@ -2942,6 +2945,28 @@ export function bikeLampPoints({ rear, front, facing = 1, look = null, bike = nu
   const lenses = lampLenses(BIKE_LAMPS[bikeModel(look, bike)]);
   const pose = bodyPose(rear, front, facing);
   return { head: posedBodyPoint(lenses.head, pose), tail: posedBodyPoint(lenses.tail, pose) };
+}
+
+// Just behind the end of each motorbike's muffler, in frame units: the
+// Elasto's under its tail (ELASTO_TAIL), the Scrambler's swept up beside the
+// rear wheel (SCRAMBLER_MUFFLER). The Pocket Classic has none.
+const BIKE_EXHAUSTS = { elasto: [-36, -18], scrambler: [-31, -10] };
+
+/**
+ * Where the bike's exhaust comes out, in world units, on a bike facing
+ * `facing`; null for a bike without an engine.
+ */
+export function bikeExhaustPoint({ rear, front, facing = 1, look = null }) {
+  const exhaust = BIKE_EXHAUSTS[bikeModel(look)];
+  if (!exhaust) return null;
+  const [x, y] = posedBodyPoint(exhaust, bodyPose(rear, front, facing));
+  const angle = Math.atan2(front.y - rear.y, front.x - rear.x);
+  const cos = Math.cos(angle),
+    sin = Math.sin(angle);
+  return {
+    x: (rear.x + front.x) / 2 + cos * facing * x - sin * y,
+    y: (rear.y + front.y) / 2 + sin * facing * x + cos * y,
+  };
 }
 
 /** Length of the Elasto fork's lower leg, from the axle (art px). */
@@ -7276,6 +7301,39 @@ export function createGameArt(ctx) {
         colors,
       );
     };
+    // On the Pocket Classic the far leg rides the far pedal, half a turn on
+    // from the near one. It is drawn first, so the frame, the chainring and
+    // the far crank arm cross in front of it: trousers (or the bare leg
+    // under shorts and briefs, or a tall boot's shaft) and a plain boot, all
+    // shaded, in the near leg's outline.
+    if (modelId === "classic" && state !== "ragdoll") {
+      const colors = parts.palette;
+      const outline = "#263b36";
+      const shade = (color) => mixHex(color, outline, CLASSIC_FAR_LEG_SHADE);
+      const style = outfitStyle(parts.shapes.outfit);
+      const { hip } = riderSeatedPose({ leanVisual, drop: bodyDrop });
+      const pedal = classicPedal((foot?.crank ?? 0) + Math.PI);
+      const ankle = [pedal[0] + CLASSIC_ANKLE_OVER_PEDAL[0], pedal[1] + CLASSIC_ANKLE_OVER_PEDAL[1]];
+      const knee = riderKnee(hip, ankle);
+      const legEnd = [ankle[0], ankle[1] - 4];
+      bodyPath([hip, knee, legEnd], outline, 4);
+      bodyPath([hip, knee, legEnd], shade(colors.trousers), 2);
+      if (style.legs === "shorts") bodyPath([knee, legEnd], shade(colors.socks), 2);
+      if (style.legs === "briefs") bodyPath([knee, legEnd], shade(colors.skin), 2);
+      // A tall boot's shaft starts where the near one's does, 0.72 along the leg.
+      if (style.boots === "tall" || style.boots === "welly") {
+        bodyPath([towards(knee, legEnd, 0.44), legEnd], shade(colors.boots), 2);
+      }
+      const bootX = Math.round((ankle[0] - RIDER_PEG[0]) / 2) * 2,
+        bootY = Math.round((ankle[1] - RIDER_PEG[1]) / 2) * 2;
+      const bootRect = (x, y, width, height, color) => bodyRect(x + bootX, y + bootY, width, height, color);
+      bootRect(-5, -5, 10, 4, shade(colors.boots));
+      bootRect(-5, -3, 10, 2, shade(colors.sole));
+      bootRect(1, -7, 4, 2, outline);
+      bootRect(3, -5, 2, 2, outline);
+      bootRect(5, -3, 2, 2, outline);
+      bootRect(-5, -3, 2, 2, outline);
+    }
     model.frame({
       crank: foot?.crank ?? 0,
       paint: parts.bikeColors,

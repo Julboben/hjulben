@@ -77,6 +77,23 @@ export function createEffects() {
     }
   }
 
+  /**
+   * The engine's cough as the kick-start catches: grey puffs out of the
+   * exhaust, thrown back against `facing`, that slow, drift up, swell and
+   * fade.
+   */
+  function exhaustPuff({ x, y }, facing) {
+    const colors = ['#eceee9', '#c4c9c3', '#9aa29c'];
+    for (let index = 0; index < 10; index++) {
+      const life = .4 + Math.random() * .35;
+      particles.push({
+        x, y: y + (Math.random() - .5) * 3,
+        vx: -facing * (20 + Math.random() * 50), vy: -(2 + Math.random() * 16),
+        life, max: life, color: colors[index % colors.length], size: 4, grow: index % 2 ? 4 : 2, drag: 5, gravity: -24
+      });
+    }
+  }
+
   function brakeMarks(ride, speed, braking) {
     const magnitude = Math.abs(speed);
     if (ride.status !== 'running' || !braking || magnitude < 24) { skidAccumulator = 0; return; }
@@ -311,7 +328,8 @@ export function createEffects() {
     for (const p of particles) {
       p.life -= dt;
       if (p.drag) p.vx *= Math.exp(-p.drag * dt);
-      p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 210 * dt;
+      // Particles fall unless they set their own gravity, as smoke rises.
+      p.x += p.vx * dt; p.y += p.vy * dt; p.vy += (p.gravity ?? 210) * dt;
       if (p.splatter) {
         // The floor under the particle, so spray in a cave lands on the cave
         // floor instead of jumping onto the rock above it.
@@ -330,5 +348,5 @@ export function createEffects() {
     removeExpired(skidMarks, MAX_SKID_MARKS);
   }
 
-  return { particles, skidMarks, wheelDirt, tyreSquish, weather, reset, burst, dustPuff, brakeMarks, terrainSpray, splash, shatter, crack, waterWake, wheelGrime, squishTyres, stepWeather, update, prune };
+  return { particles, skidMarks, wheelDirt, tyreSquish, weather, reset, burst, dustPuff, exhaustPuff, brakeMarks, terrainSpray, splash, shatter, crack, waterWake, wheelGrime, squishTyres, stepWeather, update, prune };
 }
