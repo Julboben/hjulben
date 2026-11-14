@@ -171,12 +171,15 @@ export function startGame({ shared = null } = {}) {
   let respawning = false;
   /** When the restart that sent the rider back to a flag was pressed, while it is held. */
   let restartHeldSince = null;
-  /** Pointers holding a restart button, which hold the restart as the key does. */
-  const restartPointers = new Set();
+  /** Pointers holding a restart button, which hold the restart as the key does, with the button each holds. */
+  const restartPointers = new Map();
   // Seconds a restart is held to go on from the flag to the start.
   const HOLD_TO_START = .5;
-  // Whether the rider has been told they can hold restart for the start.
-  let holdHintShown = false;
+  // A hold shows once it is longer than a tap, filling in this many steps,
+  // like the rest of the pixel HUD.
+  const HOLD_SHOWN = .1, HOLD_STEPS = 12;
+  // Whether Retry is kept up, after the rider is back at the flag, while held.
+  let retryHeldUp = false;
   /** Whether the current attempt's physics has come apart, for Here Be Kraken. */
   let broken = false;
   // Attempts that got going since the trail was opened from the menu or Next
@@ -589,7 +592,7 @@ export function startGame({ shared = null } = {}) {
     if (!replay && nisseFound()) ride.nisse = null;
     session.ride = ride;
     recorded = []; startStep = 0; flips = 0; broken = false; simulatedTime = 0; passedTime = 0;
-    respawning = false; restartHeldSince = null;
+    respawning = false; restartHeldSince = null; showHold(null);
     accumulator = 0; landingSoundCooldown = 0; splashSoundCooldown = 0; suspensionSoundCooldown = 0;
     effects.reset(trail);
     renderer.reset(trail, ride.facing);
@@ -764,6 +767,22 @@ export function startGame({ shared = null } = {}) {
     restartHeldSince = performance.now();
     if (session.state === 'paused') setState('running');
     focusGame();
+  }
+
+  /**
+   * How far a held restart is on its way from the flag to the start, 0 … 1,
+   * or null when none is held: a bar under the toast, and the Restart switch
+   * and Retry button filling. Retry stays up while it is held, though the
+   * rider is already back at the flag.
+   */
+  function showHold(progress) {
+    overlay.setHold(progress);
+    const retry = $('crash-retry');
+    for (const button of [retry, $('restart-control')]) button.style.setProperty('--hold', String(progress ?? 0));
+    if (progress === null && retryHeldUp) {
+      retryHeldUp = false;
+      retry.hidden = true;
+    }
   }
 
   /** Whether restart is held down, on a key, a pad or a button. */
@@ -1074,6 +1093,7 @@ export function startGame({ shared = null } = {}) {
         if (ride.rear.grounded && ride.front.grounded) sounds.gearClunk();
         break;
       case 'checkpoint':
+        renderer.raiseFlag(event.index);
         overlay.toast('Checkpoint', 2000, 'flag');
         overlay.announce('Checkpoint reached.');
         haptics.play('tick');
@@ -1084,11 +1104,15 @@ export function startGame({ shared = null } = {}) {
         overlay.setDirection(ride.facing);
         overlay.setApples(event.collected, event.total);
         if (session.state === 'ragdoll') setState('running');
-        const hint = !replay && !holdHintShown;
-        holdHintShown = true;
+        if (replay) { overlay.toast('Back at the flag', 1600, 'flag'); break; }
+        // Retry is held up as the rider holds it, to show the hold filling.
+        if ([...restartPointers.values()].includes($('crash-retry'))) {
+          retryHeldUp = true;
+          $('crash-retry').hidden = false;
+        }
         const { restart } = promptKeys();
-        overlay.toast(!hint ? 'Back at the flag' : restart ? ['Back at the flag · Hold ', { key: restart }, ' for the start'] : 'Back at the flag · Hold Restart for the start', hint ? 4000 : 1600, 'flag');
-        overlay.announce('Back at the flag.' + (hint ? ' Hold restart to go back to the start.' : ''));
+        overlay.toast(restart ? ['Back at the flag · Hold ', { key: restart }, ' for the start'] : 'Back at the flag · Hold Restart for the start', undefined, 'flag');
+        overlay.announce('Back at the flag. Hold restart to go back to the start.');
         break;
       }
       case 'airTurn':
@@ -1274,8 +1298,10 @@ export function startGame({ shared = null } = {}) {
     overlay.tick(now);
     // A restart held on past the flag goes on to the start.
     if (restartHeldSince !== null && !menu.isOpen()) {
-      if (!restartHeld()) restartHeldSince = null;
-      else if (now - restartHeldSince >= HOLD_TO_START * 1000) startFresh();
+      const held = (now - restartHeldSince) / 1000;
+      if (!restartHeld()) { restartHeldSince = null; showHold(null); }
+      else if (held >= HOLD_TO_START) startFresh();
+      else if (held >= HOLD_SHOWN) showHold(Math.floor(held / HOLD_TO_START * HOLD_STEPS) / HOLD_STEPS);
     }
     const ride = session.ride;
     if (ride && !menu.isOpen()) {
@@ -1434,7 +1460,7 @@ export function startGame({ shared = null } = {}) {
   // still restarts.
   for (const button of [$('crash-retry'), $('restart-control')]) {
     button.addEventListener('pointerdown', event => {
-      restartPointers.add(event.pointerId);
+      restartPointers.set(event.pointerId, button);
       focusGame();
       handlePress('restart');
     });

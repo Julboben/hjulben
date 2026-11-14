@@ -559,6 +559,16 @@ canvas {
     min-width: 132px;
     padding: 12px 22px;
     pointer-events: auto;
+    /* Fills from the left as it is held on, going on from the flag to the
+       start (showHold in game.js sets --hold, 0 to 1). */
+    background-image: linear-gradient(90deg, var(--color-shade) calc(var(--hold, 0) * 100%), transparent 0);
+}
+/* The same hold, as a bar under the toast's text. */
+.toast-hold {
+    display: block;
+    height: 6px;
+    margin-top: 6px;
+    background: linear-gradient(90deg, var(--color-gold) calc(var(--hold, 0) * 100%), var(--color-shadow) 0);
 }
 
 /* The results modal is a <dialog> opened with showModal(): it sits in the top
@@ -1564,6 +1574,10 @@ h2 {
 }
 #headlight[aria-pressed="true"] {
     --pill: var(--color-gold);
+}
+/* Restart's pill fills gold from the left as it is held on (see .toast-hold). */
+#restart-control {
+    --pill: linear-gradient(90deg, var(--color-gold) calc(var(--hold, 0) * 100%), var(--color-shell) 0);
 }
 #headlight:active::before,
 #headlight.held::before,

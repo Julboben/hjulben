@@ -54,7 +54,7 @@ import { CAMERA_TALLY, HALFWAY_BEACON, HALFWAY_REACH } from "./event-props.js";
 import { SEARCHLIGHT, SEARCHLIGHT_BEAM } from "./prison-props.js";
 import { drawNisse, nisseWiggle } from "./nisse.js";
 import { TORCH_FLAME } from "./dungeon-props.js";
-import { FARMHOUSE, FLAGPOLE, MILL, STALL, STALL_COIN_DROP, TURBINE, farmhouseWindowCentre } from "./countryside-props.js";
+import { FARMHOUSE, FLAGPOLE, drawFlagpole, MILL, STALL, STALL_COIN_DROP, TURBINE, farmhouseWindowCentre } from "./countryside-props.js";
 import { WATER_PROPS, FISH_DART, FISH_RANGE } from "./water-props.js";
 import { FIRE, IVY, SQUIRREL_HIDE_MAX, SQUIRREL_RANGE, TENT_DOOR_CENTRE } from "./forest-props.js";
 import {
@@ -345,6 +345,11 @@ export function createRenderer(canvas, { still = false } = {}) {
   // as it is still behind the pause screen, rather than freezing mid-burst.
   let wonFor = 0;
   let frameNow = 0;
+  // The checkpoint flags the rider has reached on this ride, with the scene
+  // clock when each started up its pole.
+  const raisedFlags = new Map();
+  // Milliseconds a flag takes to run up its pole.
+  const FLAG_HOIST_MS = 800;
   // Birds and bats that have taken off, with when and which way, for the
   // current ride.
   const flights = new Map();
@@ -440,6 +445,7 @@ export function createRenderer(canvas, { still = false } = {}) {
     flipVisual = facing;
     popups.length = 0;
     landing = null;
+    raisedFlags.clear();
     appleHintUntil = 0;
     spotScene = null;
     bucketProps();
@@ -1974,6 +1980,23 @@ export function createRenderer(canvas, { still = false } = {}) {
     }
   }
 
+  // Each checkpoint's flag waits low on its pole and runs up it, easing in
+  // at the top, once the rider reaches it; with reduced motion it is
+  // simply up. It flies like a flagpole prop's, in the trail's wind.
+  function drawCheckpoints(ride) {
+    const { wind } = propScene.weather;
+    const downwind = windSign(propScene.weather);
+    ride.checkpoints.forEach((foot, index) => {
+      if (!inView(foot.x, 50, foot.y, -FLAGPOLE.top + 8)) return;
+      const raised = raisedFlags.get(index);
+      const up = raised === undefined ? 0 : reducedMotion ? 1 : Math.min(1, (sceneClock - raised) / FLAG_HOIST_MS);
+      ctx.save();
+      ctx.translate(Math.round(foot.x / 2) * 2, Math.round(foot.y / 2) * 2);
+      drawFlagpole({ pixelRect }, () => 0, reducedMotion ? 0 : propScene.time, wind, index * 0.37, downwind, 1 - (1 - up) ** 3);
+      ctx.restore();
+    });
+  }
+
   // The nisse's hat tip flops now and then, on the scene clock; held still
   // with reduced motion.
   function drawNisseInRide(ride) {
@@ -2134,6 +2157,7 @@ export function createRenderer(canvas, { still = false } = {}) {
     drawSceneryShadows(ride, now, full);
     drawParticles(effects.particles, true);
     drawGoal(ride);
+    drawCheckpoints(ride);
     drawSpikes(ride);
     drawApples(ride);
     drawNisseInRide(ride);
@@ -2225,6 +2249,10 @@ export function createRenderer(canvas, { still = false } = {}) {
     settleHair,
     reset,
     respawn,
+    /** Sends a checkpoint's flag up its pole, once, as the rider reaches it. */
+    raiseFlag(index) {
+      if (!raisedFlags.has(index)) raisedFlags.set(index, sceneClock);
+    },
     land,
     takeWoofs,
     /** Whether the scene behind the results has come to a stop. */

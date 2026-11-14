@@ -159,6 +159,21 @@ export function createOverlay({ onDismiss, onCard } = {}) {
     $("toast").classList.add("visible");
   }
 
+  /**
+   * A bar under the toast's text filling as restart is held, 0 … 1, or null
+   * to take it away. A new toast takes it away too.
+   */
+  function setHold(progress) {
+    let bar = /** @type {HTMLElement | null} */ ($("toast").querySelector(".toast-hold"));
+    if (progress === null) { bar?.remove(); return; }
+    if (!bar) {
+      bar = document.createElement("span");
+      bar.className = "toast-hold";
+      $("toast").append(bar);
+    }
+    bar.style.setProperty("--hold", String(progress));
+  }
+
   function clearToast() {
     $("toast").classList.remove("visible");
     toastUntil = 0;
@@ -459,6 +474,7 @@ export function createOverlay({ onDismiss, onCard } = {}) {
     setApples,
     setTimer,
     toast,
+    setHold,
     clearToast,
     achievement,
     gear,
