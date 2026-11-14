@@ -1,0 +1,2052 @@
+{
+  "name": "Proving Ground I",
+  "finish": {
+    "x": 5549.99962522533,
+    "y": 50
+  },
+  "description": "",
+  "start": {
+    "x": 562.340192449521,
+    "y": 288.00000000140744,
+    "facing": 1
+  },
+  "terrainBlocks": [
+    {
+      "id": "block-1",
+      "material": "grass",
+      "outer": {
+        "id": "boundary-1",
+        "nodes": [
+          {
+            "id": "n1",
+            "x": -700,
+            "y": 300,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nzi",
+            "x": 850,
+            "y": 300,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n3",
+            "x": 900,
+            "y": 325,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n1qb",
+            "x": 1150,
+            "y": 325,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n1h2",
+            "x": 1200,
+            "y": 300,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n4",
+            "x": 1400,
+            "y": 300,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n4n",
+            "x": 1400,
+            "y": 320,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ncl",
+            "x": 1330,
+            "y": 320,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n1h9",
+            "x": 1330,
+            "y": 405,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n1tn",
+            "x": 1470,
+            "y": 405,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n1hv",
+            "x": 1470,
+            "y": 300,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n9vr",
+            "x": 2600,
+            "y": 300,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ngwh",
+            "x": 2600,
+            "y": 450,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n4o9",
+            "x": 3350,
+            "y": 450,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n63j",
+            "x": 3350,
+            "y": 300,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n2jc",
+            "x": 3700,
+            "y": 300,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nhss",
+            "x": 3750,
+            "y": 350,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n3s3",
+            "x": 4400,
+            "y": 350,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n5xs",
+            "x": 4450,
+            "y": 300,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nkk7",
+            "x": 6300,
+            "y": 300,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nng",
+            "x": 6300,
+            "y": 1000,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n6",
+            "x": -700,
+            "y": 1000,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "bof",
+      "material": "wood",
+      "outer": {
+        "id": "boe",
+        "nodes": [
+          {
+            "id": "noa",
+            "x": 175,
+            "y": 198.4009,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nob",
+            "x": 200,
+            "y": 198.4009,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "noc",
+            "x": 200,
+            "y": 300,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nod",
+            "x": 175,
+            "y": 300,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "b1t5",
+      "material": "wood",
+      "outer": {
+        "id": "b1t6",
+        "nodes": [
+          {
+            "id": "n1t7",
+            "x": 900,
+            "y": 200,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n1t8",
+            "x": 1150,
+            "y": 200,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n1t9",
+            "x": 1150,
+            "y": 210,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n1ta",
+            "x": 900,
+            "y": 210,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "b1od",
+      "material": "wood",
+      "outer": {
+        "id": "b1oc",
+        "nodes": [
+          {
+            "id": "n1o8",
+            "x": 820,
+            "y": 270,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n1o9",
+            "x": 850,
+            "y": 270,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n1oa",
+            "x": 850,
+            "y": 300,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n1ob",
+            "x": 750,
+            "y": 300,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "b1fo",
+      "material": "wood",
+      "outer": {
+        "id": "b1fn",
+        "nodes": [
+          {
+            "id": "n1fj",
+            "x": 1650,
+            "y": 270,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n1fk",
+            "x": 1700,
+            "y": 270,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n1fl",
+            "x": 1700,
+            "y": 300,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n1fm",
+            "x": 1650,
+            "y": 300,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "be3j",
+      "material": "wood",
+      "outer": {
+        "id": "be3k",
+        "nodes": [
+          {
+            "id": "ne3l",
+            "x": 1850,
+            "y": 260,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ne3m",
+            "x": 1900,
+            "y": 260,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ne3n",
+            "x": 1900,
+            "y": 300,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ne3o",
+            "x": 1850,
+            "y": 300,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "bf2n",
+      "material": "wood",
+      "outer": {
+        "id": "bf2o",
+        "nodes": [
+          {
+            "id": "nf2p",
+            "x": 2050,
+            "y": 250,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nf2q",
+            "x": 2100,
+            "y": 250,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nf2r",
+            "x": 2100,
+            "y": 300,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nf2s",
+            "x": 2050,
+            "y": 300,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "bbqc",
+      "material": "wood",
+      "outer": {
+        "id": "bbqd",
+        "nodes": [
+          {
+            "id": "nbqf",
+            "x": 2450,
+            "y": 150,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nfpm",
+            "x": 2600,
+            "y": 150,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nbqg",
+            "x": 2600,
+            "y": 300,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nbqh",
+            "x": 2300,
+            "y": 300,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "b9ae",
+      "material": "wood",
+      "outer": {
+        "id": "b9af",
+        "nodes": [
+          {
+            "id": "n9ag",
+            "x": 2700,
+            "y": 150,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n9ah",
+            "x": 2750,
+            "y": 150,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n9ai",
+            "x": 2750,
+            "y": 250,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n9aj",
+            "x": 2700,
+            "y": 250,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "baju",
+      "material": "wood",
+      "outer": {
+        "id": "bajv",
+        "nodes": [
+          {
+            "id": "najw",
+            "x": 2850,
+            "y": 150,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "najx",
+            "x": 2900,
+            "y": 150,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "najy",
+            "x": 2900,
+            "y": 243.7094,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "najz",
+            "x": 2850,
+            "y": 243.7094,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "bdp",
+      "material": "wood",
+      "layer": "back",
+      "outer": {
+        "id": "bdq",
+        "nodes": [
+          {
+            "id": "ndr",
+            "x": 2700,
+            "y": 150,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nds",
+            "x": 2750,
+            "y": 150,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ndt",
+            "x": 2750,
+            "y": 450,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ndu",
+            "x": 2700,
+            "y": 450,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "b3l7",
+      "material": "wood",
+      "layer": "back",
+      "outer": {
+        "id": "b3l8",
+        "nodes": [
+          {
+            "id": "n3l9",
+            "x": 2850,
+            "y": 150,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n3la",
+            "x": 2900,
+            "y": 150,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n3lb",
+            "x": 2900,
+            "y": 450,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n3lc",
+            "x": 2850,
+            "y": 450,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "b5cx",
+      "material": "wood",
+      "outer": {
+        "id": "b5cy",
+        "nodes": [
+          {
+            "id": "n5cz",
+            "x": 2950,
+            "y": 125,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n5d0",
+            "x": 3000,
+            "y": 125,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n5d1",
+            "x": 3000,
+            "y": 218.7094,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n5d2",
+            "x": 2950,
+            "y": 218.7094,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "b625",
+      "material": "wood",
+      "layer": "back",
+      "outer": {
+        "id": "b626",
+        "nodes": [
+          {
+            "id": "n627",
+            "x": 2950,
+            "y": 125,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n628",
+            "x": 3000,
+            "y": 125,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n629",
+            "x": 3000,
+            "y": 450,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n62a",
+            "x": 2950,
+            "y": 450,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "b6rv",
+      "material": "wood",
+      "outer": {
+        "id": "b6rw",
+        "nodes": [
+          {
+            "id": "n6rx",
+            "x": 3050,
+            "y": 125,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n6ry",
+            "x": 3075,
+            "y": 125,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n6rz",
+            "x": 3075,
+            "y": 218.7094,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n6s0",
+            "x": 3050,
+            "y": 218.7094,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "b8o1",
+      "material": "wood",
+      "layer": "back",
+      "outer": {
+        "id": "b8o2",
+        "nodes": [
+          {
+            "id": "n8o3",
+            "x": 3050,
+            "y": 125,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n8o4",
+            "x": 3075,
+            "y": 125,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n8o5",
+            "x": 3075,
+            "y": 450,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n8o6",
+            "x": 3050,
+            "y": 450,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "b9j3",
+      "material": "wood",
+      "outer": {
+        "id": "b9j4",
+        "nodes": [
+          {
+            "id": "n9j5",
+            "x": 3200,
+            "y": 150,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n9j6",
+            "x": 3250,
+            "y": 150,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n9j7",
+            "x": 3250,
+            "y": 243.7094,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n9j8",
+            "x": 3200,
+            "y": 243.7094,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "bak1",
+      "material": "wood",
+      "layer": "back",
+      "outer": {
+        "id": "bak2",
+        "nodes": [
+          {
+            "id": "nak3",
+            "x": 3200,
+            "y": 150,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nak4",
+            "x": 3250,
+            "y": 150,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nak5",
+            "x": 3250,
+            "y": 450,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nak6",
+            "x": 3200,
+            "y": 450,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "bg2a",
+      "material": "wood",
+      "layer": "back",
+      "outer": {
+        "id": "bg29",
+        "nodes": [
+          {
+            "id": "ng25",
+            "x": 1330,
+            "y": 300,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ng26",
+            "x": 1470,
+            "y": 300,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ng27",
+            "x": 1470,
+            "y": 405,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ng28",
+            "x": 1330,
+            "y": 405,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "bjx3",
+      "material": "wood",
+      "outer": {
+        "id": "bjx4",
+        "nodes": [
+          {
+            "id": "njx5",
+            "x": 3125,
+            "y": 100,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "njx6",
+            "x": 3150,
+            "y": 100,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "njx7",
+            "x": 3150,
+            "y": 218.7094,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "njx8",
+            "x": 3125,
+            "y": 218.7094,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "bjx9",
+      "material": "wood",
+      "layer": "back",
+      "outer": {
+        "id": "bjxa",
+        "nodes": [
+          {
+            "id": "njxb",
+            "x": 3125,
+            "y": 100,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "njxc",
+            "x": 3150,
+            "y": 100,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "njxd",
+            "x": 3150,
+            "y": 450,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "njxe",
+            "x": 3125,
+            "y": 450,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "bop",
+      "material": "wood",
+      "outer": {
+        "id": "boq",
+        "nodes": [
+          {
+            "id": "nor",
+            "x": 3750,
+            "y": 200,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nos",
+            "x": 4000,
+            "y": 200,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "not",
+            "x": 4000,
+            "y": 210,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nou",
+            "x": 3750,
+            "y": 210,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "b4ab",
+      "material": "wood",
+      "outer": {
+        "id": "b4ac",
+        "nodes": [
+          {
+            "id": "n4ad",
+            "x": 4050,
+            "y": 200,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n7gv",
+            "x": 4100.958,
+            "y": 200,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "na8b",
+            "x": 4200,
+            "y": 150.8846,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n4ae",
+            "x": 4250,
+            "y": 150.8846,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ndkz",
+            "x": 4250,
+            "y": 160,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n4af",
+            "x": 4200,
+            "y": 160,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n7qy",
+            "x": 4100.958,
+            "y": 210,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n4ag",
+            "x": 4050,
+            "y": 210,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "b7rl",
+      "material": "wood",
+      "outer": {
+        "id": "b7rm",
+        "nodes": [
+          {
+            "id": "n7rn",
+            "x": 4300,
+            "y": 150.8846,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n7ro",
+            "x": 4400,
+            "y": 150.8846,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n7rp",
+            "x": 4400,
+            "y": 160.8846,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n7rq",
+            "x": 4300,
+            "y": 160.8846,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "bavh",
+      "material": "wood",
+      "outer": {
+        "id": "bavi",
+        "nodes": [
+          {
+            "id": "navj",
+            "x": 3675,
+            "y": 250,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "navk",
+            "x": 3700,
+            "y": 250,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "navl",
+            "x": 3700,
+            "y": 300,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "navm",
+            "x": 3600,
+            "y": 300,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "b47v",
+      "material": "wood",
+      "outer": {
+        "id": "b47w",
+        "nodes": [
+          {
+            "id": "n480",
+            "x": 3450,
+            "y": 300,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n47z",
+            "x": 3350,
+            "y": 300,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n47y",
+            "x": 3350,
+            "y": 250,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n47x",
+            "x": 3375,
+            "y": 250,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "bwbd",
+      "material": "wood",
+      "outer": {
+        "id": "bwbe",
+        "nodes": [
+          {
+            "id": "nwbf",
+            "x": 4450,
+            "y": 250,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nwbg",
+            "x": 4500,
+            "y": 250,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nwbh",
+            "x": 4500,
+            "y": 300,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nwbi",
+            "x": 4450,
+            "y": 300,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "b134y",
+      "material": "wood",
+      "outer": {
+        "id": "b134z",
+        "nodes": [
+          {
+            "id": "n1350",
+            "x": 5750,
+            "y": -100,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n1351",
+            "x": 5800,
+            "y": -100,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n1352",
+            "x": 5800,
+            "y": 300,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n1353",
+            "x": 5750,
+            "y": 300,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "b17si",
+      "material": "wood",
+      "outer": {
+        "id": "b17sj",
+        "nodes": [
+          {
+            "id": "n17sk",
+            "x": 4450,
+            "y": -100,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n17sl",
+            "x": 4500,
+            "y": -100,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n17sm",
+            "x": 4500,
+            "y": 100,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n17sn",
+            "x": 4450,
+            "y": 100,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "b18mc",
+      "material": "wood",
+      "layer": "back",
+      "outer": {
+        "id": "b18md",
+        "nodes": [
+          {
+            "id": "n18me",
+            "x": 4450,
+            "y": 100,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n18mf",
+            "x": 4500,
+            "y": 100,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n18mg",
+            "x": 4500,
+            "y": 250,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "n18mh",
+            "x": 4450,
+            "y": 250,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "bemn",
+      "material": "wood",
+      "outer": {
+        "id": "bemo",
+        "nodes": [
+          {
+            "id": "nemp",
+            "x": 4850,
+            "y": 190,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nemq",
+            "x": 5150,
+            "y": 190,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nemr",
+            "x": 5150,
+            "y": 200,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nems",
+            "x": 4850,
+            "y": 200,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "bfoj",
+      "material": "wood",
+      "outer": {
+        "id": "bfok",
+        "nodes": [
+          {
+            "id": "nfol",
+            "x": 4775,
+            "y": 250,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nfom",
+            "x": 4800,
+            "y": 250,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nfon",
+            "x": 4800,
+            "y": 300,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nfoo",
+            "x": 4700,
+            "y": 300,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "bjsr",
+      "material": "wood",
+      "outer": {
+        "id": "bjss",
+        "nodes": [
+          {
+            "id": "njst",
+            "x": 4850,
+            "y": 150,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "njsu",
+            "x": 4875,
+            "y": 150,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "njsv",
+            "x": 4875,
+            "y": 160,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "njsw",
+            "x": 4850,
+            "y": 160,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "blrl",
+      "material": "wood",
+      "outer": {
+        "id": "blrm",
+        "nodes": [
+          {
+            "id": "nlrn",
+            "x": 5425.0001,
+            "y": 250,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nlro",
+            "x": 5450.0001,
+            "y": 250,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nlrp",
+            "x": 5525.0001,
+            "y": 300,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nlrq",
+            "x": 5350.0001,
+            "y": 300,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "bmm7",
+      "material": "wood",
+      "outer": {
+        "id": "bmm8",
+        "nodes": [
+          {
+            "id": "nmm9",
+            "x": 5500.0001,
+            "y": 190,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nmma",
+            "x": 5525.0001,
+            "y": 190,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nmmb",
+            "x": 5525.0001,
+            "y": 200,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nmmc",
+            "x": 5500.0001,
+            "y": 200,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "bnid",
+      "material": "wood",
+      "outer": {
+        "id": "bnie",
+        "nodes": [
+          {
+            "id": "nnif",
+            "x": 5575,
+            "y": 145,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nnig",
+            "x": 5600,
+            "y": 145,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nnih",
+            "x": 5600,
+            "y": 155,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nnii",
+            "x": 5575,
+            "y": 155,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "bobb",
+      "material": "wood",
+      "outer": {
+        "id": "bobc",
+        "nodes": [
+          {
+            "id": "nobd",
+            "x": 5500.0001,
+            "y": 95,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nobe",
+            "x": 5525.0001,
+            "y": 95,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nobf",
+            "x": 5525.0001,
+            "y": 105,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nobg",
+            "x": 5500.0001,
+            "y": 105,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    }
+  ],
+  "apples": [
+    {
+      "x": 230,
+      "y": 220
+    },
+    {
+      "x": 1025,
+      "y": 175
+    },
+    {
+      "x": 1370,
+      "y": 360
+    },
+    {
+      "x": 2074.9999992959897,
+      "y": 221.44415303825542
+    },
+    {
+      "x": 3137.5,
+      "y": 66.7614866497308
+    },
+    {
+      "x": 4100.9580000000005,
+      "y": 171.85469999999998
+    },
+    {
+      "x": 5000,
+      "y": 126.11920177839056
+    }
+  ],
+  "props": [
+    {
+      "x": 370.6601512009378,
+      "y": 300,
+      "type": "pit-board",
+      "layer": "back",
+      "text": "T01"
+    },
+    {
+      "x": 725.1546802779006,
+      "y": 300,
+      "type": "pit-board",
+      "layer": "back",
+      "text": "T02"
+    },
+    {
+      "x": 1350,
+      "y": 300,
+      "type": "pit-board",
+      "layer": "back",
+      "text": "T03"
+    },
+    {
+      "x": 1600,
+      "y": 300,
+      "type": "pit-board",
+      "layer": "back",
+      "text": "T04"
+    },
+    {
+      "x": 2250,
+      "y": 300,
+      "type": "pit-board",
+      "layer": "back",
+      "text": "T05"
+    },
+    {
+      "x": 3547.5251636543044,
+      "y": 300,
+      "type": "pit-board",
+      "layer": "back",
+      "text": "T05"
+    },
+    {
+      "x": 628.7230798410212,
+      "y": 294.6112667227901,
+      "type": "grass",
+      "layer": "back"
+    },
+    {
+      "x": 48.33037503145272,
+      "y": 298.4114637533345,
+      "type": "tree",
+      "layer": "back"
+    },
+    {
+      "x": 975,
+      "y": 325,
+      "type": "bush",
+      "layer": "back"
+    }
+  ],
+  "spikes": [
+    {
+      "x": 3850,
+      "y": 150,
+      "radius": 20,
+      "spin": 1
+    },
+    {
+      "x": 4350,
+      "y": 100,
+      "radius": 20,
+      "spin": 1
+    }
+  ],
+  "water": [
+    {
+      "x": 2600,
+      "y": 300,
+      "width": 750,
+      "depth": 150
+    }
+  ],
+  "weather": {
+    "sun": 0.75,
+    "clouds": 0.2,
+    "fog": 0,
+    "rain": 0,
+    "snow": 0,
+    "lightning": 0,
+    "wind": 0.25,
+    "windDirection": "left"
+  },
+  "timeOfDay": 12,
+  "preview": {
+    "x": 1048,
+    "y": 260
+  }
+}
