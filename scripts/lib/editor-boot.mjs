@@ -1110,7 +1110,7 @@ run('camera', () => {
 run('pinch', () => { fire('wheel', { deltaX: 0, deltaY: -10, deltaMode: 0, ctrlKey: true }); });
 
 // A refusal has to be visible, and it has to say what is wrong, here for a
-// trail whose finish sits past the end of its terrain.
+// trail whose ground-anchored finish has no terrain under it.
 if (process.env.TSC_ENV_TRAIL === 'badgoal') {
   const button = document.getElementById('play-test');
   const before = JSON.stringify(current());
@@ -1120,7 +1120,7 @@ if (process.env.TSC_ENV_TRAIL === 'badgoal') {
   report.refused = report.refusalText.includes('before play testing');
   report.refusalShown = toast.hidden === false;
   // It has to name the actual problem, not just "fix the validation errors".
-  report.refusalNamed = /past the end of the terrain/.test(report.refusalText);
+  report.refusalNamed = /finish has no terrain under it/.test(report.refusalText);
   report.refusalCounted = /\b1 validation error\b/.test(report.refusalText);
   report.buttonFlash = button.textContent;
   report.playtestClosed = document.getElementById('playtest').hidden === true;

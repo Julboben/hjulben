@@ -22,11 +22,12 @@ const base = () => ({
 });
 
 /**
- * `blocks` is a plain block trail. `badgoal` is the same trail with its finish
- * well past the end of the terrain, so it does not validate. `interact` uses
- * the plain trail too, and drives precise gestures against it. `warned` has a
- * prop of an unknown type, so its validation warning points at a prop. `locks`
- * adds a back wall beside the slab with an apple in front of it. `group` has
+ * `blocks` is a plain block trail. `badgoal` is the same trail with its
+ * ground-anchored finish well past the end of the terrain, where it has no
+ * ground to stand on, so it does not validate. `interact` uses the plain trail
+ * too, and drives precise gestures against it. `warned` has a prop of an
+ * unknown type, so its validation warning points at a prop. `locks` adds a
+ * back wall beside the slab with an apple in front of it. `group` has
  * props and spikes that differ, for editing them together in the inspector.
  */
 export function loadTrailShape(kind) {
