@@ -2288,6 +2288,10 @@ h2 {
         font-size: calc(var(--font-display-step) * 2);
         line-height: 0.9;
         text-transform: uppercase;
+        /* The gap is for the label above; a title on its own sits level with Back. */
+        &:first-child {
+            margin-top: 0;
+        }
     }
 }
 .menu-back {

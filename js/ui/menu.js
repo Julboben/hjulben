@@ -940,7 +940,7 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     if (seen !== VERSION && notificationsFor(null).find(item => item.key === 'version')?.title !== title) {
       notify({
         key: 'version', playerId: null, label: 'NEW VERSION', title,
-        text: 'See what’s new in the changelog.', icon: 'star', opens: { view: 'changelog' },
+        text: 'See what’s new in the changelog.', icon: 'update', opens: { view: 'changelog' },
       });
     }
   }
