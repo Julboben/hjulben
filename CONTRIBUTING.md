@@ -32,7 +32,8 @@ Development needs Node.js 24 (the version CI uses) and npm. The game itself has 
 ├── js/
 │   ├── main.js         # Entry point and service worker registration
 │   ├── game.js         # State machine, fixed-step loop, and event handling
-│   ├── ride.js         # DOM-free ride simulation: rider probes, spikes, apples, goal, crash
+│   ├── ride.js         # DOM-free ride simulation: rider probes, spikes, apples, checkpoints, goal, crash
+│   ├── checkpoint.js   # Checkpoint flags: where one stands and when the bike reaches it
 │   ├── ragdoll.js      # Jointed post-crash rider ragdoll
 │   ├── det-math.js     # Deterministic sin/cos/atan2/exp/log, identical in every JS engine
 │   ├── render.js       # Canvas rendering of the world, bike, ghost, and effects

@@ -446,6 +446,16 @@ export function createRenderer(canvas, { still = false } = {}) {
     lighting.prepare(trail);
   }
 
+  /**
+   * The rider set down again mid-ride, at a checkpoint: their hair starts
+   * afresh rather than streaming after them from where they were.
+   */
+  function respawn(facing) {
+    hair = null;
+    flipVisual = facing;
+    landing = null;
+  }
+
   // The trail's props sorted once into the lists each pass walks, so a frame
   // doesn't sift every prop half a dozen times. Made again if the trail's
   // props are swapped out from under the renderer.
@@ -2214,6 +2224,7 @@ export function createRenderer(canvas, { still = false } = {}) {
     setViewport,
     settleHair,
     reset,
+    respawn,
     land,
     takeWoofs,
     /** Whether the scene behind the results has come to a stop. */

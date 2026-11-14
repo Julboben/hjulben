@@ -2,6 +2,7 @@
 import { cubicPoint, edgeCurve, isCurvedEdge, pointInRegion } from "../terrain-geometry.js";
 import { blockSelected, blocks, boundaryEntries, isBackWall } from "./blocks.js";
 import {
+  checkpointY,
   finishY,
   groundY,
   isActiveNode,
@@ -192,6 +193,9 @@ function collectHits(point, wholeBoundary, preferEdges = false) {
   );
   if (editor.trail.nisse)
     consider({ kind: "nisse", index: 0 }, editor.trail.nisse.x, objectY(editor.trail.nisse, NISSE_GROUND_LIFT), 1);
+  (editor.trail.checkpoints || []).forEach((checkpoint, index) =>
+    consider({ kind: "checkpoint", index }, checkpoint.x, checkpointY(checkpoint), 1),
+  );
   editor.trail.spikes.forEach((spike, index) =>
     consider({ kind: "spike", index }, spike.x, spike.y, 1),
   );

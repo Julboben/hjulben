@@ -54,6 +54,8 @@ import { closeMenu, updateValidationBadge } from "./menu.js";
 import { renderObjects } from "./objects.js";
 import { refuseEdit, showStatus } from "./status.js";
 import {
+  checkpointAt,
+  checkpointY,
   finishY,
   groundY,
   objectY,
@@ -134,6 +136,10 @@ export function selectedPosition() {
   }
   if (editor.selection.kind === "nisse")
     return editor.trail.nisse ? [editor.trail.nisse.x, objectY(editor.trail.nisse, NISSE_GROUND_LIFT)] : null;
+  if (editor.selection.kind === "checkpoint") {
+    const checkpoint = editor.trail.checkpoints?.[editor.selection.index];
+    return checkpoint ? [checkpoint.x, checkpointY(checkpoint)] : null;
+  }
   if (editor.selection.kind === "spike") {
     const spike = editor.trail.spikes[editor.selection.index];
     return [spike.x, spike.y];
@@ -283,7 +289,8 @@ export function syncInspector({ live = false } = {}) {
   // The finish can be moved in y, so its Y row is shown. Every other object
   // with a fixed height is left as it was.
   $("selection-y-row").hidden = !editor.selection;
-  // An apple, prop or finish with a height of its own can be put back on the ground.
+  // An apple, prop, nisse, checkpoint or finish with a height of its own can be
+  // put back on the ground.
   const lifted = groundable();
   $("selection-on-ground").hidden = !lifted || !Number.isFinite(lifted.y);
   $("selection-material-row").hidden = !isBlock;
@@ -333,6 +340,7 @@ export function syncInspector({ live = false } = {}) {
   $("selection-water-depth-row").hidden = !selectedWater;
   $("selection-water-hint").hidden = !selectedWater;
   $("selection-nisse-hint").hidden = editor.selection?.kind !== "nisse";
+  $("selection-checkpoint-hint").hidden = editor.selection?.kind !== "checkpoint";
   if (selectedWater) {
     $("selection-water-width").value = Math.round(selectedWater.width);
     $("selection-water-depth").value = Math.round(selectedWater.depth);
@@ -545,6 +553,11 @@ export function updateSelectedPosition(x, y) {
     editor.trail.apples[editor.selection.index].y = y;
   } else if (kind === "nisse") {
     if (editor.trail.nisse) Object.assign(editor.trail.nisse, { x, y });
+  } else if (kind === "checkpoint") {
+    // A flag always stands on the ground: moved anywhere, it drops onto the
+    // floor under that point.
+    const checkpoint = editor.trail.checkpoints?.[editor.selection.index];
+    if (checkpoint) Object.assign(checkpoint, checkpointAt(x, y));
   } else if (kind === "prop") {
     editor.trail.props[editor.selection.index].x = x;
     editor.trail.props[editor.selection.index].y = y;
@@ -573,6 +586,7 @@ function groundable() {
   if (kind === "apple") return editor.trail.apples[editor.selection.index];
   if (kind === "prop") return editor.trail.props[editor.selection.index];
   if (kind === "nisse") return editor.trail.nisse;
+  if (kind === "checkpoint") return editor.trail.checkpoints?.[editor.selection.index];
   if (kind === "finish") return editor.trail.finish;
   return null;
 }

@@ -7,6 +7,8 @@ import {
   propWallFit,
 } from "../drawing.js";
 import { RADIUS, WHEELBASE } from "../config.js";
+import { checkpointFoot } from "../checkpoint.js";
+import { drawFlagpole } from "../countryside-props.js";
 import { FINISH_FLOWER_RADIUS } from "../finish.js";
 import { NISSE_GROUND_LIFT, drawNisse } from "../nisse.js";
 import { SPIKE_TIP } from "../spike.js";
@@ -17,7 +19,7 @@ import { edgeCurve, regionBounds } from "../terrain-geometry.js";
 import { finishFlower, finishHeight, surfaceBelow } from "../trail-schema.js";
 import { terrainMaterials } from "../trails.js";
 import { normalizeWater, waterColumns } from "../water.js";
-import { resolveWeather } from "../weather.js";
+import { resolveWeather, windSign } from "../weather.js";
 import {
   blockSelected,
   blocks,
@@ -34,7 +36,7 @@ import { selectionBox } from "./selection.js";
 import { rotateHandle, rotationAngle } from "./rotate.js";
 import { gridSpacing } from "./snap.js";
 import { editor, waters } from "./state.js";
-import { PLACING_TOOLS, placingNisse, toolSettings } from "./tools.js";
+import { PLACING_TOOLS, placingCheckpoint, placingNisse, toolSettings } from "./tools.js";
 import { waterHandle } from "./water.js";
 import { viewportSize } from "./view.js";
 
@@ -192,8 +194,8 @@ function viewBox() {
 }
 
 /**
- * Objects without a height of their own (the start, the finish, props and
- * apples) stand on the topmost surface at their x. Each is listed with the
+ * Objects without a height of their own (the start, the finish, props,
+ * apples, the nisse and checkpoints) stand on the topmost surface at their x. Each is listed with the
  * floor it stands on now and a way to pin its height.
  */
 function groundAnchoredObjects(near = () => true) {
@@ -214,6 +216,8 @@ function groundAnchoredObjects(near = () => true) {
     if (!Number.isFinite(apple.y)) add(apple.x, (y) => (apple.y = y - 60));
   if (trail.nisse && !Number.isFinite(trail.nisse.y))
     add(trail.nisse.x, (y) => (trail.nisse.y = y - NISSE_GROUND_LIFT));
+  for (const checkpoint of trail.checkpoints || [])
+    if (!Number.isFinite(checkpoint.y)) add(checkpoint.x, (y) => (checkpoint.y = y));
   return found;
 }
 
@@ -431,6 +435,20 @@ export function groundY(x, referenceY = null) {
   return surface ? surface.y : fallLine(editor.trail);
 }
 
+/** Where a checkpoint's flag stands, on the ground, as the game finds it. */
+export function checkpointY(checkpoint) {
+  return checkpointFoot(editor.trail, checkpoint).y;
+}
+
+/**
+ * A checkpoint put down at (x, y): on the floor under that point, which keeps
+ * no height of its own when it is the topmost surface, so the flag follows
+ * the ground as it does for a checkpoint written without one.
+ */
+export function checkpointAt(x, y) {
+  return { x, y: restingY(x, checkpointFoot(editor.trail, { x, y }).y) };
+}
+
 /**
  * Where the finish flag stands: an explicit height when the author has set one,
  * else the surface below it. Shared with the game so the flag is drawn where the
@@ -534,8 +552,19 @@ function drawWater() {
   });
 }
 
+/** A checkpoint's flagpole standing at (x, y), its flag up and flying downwind. */
+function drawCheckpoint(x, y) {
+  const weather = resolveWeather(editor.trail.weather);
+  ctx.save();
+  ctx.translate(Math.round(x / 2) * 2, Math.round(y / 2) * 2);
+  drawFlagpole(tools, () => 0, 0, weather.wind, 0, windSign(weather));
+  ctx.restore();
+}
+
 function drawObjects() {
   drawSpikes();
+  for (const checkpoint of editor.trail.checkpoints || [])
+    drawCheckpoint(checkpoint.x, checkpointY(checkpoint));
   for (const apple of editor.trail.apples)
     art.drawApple(apple.x, objectY(apple, 60));
   if (editor.trail.nisse) drawNisse(tools, editor.trail.nisse.x, objectY(editor.trail.nisse, NISSE_GROUND_LIFT));
@@ -675,6 +704,9 @@ function drawHandles() {
   );
   if (editor.trail.nisse)
     drawHandle(editor.trail.nisse.x, objectY(editor.trail.nisse, NISSE_GROUND_LIFT), isSelected("nisse", 0), "#d63b2c");
+  (editor.trail.checkpoints || []).forEach((checkpoint, index) =>
+    drawHandle(checkpoint.x, checkpointY(checkpoint), isSelected("checkpoint", index), "#c6dfa9"),
+  );
   editor.trail.spikes.forEach((spike, index) =>
     drawHandle(spike.x, spike.y, isSelected("spike", index), "#e65e56"),
   );
@@ -971,6 +1003,8 @@ function drawPlacementPreview() {
   ctx.save();
   ctx.globalAlpha = 0.5;
   if (editor.tool === "apple" && placingNisse()) drawNisse(tools, x, y);
+  // A checkpoint lands on the ground under the pointer, so it is shown there.
+  else if (editor.tool === "apple" && placingCheckpoint()) drawCheckpoint(x, checkpointY({ x, y }));
   else if (editor.tool === "apple") art.drawApple(x, y);
   else art.drawSpike(x, y, toolSettings.spike.radius);
   ctx.restore();

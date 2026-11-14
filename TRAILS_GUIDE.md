@@ -103,7 +103,7 @@ What a world's trails aim for. Which trails are in each world, in order, is in [
 
 The trails use only what the game supports today, so new riding elements run out at some point. These would open up further worlds:
 
-- [ ] **Checkpoints:** restart from the halfway flag. Needed for long trails of 5000+ units.
+- [x] **Checkpoints:** flags a crashed rider goes back to, with the clock still counting, for long trails of 5000+ units.
 - [ ] **Moving platforms and see-saws:** terrain that moves along a fixed path. It must stay deterministic for replays.
 - [ ] **Gates and switches:** touch a switch to open a wall elsewhere.
 - [x] **Optional collectibles:** a hidden nisse in each trail, for replay value without blocking the finish.

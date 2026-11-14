@@ -914,6 +914,47 @@ if (kind === 'nisse') {
   process.exit(0);
 }
 
+// Checkpoints: the Apple tool places them, as many as wanted, each on the
+// ground under the click, and deleting the last takes the list away.
+if (kind === 'checkpoint') {
+  toolButton('apple').click();
+  fire('pointerdown', { clientX: 0, clientY: 0 });
+  fire('pointerup');
+  const probe = current().apples.at(-1);
+  cameraX = probe.x;
+  cameraY = probe.y;
+  document.getElementById('undo').click();
+
+  const out = {};
+  const { toolSettings } = await import('../../js/editor/tools.js');
+  const walk = node => [node, ...[...(node.children || [])].flatMap(walk)];
+  out.placeField = walk(document.getElementById('tool-settings-fields')).some(node => node.value === 'checkpoint');
+  out.hadList = 'checkpoints' in current();
+  // What the Place select's change handler does.
+  toolSettings.apple.kind = 'checkpoint';
+  fire('pointerdown', world(300, 200));
+  fire('pointerup');
+  fire('pointerdown', world(600, 150));
+  fire('pointerup');
+  out.placed = current().checkpoints;
+  out.apples = current().apples.length;
+  out.title = document.getElementById('selection-title').textContent;
+  out.hintShown = document.getElementById('selection-checkpoint-hint').hidden === false;
+  // The flag stands on the slab's top, at y 300, where it is selected.
+  out.footY = Number(document.getElementById('selection-y').value);
+  document.getElementById('delete-selection').click();
+  out.afterOne = current().checkpoints;
+  toolButton('select').click();
+  fire('pointerdown', world(300, 300));
+  fire('pointerup');
+  out.selected = editorState.selection;
+  document.getElementById('delete-selection').click();
+  out.deleted = !('checkpoints' in current());
+  toolSettings.apple.kind = 'apple';
+  process.stdout.write(JSON.stringify(out));
+  process.exit(0);
+}
+
 if (kind === 'covered') {
   toolButton('apple').click();
   fire('pointerdown', { clientX: 0, clientY: 0 });

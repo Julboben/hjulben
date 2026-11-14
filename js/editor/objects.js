@@ -44,7 +44,7 @@ function entries() {
   const list = [];
   const add = (type, objects, name) =>
     objects.forEach((object, index) =>
-      list.push({ type, index, group: groupOf(type, object), name: name(object) }),
+      list.push({ type, index, group: groupOf(type, object), name: name(object, index) }),
     );
   add("block", blocks(), (block) => materialLabel(block.material || "grass"));
   add("prop", editor.trail.props, (prop) =>
@@ -58,6 +58,8 @@ function entries() {
   add("spike", editor.trail.spikes, () => "Spike");
   add("apple", editor.trail.apples, () => "Apple");
   add("nisse", editor.trail.nisse ? [editor.trail.nisse] : [], () => "Nisse");
+  // Numbered as validation numbers them, even when there is only one.
+  add("checkpoint", editor.trail.checkpoints || [], (_, index) => `Checkpoint ${index + 1}`);
   // Number repeated names within each group: Tree 1, Tree 2.
   const totals = new Map();
   for (const entry of list) {

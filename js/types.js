@@ -23,6 +23,7 @@
  * @property {{ x: number, y?: number | null }} finish where the finish flower stands, on either side of the start; a null y means on the surface below it
  * @property {{ x: number, y?: number | null }[]} apples
  * @property {{ x: number, y?: number | null }} [nisse] the optional hidden nisse, where its feet stand
+ * @property {{ x: number, y?: number | null }[]} [checkpoints] flags to go back to after a crash, where each stands; a null y means on the ground at its x
  * @property {Array<Partial<Spike>>} [spikes]
  * @property {Array<Partial<Water>>} [water]
  * @property {object[]} [props]
@@ -100,8 +101,12 @@
  * @property {number} [leanInput] -1 left … 1 right, in screen direction
  * @property {boolean} [accelerating]
  * @property {boolean} [braking]
+ * @property {boolean} [respawn] back to the last flag reached, before this step
  *
  * @typedef {{ type: 'start' }
+ *   | { type: 'resume' }
+ *   | { type: 'checkpoint', index: number, x: number, y: number }
+ *   | { type: 'respawn', index: number, x: number, y: number, collected: number, total: number }
  *   | { type: 'airTurn', full: boolean }
  *   | { type: 'flip', count: number, direction: number }
  *   | { type: 'land', impact: number }
@@ -154,6 +159,11 @@
  * @property {number} landingSteps steps a wheel has been down since the jump
  * @property {number} lastGateNotice
  * @property {Record<string, { x: number, y: number, radius: number }> | null} previousRiderContacts
+ * @property {{ x: number, y: number }[]} checkpoints where each flag stands
+ * @property {{ index: number, facing: number, taken: boolean[], splits: number[], terrain: Trail } | null} checkpoint the ride as it was at the last flag reached, to go back to
+ * @property {number} atCheckpoint the flag the bike is at, or -1
+ * @property {number} respawns times the rider went back to a flag
+ * @property {number} spawnStep the step the bike was last set down on, at the start or a flag
  *
  * @typedef {object} LeaderboardRun
  * @property {number} time

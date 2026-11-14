@@ -37,10 +37,12 @@ const CLIPBOARD_LISTS = {
   prop: "props",
   spike: "spikes",
   water: "water",
+  checkpoint: "checkpoints",
 };
 
 /**
- * What the selection copies: whole blocks, apples, props, spikes and water. A block
+ * What the selection copies: whole blocks, apples, props, spikes, water and
+ * checkpoints. A block
  * whose every point is selected counts as the whole block; loose points,
  * handles, the start and the finish aren't copied.
  */
@@ -63,13 +65,14 @@ function copyableSelection() {
   };
 }
 
-function describeCopy({ blocks: copiedBlocks, apples, props, spikes, water = [] }) {
+function describeCopy({ blocks: copiedBlocks, apples, props, spikes, water = [], checkpoints }) {
   return [
     [copiedBlocks.length, "block"],
     [apples.length, "apple"],
     [props.length, "prop"],
     [spikes.length, "spike"],
     [water.length, "water body", "water bodies"],
+    [checkpoints.length, "checkpoint"],
   ]
     .filter(([count]) => count)
     .map(
@@ -145,9 +148,11 @@ function readClipboard(text) {
     props: data.props,
     spikes: data.spikes,
     water: data.water,
+    checkpoints: data.checkpoints,
   });
+  // A trail without checkpoints has no list of them at all.
   const withFloors = (list) =>
-    objects[list].map((object, index) => {
+    (objects[list] || []).map((object, index) => {
       const floorY = data[list][index]?.floorY;
       return Number.isFinite(floorY) ? { ...object, floorY } : object;
     });
@@ -159,6 +164,7 @@ function readClipboard(text) {
     props: withFloors("props"),
     spikes: withFloors("spikes"),
     water: withFloors("water"),
+    checkpoints: withFloors("checkpoints"),
   };
 }
 
@@ -208,6 +214,8 @@ function pasteClipboard(data) {
       const y = restingY(object.x, floorY);
       if (y !== null) object.y = type === "apple" ? y - 60 : y;
     }
+    // A trail without checkpoints has no list of them until one is pasted.
+    if (type === "checkpoint") editor.trail.checkpoints ??= [];
     const list = OBJECT_LISTS()[type];
     list.push(object);
     items.push({ type, index: list.length - 1 });

@@ -85,16 +85,20 @@ export function moveLocks(from, to) {
 const LISTS = () => ({
   apple: editor.trail.apples,
   nisse: editor.trail.nisse ? [editor.trail.nisse] : [],
+  checkpoint: editor.trail.checkpoints || [],
   prop: editor.trail.props,
   spike: editor.trail.spikes,
   water: waters(),
 });
 
-/** The group a block, apple, prop, spike or water body belongs to. */
+/**
+ * The group a block, apple, prop, spike or water body belongs to. The nisse
+ * and checkpoints, placed with the Apple tool, lock with the apples.
+ */
 export function groupOf(type, object) {
   if (type === "block") return isBackWall(object) ? "back" : "terrain";
   if (type === "prop") return object.layer === "front" ? "frontProps" : "backProps";
-  return { water: "water", spike: "spikes", apple: "apples", nisse: "apples" }[type] || null;
+  return { water: "water", spike: "spikes", apple: "apples", nisse: "apples", checkpoint: "apples" }[type] || null;
 }
 
 /** JSON with sorted keys, so the same content always reads the same. */

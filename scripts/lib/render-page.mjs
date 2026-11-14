@@ -1,7 +1,7 @@
 // The browser half of scripts/render-trail.mjs: draws views of a trail with
 // the game's own renderer (see js/scene-preview.js), then marks them up for
 // whoever is building the trail: a coordinate ruler, the apples, start,
-// finish and nisse, the replay bot's route coloured by speed, and the spots
+// finish, nisse and checkpoints, the replay bot's route coloured by speed, and the spots
 // where its reruns failed. Runs in headless Chrome; the script calls
 // `hjulbenSetTrail` once, `hjulbenSetRun` for camera frames, and then
 // `hjulbenRender` for each view.
@@ -92,7 +92,7 @@ window.hjulbenRender = ({ view, scale, maxWidth, overlay, props, run, title, uns
   const legend = props
     ? 'props: index in the props list, type, (front) for the front layer'
     : overlay
-    ? `S start · F finish · N nisse · route: blue slow → red fast, dashed = air · T turn · ! tight spot → × fails${run?.traps.length ? ' · TRAP: a miss strands the rider' : ''}${unseen && run ? ' · darker: never on screen' : ''}`
+    ? `S start · F finish · N nisse${ride.checkpoints.length ? ' · C checkpoint' : ''} · route: blue slow → red fast, dashed = air · T turn · ! tight spot → × fails${run?.traps.length ? ' · TRAP: a miss strands the rider' : ''}${unseen && run ? ' · darker: never on screen' : ''}`
     : 'clean view: as the game draws it';
   ctx.fillText(`${title} · ${legend}`, MARGIN.left, out.height - MARGIN.bottom / 2);
   return out.toDataURL('image/png');
@@ -238,6 +238,7 @@ function drawMarkers(ctx, toX, toY) {
   ring(ctx, toX(finish.x), toY(finish.y), 15, '#e86bd8');
   badge(ctx, toX(finish.x) + 18, toY(finish.y) - 16, 'F', '#e86bd8', '#111c20');
   if (ride.nisse) badge(ctx, toX(ride.nisse.x), toY(ride.nisse.y) - 30, 'N', '#d9a441', '#111c20');
+  ride.checkpoints.forEach((foot, index) => badge(ctx, toX(foot.x), toY(foot.y) - 24, `C${index + 1}`, '#d63b2c', '#fff'));
 }
 
 // The bike's height where it stands at `x` on the trail's top surface.

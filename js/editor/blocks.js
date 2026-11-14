@@ -14,12 +14,12 @@ import { ctx } from "./dom.js";
 import { pushHistory } from "./history.js";
 import { isBlockLocked } from "./locks.js";
 import { syncInspector } from "./inspector.js";
-import { floorUnder, groundY, render, startY } from "./render.js";
+import { checkpointAt, floorUnder, groundY, render, startY } from "./render.js";
 import { blocksSelection } from "./selection.js";
 import { gridSpacing } from "./snap.js";
 import { editor } from "./state.js";
 import { refuseEdit, showStatus } from "./status.js";
-import { placingNisse, setTool, toolLayer, toolMaterial, toolSettings } from "./tools.js";
+import { placingCheckpoint, placingNisse, setTool, toolLayer, toolMaterial, toolSettings } from "./tools.js";
 
 export { isBackWall };
 
@@ -159,6 +159,11 @@ export function addAt(point) {
     // A trail has one nisse at most, so placing it again moves it.
     editor.trail.nisse = { x: point.x, y: point.y };
     editor.selection = { kind: "nisse", index: 0 };
+  } else if (editor.tool === "apple" && placingCheckpoint()) {
+    // A trail without checkpoints has no list of them until the first is placed.
+    editor.trail.checkpoints ??= [];
+    editor.trail.checkpoints.push(checkpointAt(point.x, point.y));
+    editor.selection = { kind: "checkpoint", index: editor.trail.checkpoints.length - 1 };
   } else if (editor.tool === "apple") {
     editor.trail.apples.push({ x: point.x, y: point.y });
     editor.selection = { kind: "apple", index: editor.trail.apples.length - 1 };
