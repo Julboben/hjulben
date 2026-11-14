@@ -2282,6 +2282,14 @@ h2 {
             margin: 0 12px 0 0;
             color: var(--color-text-muted);
         }
+        /* The smallest phones fit the longest title beside Back on one line. */
+        @media (max-width: 350px) {
+            --px: 2px;
+            font-size: calc(var(--font-display-step) * 1.5);
+            &::before {
+                margin-right: 9px;
+            }
+        }
     }
 }
 .menu-back {
@@ -2917,6 +2925,17 @@ h2 {
 .look-history,
 .look-random {
     --px: 2px;
+}
+/* A gap rather than the icon's margin, so the die stays centred when the
+   label is hidden on phones. */
+.look-random {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6em;
+    &::before {
+        margin: 0;
+    }
 }
 .look-history {
     display: grid;
