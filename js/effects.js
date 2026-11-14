@@ -10,6 +10,9 @@ import { WATER_COLORS, submergedFraction, waterAt } from './water.js';
 
 const MAX_PARTICLES = 400;
 const MAX_SKID_MARKS = 120;
+const MAX_TYRE_TRACKS = 600;
+/** How long (s) a tyre track takes to fade, and how far apart (px) its pieces are laid. */
+const TRACK_LIFE = 5, TRACK_PIECE = 4;
 const MAX_CLUMPS = 6;
 /** How readily each loose surface sticks to a tyre; the rest wipe it clean. */
 const DIRT_PICKUP = { dirt: 1, grass: .7, sand: .6, snow: .8 };
@@ -36,6 +39,9 @@ function removeExpired(list, limit) {
 export function createEffects() {
   /** @type {any[]} */ const particles = [];
   /** @type {any[]} */ const skidMarks = [];
+  /** @type {any[]} */ const tyreTracks = [];
+  /** Where each wheel's track was last laid, or null off soft ground. */
+  const trackFrom = { rear: /** @type {number | null} */ (null), front: /** @type {number | null} */ (null) };
   const weather = { time: 0, nextLightning: Infinity, flash: 0, x: .5, distance: .5 };
   let trail = null, sprayAccumulator = 0, skidAccumulator = 0, wakeAccumulator = 0;
   /** Clumps stuck to each tyre, at angles fixed to the tyre so they turn with it. */
@@ -46,7 +52,8 @@ export function createEffects() {
 
   function reset(nextTrail) {
     trail = nextTrail;
-    particles.length = 0; skidMarks.length = 0;
+    particles.length = 0; skidMarks.length = 0; tyreTracks.length = 0;
+    trackFrom.rear = null; trackFrom.front = null;
     sprayAccumulator = 0; skidAccumulator = 0; wakeAccumulator = 0;
     wheelDirt.rear.length = 0; wheelDirt.front.length = 0;
     dirtAccumulator.rear = 0; dirtAccumulator.front = 0;
@@ -98,6 +105,26 @@ export function createEffects() {
     }
   }
 
+  /**
+   * The ground thrown up where the rider's head hits it, away from the
+   * surface, more off loose ground (see `roost` in materials.js).
+   */
+  function crashDebris({ pointX, pointY, nx, ny, material }) {
+    const { spray, roost } = terrainMaterials[material] || terrainMaterials.grass;
+    const count = Math.round(15 * roost.landing);
+    const away = Math.atan2(ny, nx);
+    for (let index = 0; index < count; index++) {
+      const angle = away + (Math.random() - .5) * 2.4;
+      const speed = roost.lift * (40 + Math.random() * 90);
+      const life = (.4 + Math.random() * .35) * roost.hang;
+      particles.push({
+        x: pointX, y: pointY, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed - 20,
+        life, max: life, color: spray[index % spray.length], size: Math.random() < roost.chunks ? 4 : 2, drag: 2,
+        gravity: PARTICLE_GRAVITY * roost.fall
+      });
+    }
+  }
+
   function brakeMarks(ride, speed, braking) {
     const magnitude = Math.abs(speed);
     if (ride.status !== 'running' || !braking || magnitude < 24) { skidAccumulator = 0; return; }
@@ -113,6 +140,23 @@ export function createEffects() {
         x: ground.pointX ?? wheel.x, y: (ground.pointY ?? ground.y) - 1, slope: ground.slope,
         direction, length, life: 1.6, max: 1.6
       });
+    }
+  }
+
+  /**
+   * Tyres rolling on soft ground leave tracks pressed into it (`tracks` in
+   * materials.js), laid in short pieces along the surface. In the air or on
+   * other ground the track breaks off.
+   */
+  function layTracks(ride) {
+    for (const name of /** @type {const} */ (['rear', 'front'])) {
+      const wheel = ride[name], contact = wheel.contact;
+      const colors = ride.status === 'running' && wheel.grounded && contact ? terrainMaterials[wheel.material]?.tracks : null;
+      const from = trackFrom[name];
+      if (!colors || from === null) { trackFrom[name] = colors ? contact.pointX : null; continue; }
+      if (Math.abs(contact.pointX - from) < TRACK_PIECE) continue;
+      tyreTracks.push({ from, to: contact.pointX, y: contact.pointY, slope: contact.slope, colors, life: TRACK_LIFE, max: TRACK_LIFE });
+      trackFrom[name] = contact.pointX;
     }
   }
 
@@ -332,6 +376,7 @@ export function createEffects() {
 
   function update(dt) {
     for (const mark of skidMarks) mark.life -= dt;
+    for (const track of tyreTracks) track.life -= dt;
     for (const p of particles) {
       p.life -= dt;
       if (p.drag) p.vx *= Math.exp(-p.drag * dt);
@@ -353,7 +398,8 @@ export function createEffects() {
   function prune() {
     removeExpired(particles, MAX_PARTICLES);
     removeExpired(skidMarks, MAX_SKID_MARKS);
+    removeExpired(tyreTracks, MAX_TYRE_TRACKS);
   }
 
-  return { particles, skidMarks, wheelDirt, tyreSquish, weather, reset, burst, dustPuff, exhaustPuff, brakeMarks, terrainSpray, splash, shatter, crack, waterWake, wheelGrime, squishTyres, stepWeather, update, prune };
+  return { particles, skidMarks, tyreTracks, wheelDirt, tyreSquish, weather, reset, burst, dustPuff, exhaustPuff, crashDebris, brakeMarks, layTracks, terrainSpray, splash, shatter, crack, waterWake, wheelGrime, squishTyres, stepWeather, update, prune };
 }

@@ -1102,6 +1102,26 @@ export function createRenderer(canvas, { still = false } = {}) {
     }
   }
 
+  // Tyre tracks pressed into soft ground, fading out: a groove along the
+  // surface's top row, and the tread's knobs every third art pixel, deeper
+  // and across both its rows. The knobs keep to world columns, so they stay
+  // put as the camera moves.
+  function drawTyreTracks(tracks) {
+    for (const track of tracks) {
+      ctx.globalAlpha = clamp(track.life / track.max, 0, 1);
+      const left = Math.min(track.from, track.to),
+        right = Math.max(track.from, track.to);
+      for (let column = Math.ceil(left / 2); column * 2 < right; column++) {
+        const x = column * 2,
+          y = track.y + track.slope * (x + 1 - track.to);
+        const knob = column % 3 === 0;
+        pixelRect(x, y - 2, 2, 2, knob ? track.colors.tread : track.colors.groove, 2);
+        if (knob) pixelRect(x, y, 2, 2, track.colors.groove, 2);
+      }
+    }
+    ctx.globalAlpha = 1;
+  }
+
   function drawSkidMarks(skidMarks) {
     for (const mark of skidMarks) {
       const length = mark.length * mark.direction;
@@ -2120,6 +2140,7 @@ export function createRenderer(canvas, { still = false } = {}) {
     terrainRenderer.draw(ctx, ride.trail, cameraX, cameraY, W, H, propScene.time, propScene.weather);
     drawGlassCracks(ride.trail);
     drawWallPaint();
+    drawTyreTracks(effects.tyreTracks);
     drawSkidMarks(effects.skidMarks);
     drawSceneryShadows(ride, now, full);
     drawParticles(effects.particles, true);

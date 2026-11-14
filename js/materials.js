@@ -7,7 +7,8 @@ export const isSeeThrough = (name) => terrainMaterials[name]?.alpha !== undefine
 // big bits, which fall at `fall` times the usual pull and last `hang` times
 // as long, and a landing knocks up `landing` times as much. Loose ground
 // throws a lot, hard ground hardly anything. It is only drawn: grip is the
-// same everywhere.
+// same everywhere. On soft ground the tyres also press `tracks` into the
+// surface: a groove, darker at each knob of the tread.
 const HARD_ROOST = { amount: .1, lift: .5, reach: .7, chunks: 0, fall: 1, hang: .6, landing: .35 };
 
 export const terrainMaterials = {
@@ -27,7 +28,8 @@ export const terrainMaterials = {
     fill: '#d8c08e', layers: ['#e6d2a3', '#c2a674'], detail: '#a98e6166',
     edge: '#8f7550', surface: '#e9d8a8', vegetation: null,
     spray: ['#c9b07e','#dcc59a','#eddcb5'],
-    roost: { amount: 3, lift: 1.7, reach: 1.4, chunks: .1, fall: 1, hang: 1.3, landing: 2.5 }
+    roost: { amount: 3, lift: 1.7, reach: 1.4, chunks: .1, fall: 1, hang: 1.3, landing: 2.5 },
+    tracks: { groove: '#e0cb9a', tread: '#c0ab80' }
   },
   concrete: {
     fill: '#727a78', layers: ['#89918d', '#606866'], detail: '#4d565466',
@@ -45,7 +47,8 @@ export const terrainMaterials = {
     fill: '#aebbc0', layers: ['#cbd5d6', '#929fa5'], detail: '#74838a55',
     edge: '#687a7e', surface: '#eef3ed', vegetation: null,
     spray: ['#d8e2df','#edf2eb','#aebcc0'],
-    roost: { amount: 2.6, lift: 1.3, reach: 1.1, chunks: .5, fall: .33, hang: 2, landing: 2.5 }
+    roost: { amount: 2.6, lift: 1.3, reach: 1.1, chunks: .5, fall: .33, hang: 2, landing: 2.5 },
+    tracks: { groove: '#cbd4d4', tread: '#b2bdbb' }
   },
   brick: {
     fill: '#8d493d', layers: ['#a65a49', '#71392f'], detail: '#492b29aa', pattern: 'brick',

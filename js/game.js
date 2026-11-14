@@ -5,7 +5,7 @@ import { trails, officialTrailEntries, bonusTrailEntries, customTrailEntries, re
 import { createAudio, skidAmount } from './audio.js';
 import { createPhysicsDebugger } from './physics-debug.js';
 import { createFpsMeter } from './fps-meter.js';
-import { terrainAt } from './terrain.js';
+import { terrainAt, terrainCollisionsAt } from './terrain.js';
 import { createRide, stepRide, bikeSpeed, interpolateRide, RIDE_VERSION } from './ride.js';
 import { encodeInputs, decodeInputs } from './replay-codec.js';
 import { medalFor, normalizeTrail } from './trail-schema.js';
@@ -42,6 +42,8 @@ const HARD_LANDING_IMPACT = 170;
 const KICK_SECONDS = .9;
 // The drawing's stamp bottoms out at this point too (riderAnkle in drawing.js).
 const KICK_CATCHES = KICK_SECONDS / 2;
+// How far from the head's centre a head crash looks for the ground it hit.
+const HEAD_GROUND_REACH = 12;
 const CRASH_COLORS = { spike: '#d95832', head: '#ed8b54', fall: '#ed8b54', water: '#8fd6e8' };
 
 /**
@@ -1064,6 +1066,10 @@ export function startGame({ shared = null } = {}) {
         break;
       case 'crash': {
         effects.burst(event.x, event.y, CRASH_COLORS[event.cause], event.cause === 'spike' ? 18 : 15);
+        // Under the burst, a head that hits the ground throws it up: snow and
+        // sand fly, hard ground hardly stirs.
+        const ground = event.cause === 'head' ? terrainCollisionsAt(ride.trail, event.x, event.y, HEAD_GROUND_REACH)[0] : null;
+        if (ground) effects.crashDebris(ground);
         sounds.crash();
         if (session.preferences.shake === 'on') camera.kick(6);
         haptics.play('crash');
@@ -1155,6 +1161,7 @@ export function startGame({ shared = null } = {}) {
     effects.terrainSpray(ride, speed, stepInput.braking);
     effects.waterWake(ride, speed);
     effects.brakeMarks(ride, speed, stepInput.braking);
+    effects.layTracks(ride);
     effects.wheelGrime(ride, stepInput.braking);
     effects.squishTyres(ride);
     // A crash throws away the feat in progress; reaching the finish completes it.
