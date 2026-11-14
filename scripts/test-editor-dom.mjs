@@ -215,6 +215,15 @@ const reported = (report, label) => {
   check('an edge near a grid line lands on it', report.grid.top === 300 && report.grid.left === 113, `(${json(report.grid)})`);
   check('Shift keeps a sideways move level', report.level.top === 300, `(${json(report.level)})`);
   check('a dragged point lines up with another point', report.pointY === 213, `(${report.pointY})`);
+  check('a scale handle lines a side up with another block', report.scaled.left === 213, `(${json(report.scaled)})`);
+  check('a guide shows what the scaled side lined up with', json(report.scaleGuides) === json([['x', 213]]), `(${json(report.scaleGuides)})`);
+  check('Cmd held mid-scale follows the pointer', report.scaledFree.left === 204, `(${json(report.scaledFree)})`);
+  check('the scale frame goes round a curved block, not its curve handles', Math.abs(report.bulgeFrameGaps[0] - report.bulgeFrameGaps[1]) < 0.01, `(${json(report.bulgeFrameGaps)})`);
+  check('a run of Escapes deselects and stays in the editor', report.escapeRun[0] === null && report.escapeRun[1] === 0 && report.escapeRun[2] === false, `(${json(report.escapeRun)})`);
+  check('Escape with nothing to back out of asks to leave', json(report.escapeAsks) === json([0, true]), `(${json(report.escapeAsks)})`);
+  check('Escape after the question has gone asks again', report.escapeAsksAgain === 0);
+  check('a second Escape while it asks leaves the editor', report.escapeLeaves === 1);
+  check('stretching a curved block from one side keeps the other side still', Math.abs(report.bulgeLeft[1] - report.bulgeLeft[0]) < 0.01, `(${json(report.bulgeLeft)})`);
   check('N turns snapping off and on', report.offByKey && report.onByKey);
 }
 

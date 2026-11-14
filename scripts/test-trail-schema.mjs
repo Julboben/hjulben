@@ -100,6 +100,11 @@ for (const entry of [...loadCatalogTrails('official'), ...loadCatalogTrails('bon
   assert.ok(errors(finish).some(text => text.includes('finish flower is inside solid terrain')));
   const flag = normalizeTrail({ ...blank, finish: { x: 1200, y: groundAt(1200) } });
   assert.ok(!errors(flag).some(text => text.includes('inside solid terrain')), 'a finish standing on the ground is fine');
+  // A finish may float past either end of the terrain, to be reached with a last jump.
+  for (const x of [-200, 3000]) {
+    assert.deepEqual(errors(normalizeTrail({ ...blank, finish: { x, y: groundAt(1200) - 60 } })), [], 'a finish in the air past the terrain is fine');
+    assert.ok(errors(normalizeTrail({ ...blank, finish: { x, y: null } })).some(text => text.includes('finish has no terrain under it')), 'a ground-anchored one there is not');
+  }
   // A buried start is one error, not an inside error on top of a below-the-terrain one.
   const sunk = normalizeTrail({ ...blank, start: { x: 300, y: 9000, facing: 1 } });
   assert.ok(!errors(sunk).some(text => text.includes('starts inside solid terrain')));

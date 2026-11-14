@@ -266,10 +266,10 @@
       "name": "The Mining Cave"
     },
     {
-      "id": "bonus:skill-testing",
+      "id": "bonus:proving-ground-i",
       "source": "bonus",
-      "file": "bonus/03-skill-testing.json",
-      "name": "Skill testing"
+      "file": "bonus/03-proving-ground-i.json",
+      "name": "Proving Ground I"
     }
   ]
 }

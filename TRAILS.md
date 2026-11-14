@@ -210,4 +210,4 @@ Written by `scripts/generate-trails-overview.mjs` from the trail files, so don't
 
   > Technical rock climbing
 
-- **B03. Skill testing:** *What it teaches isn't written yet (`lesson`).*
+- **B03. Proving Ground I:** *What it teaches isn't written yet (`lesson`).*

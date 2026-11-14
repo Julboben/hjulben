@@ -200,7 +200,7 @@ Each block sets its own material with its `material` property. Available presets
 | `wood`   | Staggered wooden planks with grain and knots |
 | `glass`  | See-through panes that let light in; can break |
 
-Material definitions live in `terrainMaterials` at the top of `js/materials.js`. Each preset controls fill, internal layers or pattern, edge colors, vegetation, and wheel-spray colors.
+Material definitions live in `terrainMaterials` at the top of `js/materials.js`. Each preset controls fill, internal layers or pattern, edge colors, vegetation, and the wheel spray: its colors and how much the wheels throw up (`roost`), plenty on sand and snow, hardly any on hard ground, and on sand and snow the `tracks` the tyres press into the surface. It only changes how the ground looks; grip is the same on every material.
 Every material collides the same way except `glass`, which is judged by the block's shape. Its thickness and span are the short and long sides of the rectangle with the same area and perimeter as the block. That's exact for a rectangle at any angle, so a flat pane, an upright wall and a tilted plank all measure the same way. A bent or curved strip measures about as thick and as long as the strip itself, and a round or square blob measures as thick as it is wide:
 
 - **Thick** (16 units or more): never breaks, like any other terrain.

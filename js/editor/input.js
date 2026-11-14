@@ -71,7 +71,7 @@ import {
   withWholeGroups,
 } from "./groups.js";
 import { clampZoom, editor } from "./state.js";
-import { refuseEdit, refuseReadOnly, showStatus } from "./status.js";
+import { NOTICE_TIME, refuseEdit, refuseReadOnly, showStatus } from "./status.js";
 import { PLACING_TOOLS, TOOL_KEYS, setTool, toolSettings } from "./tools.js";
 import { groupLabel, isGroupLocked, toolGroup } from "./locks.js";
 import { commitWater } from "./water.js";
@@ -175,6 +175,48 @@ const DRAG_SLOP = 3;
 // further than DRAG_SLOP.
 let pressClient = null;
 
+// An Escape this soon after the one before is part of a run of presses.
+const ESCAPE_RUN = 500;
+let lastEscape = -Infinity;
+// When Escape last asked to leave the editor.
+let leaveAsked = -Infinity;
+
+/** Back out one step: an unfinished shape, then the group, then the selection, then the tool. */
+function backOut() {
+  if (cancelPendingShape()) return true;
+  if (editor.tool !== "select") setTool("select");
+  else if (leaveGroup()) syncInspector();
+  else if (editor.selection) {
+    editor.selection = null;
+    syncInspector();
+  } else return false;
+  render();
+  return true;
+}
+
+/**
+ * Escape backs out one step. With nothing left to back out of it asks, and
+ * another press while the question shows leaves the editor; the trail is
+ * autosaved, so leaving loses nothing but the undo history. A press in a run
+ * of them never asks, so pressing Escape a few times to deselect stays here.
+ */
+function escape() {
+  const now = performance.now();
+  const inRun = now - lastEscape < ESCAPE_RUN;
+  lastEscape = now;
+  if (backOut()) {
+    leaveAsked = -Infinity;
+    return;
+  }
+  if (now - leaveAsked < NOTICE_TIME) {
+    /** @type {HTMLAnchorElement} */ (document.querySelector(".back-game")).click();
+    return;
+  }
+  if (inRun) return;
+  leaveAsked = now;
+  showStatus("info", "Press Esc again to leave the editor.");
+}
+
 /** Has the pointer moved far enough from the press to start dragging? */
 function pastSlop(event) {
   if (!pressClient) return true;
@@ -187,12 +229,16 @@ function pastSlop(event) {
   return true;
 }
 
-// Where the pointer is while a scale handle is dragged, so Alt and Shift can
-// re-apply the scale without the pointer moving.
+// Where the pointer is while a scale handle is dragged, so Alt, Shift and
+// Cmd/Ctrl can re-apply the scale without the pointer moving.
 let scalePoint = null;
 
 function applyScale(event) {
-  const before = updateScale(scalePoint, { alt: event.altKey, shift: event.shiftKey });
+  const before = updateScale(scalePoint, {
+    alt: event.altKey,
+    shift: event.shiftKey,
+    snap: snappingOn() && !event.metaKey && !event.ctrlKey,
+  });
   if (before) pushHistory(before);
   syncInspector({ live: true });
   render();
@@ -439,7 +485,7 @@ function setDragCopying(copying, shift) {
 // Pressing or releasing Shift or Cmd/Ctrl mid-drag changes the snapping
 // straight away, without waiting for the pointer to move.
 const onShiftChange = (event) => {
-  if (scaling() && scalePoint && (event.key === "Shift" || event.key === "Alt")) {
+  if (scaling() && scalePoint && ["Shift", "Alt", "Meta", "Control"].includes(event.key)) {
     event.preventDefault();
     applyScale(event);
     return;
@@ -1182,23 +1228,7 @@ export function bindInput() {
     )
       return;
     if (event.key === "Escape") {
-      // Escape backs out one step: an unfinished shape, then the tool, then the selection.
-      if (cancelPendingShape()) return;
-      if (editor.tool === "select" && leaveGroup()) {
-        syncInspector();
-        render();
-        return;
-      }
-      if (editor.tool === "select" && editor.selection) {
-        editor.selection = null;
-        syncInspector();
-        render();
-        return;
-      }
-    }
-    if (event.key === "Escape") {
-      setTool("select");
-      render();
+      escape();
       return;
     }
     if (TOOL_KEYS[event.code] && !event.shiftKey) {

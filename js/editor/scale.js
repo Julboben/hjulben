@@ -1,18 +1,21 @@
 // Scale handles around the selected blocks and water: corners keep the
 // proportions, so a circle stays a circle and a square a square, and sides
 // stretch one way. Water on its own is just a rectangle, so its corners
-// resize it freely.
-import { scaleBlock } from "../terrain-geometry.js";
+// resize it freely. The frame goes round what the author sees, the blocks'
+// outlines rather than their curve handles, so a side not dragged stays put.
+// The sides being dragged snap like a drag does (see magnet.js).
+import { flattenBoundary, scaleBlock } from "../terrain-geometry.js";
 import { WATER_SIZE } from "../water.js";
 import { blocks, replaceBlock, selectedBlocks } from "./blocks.js";
-import { blockNodes } from "./selection.js";
+import { guideAlong, scaleTargets, snapSide } from "./magnet.js";
 import { gridSpacing } from "./snap.js";
 import { HIT_REACH, editor, waters } from "./state.js";
 
 // Screen pixels a scale handle can be grabbed from, and its distance outside
-// the blocks. The box holds every point, edge and curve handle, so a pointer
-// that can grab a scale handle is always out of reach of those, and a
-// double-click on an edge never lands on a scale handle.
+// the blocks. The box holds every point and edge, so a pointer that can grab
+// a scale handle is always out of reach of those, and a double-click on an
+// edge never lands on a scale handle. Curve handles can reach outside it, but
+// they are only shown with a point selected, when there are no scale handles.
 const HIT = 7;
 const PAD = HIT + HIT_REACH + 1;
 // Smallest width or height a scale can shrink the selection to, in world units.
@@ -60,26 +63,15 @@ function targets() {
 }
 
 /**
- * The box around some blocks' points and curve handles, which contains their
- * curves, and around some water bodies.
+ * The box around some blocks' outlines, which a curve handle can reach past,
+ * and around some water bodies.
  */
 function boxOf(list, bodies = []) {
-  let left = Infinity, top = Infinity, right = -Infinity, bottom = -Infinity;
-  const add = (x, y) => {
-    left = Math.min(left, x);
-    right = Math.max(right, x);
-    top = Math.min(top, y);
-    bottom = Math.max(bottom, y);
-  };
-  for (const block of list)
-    for (const node of blockNodes(block))
-      for (const [x, y] of [[node.x, node.y], node.in, node.out].filter(Boolean))
-        add(x, y);
-  for (const body of bodies) {
-    add(body.x, body.y);
-    add(body.x + body.width, body.y + body.depth);
-  }
-  return Number.isFinite(left) ? { left, top, right, bottom } : null;
+  const points = list.flatMap((block) => flattenBoundary(block.outer).points);
+  for (const body of bodies) points.push([body.x, body.y], [body.x + body.width, body.y + body.depth]);
+  if (!points.length) return null;
+  const xs = points.map(([x]) => x), ys = points.map(([, y]) => y);
+  return { left: Math.min(...xs), top: Math.min(...ys), right: Math.max(...xs), bottom: Math.max(...ys) };
 }
 
 /**
@@ -162,6 +154,7 @@ export function startScale(handle, point, before) {
     waterIndices,
     waterOriginals,
     box,
+    targets: null,
     before,
     moved: false,
   };
@@ -169,11 +162,12 @@ export function startScale(handle, point, before) {
 }
 
 /**
- * Scale to where the pointer is. Alt scales about the centre, and Shift puts
- * the dragged side on the grid. Returns the undo snapshot the first time
- * anything changes, so the caller can push it.
+ * Scale to where the pointer is. Alt scales about the centre. With `snap`, the
+ * dragged sides line up with other things and the grid nearby, as a drag
+ * does, and Shift puts them on the grid. Returns the undo snapshot the first
+ * time anything changes, so the caller can push it.
  */
-export function updateScale(point, { alt = false, shift = false } = {}) {
+export function updateScale(point, { alt = false, shift = false, snap = false } = {}) {
   if (!active) return null;
   const { handle, start, indices, originals, waterIndices, waterOriginals, box } = active;
   const { hx, hy } = handle;
@@ -181,20 +175,28 @@ export function updateScale(point, { alt = false, shift = false } = {}) {
     height = box.bottom - box.top;
   const cx = (box.left + box.right) / 2,
     cy = (box.top + box.bottom) / 2;
-  // Where the dragged sides of the box have moved to.
-  let x = (hx > 0 ? box.right : box.left) + point.x - start.x;
-  let y = (hy > 0 ? box.bottom : box.top) + point.y - start.y;
-  if (shift) {
-    const g = gridSpacing(editor.zoom);
-    x = Math.round(x / g) * g;
-    y = Math.round(y / g) * g;
-  }
   const px = alt ? cx : hx > 0 ? box.left : box.right;
   const py = alt ? cy : hy > 0 ? box.top : box.bottom;
-  const factor = (to, pivot, from, size) =>
-    Math.max(MIN_SIZE / Math.max(size, 1e-6), (to - pivot) / (from - pivot || 1));
-  let sx = hx && width > 1e-6 ? factor(x, px, hx > 0 ? box.right : box.left, width) : 1;
-  let sy = hy && height > 1e-6 ? factor(y, py, hy > 0 ? box.bottom : box.top, height) : 1;
+  const factor = (to, pivot, from) => (to - pivot) / (from - pivot || 1);
+  // Where the dragged sides of the box have moved to.
+  const fromX = hx > 0 ? box.right : box.left,
+    fromY = hy > 0 ? box.bottom : box.top;
+  let sx = hx && width > 1e-6 ? factor(fromX + point.x - start.x, px, fromX) : 1;
+  let sy = hy && height > 1e-6 ? factor(fromY + point.y - start.y, py, fromY) : 1;
+  const lined = { x: null, y: null };
+  if (shift || snap) {
+    const spacing = gridSpacing(editor.zoom);
+    if (!shift) active.targets ??= scaleTargets();
+    const place = (scale, edge, pivot, targets) => {
+      const at = pivot + (edge - pivot) * scale;
+      const to = shift ? { side: Math.round(at / spacing) * spacing, at: null } : snapSide(at, targets);
+      return [factor(to.side, pivot, edge), to.grid ? null : to.at];
+    };
+    if (hx && width > 1e-6) [sx, lined.x] = place(sx, fromX, px, active.targets?.xs);
+    if (hy && height > 1e-6) [sy, lined.y] = place(sy, fromY, py, active.targets?.ys);
+  }
+  if (hx && width > 1e-6) sx = Math.max(MIN_SIZE / width, sx);
+  if (hy && height > 1e-6) sy = Math.max(MIN_SIZE / height, sy);
   // Corners keep the proportions of blocks: the side dragged further decides.
   if (hx && hy && indices.length) sx = sy = Math.max(sx, sy);
   indices.forEach((index, i) =>
@@ -206,6 +208,20 @@ export function updateScale(point, { alt = false, shift = false } = {}) {
     const [y, depth] = scaleSpan(body.y, body.depth, py, sy, WATER_SIZE.minDepth, hy, alt);
     waters()[index] = { ...waters()[index], x, y, width, depth };
   });
+  // A guide for each side that lined up with something and is still on it,
+  // which a side held to the other's proportions or a smallest size is not.
+  editor.snapLines = [];
+  if (lined.x !== null || lined.y !== null) {
+    const now = boxOf(
+      indices.map((index) => blocks()[index]),
+      waterIndices.map((index) => waters()[index]),
+    );
+    const on = (side, at) => at !== null && Math.abs(side - at) < 0.01;
+    if (on(hx > 0 ? now.right : now.left, lined.x))
+      editor.snapLines.push(guideAlong("x", lined.x, [[now.top, now.bottom]], active.targets.xs));
+    if (on(hy > 0 ? now.bottom : now.top, lined.y))
+      editor.snapLines.push(guideAlong("y", lined.y, [[now.left, now.right]], active.targets.ys));
+  }
   if (active.moved) return null;
   active.moved = true;
   return active.before;

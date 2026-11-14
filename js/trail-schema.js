@@ -561,34 +561,6 @@ export function validateTrail(trail) {
     );
 
   if (!blocks.length) error("A trail needs terrain: add at least one block.");
-  // The finish may sit on either side of the start, so it is checked against
-  // both ends of the terrain rather than against a position to the right.
-  const firstX = blocks.length
-    ? Math.min(
-        ...blocks.map((block) => regionBounds(block).left),
-      )
-    : Infinity;
-  const finalX = blocks.length
-    ? Math.max(
-        ...blocks.map((block) => regionBounds(block).right),
-      )
-    : -Infinity;
-  // A finish off the end of the terrain is already reported by the range check
-  // below, so the "no terrain under it" check must not repeat the same problem.
-  let finishOffTerrain = false;
-  if (Number.isFinite(firstX) && trail.finish.x <= firstX) {
-    finishOffTerrain = true;
-    error(
-      `The finish at x ${Math.round(trail.finish.x)} is before the start of the terrain (x ${Math.round(firstX)}). Move it onto the trail, or extend the blocks.`,
-      { type: "finish" },
-    );
-  } else if (Number.isFinite(finalX) && trail.finish.x >= finalX) {
-    finishOffTerrain = true;
-    error(
-      `The finish at x ${Math.round(trail.finish.x)} is past the end of the terrain (x ${Math.round(finalX)}). Move it onto the trail, or extend the blocks.`,
-      { type: "finish" },
-    );
-  }
   if (Number.isFinite(trail.start?.x) && startTouchesFinish(trail)) {
     error(
       "The finish flower touches the bike at the start, so the trail would end at once. Move the finish away from the start.",
@@ -906,11 +878,7 @@ export function validateTrail(trail) {
     }
     if (trail.nisse?.y === null && noGround(trail.nisse.x))
       error("The ground-anchored nisse has no terrain under it. Drag it onto a block.", { type: "nisse", index: 0 });
-    if (
-      !finishOffTerrain &&
-      !Number.isFinite(trail.finish.y) &&
-      noGround(trail.finish.x)
-    )
+    if (!Number.isFinite(trail.finish.y) && noGround(trail.finish.x))
       error(
         "The ground-anchored finish has no terrain under it. Drag it onto a block, or lift it into the air.",
         { type: "finish" },

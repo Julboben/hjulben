@@ -10,11 +10,16 @@ import { WATER_COLORS, submergedFraction, waterAt } from './water.js';
 
 const MAX_PARTICLES = 400;
 const MAX_SKID_MARKS = 120;
+const MAX_TYRE_TRACKS = 600;
+/** How long (s) a tyre track takes to fade, and how far apart (px) its pieces are laid. */
+const TRACK_LIFE = 5, TRACK_PIECE = 4;
 const MAX_CLUMPS = 6;
 /** How readily each loose surface sticks to a tyre; the rest wipe it clean. */
 const DIRT_PICKUP = { dirt: 1, grass: .7, sand: .6, snow: .8 };
 /** Spin (rad/s) above which clumps start to fly off the tyre. */
 const FLING_SPIN = 40;
+/** How fast particles fall (px/s²), unless they set their own gravity. */
+const PARTICLE_GRAVITY = 210;
 
 // Tyre load, against the load at rest, from which a tyre is drawn flat or
 // bulging, and how long (s) each level is held; see squishTyres.
@@ -34,6 +39,9 @@ function removeExpired(list, limit) {
 export function createEffects() {
   /** @type {any[]} */ const particles = [];
   /** @type {any[]} */ const skidMarks = [];
+  /** @type {any[]} */ const tyreTracks = [];
+  /** Where each wheel's track was last laid, or null off soft ground. */
+  const trackFrom = { rear: /** @type {number | null} */ (null), front: /** @type {number | null} */ (null) };
   const weather = { time: 0, nextLightning: Infinity, flash: 0, x: .5, distance: .5 };
   let trail = null, sprayAccumulator = 0, skidAccumulator = 0, wakeAccumulator = 0;
   /** Clumps stuck to each tyre, at angles fixed to the tyre so they turn with it. */
@@ -44,7 +52,8 @@ export function createEffects() {
 
   function reset(nextTrail) {
     trail = nextTrail;
-    particles.length = 0; skidMarks.length = 0;
+    particles.length = 0; skidMarks.length = 0; tyreTracks.length = 0;
+    trackFrom.rear = null; trackFrom.front = null;
     sprayAccumulator = 0; skidAccumulator = 0; wakeAccumulator = 0;
     wheelDirt.rear.length = 0; wheelDirt.front.length = 0;
     dirtAccumulator.rear = 0; dirtAccumulator.front = 0;
@@ -61,18 +70,57 @@ export function createEffects() {
     }
   }
 
+  /** What a landing knocks up off the ground, more on loose ground (see `roost` in materials.js). */
   function dustPuff(wheel, impactSpeed) {
     const x = wheel.contact?.pointX ?? wheel.x;
     const y = (wheel.contact?.pointY ?? wheel.y + RADIUS) - 2;
-    const spray = (terrainMaterials[wheel.material] || terrainMaterials.grass).spray;
-    const count = Math.round(clamp(impactSpeed / 40, 3, 9));
+    const { spray, roost } = terrainMaterials[wheel.material] || terrainMaterials.grass;
+    const count = Math.round(clamp(impactSpeed / 40, 3, 9) * roost.landing);
     for (let index = 0; index < count; index++) {
       const side = index % 2 ? 1 : -1;
-      const life = .3 + Math.random() * .25;
+      const life = (.3 + Math.random() * .25) * roost.hang;
       particles.push({
         x: x + side * (2 + Math.random() * 6), y,
-        vx: side * (30 + Math.random() * 50), vy: -(10 + Math.random() * 30),
-        life, max: life, color: spray[index % spray.length], size: 2, drag: 5
+        vx: side * (30 + Math.random() * 50), vy: -roost.lift * (10 + Math.random() * 30),
+        life, max: life, color: spray[index % spray.length], size: Math.random() < roost.chunks ? 4 : 2, drag: 5,
+        gravity: PARTICLE_GRAVITY * roost.fall
+      });
+    }
+  }
+
+  /**
+   * The engine's cough as the kick-start catches: grey puffs out of the
+   * exhaust, thrown back against `facing`, that slow, drift up, swell and
+   * fade.
+   */
+  function exhaustPuff({ x, y }, facing) {
+    const colors = ['#eceee9', '#c4c9c3', '#9aa29c'];
+    for (let index = 0; index < 10; index++) {
+      const life = .4 + Math.random() * .35;
+      particles.push({
+        x, y: y + (Math.random() - .5) * 3,
+        vx: -facing * (20 + Math.random() * 50), vy: -(2 + Math.random() * 16),
+        life, max: life, color: colors[index % colors.length], size: 4, grow: index % 2 ? 4 : 2, drag: 5, gravity: -24
+      });
+    }
+  }
+
+  /**
+   * The ground thrown up where the rider's head hits it, away from the
+   * surface, more off loose ground (see `roost` in materials.js).
+   */
+  function crashDebris({ pointX, pointY, nx, ny, material }) {
+    const { spray, roost } = terrainMaterials[material] || terrainMaterials.grass;
+    const count = Math.round(15 * roost.landing);
+    const away = Math.atan2(ny, nx);
+    for (let index = 0; index < count; index++) {
+      const angle = away + (Math.random() - .5) * 2.4;
+      const speed = roost.lift * (40 + Math.random() * 90);
+      const life = (.4 + Math.random() * .35) * roost.hang;
+      particles.push({
+        x: pointX, y: pointY, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed - 20,
+        life, max: life, color: spray[index % spray.length], size: Math.random() < roost.chunks ? 4 : 2, drag: 2,
+        gravity: PARTICLE_GRAVITY * roost.fall
       });
     }
   }
@@ -95,6 +143,23 @@ export function createEffects() {
     }
   }
 
+  /**
+   * Tyres rolling on soft ground leave tracks pressed into it (`tracks` in
+   * materials.js), laid in short pieces along the surface. In the air or on
+   * other ground the track breaks off.
+   */
+  function layTracks(ride) {
+    for (const name of /** @type {const} */ (['rear', 'front'])) {
+      const wheel = ride[name], contact = wheel.contact;
+      const colors = ride.status === 'running' && wheel.grounded && contact ? terrainMaterials[wheel.material]?.tracks : null;
+      const from = trackFrom[name];
+      if (!colors || from === null) { trackFrom[name] = colors ? contact.pointX : null; continue; }
+      if (Math.abs(contact.pointX - from) < TRACK_PIECE) continue;
+      tyreTracks.push({ from, to: contact.pointX, y: contact.pointY, slope: contact.slope, colors, life: TRACK_LIFE, max: TRACK_LIFE });
+      trackFrom[name] = contact.pointX;
+    }
+  }
+
   function terrainSpray(ride, speed, braking) {
     if (ride.status !== 'running') return;
     const magnitude = Math.abs(speed);
@@ -103,20 +168,23 @@ export function createEffects() {
       sprayAccumulator = Math.min(sprayAccumulator, .8);
       return;
     }
+    // How much is thrown, how high and how far depends on the ground (see
+    // `roost` in materials.js).
+    const { spray, roost } = terrainMaterials[wheel.material] || terrainMaterials.grass;
     const intensity = clamp(magnitude / 210, .15, 1) * (braking ? 1.5 : .8 + ride.throttle * .7);
-    sprayAccumulator += intensity * STEP * 24;
+    sprayAccumulator += intensity * STEP * 24 * roost.amount;
     while (sprayAccumulator >= 1) {
       sprayAccumulator--;
       const direction = Math.sign(speed || ride.facing);
-      const spray = (terrainMaterials[wheel.material] || terrainMaterials.grass).spray;
       const color = spray[Math.floor(Math.random() * spray.length)];
-      const life = .28 + Math.random() * .32;
+      const life = (.28 + Math.random() * .32) * roost.hang;
       particles.push({
         x: (wheel.contact?.pointX ?? wheel.x) - direction * (RADIUS - 2),
         y: (wheel.contact?.pointY ?? terrainAt(trail, wheel.x, wheel.y).y) - 2,
-        vx: speed * .12 - direction * (35 + Math.random() * (braking ? 95 : 65)),
-        vy: -(25 + Math.random() * (braking ? 90 : 55)),
-        life, max: life, color, size: Math.random() < .7 ? 2 : 4, drag: 2.5, splatter: true
+        vx: speed * .12 - direction * roost.reach * (35 + Math.random() * (braking ? 95 : 65)),
+        vy: -roost.lift * (25 + Math.random() * (braking ? 90 : 55)),
+        life, max: life, color, size: Math.random() < roost.chunks ? 4 : 2, drag: 2.5,
+        gravity: PARTICLE_GRAVITY * roost.fall, splatter: true
       });
     }
   }
@@ -308,10 +376,12 @@ export function createEffects() {
 
   function update(dt) {
     for (const mark of skidMarks) mark.life -= dt;
+    for (const track of tyreTracks) track.life -= dt;
     for (const p of particles) {
       p.life -= dt;
       if (p.drag) p.vx *= Math.exp(-p.drag * dt);
-      p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 210 * dt;
+      // Particles fall unless they set their own gravity, as smoke rises.
+      p.x += p.vx * dt; p.y += p.vy * dt; p.vy += (p.gravity ?? PARTICLE_GRAVITY) * dt;
       if (p.splatter) {
         // The floor under the particle, so spray in a cave lands on the cave
         // floor instead of jumping onto the rock above it.
@@ -328,7 +398,8 @@ export function createEffects() {
   function prune() {
     removeExpired(particles, MAX_PARTICLES);
     removeExpired(skidMarks, MAX_SKID_MARKS);
+    removeExpired(tyreTracks, MAX_TYRE_TRACKS);
   }
 
-  return { particles, skidMarks, wheelDirt, tyreSquish, weather, reset, burst, dustPuff, brakeMarks, terrainSpray, splash, shatter, crack, waterWake, wheelGrime, squishTyres, stepWeather, update, prune };
+  return { particles, skidMarks, tyreTracks, wheelDirt, tyreSquish, weather, reset, burst, dustPuff, exhaustPuff, crashDebris, brakeMarks, layTracks, terrainSpray, splash, shatter, crack, waterWake, wheelGrime, squishTyres, stepWeather, update, prune };
 }

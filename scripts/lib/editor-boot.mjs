@@ -765,6 +765,69 @@ if (kind === 'snap') {
   fire('pointermove', world(B + corner.left, B + 215));
   fire('pointerup');
   out.pointY = current().terrainBlocks.at(-1).outer.nodes.map(node => node.y - B).sort((a, b) => a - b)[0];
+  // A scale handle dragged to within 3 of the first square's right edge
+  // stretches the block onto it, with a guide; Cmd held, it follows the
+  // pointer.
+  const { scaleFrame } = await import('../../js/editor/scale.js');
+  const before = box();
+  fire('pointerdown', world(B + before.left + 10, B + (before.top + before.bottom) / 2));
+  fire('pointerup');
+  const side = scaleFrame().handles.find(handle => handle.hx === -1 && handle.hy === 0);
+  fire('pointerdown', { clientX: side.x - cameraX, clientY: side.y - cameraY });
+  fire('pointermove', { clientX: side.x - cameraX + 213 + 3 - before.left, clientY: side.y - cameraY });
+  out.scaleGuides = editorState.snapLines.map(({ axis, at }) => [axis, at - B]);
+  fire('pointerup');
+  out.scaled = box();
+  const stretched = scaleFrame().handles.find(handle => handle.hx === -1 && handle.hy === 0);
+  fire('pointerdown', { clientX: stretched.x - cameraX, clientY: stretched.y - cameraY });
+  fire('pointermove', { clientX: stretched.x - cameraX - 9, clientY: stretched.y - cameraY, metaKey: true });
+  fire('pointerup');
+  out.scaledFree = box();
+  // A block whose left edge bulges out to 60 left of its corners, on curve
+  // handles reaching 80 out. Stretched from the right, its visible left edge
+  // stays where it was, and the frame goes round the bulge, not the handles.
+  const { flattenBoundary } = await import('../../js/terrain-geometry.js');
+  const node = (id, x, y, inHandle, outHandle, edge = 'straight') =>
+    ({ id, x: B + x, y: B + y, mode: 'corner', in: inHandle && [B + inHandle[0], B + inHandle[1]], out: outHandle && [B + outHandle[0], B + outHandle[1]], edge });
+  editorState.trail.terrainBlocks.push({
+    id: 'bulge', material: 'rock', inner: [],
+    outer: { id: 'bulge-outer', nodes: [
+      node('q1', 500, 400, [420, 430], null), node('q2', 700, 400, null, null),
+      node('q3', 700, 500, null, null), node('q4', 500, 500, null, [420, 470], 'curve'),
+    ] },
+  });
+  const visibleLeft = () => Math.min(...flattenBoundary(current().terrainBlocks.at(-1).outer).points.map(([x]) => x)) - B;
+  editorState.selection = { kind: 'block', blockIndex: editorState.trail.terrainBlocks.length - 1 };
+  out.bulgeLeft = [visibleLeft()];
+  const frame = scaleFrame();
+  out.bulgeFrameGaps = [B + out.bulgeLeft[0] - frame.frame.left, frame.frame.right - (B + 700)];
+  const right = frame.handles.find(handle => handle.hx === 1 && handle.hy === 0);
+  setSnapping(false);
+  fire('pointerdown', { clientX: right.x - cameraX, clientY: right.y - cameraY });
+  fire('pointermove', { clientX: right.x - cameraX + 100, clientY: right.y - cameraY });
+  fire('pointerup');
+  setSnapping(true);
+  out.bulgeLeft.push(visibleLeft());
+  // Escape backs out, then asks, and a second press while it asks leaves the
+  // editor by its back link. Presses straight after one another never ask, so
+  // a run of them to deselect stays in the editor.
+  let now = 0;
+  performance.now = () => now;
+  let left = 0;
+  document.querySelector('.back-game').addEventListener('click', () => left++);
+  const toast = document.getElementById('editor-toast');
+  const escape = (after) => { now += after; key('Escape'); };
+  escape(10000);
+  escape(200);
+  escape(200);
+  escape(200);
+  out.escapeRun = [editorState.selection, left, toast.textContent.includes('Press Esc again')];
+  escape(1000);
+  out.escapeAsks = [left, toast.hidden === false && toast.textContent.includes('Press Esc again')];
+  escape(5000);
+  out.escapeAsksAgain = left;
+  escape(300);
+  out.escapeLeaves = left;
   // N turns snapping off, and on again.
   key('n', { code: 'KeyN' });
   out.offByKey = snappingOn() === false;
@@ -1110,7 +1173,7 @@ run('camera', () => {
 run('pinch', () => { fire('wheel', { deltaX: 0, deltaY: -10, deltaMode: 0, ctrlKey: true }); });
 
 // A refusal has to be visible, and it has to say what is wrong, here for a
-// trail whose finish sits past the end of its terrain.
+// trail whose ground-anchored finish has no terrain under it.
 if (process.env.TSC_ENV_TRAIL === 'badgoal') {
   const button = document.getElementById('play-test');
   const before = JSON.stringify(current());
@@ -1120,7 +1183,7 @@ if (process.env.TSC_ENV_TRAIL === 'badgoal') {
   report.refused = report.refusalText.includes('before play testing');
   report.refusalShown = toast.hidden === false;
   // It has to name the actual problem, not just "fix the validation errors".
-  report.refusalNamed = /past the end of the terrain/.test(report.refusalText);
+  report.refusalNamed = /finish has no terrain under it/.test(report.refusalText);
   report.refusalCounted = /\b1 validation error\b/.test(report.refusalText);
   report.buttonFlash = button.textContent;
   report.playtestClosed = document.getElementById('playtest').hidden === true;

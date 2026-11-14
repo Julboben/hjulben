@@ -5,7 +5,7 @@ import { trails, officialTrailEntries, bonusTrailEntries, customTrailEntries, re
 import { createAudio, skidAmount } from './audio.js';
 import { createPhysicsDebugger } from './physics-debug.js';
 import { createFpsMeter } from './fps-meter.js';
-import { terrainAt } from './terrain.js';
+import { terrainAt, terrainCollisionsAt } from './terrain.js';
 import { createRide, stepRide, bikeSpeed, interpolateRide, RIDE_VERSION } from './ride.js';
 import { encodeInputs, decodeInputs } from './replay-codec.js';
 import { medalFor, normalizeTrail } from './trail-schema.js';
@@ -26,12 +26,12 @@ import { createFireworks } from './fireworks.js';
 import { offerUpdate, reloadNow, setUpdatePrompt, updatePromptOpen } from './update-prompt.js';
 import { createRenderer } from './render.js';
 import { createDebugHud } from './debug-hud.js';
-import { riderPalette } from './drawing.js';
+import { bikeExhaustPoint, riderPalette } from './drawing.js';
 import { gearCard, legacyRider, lookOf, lookParts, newlyUnlockedItems } from './cosmetics.js';
 import { createOverlay } from './ui/overlay.js';
 import { keyChoices, keyTextNodes } from './ui/key-text.js';
-import { createMenu, loadStoredState } from './ui/menu.js';
-import { $, session, currentTrailEntry, trailKey, nisseKey, timeText, isRankedSource, bonusUnlock, riderLook, progressOf, debugMode, ghostMode, newlyOpenedBonusTrails } from './state.js';
+import { createMenu, loadStoredState, showSwitch } from './ui/menu.js';
+import { $, session, currentTrailEntry, trailKey, nisseKey, timeText, isRankedSource, bonusUnlock, riderLook, progressOf, debugMode, ghostMode, newlyOpenedBonusTrails, reducedMotion } from './state.js';
 import { notify } from './notifications.js';
 import { isNight } from './time-of-day.js';
 
@@ -42,6 +42,8 @@ const HARD_LANDING_IMPACT = 170;
 const KICK_SECONDS = .9;
 // The drawing's stamp bottoms out at this point too (riderAnkle in drawing.js).
 const KICK_CATCHES = KICK_SECONDS / 2;
+// How far from the head's centre a head crash looks for the ground it hit.
+const HEAD_GROUND_REACH = 12;
 const CRASH_COLORS = { spike: '#d95832', head: '#ed8b54', fall: '#ed8b54', water: '#8fd6e8' };
 
 /**
@@ -240,8 +242,7 @@ export function startGame({ shared = null } = {}) {
 
   // Phone vibration and gamepad rumble. Watching a replay is not riding, so it stays still.
   const haptics = createHaptics({
-    phoneEnabled: () => !replay && session.preferences.haptics === 'on',
-    padEnabled: () => !replay && session.preferences.rumble === 'on',
+    enabled: () => !replay && session.preferences.haptics === 'on',
     gamepad: () => input.activeGamepad(),
   });
 
@@ -283,10 +284,7 @@ export function startGame({ shared = null } = {}) {
   }
 
   function syncFullscreenSetting() {
-    const on = Boolean(fullscreenElement());
-    document.querySelectorAll('[data-fullscreen]').forEach(button => {
-      button.setAttribute('aria-pressed', String((button.dataset.fullscreen === 'on') === on));
-    });
+    showSwitch($('setting-fullscreen'), fullscreenElement() ? 'on' : 'off');
   }
 
   function setEscapeLock(on) {
@@ -948,7 +946,7 @@ export function startGame({ shared = null } = {}) {
       ? submitOnlineRun(key, { look: session.look, token: saveGame.token, playerId: saveGame.playerId, run })
       : null;
     if (ranked && saveGame?.token && slowMotion) {
-      overlay.toast('Not posted to the world board: the game ran in slow motion · Try Reduced scenery in Settings', 6000);
+      overlay.toast('Not posted to the world board: the game ran in slow motion · Try Performance mode in Settings', 6000);
     }
     overlay.showResults({
       official, bonus: session.trailSource === 'bonus', time, previousBest, rank, worldPending: !!submission,
@@ -1068,6 +1066,10 @@ export function startGame({ shared = null } = {}) {
         break;
       case 'crash': {
         effects.burst(event.x, event.y, CRASH_COLORS[event.cause], event.cause === 'spike' ? 18 : 15);
+        // Under the burst, a head that hits the ground throws it up: snow and
+        // sand fly, hard ground hardly stirs.
+        const ground = event.cause === 'head' ? terrainCollisionsAt(ride.trail, event.x, event.y, HEAD_GROUND_REACH)[0] : null;
+        if (ground) effects.crashDebris(ground);
         sounds.crash();
         if (session.preferences.shake === 'on') camera.kick(6);
         haptics.play('crash');
@@ -1159,6 +1161,7 @@ export function startGame({ shared = null } = {}) {
     effects.terrainSpray(ride, speed, stepInput.braking);
     effects.waterWake(ride, speed);
     effects.brakeMarks(ride, speed, stepInput.braking);
+    effects.layTracks(ride);
     effects.wheelGrime(ride, stepInput.braking);
     effects.squishTyres(ride);
     // A crash throws away the feat in progress; reaching the finish completes it.
@@ -1197,6 +1200,11 @@ export function startGame({ shared = null } = {}) {
         }
         // Measured from the rider setting off, as waiting at the line is free.
         if (ride.started && state === 'running') { simulatedTime += steps * STEP; passedTime += elapsed; }
+        // As the kick catches, the engine coughs smoke out of the exhaust.
+        if (kick !== null && !ride.started && kick < KICK_CATCHES && kick + dt >= KICK_CATCHES && !reducedMotion) {
+          const exhaust = bikeExhaustPoint({ rear: ride.rear, front: ride.front, facing: ride.facing, look: session.look });
+          if (exhaust) effects.exhaustPuff(exhaust, ride.facing);
+        }
         if (kick !== null) kick = ride.started || kick + dt >= KICK_SECONDS ? null : kick + dt;
       } else if (state === 'won' && ghostRiding()) {
         // A ghost the player beat rides on to the finish while all else stays frozen.
@@ -1337,10 +1345,7 @@ export function startGame({ shared = null } = {}) {
   // and restart is wanted most after a crash.
   $('restart-control').addEventListener('click', () => handlePress('restart'));
   $('menu').addEventListener('click', () => { sounds.menuBack(); showMainMenu(); });
-  document.querySelectorAll('[data-fullscreen]').forEach(button => button.addEventListener('click', () => {
-    const wantOn = button.dataset.fullscreen === 'on';
-    if (wantOn !== Boolean(fullscreenElement())) toggleFullscreen();
-  }));
+  $('setting-fullscreen').addEventListener('click', toggleFullscreen);
   const fullscreenSupported = Boolean(document.fullscreenEnabled || document.webkitFullscreenEnabled || game.webkitRequestFullscreen);
   $('setting-fullscreen-group').hidden = !fullscreenSupported;
   syncFullscreenSetting();

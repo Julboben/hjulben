@@ -109,6 +109,14 @@ export function snapLines() {
 }
 
 /**
+ * What a scale of the selected blocks and water snaps to: everything else in
+ * view. Taken when the scale starts, like the lines of a drag.
+ */
+export function scaleTargets() {
+  return targetLines(new Set(selectedBlocks()), new Set(), selectionItems());
+}
+
+/**
  * The lines of everything in view that is staying put: each block's box and
  * points, and each object where it stands, or water by its rectangle. Only
  * what can be seen snaps, so nothing pulls from off screen.
@@ -173,19 +181,45 @@ export function snapMove(lines, dx, dy, axes = { x: true, y: true }) {
   const guides = [];
   const guide = (axis, snapped, moving, targets, across) => {
     if (snapped.at === null || snapped.grid) return;
-    const near = (value) => Math.abs(value - snapped.at) < 1e-6;
-    const spans = [
-      ...moving.filter((line) => near(line.at + snapped.delta)).map((line) => [line.lo + across, line.hi + across]),
-      ...targets.filter((line) => near(line.at)).map((line) => [line.lo, line.hi]),
-    ];
-    guides.push({
-      axis,
-      at: snapped.at,
-      from: Math.min(...spans.map(([lo]) => lo)),
-      to: Math.max(...spans.map(([, hi]) => hi)),
-    });
+    const spans = moving
+      .filter((line) => Math.abs(line.at + snapped.delta - snapped.at) < 1e-6)
+      .map((line) => [line.lo + across, line.hi + across]);
+    guides.push(guideAlong(axis, snapped.at, spans, targets));
   };
   guide("x", x, lines.moving.xs, lines.targets.xs, y.delta);
   guide("y", y, lines.moving.ys, lines.targets.ys, x.delta);
   return { dx: x.delta, dy: y.delta, guides };
+}
+
+/**
+ * Snap one side of a box being scaled, at `side` along its axis, to the lines
+ * of other things or the grid within reach. Returns where the side goes, and
+ * the line it lined up with (null for none), with `grid` true for a grid line.
+ */
+export function snapSide(side, targets) {
+  const snapped = snapAxis(
+    0,
+    [side],
+    targets.map((line) => line.at),
+    SNAP_DISTANCE / editor.zoom,
+    gridSpacing(editor.zoom),
+  );
+  return { side: side + snapped.delta, at: snapped.at, grid: snapped.grid };
+}
+
+/**
+ * The guide along a line at `at` on `axis`, reaching across the spans of what
+ * moved onto it (`[lo, hi]` pairs) and of every target on it.
+ */
+export function guideAlong(axis, at, spans, targets) {
+  const all = [
+    ...spans,
+    ...targets.filter((line) => Math.abs(line.at - at) < 1e-6).map((line) => [line.lo, line.hi]),
+  ];
+  return {
+    axis,
+    at,
+    from: Math.min(...all.map(([lo]) => lo)),
+    to: Math.max(...all.map(([, hi]) => hi)),
+  };
 }
