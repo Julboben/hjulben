@@ -41,9 +41,11 @@ export function validRows(rows) {
   if (!Array.isArray(rows) || rows.length === 0 || rows.length > MAX_ROWS) return false;
   let steps = 0;
   for (const row of rows) {
-    if (!Array.isArray(row) || row.length !== 5) return false;
+    if (!Array.isArray(row) || (row.length !== 5 && row.length !== 6)) return false;
     const [count, facing, lean, accelerating, braking] = row;
     if (!Number.isInteger(count) || count < 1) return false;
+    // A respawn is one step of its own.
+    if (row.length === 6 && (row[5] !== 1 || count !== 1)) return false;
     if (facing !== 1 && facing !== -1) return false;
     if (typeof lean !== 'number' || !(lean >= -1 && lean <= 1)) return false;
     if ((accelerating !== 0 && accelerating !== 1) || (braking !== 0 && braking !== 1)) return false;
@@ -79,7 +81,9 @@ export async function verifyRun(trailKey, run, origin) {
   const inputs = decodeInputs(run.inputs);
   const ride = createRide(trail, { seed });
   let startStep = 0;
-  for (let index = 0; index < inputs.length && ride.status === 'running'; index++) {
+  // A crash only ends the run on a trail without flags: on one with them,
+  // the rider can go back to the last flag reached.
+  for (let index = 0; index < inputs.length && ride.status !== 'won'; index++) {
     if (stepRide(ride, inputs[index]).some(event => event.type === 'start')) startStep = index;
   }
   if (ride.status !== 'won') throw new HttpError(422, 'run does not finish');

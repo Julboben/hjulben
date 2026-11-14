@@ -31,7 +31,7 @@ const FAST = [
     'terrain-schema', 'editor-terrain', 'editor-gestures', 'editor-snap', 'editor-markup',
     'terrain', 'physics', 'flips', 'glass', 'trail-schema', 'weather', 'time-of-day',
     'trail-link', 'career', 'water', 'squirrel', 'rabbit', 'corgi', 'interactions', 'desert',
-    'mountain', 'event', 'prison', 'spiders', 'dungeon', 'countryside', 'apples', 'nisse',
+    'mountain', 'event', 'prison', 'spiders', 'dungeon', 'countryside', 'apples', 'nisse', 'checkpoints',
     'prop-drawing', 'spikes', 'cosmetics', 'achievements', 'storage', 'pending-runs',
     'changelog', 'haptics', 'notifications',
   ].map(test),

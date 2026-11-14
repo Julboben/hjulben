@@ -56,6 +56,22 @@ const reported = (report, label) => {
 }
 
 // ---------------------------------------------------------------------------
+// Checkpoints: as many as wanted, placed with the Apple tool.
+// ---------------------------------------------------------------------------
+{
+  const report = await boot('checkpoint');
+  check('the Apple tool can be set to place a checkpoint', report.placeField);
+  check('a trail without checkpoints has no list of them', report.hadList === false);
+  check('it places checkpoints, not apples', report.placed?.length === 2 && report.apples === 0, `(${JSON.stringify(report.placed)})`);
+  check('one placed above the top of the ground stands on it, with no height of its own',
+    report.placed?.[0].y === null && report.footY === 300, `(${JSON.stringify(report.placed?.[0])}, foot ${report.footY})`);
+  check('a selected checkpoint is titled and explained', report.title === 'CHECKPOINT' && report.hintShown, `("${report.title}")`);
+  check('deleting one keeps the others', report.afterOne?.length === 1 && report.afterOne[0].x === report.placed[0].x);
+  check('a checkpoint is selected by its flag\'s foot', report.selected?.kind === 'checkpoint' && report.selected.index === 0);
+  check('deleting the last removes the field', report.deleted);
+}
+
+// ---------------------------------------------------------------------------
 // A block trail: drawing and the generic gestures.
 // ---------------------------------------------------------------------------
 {
@@ -215,6 +231,9 @@ const reported = (report, label) => {
   check('an edge near a grid line lands on it', report.grid.top === 300 && report.grid.left === 113, `(${json(report.grid)})`);
   check('Shift keeps a sideways move level', report.level.top === 300, `(${json(report.level)})`);
   check('a dragged point lines up with another point', report.pointY === 213, `(${report.pointY})`);
+  check('a scale handle lines a side up with another block', report.scaled.left === 213, `(${json(report.scaled)})`);
+  check('a guide shows what the scaled side lined up with', json(report.scaleGuides) === json([['x', 213]]), `(${json(report.scaleGuides)})`);
+  check('Cmd held mid-scale follows the pointer', report.scaledFree.left === 204, `(${json(report.scaledFree)})`);
   check('N turns snapping off and on', report.offByKey && report.onByKey);
 }
 

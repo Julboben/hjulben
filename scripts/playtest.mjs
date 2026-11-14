@@ -172,6 +172,7 @@ function survey() {
     ride.spikes.length && `${ride.spikes.length} spikes`,
     ride.water.length && `${ride.water.length} water bodies`,
     ride.nisse && `a nisse at ${at(ride.nisse)}`,
+    ride.checkpoints.length && `checkpoints at ${ride.checkpoints.map(at).join(', ')}`,
   ].filter(Boolean);
   if (extras.length) out(`Also: ${extras.join(', ')}`);
   report.apples = ride.apples.map(({ x, y }) => ({ x, y }));
@@ -194,7 +195,8 @@ function measure(start, inputs, done) {
   const ride = cloneRide(start);
   const stats = {
     steps: 0, reached: false, status: 'running', crash: null, apples: [], jumps: [], flips: 0, turns: 0, airTurns: 0,
-    hangSteps: 0, hangs: [], topSpeed: 0, slowSteps: 0, hardestLanding: null, shattered: 0, splashes: 0, route: [], nisse: false
+    hangSteps: 0, hangs: [], topSpeed: 0, slowSteps: 0, hardestLanding: null, shattered: 0, splashes: 0, route: [], nisse: false,
+    checkpoints: []
   };
   let jump = null, hang = null;
   const sampleEvery = Math.round(1 / STEP);
@@ -216,6 +218,7 @@ function measure(start, inputs, done) {
       else if (event.type === 'shatter') stats.shattered++;
       else if (event.type === 'splash' && !event.rider) stats.splashes++;
       else if (event.type === 'nisse') stats.nisse = true;
+      else if (event.type === 'checkpoint' && !stats.checkpoints.includes(event.index)) stats.checkpoints.push(event.index);
       // The bike settling as it spawns isn't a landing.
       else if (event.type === 'land' && ride.time > .3 && (!stats.hardestLanding || event.impact > stats.hardestLanding.impact))
         stats.hardestLanding = { impact: Math.round(event.impact), x: Math.round(point.x), y: Math.round(point.y) };
@@ -255,7 +258,10 @@ function describeStats(stats) {
     + (stats.hangs.length ? ` (at ${stats.hangs.map(hang => at(hang.at)).join(', ')})` : '')
     + `; top speed ${Math.round(stats.topSpeed)}; crawling below 25 for ${seconds(stats.slowSteps)} s`
     + (stats.hardestLanding ? `; hardest landing ${stats.hardestLanding.impact} at ${stats.hardestLanding.x},${stats.hardestLanding.y}` : ''));
-  const extras = [stats.shattered && `${stats.shattered} glass panes broken`, stats.splashes && `${stats.splashes} splashes`, stats.nisse && 'took the nisse'].filter(Boolean);
+  const extras = [
+    stats.shattered && `${stats.shattered} glass panes broken`, stats.splashes && `${stats.splashes} splashes`, stats.nisse && 'took the nisse',
+    stats.checkpoints.length && `passed checkpoint ${stats.checkpoints.map(index => index + 1).join(', ')}`,
+  ].filter(Boolean);
   if (extras.length) lines.push(extras.join('; '));
   if (stats.route.length) lines.push(`route, once a second: ${stats.route.map(at).join(' > ')}`);
   return lines;
@@ -540,6 +546,15 @@ function solveTrail() {
   const traps = stretches.flatMap(stretch => stretch.forgiveness?.traps || []);
   if (traps.length) out(`TRAPS: ${traps.length} place${traps.length === 1 ? '' : 's'} where a miss leaves the rider with no way back and no crash (${traps.map(at).join(', ')}). Give each a way back to the line, or make it end the run (see TRAILS_GUIDE.md).`);
   report.traps = traps;
+  // A flag only counts once the rider is at it, so one beside the route is
+  // never reached, and a rider who crashes past it goes back further.
+  if (finished) {
+    const passed = new Set(stretches.flatMap(stretch => stretch.stats.checkpoints));
+    const missed = ride.checkpoints.map((foot, index) => ({ ...foot, index })).filter(({ index }) => !passed.has(index));
+    for (const { index, ...foot } of missed)
+      out(`CHECKPOINT ${index + 1} at ${at(foot)} is never reached on the bot's route. A flag counts once the pole stands between the wheels with the bike no higher than its top: move it onto the line.`);
+    report.missedCheckpoints = missed.map(({ index }) => index + 1);
+  }
   const escapes = TRIALS ? findEscapes(stretches.flatMap(stretch => stretch.stats?.route || [])) : [];
   for (const { side, from, to, nisse, things } of escapes) {
     const way = `the rider can ride out past the ${side} end, from ${at(from)} to ${at(to)}`;

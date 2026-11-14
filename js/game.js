@@ -26,12 +26,12 @@ import { createFireworks } from './fireworks.js';
 import { offerUpdate, reloadNow, setUpdatePrompt, updatePromptOpen } from './update-prompt.js';
 import { createRenderer } from './render.js';
 import { createDebugHud } from './debug-hud.js';
-import { riderPalette } from './drawing.js';
+import { bikeExhaustPoint, riderPalette } from './drawing.js';
 import { gearCard, legacyRider, lookOf, lookParts, newlyUnlockedItems } from './cosmetics.js';
 import { createOverlay } from './ui/overlay.js';
 import { keyChoices, keyTextNodes } from './ui/key-text.js';
-import { createMenu, loadStoredState } from './ui/menu.js';
-import { $, session, currentTrailEntry, trailKey, nisseKey, timeText, isRankedSource, bonusUnlock, riderLook, progressOf, debugMode, ghostMode, newlyOpenedBonusTrails } from './state.js';
+import { createMenu, loadStoredState, showSwitch } from './ui/menu.js';
+import { $, session, currentTrailEntry, trailKey, nisseKey, timeText, isRankedSource, bonusUnlock, riderLook, progressOf, debugMode, ghostMode, newlyOpenedBonusTrails, reducedMotion } from './state.js';
 import { notify } from './notifications.js';
 import { isNight } from './time-of-day.js';
 
@@ -165,6 +165,21 @@ export function startGame({ shared = null } = {}) {
   let redraw = true;
   /** Inputs of the current attempt, one per step, for saving a ghost. */
   let recorded = [], startStep = 0, flips = 0;
+  // On a trail with flags, restart goes back to the last flag reached, and
+  // held on it goes back to the start. Going back is part of the run, so it
+  // goes into the next step's input, where the recording keeps it.
+  let respawning = false;
+  /** When the restart that sent the rider back to a flag was pressed, while it is held. */
+  let restartHeldSince = null;
+  /** Pointers holding a restart button, which hold the restart as the key does, with the button each holds. */
+  const restartPointers = new Map();
+  // Seconds a restart is held to go on from the flag to the start.
+  const HOLD_TO_START = .5;
+  // A hold shows once it is longer than a tap, filling in this many steps,
+  // like the rest of the pixel HUD.
+  const HOLD_SHOWN = .1, HOLD_STEPS = 12;
+  // Whether Retry is kept up, after the rider is back at the flag, while held.
+  let retryHeldUp = false;
   /** Whether the current attempt's physics has come apart, for Here Be Kraken. */
   let broken = false;
   // Attempts that got going since the trail was opened from the menu or Next
@@ -240,8 +255,7 @@ export function startGame({ shared = null } = {}) {
 
   // Phone vibration and gamepad rumble. Watching a replay is not riding, so it stays still.
   const haptics = createHaptics({
-    phoneEnabled: () => !replay && session.preferences.haptics === 'on',
-    padEnabled: () => !replay && session.preferences.rumble === 'on',
+    enabled: () => !replay && session.preferences.haptics === 'on',
     gamepad: () => input.activeGamepad(),
   });
 
@@ -283,10 +297,7 @@ export function startGame({ shared = null } = {}) {
   }
 
   function syncFullscreenSetting() {
-    const on = Boolean(fullscreenElement());
-    document.querySelectorAll('[data-fullscreen]').forEach(button => {
-      button.setAttribute('aria-pressed', String((button.dataset.fullscreen === 'on') === on));
-    });
+    showSwitch($('setting-fullscreen'), fullscreenElement() ? 'on' : 'off');
   }
 
   function setEscapeLock(on) {
@@ -521,21 +532,46 @@ export function startGame({ shared = null } = {}) {
       // The player may have restarted, switched trail or changed the setting meanwhile.
       if (!world || session.ride !== ride || ghostMode() !== 'world') return;
       if (ghost && ghost.data.time <= world.time) return;
-      // Steps the ghost would already have taken alongside the player.
-      useGhost(trail, world, 'world', ride.started ? recorded.length - startStep : 0);
+      // It catches up with the player's clock as it rides (see stepGhost).
+      useGhost(trail, world, 'world');
     });
   }
 
-  function useGhost(trail, data, kind, catchUp = 0) {
+  function useGhost(trail, data, kind) {
     if (!data || data.physics !== RIDE_VERSION) return;
     const inputs = decodeInputs(data.inputs);
     // Ghosts from before looks existed were always drawn as the player.
     const look = data.look || data.rider ? lookOf(data) : session.look;
     const ride = createRide(trail, { seed: data.seed, helmet: lookParts(look).helmet });
     // Play the idle lead-in now so the ghost sets off with the player.
-    const lead = Math.min(data.startStep + catchUp, inputs.length);
+    const lead = Math.min(data.startStep, inputs.length);
     for (let index = 0; index < lead; index++) stepRide(ride, inputs[index]);
     ghost = { ride, inputs, index: lead, data, look, kind };
+  }
+
+  // Ghost steps played at most in one step of the player's, catching up.
+  const GHOST_CATCH_UP = 600;
+
+  /**
+   * Keeps the ghost to the player's clock: it waits while the player is down
+   * or back at a flag, and plays its own crashes and waits at flags at once,
+   * as they cost it no time. On a trail without flags a crash ends the run,
+   * and the ghost rides on past it.
+   */
+  function stepGhost(ride) {
+    if (!ghost || !ride.started) return;
+    const { inputs } = ghost;
+    if (ride.status === 'crashed' && !ride.checkpoint) {
+      if (ghost.index < inputs.length) stepRide(ghost.ride, inputs[ghost.index++]);
+      return;
+    }
+    const behind = () => {
+      const { status, started, elapsedSteps } = ghost.ride;
+      if (status === 'won') return false;
+      return status === 'crashed' || !started || elapsedSteps < ride.elapsedSteps;
+    };
+    for (let steps = 0; steps < GHOST_CATCH_UP && ghost.index < inputs.length && behind(); steps++)
+      stepRide(ghost.ride, inputs[ghost.index++]);
   }
 
   /** Whether the ghost is still on its way to the finish, with inputs left to play. */
@@ -556,6 +592,7 @@ export function startGame({ shared = null } = {}) {
     if (!replay && nisseFound()) ride.nisse = null;
     session.ride = ride;
     recorded = []; startStep = 0; flips = 0; broken = false; simulatedTime = 0; passedTime = 0;
+    respawning = false; restartHeldSince = null; showHold(null);
     accumulator = 0; landingSoundCooldown = 0; splashSoundCooldown = 0; suspensionSoundCooldown = 0;
     effects.reset(trail);
     renderer.reset(trail, ride.facing);
@@ -718,6 +755,41 @@ export function startGame({ shared = null } = {}) {
     setState('running'); focusGame();
   }
 
+  /**
+   * Restart: back to the last flag reached, when the trail has flags and the
+   * rider has reached one, and otherwise from the start. Held on, it goes on
+   * from the flag to the start (see frame()).
+   */
+  function restart() {
+    const ride = session.ride;
+    if (replay || session.state === 'won' || !ride?.checkpoint) { startFresh(); return; }
+    respawning = true;
+    restartHeldSince = performance.now();
+    if (session.state === 'paused') setState('running');
+    focusGame();
+  }
+
+  /**
+   * How far a held restart is on its way from the flag to the start, 0 … 1,
+   * or null when none is held: a bar under the toast, and the Restart switch
+   * and Retry button filling. Retry stays up while it is held, though the
+   * rider is already back at the flag.
+   */
+  function showHold(progress) {
+    overlay.setHold(progress);
+    const retry = $('crash-retry');
+    for (const button of [retry, $('restart-control')]) button.style.setProperty('--hold', String(progress ?? 0));
+    if (progress === null && retryHeldUp) {
+      retryHeldUp = false;
+      retry.hidden = true;
+    }
+  }
+
+  /** Whether restart is held down, on a key, a pad or a button. */
+  function restartHeld() {
+    return input.held('restart') || restartPointers.size > 0;
+  }
+
   function pauseGame() { if (session.state === 'running') { setState('paused'); haptics.stop(); } }
   function resumeGame() {
     if (session.state !== 'paused') return;
@@ -798,7 +870,7 @@ export function startGame({ shared = null } = {}) {
       return;
     }
     const { state } = session;
-    if (action === 'restart') startFresh();
+    if (action === 'restart') restart();
     else if (action === 'pause') { if (state === 'running' || state === 'paused') togglePause(); }
     else if (action === 'menu') { sounds.menuBack(); showMainMenu(); }
     else if (action === 'flip') { if (state === 'running' && !replay) flipDirection(); }
@@ -809,7 +881,7 @@ export function startGame({ shared = null } = {}) {
     else if (action === 'confirm' || action === 'cancel') {
       if (state === 'paused') resumeGame();
       else if (state === 'won' && action === 'confirm') { if (replay) startFresh(); else $('primary').click(); }
-      else if (state === 'ragdoll' && action === 'confirm') startFresh();
+      else if (state === 'ragdoll' && action === 'confirm') restart();
     }
   }
 
@@ -948,7 +1020,7 @@ export function startGame({ shared = null } = {}) {
       ? submitOnlineRun(key, { look: session.look, token: saveGame.token, playerId: saveGame.playerId, run })
       : null;
     if (ranked && saveGame?.token && slowMotion) {
-      overlay.toast('Not posted to the world board: the game ran in slow motion · Try Reduced scenery in Settings', 6000);
+      overlay.toast('Not posted to the world board: the game ran in slow motion · Try Performance mode in Settings', 6000);
     }
     overlay.showResults({
       official, bonus: session.trailSource === 'bonus', time, previousBest, rank, worldPending: !!submission,
@@ -1014,6 +1086,35 @@ export function startGame({ shared = null } = {}) {
         // Setting off from a standstill, the rider clicks into first.
         if (ride.rear.grounded && ride.front.grounded) sounds.gearClunk();
         break;
+      case 'resume':
+        // Going on from a flag is another attempt, so First Try still means
+        // a run without a crash.
+        attempts++;
+        if (ride.rear.grounded && ride.front.grounded) sounds.gearClunk();
+        break;
+      case 'checkpoint':
+        renderer.raiseFlag(event.index);
+        overlay.toast('Checkpoint', 2000, 'flag');
+        overlay.announce('Checkpoint reached.');
+        haptics.play('tick');
+        break;
+      case 'respawn': {
+        renderer.respawn(ride.facing);
+        camera.reset();
+        overlay.setDirection(ride.facing);
+        overlay.setApples(event.collected, event.total);
+        if (session.state === 'ragdoll') setState('running');
+        if (replay) { overlay.toast('Back at the flag', 1600, 'flag'); break; }
+        // Retry is held up as the rider holds it, to show the hold filling.
+        if ([...restartPointers.values()].includes($('crash-retry'))) {
+          retryHeldUp = true;
+          $('crash-retry').hidden = false;
+        }
+        const { restart } = promptKeys();
+        overlay.toast(restart ? ['Back at the flag · Hold ', { key: restart }, ' for the start'] : 'Back at the flag · Hold Restart for the start', undefined, 'flag');
+        overlay.announce('Back at the flag. Hold restart to go back to the start.');
+        break;
+      }
       case 'airTurn':
         sounds.airTurn(event.full);
         break;
@@ -1071,10 +1172,17 @@ export function startGame({ shared = null } = {}) {
         sounds.crash();
         if (session.preferences.shake === 'on') camera.kick(6);
         haptics.play('crash');
+        // A replay rides on from the flag the rider went back to.
+        if (replay) break;
         setState('ragdoll');
         const { restart } = promptKeys();
-        overlay.announce('Rider down. ' + (restart ? 'Press ' + restart + ' or select' : 'Select') + ' Retry to try again.');
-        overlay.toast(restart ? ['Rider down · Press ', { key: restart }, ' to retry'] : 'Rider down', Infinity);
+        if (ride.checkpoint) {
+          overlay.announce('Rider down. ' + (restart ? 'Press ' + restart + ' or select' : 'Select') + ' Retry to go back to the flag.');
+          overlay.toast(restart ? ['Rider down · Press ', { key: restart }, ' for the flag'] : 'Rider down', Infinity);
+        } else {
+          overlay.announce('Rider down. ' + (restart ? 'Press ' + restart + ' or select' : 'Select') + ' Retry to try again.');
+          overlay.toast(restart ? ['Rider down · Press ', { key: restart }, ' to retry'] : 'Rider down', Infinity);
+        }
         break;
       }
       case 'helmet':
@@ -1128,8 +1236,9 @@ export function startGame({ shared = null } = {}) {
     suspensionSoundCooldown = Math.max(0, suspensionSoundCooldown - STEP);
     physicsDebug.begin({ state: session.state, time: ride.elapsed, trail: session.trail.name, source: session.trailSource, facing: ride.facing, throttle: ride.throttle }, ride.rear, ride.front);
 
-    // Holding restart keeps the bike on the start line with the clock stopped.
-    const holding = input.held('restart');
+    // Holding restart keeps the bike on the start line, or at the flag, with
+    // the clock stopped.
+    const holding = restartHeld();
     const stepInput = replay ? {
       facing: ride.facing, leanInput: 0, accelerating: false, braking: false,
       ...replay.inputs[replay.step++]
@@ -1139,12 +1248,16 @@ export function startGame({ shared = null } = {}) {
       // that was simulated and replays (ghost, server check) match it.
       leanInput: holding ? 0 : Math.round(input.leanInput() * 100) / 100,
       accelerating: !holding && input.held('up'),
-      braking: !holding && input.held('down')
+      braking: !holding && input.held('down'),
+      ...(respawning ? { respawn: true } : {})
     };
+    respawning = false;
     const running = ride.status === 'running';
     gasHeld = running && stepInput.accelerating;
     physicsDebug.recordInput({ ...stepInput, accelerating: running && stepInput.accelerating, braking: running && stepInput.braking });
-    if (running && !replay) recorded.push(stepInput);
+    // Every step, the rider down after a crash too: on a trail with flags
+    // the run goes on from a flag, and its replay shows the fall.
+    if (!replay) recorded.push(stepInput);
     const speed = bikeSpeed(ride);
     const facingBefore = ride.facing;
     const events = stepRide(ride, stepInput, debugHooks);
@@ -1153,8 +1266,8 @@ export function startGame({ shared = null } = {}) {
     physicsDebug.setIteration(-1);
     physicsDebug.finish(ride.rear, ride.front);
 
-    if (ghost && ride.started && ghost.index < ghost.inputs.length) stepRide(ghost.ride, ghost.inputs[ghost.index++]);
-    else if (ghost && ghost.index >= ghost.inputs.length && ghost.ride.status === 'crashed') stepRide(ghost.ride, {});
+    stepGhost(ride);
+    if (ghost && ghost.index >= ghost.inputs.length && ghost.ride.status === 'crashed') stepRide(ghost.ride, {});
 
     effects.terrainSpray(ride, speed, stepInput.braking);
     effects.waterWake(ride, speed);
@@ -1183,6 +1296,13 @@ export function startGame({ shared = null } = {}) {
     input.pollGamepad();
     // Toasts time out in the menu too, where achievements can still be earned.
     overlay.tick(now);
+    // A restart held on past the flag goes on to the start.
+    if (restartHeldSince !== null && !menu.isOpen()) {
+      const held = (now - restartHeldSince) / 1000;
+      if (!restartHeld()) { restartHeldSince = null; showHold(null); }
+      else if (held >= HOLD_TO_START) startFresh();
+      else if (held >= HOLD_SHOWN) showHold(Math.floor(held / HOLD_TO_START * HOLD_STEPS) / HOLD_STEPS);
+    }
     const ride = session.ride;
     if (ride && !menu.isOpen()) {
       const { state } = session;
@@ -1197,6 +1317,11 @@ export function startGame({ shared = null } = {}) {
         }
         // Measured from the rider setting off, as waiting at the line is free.
         if (ride.started && state === 'running') { simulatedTime += steps * STEP; passedTime += elapsed; }
+        // As the kick catches, the engine coughs smoke out of the exhaust.
+        if (kick !== null && !ride.started && kick < KICK_CATCHES && kick + dt >= KICK_CATCHES && !reducedMotion) {
+          const exhaust = bikeExhaustPoint({ rear: ride.rear, front: ride.front, facing: ride.facing, look: session.look });
+          if (exhaust) effects.exhaustPuff(exhaust, ride.facing);
+        }
         if (kick !== null) kick = ride.started || kick + dt >= KICK_SECONDS ? null : kick + dt;
       } else if (state === 'won' && ghostRiding()) {
         // A ghost the player beat rides on to the finish while all else stays frozen.
@@ -1330,17 +1455,22 @@ export function startGame({ shared = null } = {}) {
   });
   // Focus the game first: hiding the focused button would blur it and auto-pause.
   $('pause-overlay').addEventListener('click', resumeGame);
-  $('crash-retry').addEventListener('click', () => { focusGame(); startFresh(); });
+  // The restart buttons act as they are pressed, not on the click, so holding
+  // one on can go on from the flag to the start; a click from the keyboard
+  // still restarts.
+  for (const button of [$('crash-retry'), $('restart-control')]) {
+    button.addEventListener('pointerdown', event => {
+      restartPointers.set(event.pointerId, button);
+      focusGame();
+      handlePress('restart');
+    });
+    button.addEventListener('click', event => { if (event.detail === 0) { focusGame(); handlePress('restart'); } });
+  }
+  for (const type of ['pointerup', 'pointercancel']) window.addEventListener(type, event => restartPointers.delete(event.pointerId));
   $('headlight').addEventListener('click', () => { handlePress('lights'); focusGame(); });
   $('sound-control').addEventListener('click', () => { toggleSound(); focusGame(); });
-  // A click rather than a data-action: the touch buttons only work mid-ride,
-  // and restart is wanted most after a crash.
-  $('restart-control').addEventListener('click', () => handlePress('restart'));
   $('menu').addEventListener('click', () => { sounds.menuBack(); showMainMenu(); });
-  document.querySelectorAll('[data-fullscreen]').forEach(button => button.addEventListener('click', () => {
-    const wantOn = button.dataset.fullscreen === 'on';
-    if (wantOn !== Boolean(fullscreenElement())) toggleFullscreen();
-  }));
+  $('setting-fullscreen').addEventListener('click', toggleFullscreen);
   const fullscreenSupported = Boolean(document.fullscreenEnabled || document.webkitFullscreenEnabled || game.webkitRequestFullscreen);
   $('setting-fullscreen-group').hidden = !fullscreenSupported;
   syncFullscreenSetting();

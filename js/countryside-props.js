@@ -46,13 +46,17 @@ export function flagDroop(wind, column) {
   return snap(column * 1.6 * (1 - Math.min(1, Math.max(0, wind))) ** 2);
 }
 
+// Where the top of the flag hangs while it is lowered, just over the cleat.
+const FLAG_LOWERED = -72;
+
 /**
  * Dannebrog on a white garden flagpole: the pole down to the ground, its gilt
  * knob, the halyard tied off at a cleat, and the flag flying out `downwind`
  * (-1 left, 1 right) from the top, its cross towards the pole, rippling
- * with `time` and `wind`.
+ * with `time` and `wind`. A `hoist` under 1 holds the flag lower down the
+ * pole, limp at 0 just over the cleat, catching the wind as it goes up.
  */
-export function drawFlagpole({ pixelRect }, groundOffset, time = 0, wind = 0.25, phase = 0, downwind = -1) {
+export function drawFlagpole({ pixelRect }, groundOffset, time = 0, wind = 0.25, phase = 0, downwind = -1, hoist = 1) {
   const ground = snap(groundOffset(0));
   const { top, columns, rows } = FLAGPOLE;
   pixelRect(-2, top, 2, ground - top, WHITE.dark, 2);
@@ -70,10 +74,12 @@ export function drawFlagpole({ pixelRect }, groundOffset, time = 0, wind = 0.25,
   pixelRect(-4, ground - 4, 2, 2, BLADES.base, 2);
   pixelRect(4, ground - 4, 2, 2, BLADES.light, 2);
   // The flag.
-  const hoist = downwind < 0 ? -2 : 2;
+  const flagTop = snap(FLAG_LOWERED + (top - FLAG_LOWERED) * hoist);
+  wind *= hoist;
+  const edge = downwind < 0 ? -2 : 2;
   for (let column = 0; column < columns; column++) {
-    const cx = downwind < 0 ? hoist - (column + 1) * 2 : hoist + column * 2;
-    const cy = top + 2 + flagDroop(wind, column) + flagRipple(time, wind, phase, column);
+    const cx = downwind < 0 ? edge - (column + 1) * 2 : edge + column * 2;
+    const cy = flagTop + 2 + flagDroop(wind, column) + flagRipple(time, wind, phase, column);
     const lift = flagRipple(time, wind, phase, column + 1) - flagRipple(time, wind, phase, column);
     for (let row = 0; row < rows; row++) {
       const white = CROSS.columns.includes(column) || CROSS.rows.includes(row);

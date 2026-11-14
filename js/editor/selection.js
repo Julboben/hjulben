@@ -26,7 +26,7 @@ import {
   syncInspector,
   updateSelectedPosition,
 } from "./inspector.js";
-import { finishY, groundY, objectY, render } from "./render.js";
+import { checkpointY, finishY, groundY, objectY, render } from "./render.js";
 import { editor, waters } from "./state.js";
 import { refuseEdit, showStatus } from "./status.js";
 import {
@@ -189,7 +189,15 @@ export const OBJECT_LISTS = () => ({
   // The trail's one nisse, as a list of at most one so it selects, moves and
   // locks like an apple. Deleting it clears the trail's field instead.
   nisse: editor.trail.nisse ? [editor.trail.nisse] : [],
+  // A trail without checkpoints has no list of them, and deleting the last
+  // one takes the list away again (see forgetEmptyCheckpoints).
+  checkpoint: editor.trail.checkpoints || [],
 });
+
+/** Drop an emptied list of checkpoints, as normalizeTrail leaves a trail without any. */
+function forgetEmptyCheckpoints() {
+  if (editor.trail.checkpoints?.length === 0) delete editor.trail.checkpoints;
+}
 
 /** Indices of the selected objects of one type: a lone one, or each one in a group. */
 export function selectedOf(type) {
@@ -354,6 +362,7 @@ export function itemPosition(item) {
   if (!object) return null;
   if (item.type === "spike") return [object.x, object.y];
   if (item.type === "water") return waterHandle(object);
+  if (item.type === "checkpoint") return [object.x, checkpointY(object)];
   return [object.x, objectY(object, item.type === "apple" ? 60 : item.type === "nisse" ? NISSE_GROUND_LIFT : 0)];
 }
 
@@ -481,6 +490,7 @@ export function deleteItems(items) {
     }
     for (const index of indices.sort((a, b) => b - a)) list.splice(index, 1);
   }
+  forgetEmptyCheckpoints();
   const byBlock = new Map();
   for (const point of items.filter((item) => item.type === "point")) {
     if (removed.has(point.blockIndex)) continue;
@@ -634,6 +644,11 @@ export function deleteSelection() {
   } else if (kind === "nisse") {
     pushHistory();
     delete editor.trail.nisse;
+    editor.selection = null;
+  } else if (kind === "checkpoint") {
+    pushHistory();
+    editor.trail.checkpoints?.splice(editor.selection.index, 1);
+    forgetEmptyCheckpoints();
     editor.selection = null;
   } else if (kind === "prop") {
     pushHistory();

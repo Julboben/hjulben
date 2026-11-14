@@ -54,7 +54,7 @@ import { CAMERA_TALLY, HALFWAY_BEACON, HALFWAY_REACH } from "./event-props.js";
 import { SEARCHLIGHT, SEARCHLIGHT_BEAM } from "./prison-props.js";
 import { drawNisse, nisseWiggle } from "./nisse.js";
 import { TORCH_FLAME } from "./dungeon-props.js";
-import { FARMHOUSE, FLAGPOLE, MILL, STALL, STALL_COIN_DROP, TURBINE, farmhouseWindowCentre } from "./countryside-props.js";
+import { FARMHOUSE, FLAGPOLE, drawFlagpole, MILL, STALL, STALL_COIN_DROP, TURBINE, farmhouseWindowCentre } from "./countryside-props.js";
 import { WATER_PROPS, FISH_DART, FISH_RANGE } from "./water-props.js";
 import { FIRE, IVY, SQUIRREL_HIDE_MAX, SQUIRREL_RANGE, TENT_DOOR_CENTRE } from "./forest-props.js";
 import {
@@ -142,7 +142,7 @@ const WIN_SETTLE = 0.7;
 // Ground shadows: one colour, each sample with its own alpha.
 const SHADOW_COLOR = "rgb(31,53,39)";
 // Rain and snow: how many particles the view's size scales up to, and the
-// lower ceiling on touch screens and with reduced scenery, where fill rate is
+// lower ceiling on touch screens and in performance mode, where fill rate is
 // the tighter budget.
 const PARTICLE_SCALE_MAX = 2.2,
   PARTICLE_SCALE_LIGHT = 1.1;
@@ -345,6 +345,11 @@ export function createRenderer(canvas, { still = false } = {}) {
   // as it is still behind the pause screen, rather than freezing mid-burst.
   let wonFor = 0;
   let frameNow = 0;
+  // The checkpoint flags the rider has reached on this ride, with the scene
+  // clock when each started up its pole.
+  const raisedFlags = new Map();
+  // Milliseconds a flag takes to run up its pole.
+  const FLAG_HOIST_MS = 800;
   // Birds and bats that have taken off, with when and which way, for the
   // current ride.
   const flights = new Map();
@@ -440,10 +445,21 @@ export function createRenderer(canvas, { still = false } = {}) {
     flipVisual = facing;
     popups.length = 0;
     landing = null;
+    raisedFlags.clear();
     appleHintUntil = 0;
     spotScene = null;
     bucketProps();
     lighting.prepare(trail);
+  }
+
+  /**
+   * The rider set down again mid-ride, at a checkpoint: their hair starts
+   * afresh rather than streaming after them from where they were.
+   */
+  function respawn(facing) {
+    hair = null;
+    flipVisual = facing;
+    landing = null;
   }
 
   // The trail's props sorted once into the lists each pass walks, so a frame
@@ -1123,7 +1139,11 @@ export function createRenderer(canvas, { still = false } = {}) {
     for (const p of particles) {
       if (Boolean(p.splatter) !== splatter) continue;
       ctx.globalAlpha = clamp(p.life / p.max, 0, 1);
-      pixelRect(p.x, p.y, p.size || 4, p.size || 4, p.color, 2);
+      // A particle that grows (smoke) swells round its centre by whole art
+      // pixels, up to `grow` more by the end of its life.
+      const grown = p.grow ? Math.round(((1 - p.life / p.max) * p.grow) / 2) * 2 : 0;
+      const size = (p.size || 4) + grown;
+      pixelRect(p.x - grown / 2, p.y - grown / 2, size, size, p.color, 2);
     }
     ctx.globalAlpha = 1;
   }
@@ -1960,6 +1980,23 @@ export function createRenderer(canvas, { still = false } = {}) {
     }
   }
 
+  // Each checkpoint's flag waits low on its pole and runs up it, easing in
+  // at the top, once the rider reaches it; with reduced motion it is
+  // simply up. It flies like a flagpole prop's, in the trail's wind.
+  function drawCheckpoints(ride) {
+    const { wind } = propScene.weather;
+    const downwind = windSign(propScene.weather);
+    ride.checkpoints.forEach((foot, index) => {
+      if (!inView(foot.x, 50, foot.y, -FLAGPOLE.top + 8)) return;
+      const raised = raisedFlags.get(index);
+      const up = raised === undefined ? 0 : reducedMotion ? 1 : Math.min(1, (sceneClock - raised) / FLAG_HOIST_MS);
+      ctx.save();
+      ctx.translate(Math.round(foot.x / 2) * 2, Math.round(foot.y / 2) * 2);
+      drawFlagpole({ pixelRect }, () => 0, reducedMotion ? 0 : propScene.time, wind, index * 0.37, downwind, 1 - (1 - up) ** 3);
+      ctx.restore();
+    });
+  }
+
   // The nisse's hat tip flops now and then, on the scene clock; held still
   // with reduced motion.
   function drawNisseInRide(ride) {
@@ -2120,6 +2157,7 @@ export function createRenderer(canvas, { still = false } = {}) {
     drawSceneryShadows(ride, now, full);
     drawParticles(effects.particles, true);
     drawGoal(ride);
+    drawCheckpoints(ride);
     drawSpikes(ride);
     drawApples(ride);
     drawNisseInRide(ride);
@@ -2210,6 +2248,11 @@ export function createRenderer(canvas, { still = false } = {}) {
     setViewport,
     settleHair,
     reset,
+    respawn,
+    /** Sends a checkpoint's flag up its pole, once, as the rider reaches it. */
+    raiseFlag(index) {
+      if (!raisedFlags.has(index)) raisedFlags.set(index, sceneClock);
+    },
     land,
     takeWoofs,
     /** Whether the scene behind the results has come to a stop. */

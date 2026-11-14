@@ -187,12 +187,16 @@ function pastSlop(event) {
   return true;
 }
 
-// Where the pointer is while a scale handle is dragged, so Alt and Shift can
-// re-apply the scale without the pointer moving.
+// Where the pointer is while a scale handle is dragged, so Alt, Shift and
+// Cmd/Ctrl can re-apply the scale without the pointer moving.
 let scalePoint = null;
 
 function applyScale(event) {
-  const before = updateScale(scalePoint, { alt: event.altKey, shift: event.shiftKey });
+  const before = updateScale(scalePoint, {
+    alt: event.altKey,
+    shift: event.shiftKey,
+    snap: snappingOn() && !event.metaKey && !event.ctrlKey,
+  });
   if (before) pushHistory(before);
   syncInspector({ live: true });
   render();
@@ -439,7 +443,7 @@ function setDragCopying(copying, shift) {
 // Pressing or releasing Shift or Cmd/Ctrl mid-drag changes the snapping
 // straight away, without waiting for the pointer to move.
 const onShiftChange = (event) => {
-  if (scaling() && scalePoint && (event.key === "Shift" || event.key === "Alt")) {
+  if (scaling() && scalePoint && ["Shift", "Alt", "Meta", "Control"].includes(event.key)) {
     event.preventDefault();
     applyScale(event);
     return;

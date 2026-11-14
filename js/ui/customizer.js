@@ -475,8 +475,6 @@ export function createCustomizer(root, {
       renderColors(extraColors, part.extraColor, part.extra, Boolean(lookItem(part.extra, look[part.extra])?.colorless));
       root.insertBefore(colors.section, extras.section);
     } else root.insertBefore(colors.section, extraColors.section);
-    // Only there once something has changed.
-    undo.hidden = redo.hidden = !past.length && !future.length;
     undo.disabled = !past.length;
     redo.disabled = !future.length;
     if (focused) keepFocus(focused);
@@ -489,7 +487,7 @@ export function createCustomizer(root, {
       const { lookSlot, lookItem: item } = focused.dataset;
       target = root.querySelector(`[data-look-slot="${lookSlot}"][data-look-item="${item}"]`);
     } else if (focused === undo || focused === redo) {
-      target = [focused, focused === undo ? redo : undo, shuffle].find(button => !button.disabled && !button.hidden);
+      target = [focused, focused === undo ? redo : undo, shuffle].find(button => !button.disabled);
     }
     if (target && target !== document.activeElement) target.focus({ preventScroll: true });
   }

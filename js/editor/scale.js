@@ -1,10 +1,12 @@
 // Scale handles around the selected blocks and water: corners keep the
 // proportions, so a circle stays a circle and a square a square, and sides
 // stretch one way. Water on its own is just a rectangle, so its corners
-// resize it freely.
-import { scaleBlock } from "../terrain-geometry.js";
+// resize it freely. The sides being dragged snap like a drag does (see
+// magnet.js).
+import { flattenBoundary, scaleBlock } from "../terrain-geometry.js";
 import { WATER_SIZE } from "../water.js";
 import { blocks, replaceBlock, selectedBlocks } from "./blocks.js";
+import { guideAlong, scaleTargets, snapSide } from "./magnet.js";
 import { blockNodes } from "./selection.js";
 import { gridSpacing } from "./snap.js";
 import { HIT_REACH, editor, waters } from "./state.js";
@@ -80,6 +82,17 @@ function boxOf(list, bodies = []) {
     add(body.x + body.width, body.y + body.depth);
   }
   return Number.isFinite(left) ? { left, top, right, bottom } : null;
+}
+
+/**
+ * The box around what an author sees of some blocks and water bodies: the
+ * blocks' outlines rather than their curve handles, which can reach further.
+ */
+function outlineOf(list, bodies) {
+  const points = list.flatMap((block) => flattenBoundary(block.outer).points);
+  for (const body of bodies) points.push([body.x, body.y], [body.x + body.width, body.y + body.depth]);
+  const xs = points.map(([x]) => x), ys = points.map(([, y]) => y);
+  return { left: Math.min(...xs), top: Math.min(...ys), right: Math.max(...xs), bottom: Math.max(...ys) };
 }
 
 /**
@@ -162,6 +175,8 @@ export function startScale(handle, point, before) {
     waterIndices,
     waterOriginals,
     box,
+    outline: outlineOf(originals, waterOriginals),
+    targets: null,
     before,
     moved: false,
   };
@@ -169,32 +184,45 @@ export function startScale(handle, point, before) {
 }
 
 /**
- * Scale to where the pointer is. Alt scales about the centre, and Shift puts
- * the dragged side on the grid. Returns the undo snapshot the first time
- * anything changes, so the caller can push it.
+ * Scale to where the pointer is. Alt scales about the centre. With `snap`, the
+ * dragged sides line up with other things and the grid nearby, as a drag
+ * does, and Shift puts them on the grid. Returns the undo snapshot the first
+ * time anything changes, so the caller can push it.
  */
-export function updateScale(point, { alt = false, shift = false } = {}) {
+export function updateScale(point, { alt = false, shift = false, snap = false } = {}) {
   if (!active) return null;
-  const { handle, start, indices, originals, waterIndices, waterOriginals, box } = active;
+  const { handle, start, indices, originals, waterIndices, waterOriginals, box, outline } = active;
   const { hx, hy } = handle;
   const width = box.right - box.left,
     height = box.bottom - box.top;
   const cx = (box.left + box.right) / 2,
     cy = (box.top + box.bottom) / 2;
-  // Where the dragged sides of the box have moved to.
-  let x = (hx > 0 ? box.right : box.left) + point.x - start.x;
-  let y = (hy > 0 ? box.bottom : box.top) + point.y - start.y;
-  if (shift) {
-    const g = gridSpacing(editor.zoom);
-    x = Math.round(x / g) * g;
-    y = Math.round(y / g) * g;
-  }
   const px = alt ? cx : hx > 0 ? box.left : box.right;
   const py = alt ? cy : hy > 0 ? box.top : box.bottom;
-  const factor = (to, pivot, from, size) =>
-    Math.max(MIN_SIZE / Math.max(size, 1e-6), (to - pivot) / (from - pivot || 1));
-  let sx = hx && width > 1e-6 ? factor(x, px, hx > 0 ? box.right : box.left, width) : 1;
-  let sy = hy && height > 1e-6 ? factor(y, py, hy > 0 ? box.bottom : box.top, height) : 1;
+  const factor = (to, pivot, from) => (to - pivot) / (from - pivot || 1);
+  // Where the dragged sides of the box have moved to.
+  const fromX = hx > 0 ? box.right : box.left,
+    fromY = hy > 0 ? box.bottom : box.top;
+  let sx = hx && width > 1e-6 ? factor(fromX + point.x - start.x, px, fromX) : 1;
+  let sy = hy && height > 1e-6 ? factor(fromY + point.y - start.y, py, fromY) : 1;
+  // The sides that snap are the outline's, which is what lines up on screen;
+  // a curved block's handles can reach past it.
+  const lined = { x: null, y: null };
+  if (shift || snap) {
+    const spacing = gridSpacing(editor.zoom);
+    if (!shift) active.targets ??= scaleTargets();
+    const place = (scale, edge, pivot, targets) => {
+      const at = pivot + (edge - pivot) * scale;
+      const to = shift ? { side: Math.round(at / spacing) * spacing, at: null } : snapSide(at, targets);
+      return [factor(to.side, pivot, edge), to.grid ? null : to.at];
+    };
+    if (hx && width > 1e-6)
+      [sx, lined.x] = place(sx, hx > 0 ? outline.right : outline.left, px, active.targets?.xs);
+    if (hy && height > 1e-6)
+      [sy, lined.y] = place(sy, hy > 0 ? outline.bottom : outline.top, py, active.targets?.ys);
+  }
+  if (hx && width > 1e-6) sx = Math.max(MIN_SIZE / width, sx);
+  if (hy && height > 1e-6) sy = Math.max(MIN_SIZE / height, sy);
   // Corners keep the proportions of blocks: the side dragged further decides.
   if (hx && hy && indices.length) sx = sy = Math.max(sx, sy);
   indices.forEach((index, i) =>
@@ -206,6 +234,20 @@ export function updateScale(point, { alt = false, shift = false } = {}) {
     const [y, depth] = scaleSpan(body.y, body.depth, py, sy, WATER_SIZE.minDepth, hy, alt);
     waters()[index] = { ...waters()[index], x, y, width, depth };
   });
+  // A guide for each side that lined up with something and is still on it,
+  // which a side held to the other's proportions or a smallest size is not.
+  editor.snapLines = [];
+  if (lined.x !== null || lined.y !== null) {
+    const now = outlineOf(
+      indices.map((index) => blocks()[index]),
+      waterIndices.map((index) => waters()[index]),
+    );
+    const on = (side, at) => at !== null && Math.abs(side - at) < 0.01;
+    if (on(hx > 0 ? now.right : now.left, lined.x))
+      editor.snapLines.push(guideAlong("x", lined.x, [[now.top, now.bottom]], active.targets.xs));
+    if (on(hy > 0 ? now.bottom : now.top, lined.y))
+      editor.snapLines.push(guideAlong("y", lined.y, [[now.left, now.right]], active.targets.ys));
+  }
   if (active.moved) return null;
   active.moved = true;
   return active.before;

@@ -200,7 +200,7 @@ Each block sets its own material with its `material` property. Available presets
 | `wood`   | Staggered wooden planks with grain and knots |
 | `glass`  | See-through panes that let light in; can break |
 
-Material definitions live in `terrainMaterials` at the top of `js/materials.js`. Each preset controls fill, internal layers or pattern, edge colors, vegetation, and wheel-spray colors.
+Material definitions live in `terrainMaterials` at the top of `js/materials.js`. Each preset controls fill, internal layers or pattern, edge colors, vegetation, and the wheel spray: its colors and how much the wheels throw up (`roost`), plenty on sand and snow, hardly any on hard ground. It only changes how the ground looks; grip is the same on every material.
 Every material collides the same way except `glass`, which is judged by the block's shape. Its thickness and span are the short and long sides of the rectangle with the same area and perimeter as the block. That's exact for a rectangle at any angle, so a flat pane, an upright wall and a tilted plank all measure the same way. A bent or curved strip measures about as thick and as long as the strip itself, and a round or square blob measures as thick as it is wide:
 
 - **Thick** (16 units or more): never breaks, like any other terrain.
@@ -247,6 +247,23 @@ nisse: { x: 1840, y: null },
 ```
 
 `x` and `y` are where its feet stand; `y: null` stands it on the topmost surface at `x`. A trail without a nisse leaves the field out. The rider takes it by touching it, like an apple, but it never counts towards the apples: the finish opens without it, nothing points to it, and it doesn't change the trail's hash, so adding, moving or removing it keeps best times, ghosts and leaderboards. Finding it is remembered per trail in the rider's save, shown on the trail's card, and earns achievements. Put it off the main line, where it takes a skill the player already has to reach (see `TRAILS_GUIDE.md`). Most trails don't have one: it is a collectible with achievements, so keep it a find. Don't add one by default, only when the trail has a hiding place worth the detour. In the editor, set the Apple tool's **Place** to **Nisse**; placing it again moves it.
+
+## Checkpoints
+
+A long trail can have checkpoints: flags a rider can go back to instead of the start.
+
+```js
+checkpoints: [
+  { x: 2600, y: null },
+  { x: 5100, y: 410 },
+];
+```
+
+A flag always stands on the ground: `y: null` puts it on the topmost surface at `x`, and a numeric `y` on the surface at or just below that height, for a lower floor or a cave. A trail without checkpoints leaves the field out, and plays as it always has.
+
+The rider reaches a flag when its pole stands between the bike's wheels, with the bike no higher than the top of the pole, so put each one on the line where the rider passes at ground level. Each is drawn as a garden flagpole whose Dannebrog hangs low until the rider reaches it, then runs up the pole; leave room around it for the flag. Reaching it keeps the run as it is then: the apples taken, the broken glass, and the way the rider faces. After a crash, or at any time, restart goes back to the last flag reached: the bike stands still there, facing that way, the apples taken since are back on the trail and the glass broken since is whole again. The clock keeps its time, stopped while the rider is down, and runs again on the rider's first input, as at the start, so every crash still costs the ride from the flag. Holding restart goes back to the start. A nisse found stays found. The flag needs room for the bike on even ground, which validation checks. Going back is part of the run, so replays, ghosts and the world board's check ride it as it was ridden. Checkpoints change the trail's hash.
+
+Use them sparingly, on long trails only (see "Elements that need engine work" in `TRAILS_GUIDE.md`), where losing the whole run to one late crash would be too much, and put each after a hard section, on flat ground before the next one. In the editor, set the Apple tool's **Place** to **Checkpoint**.
 
 ## Props
 
@@ -474,6 +491,7 @@ A trail can also be named by part of its catalog id or file name, such as `12` o
 - the route, as the bike's position once a second
 - **forgiveness:** the share of reruns that still reach the goal when the timing of one second of the run is off by up to 50 ms, and the tight spots, where few did and what went wrong. The bot rides with perfect timing; this shows where a person would struggle. A spot where nothing survives needs frame-perfect riding.
 - **traps:** places where a miss leaves the rider with no way back to the line and no crash, so a player can only restart by hand, such as a pit between two buildings with a floor. Besides the jittered reruns, each jump's run-up is ridden again a moment before takeoff at 60% and 80% of the bot's speed, as a player who comes in too slowly would. Wherever a miss leaves the bike at rest off the line, the bot gets a short search to get back to any point of the line ridden so far, this stretch's or an earlier one's, ahead or behind (a miss that drops the rider back onto an earlier stretch costs time, but isn't a trap); where it can't, that's a trap, listed with the stretch and summed up at the end. Fix every one: give it a way back, or make the miss end the run (see "Every miss ends in a way back or a crash" in `TRAILS_GUIDE.md`).
+- **checkpoints:** the flags each stretch passes. At the end, a CHECKPOINT line names every flag the bot's route never reaches: move it onto the line.
 - **escapes:** ends of the trail the rider can ride out of. From the line's outermost point at each end, facing outwards, the bot looks for a way to the last 150 units of the terrain there, past the closing: out along the ground beyond it, or up the wall that ends the terrain. The search gets up to a million simulation steps an end (a quarter of `--budget` when that is less), enough for a hard climb up a steep bank, and its answer is saved with the trail's ground: it only searches again after the terrain, start, finish or apples change. Where it gets there, the playtest looks at what lies out there. Onto plain ground and nature it reports an ESCAPE, which is probably a mistake: close that end with terrain nobody gets over. Onto the nisse, or onto other props, it reports an OPEN END instead, which is fine when it's the way to something hidden there.
 
 The bot takes the apples nearest first. When a trail is meant to be ridden in another order, give it with `--order 2,1,3` (apples left out are taken nearest first afterwards), or the bot may ride past an apple it can't come back for. A stretch the bot can't solve is reported with the apples still to take, where the greedy bot got stuck and how close the explorer got. That means the trail may be impossible there, or need a longer search (`--budget`, in millions of simulation steps per stretch, default 4, which takes a minute or two). The budget counts the bot's work, not time, so the same trail and options give the same result on any machine, however busy, and a rerun gives the same report. At the end it gives the bot's total time, which is not optimised: treat it as an upper bound for gold, and set gold at most about 5% above it. The official trails' silver is about 1.3× gold and bronze about 1.75×.
@@ -543,7 +561,7 @@ node scripts/render-trail.mjs trails/custom/my-trail.json --camera   # what the 
 
 The images go to `.playtest/renders/<trail>/` (git-ignored, `--out` to change it), and the script lists each one with the area it shows and the apples, start, finish and tight spots in it, so you can open just the one you need.
 
-- `overview.png` is the whole trail, marked up: a coordinate ruler and grid, the apples by number, the start (`S`, with its direction), the finish (`F`) and the nisse (`N`). After `scripts/playtest.mjs`, it also shows the bot's route from the last playtest, coloured from blue (slow) to red (fast) and dashed in the air, with its turns (`T`) and tight spots: `!` where jittered reruns started, with how many of them got through, and `×` with the cause where most of them failed, and the playtest's traps (`TRAP`). Whatever the game's camera never shows along the route is darker, so scenery no player will see, such as the top of a tall tower, stands out. If the trail has changed since, so that the saved run crashes, the script says so: playtest again.
+- `overview.png` is the whole trail, marked up: a coordinate ruler and grid, the apples by number, the start (`S`, with its direction), the finish (`F`), the nisse (`N`) and the checkpoints (`C1`, `C2` and so on). After `scripts/playtest.mjs`, it also shows the bot's route from the last playtest, coloured from blue (slow) to red (fast) and dashed in the air, with its turns (`T`) and tight spots: `!` where jittered reruns started, with how many of them got through, and `×` with the cause where most of them failed, and the playtest's traps (`TRAP`). Whatever the game's camera never shows along the route is darker, so scenery no player will see, such as the top of a tall tower, stands out. If the trail has changed since, so that the saved run crashes, the script says so: playtest again.
 - `section-NN_xLEFT-RIGHT.png` are views of about the size the game shows on a desktop screen (880 × 500 units, taller where the route climbs), following the route from left to right, or the terrain's top before there is a playtest. They are drawn clean, as the game draws them, with only a ruler around them, so you can judge the look. `--route` marks them up like the overview.
 - `--props` labels every prop in the sections with its index in the trail's `props` list and its type (purple for the front layer), so a tree in a jump's path or a bush hiding an apple can be found in the file and moved.
 - `--view X,Y,WIDTH,HEIGHT` draws a single view with its top left at `X,Y`, for a close look at one spot.

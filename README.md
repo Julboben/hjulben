@@ -34,13 +34,14 @@ It runs in the browser with no build step and no runtime dependencies, built wit
 - Race the world rider just ahead of you: their ghost rides with you on every retry of that trail
 - Reaching the finish with apples missing points out where they are
 - The run timer starts on your first input
+- Checkpoint flags on some long trails: after a crash, restart goes back to the last flag reached, with the apples as they were there and the clock carrying on from where it stopped; hold restart to go back to the start
 - Installable as an offline-capable web app
 - Rider customization: gender and skin tone picked once when creating a rider, then hair, helmet (full face, motocross or none), outfit, bike and extras, each with its own colour, changeable any time in the Garage, plus a custom rider name. Some items are won: the Pocket Classic bike for gold medals on 8 trails, and the motocross helmet for finishing The Bonny Tyler
 - Elasto Mania-style pixel dirt bike, and the original Pocket Classic bike to win
 - Layered foreground and background scenery
 - A full day cycle, set per trail by the hour, from night through dawn, morning, noon and evening to dusk, with the moon and stars at night
 - Pixel lighting at every time of day: ground stays bright by day and sinks into darkness at night, caves closed off by a back wall are dark at any hour while open hollows let the sky through, a headlight you can switch off that stays on the bike through flips and loops, lanterns, lamps, glowing mushrooms, and lightning light the way
-- Terrain-colored wheel spray, brake lights, and fading ground skid marks
+- Terrain-colored wheel spray, thick on sand and snow and barely any on hard ground, brake lights, and fading ground skid marks
 - Procedural engine, braking, wheel-landing, aerial trick, collectible, crash, flip, finish, dashboard, and rain sound effects
 - Procedural chiptune music: a theme for the dashboard, and a mood for each world (a folk polka in the orchards, a shuffle in the woods, a darbuka beat in the desert, a drone underground, a funky groove in the city), with every trail growing its own tune from it; off by default, switched on under Settings
 - Collectibles, finish gates, timers, and best times
@@ -97,7 +98,7 @@ A local server is required because the game uses native JavaScript modules and f
 | Navigate dashboard controls      | Arrow keys or `W` / `A` / `S` / `D`       | Tap a menu item                             |
 | Activate the focused menu action | `Enter` or `Space`                        | Tap a menu item                             |
 
-Lean labels adjust to the direction the rider is facing. Every keyboard action can be rebound under **Settings → Keys**. Holding restart freezes the bike until you let go, so you can line up a clean start.
+Lean labels adjust to the direction the rider is facing. Every keyboard action can be rebound under **Settings → Keys**. Holding restart freezes the bike until you let go, so you can line up a clean start. On a trail with checkpoint flags, restart goes back to the last flag reached, and holding it on goes back to the start; on touch screens, hold Retry or Restart.
 
 Gamepads use the standard mapping: `RT` or `A` for gas, `LT` or `X` for brake, the left stick or d-pad to lean, `B` to turn around, d-pad up for the headlight, d-pad down to tell Coda to sit, `Y` to restart, and `Start` to pause. In menus, the d-pad or stick moves the selection, `A` confirms, and `B` goes back.
 
@@ -161,11 +162,11 @@ Editor drafts do not overwrite trail files. Official trails live in `trails/offi
 
 The dashboard's Settings view includes:
 
-- Full or reduced scenery
+- Performance mode, which draws lighter scenery for slower devices
 - Visible or hidden on-screen controls
 - Sound on or off, music on or off, and master volume
 - Screen shake (off by default when the system prefers reduced motion)
-- Vibration on landings and crashes (on devices that support it)
+- Vibration on landings and crashes, on phones that can vibrate and controllers that can rumble
 - Ghost: your best run, the world's best (falls back to yours offline, and races whichever is faster), or off
 - Keyboard bindings
 - Fullscreen mode
@@ -188,7 +189,7 @@ Current storage keys:
 
 Ghosts and local boards of a shipped trail's earlier versions are removed at start-up, as are ghosts from an older physics version; when storage is full the game says so and keeps going with what it has.
 
-The dashboard's Leaderboard view ranks the ten fastest finishes per official, bonus and custom trail across all savegames on the device. Runs remain on the board after their savegame is deleted. Step between trails with the arrows, or click the trail name to pick one from a list, which shows each trail's best time and the active rider's own, with their world rank for an online rider. Each run shows its date, including the year. Riders on the same time share a rank, and the older run is listed first. Every trail is keyed by a hash of what decides a run (terrain, start, finish, apples, spikes, and water), and official and bonus trails also by their id (`official:<id>@<hash>`, `bonus:<id>@<hash>`). Editing a trail's gameplay starts fresh leaderboards, ghosts and best times, online and local, while renaming it or changing its props keeps them.
+The dashboard's Leaderboard view ranks the ten fastest finishes per official, bonus and custom trail across all savegames on the device. Runs remain on the board after their savegame is deleted. Step between trails with the arrows, or click the trail name to pick one from a list, which shows each trail's best time and the active rider's own, with their world rank for an online rider. Each run shows its date, including the year. Riders on the same time share a rank, and the older run is listed first. Every trail is keyed by a hash of what decides a run (terrain, start, finish, apples, spikes, water and checkpoints), and official and bonus trails also by their id (`official:<id>@<hash>`, `bonus:<id>@<hash>`). Editing a trail's gameplay starts fresh leaderboards, ghosts and best times, online and local, while renaming it or changing its props keeps them.
 
 Clearing site data resets settings, progression, and recorded times. Online riders can get theirs back by logging in (see below).
 

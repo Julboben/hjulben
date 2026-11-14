@@ -38,6 +38,8 @@ export function trailHash(trail) {
   fields.physics = RIDE_VERSION;
   // Water is only hashed when a trail has some.
   if (Array.isArray(trail?.water) && trail.water.length) fields.water = trail.water;
+  // Checkpoints too, which change what a run can do.
+  if (Array.isArray(trail?.checkpoints) && trail.checkpoints.length) fields.checkpoints = trail.checkpoints;
   const text = canonical(fields);
   let hash = 0x811c9dc5;
   for (let index = 0; index < text.length; index++) {

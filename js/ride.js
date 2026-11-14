@@ -31,6 +31,7 @@ import { NISSE_GROUND_LIFT, playerTouchesNisse } from "./nisse.js";
 import { playerTouch } from "./player-shape.js";
 import { spikeShape } from "./spike.js";
 import { createRagdoll, stepRagdoll } from "./ragdoll.js";
+import { bikeAtCheckpoint, checkpointFoot, checkpointWheelY } from "./checkpoint.js";
 import { atan2, cos, exp, hypot, sin } from "./det-math.js";
 import { copyRideTerrain, rideTerrain, shatterGlass } from "./glass.js";
 import {
@@ -80,8 +81,7 @@ export function seededRandom(seed = 1) {
   };
 }
 
-function makeWheel(trail, x, startY) {
-  const y = startY ?? terrainAt(trail, x).y - RADIUS;
+function makeWheel(trail, x, y) {
   return {
     x,
     y,
@@ -128,17 +128,7 @@ export function createRide(trail, { seed = 1, start = trail.start, helmet = true
   const { x: startX, y: startY, facing } = start;
   const terrain = rideTerrain(trail);
   const water = waterBodies(trail);
-  const placeBike = () => {
-    const rear = makeWheel(trail, startX - WHEELBASE / 2, startY);
-    const front = makeWheel(trail, startX + WHEELBASE / 2, startY);
-    return { rear, front, vehicle: createVehicle(rear, front) };
-  };
-  let bike = placeBike();
-  if ([bike.rear, bike.front].every((wheel) => terrainCollisionsAt(trail, wheel.x, wheel.y, RADIUS + START_GROUND_REACH).length)) {
-    const settled = placeBike();
-    if (settleOnStart(settled.vehicle, terrain, water, facing)) bike = settled;
-  }
-  const { rear, front, vehicle } = bike;
+  const { rear, front, vehicle } = placeBike(terrain, water, startX, facing, (x) => startY ?? terrainAt(trail, x).y - RADIUS);
   /** @type {Ride} */
   const ride = {
     trail: terrain,
@@ -194,9 +184,32 @@ export function createRide(trail, { seed = 1, start = trail.start, helmet = true
     splits: [],
     shattered: 0,
     cracked: 0,
+    checkpoints: (trail.checkpoints || []).map((checkpoint) => checkpointFoot(trail, checkpoint)),
+    checkpoint: null,
+    atCheckpoint: -1,
+    respawns: 0,
+    spawnStep: 0,
   };
   ride.previousRiderContacts = riderCollisionPoints(ride);
   return ride;
+}
+
+/**
+ * A bike set down at `x`, its wheels' centres at `wheelY(x)`, and settled
+ * there when both wheels stand on the ground (see settleOnStart).
+ * @param {(x: number) => number} wheelY
+ */
+function placeBike(terrain, water, x, facing, wheelY) {
+  const place = () => {
+    const rear = makeWheel(terrain, x - WHEELBASE / 2, wheelY(x - WHEELBASE / 2));
+    const front = makeWheel(terrain, x + WHEELBASE / 2, wheelY(x + WHEELBASE / 2));
+    return { rear, front, vehicle: createVehicle(rear, front) };
+  };
+  const bike = place();
+  if (![bike.rear, bike.front].every((wheel) => terrainCollisionsAt(terrain, wheel.x, wheel.y, RADIUS + START_GROUND_REACH).length))
+    return bike;
+  const settled = place();
+  return settleOnStart(settled.vehicle, terrain, water, facing) ? settled : bike;
 }
 
 // A wheel this close to the ground counts as standing on it.
@@ -489,9 +502,11 @@ function movingAway(ride) {
  * @param {RideEvent[]} events
  */
 function advanceRide(ride, input, hooks, events) {
+  if (Number(input.facing)) ride.facing = input.facing < 0 ? -1 : 1;
+  // After the facing, which a respawn sets to the flag's own.
+  if (input.respawn && ride.checkpoint) respawn(ride, events);
   const { trail, rear, front } = ride;
   const running = ride.status === "running";
-  if (Number(input.facing)) ride.facing = input.facing < 0 ? -1 : 1;
   const leanInput = running ? clamp(Number(input.leanInput) || 0, -1, 1) : 0;
   const accelerating = running && Boolean(input.accelerating);
   const braking = running && Boolean(input.braking);
@@ -499,7 +514,7 @@ function advanceRide(ride, input, hooks, events) {
   // forth moves the bike, so a free lean would be a free head start.
   if (running && !ride.started && (accelerating || braking || leanInput)) {
     ride.started = true;
-    events.push({ type: "start" });
+    events.push({ type: ride.respawns ? "resume" : "start" });
   }
   for (const point of ride.vehicle.bikePoints) {
     point.px = point.x;
@@ -576,7 +591,7 @@ function advanceRide(ride, input, hooks, events) {
   // from a start in the air, starts it too, timed from the step it moved in.
   if (running && !ride.started && movingAway(ride)) {
     ride.started = true;
-    events.push({ type: "start" });
+    events.push({ type: ride.respawns ? "resume" : "start" });
     ride.elapsed = ++ride.elapsedSteps * STEP;
   }
 
@@ -622,7 +637,7 @@ function advanceRide(ride, input, hooks, events) {
     crash(ride, "water", underwater.x, underwater.y, events);
     return events;
   }
-  if (riderObstacle && ride.time > SPAWN_GRACE) {
+  if (riderObstacle && (ride.steps - ride.spawnStep) * STEP > SPAWN_GRACE) {
     crash(ride, "head", head.x, head.y, events);
     return events;
   }
@@ -647,6 +662,21 @@ function advanceRide(ride, input, hooks, events) {
       });
     }
   }
+
+  // Reaching a flag keeps the ride as it is now, to go back to. It is kept
+  // again each time the bike comes back to a flag, with what was done since.
+  const at = ride.checkpoints.findIndex((foot) => bikeAtCheckpoint(foot, rear, front));
+  if (at >= 0 && at !== ride.atCheckpoint) {
+    ride.checkpoint = {
+      index: at,
+      facing: ride.facing,
+      taken: ride.apples.map((apple) => apple.taken),
+      splits: ride.splits.slice(),
+      terrain: copyRideTerrain(trail),
+    };
+    events.push({ type: "checkpoint", index: at, x: ride.checkpoints[at].x, y: ride.checkpoints[at].y });
+  }
+  ride.atCheckpoint = at;
 
   // The nisse is taken the same way, but it is optional: it never counts
   // towards the apples or the finish.
@@ -682,6 +712,47 @@ function advanceRide(ride, input, hooks, events) {
     1 - exp(-7 * STEP),
   );
   return events;
+}
+
+/**
+ * Puts the rider back at the last flag reached, standing still and facing
+ * the way they faced there, with the apples and glass as they were then.
+ * The clock keeps what it had and waits for the rider to set off again, as
+ * at the start. A nisse found since stays found: it is no part of the run.
+ * @param {Ride} ride
+ * @param {RideEvent[]} events
+ */
+function respawn(ride, events) {
+  const { index, facing, taken, splits, terrain } = ride.checkpoint;
+  const foot = ride.checkpoints[index];
+  ride.trail = copyRideTerrain(terrain);
+  if (ride.trail.brokenBlocks) ride.trail.glassClock = ride.steps;
+  ride.shattered = ride.trail.brokenBlocks?.size ?? 0;
+  ride.cracked = ride.trail.glassCracks?.length ?? 0;
+  const { rear, front, vehicle } = placeBike(ride.trail, ride.water, foot.x, facing, (x) => checkpointWheelY(ride.trail, foot, x));
+  Object.assign(ride, { rear, front, vehicle, facing });
+  ride.apples.forEach((apple, appleIndex) => (apple.taken = taken[appleIndex]));
+  ride.collected = taken.filter(Boolean).length;
+  ride.splits = splits.slice();
+  Object.assign(ride, {
+    status: "running",
+    started: false,
+    throttle: 0,
+    brakePressure: 0,
+    leanControl: 0,
+    leanVisual: 0,
+    ragdoll: null,
+    crashCause: null,
+    airRotation: 0,
+    airTurnMilestone: 0,
+    inJump: false,
+    landingSteps: 0,
+    atCheckpoint: index,
+    spawnStep: ride.steps,
+  });
+  ride.respawns++;
+  ride.previousRiderContacts = riderCollisionPoints(ride);
+  events.push({ type: "respawn", index, x: foot.x, y: foot.y, collected: ride.collected, total: ride.apples.length });
 }
 
 // Halvings of the step that find when the bike reached the flower: ten time

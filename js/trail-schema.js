@@ -14,6 +14,7 @@ import { WATER_PROPS, SURFACE_PROPS, waterPropBody } from "./water-props.js";
 import { STALL_SIGN_LINE, STALL_SIGN_LINES, stallSignLines } from "./countryside-props.js";
 import { BANNER_MAX } from "./event-props.js";
 import { FINISH_FLOWER_LIFT, bikeTouchesFlower } from "./finish.js";
+import { checkpointFoot, checkpointWheelY } from "./checkpoint.js";
 import { WEATHER_DEFAULTS, WEATHER_LEVELS, WIND_DIRECTIONS, resolveWeather } from "./weather.js";
 import { DEFAULT_HOUR, HOURS, normalizeHour } from "./time-of-day.js";
 import { isSeeThrough } from "./materials.js";
@@ -291,6 +292,15 @@ export function normalizeTrail(input) {
   if (trail.nisse && typeof trail.nisse === "object" && Number.isFinite(Number(trail.nisse.x)))
     trail.nisse = { x: Number(trail.nisse.x), y: optionalY(trail.nisse.y) };
   else delete trail.nisse;
+  // Flags to go back to after a crash, for long trails only: a trail without
+  // any has no `checkpoints` field at all.
+  const checkpoints = Array.isArray(trail.checkpoints)
+    ? trail.checkpoints
+        .filter((checkpoint) => checkpoint && typeof checkpoint === "object" && Number.isFinite(Number(checkpoint.x)))
+        .map((checkpoint) => ({ x: Number(checkpoint.x), y: optionalY(checkpoint.y) }))
+    : [];
+  if (checkpoints.length) trail.checkpoints = checkpoints;
+  else delete trail.checkpoints;
   // Where the trail list's thumbnail is centred, framed in the editor. Without
   // it the game picks the trail's most eventful stretch.
   // Null and "" would pass as 0, so they count as missing.
@@ -452,6 +462,10 @@ function buriedBlocks(blocks, exposed) {
   return lost;
 }
 
+// How far the ground under either wheel of a bike set down at a flag may be
+// from the ground the flag stands on.
+const CHECKPOINT_STEP = 30;
+
 /**
  * The start's wheel centres: at the start's height when it has one, else each
  * on the ground under it, as the bike is set down.
@@ -561,34 +575,6 @@ export function validateTrail(trail) {
     );
 
   if (!blocks.length) error("A trail needs terrain: add at least one block.");
-  // The finish may sit on either side of the start, so it is checked against
-  // both ends of the terrain rather than against a position to the right.
-  const firstX = blocks.length
-    ? Math.min(
-        ...blocks.map((block) => regionBounds(block).left),
-      )
-    : Infinity;
-  const finalX = blocks.length
-    ? Math.max(
-        ...blocks.map((block) => regionBounds(block).right),
-      )
-    : -Infinity;
-  // A finish off the end of the terrain is already reported by the range check
-  // below, so the "no terrain under it" check must not repeat the same problem.
-  let finishOffTerrain = false;
-  if (Number.isFinite(firstX) && trail.finish.x <= firstX) {
-    finishOffTerrain = true;
-    error(
-      `The finish at x ${Math.round(trail.finish.x)} is before the start of the terrain (x ${Math.round(firstX)}). Move it onto the trail, or extend the blocks.`,
-      { type: "finish" },
-    );
-  } else if (Number.isFinite(finalX) && trail.finish.x >= finalX) {
-    finishOffTerrain = true;
-    error(
-      `The finish at x ${Math.round(trail.finish.x)} is past the end of the terrain (x ${Math.round(finalX)}). Move it onto the trail, or extend the blocks.`,
-      { type: "finish" },
-    );
-  }
   if (Number.isFinite(trail.start?.x) && startTouchesFinish(trail)) {
     error(
       "The finish flower touches the bike at the start, so the trail would end at once. Move the finish away from the start.",
@@ -632,6 +618,18 @@ export function validateTrail(trail) {
         `Apple ${index + 1} (x ${Math.round(apple.x)}) is inside solid terrain, so it can never be picked.`,
         target,
       );
+  }
+  for (const [index, checkpoint] of (trail.checkpoints || []).entries()) {
+    if (!compiled) break;
+    const target = { type: "checkpoint", index };
+    const foot = checkpointFoot(trail, checkpoint);
+    if (foot.y >= fallLine(trail))
+      error(`Checkpoint ${index + 1} (x ${Math.round(foot.x)}) has no ground under it to stand on. Drag it onto a block.`, target);
+    else if ([foot.x - WHEELBASE / 2, foot.x + WHEELBASE / 2].some((x) => {
+      const wheelY = checkpointWheelY(trail, foot, x);
+      return Math.abs(wheelY + RADIUS - foot.y) > CHECKPOINT_STEP || insideTerrain(blocks, x, wheelY);
+    }))
+      error(`Checkpoint ${index + 1} (x ${Math.round(foot.x)}) has no room for the bike: a rider sent back there would be set down against a wall or over a drop. Move it onto open, even ground.`, target);
   }
   if ((trail.props || []).length > PROP_WARNING_COUNT)
     warning(
@@ -906,11 +904,7 @@ export function validateTrail(trail) {
     }
     if (trail.nisse?.y === null && noGround(trail.nisse.x))
       error("The ground-anchored nisse has no terrain under it. Drag it onto a block.", { type: "nisse", index: 0 });
-    if (
-      !finishOffTerrain &&
-      !Number.isFinite(trail.finish.y) &&
-      noGround(trail.finish.x)
-    )
+    if (!Number.isFinite(trail.finish.y) && noGround(trail.finish.x))
       error(
         "The ground-anchored finish has no terrain under it. Drag it onto a block, or lift it into the air.",
         { type: "finish" },

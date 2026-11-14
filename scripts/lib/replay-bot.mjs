@@ -28,10 +28,11 @@ for (const leanInput of [-1, -.5, 0, .5, 1]) {
 }
 
 // The trail is shared rather than cloned, apart from its broken glass: a pane
-// one try breaks must still be whole for the next.
+// one try breaks must still be whole for the next. The ride kept at the last
+// flag is shared too, as nothing changes it once kept.
 export function cloneRide(ride) {
-  const { trail, random, ...rest } = ride;
-  return { ...structuredClone(rest), trail: copyRideTerrain(trail), random };
+  const { trail, random, checkpoint, ...rest } = ride;
+  return { ...structuredClone(rest), trail: copyRideTerrain(trail), random, checkpoint };
 }
 
 function target(ride) {

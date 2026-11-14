@@ -471,10 +471,7 @@
                         <div class="menu-view" id="menu-credits-view" hidden>
                             <div class="menu-view-head">
                                 <div>
-                                    <span class="save-label" data-icon-before="star"
-                                        >THE PEOPLE BEHIND IT</span
-                                    >
-                                    <h3>Credits</h3>
+                                    <h3 data-icon-before="star">Credits</h3>
                                 </div>
                                 <button
                                     class="menu-back"
@@ -496,10 +493,7 @@
                         <div class="menu-view" id="menu-changelog-view" hidden>
                             <div class="menu-view-head">
                                 <div>
-                                    <span class="save-label" data-icon-before="clock"
-                                        >PATCH NOTES</span
-                                    >
-                                    <h3>What’s new</h3>
+                                    <h3 data-icon-before="update">What’s new</h3>
                                 </div>
                                 <button
                                     class="menu-back"
@@ -519,10 +513,7 @@
                         >
                             <div class="menu-view-head">
                                 <div>
-                                    <span class="save-label" data-icon-before="trophy"
-                                        >TROPHY CASE</span
-                                    >
-                                    <h3>Achievements</h3>
+                                    <h3 data-icon-before="trophy">Achievements</h3>
                                 </div>
                                 <button
                                     class="menu-back"
@@ -545,10 +536,7 @@
                         <div class="menu-view" id="menu-riders-view" hidden>
                             <div class="menu-view-head">
                                 <div>
-                                    <span class="save-label" data-icon-before="helmet"
-                                        >SAVEGAMES</span
-                                    >
-                                    <h3>Riders</h3>
+                                    <h3 data-icon-before="helmet">Riders</h3>
                                 </div>
                                 <button
                                     class="menu-back"
@@ -591,10 +579,7 @@
                         <div class="menu-view" id="menu-trail-view" hidden>
                             <div class="menu-view-head">
                                 <div>
-                                    <span class="save-label" data-icon-before="flag"
-                                        >TRAIL SELECT</span
-                                    >
-                                    <h3>Choose a trail</h3>
+                                    <h3 data-icon-before="flag">Choose a trail</h3>
                                 </div>
                                 <button
                                     class="menu-back"
@@ -635,10 +620,7 @@
                         >
                             <div class="menu-view-head">
                                 <div>
-                                    <span class="save-label" data-icon-before="trophy"
-                                        >HALL OF FAME</span
-                                    >
-                                    <h3>Leaderboard</h3>
+                                    <h3 data-icon-before="crown">Leaderboard</h3>
                                 </div>
                                 <button
                                     class="menu-back"
@@ -726,12 +708,9 @@
                         <div class="menu-view" id="menu-save-view" hidden>
                             <div class="menu-view-head">
                                 <div>
-                                    <span
-                                        class="save-label"
-                                        id="new-save-slot-label"
-                                        >SAVE SLOT 1</span
-                                    >
-                                    <h3 id="new-save-title">Who are you?</h3>
+                                    <h3 id="new-save-title" data-icon-before="helmet">
+                                        Who are you?
+                                    </h3>
                                 </div>
                                 <button
                                     class="menu-back"
@@ -741,6 +720,10 @@
                                     BACK
                                 </button>
                             </div>
+                            <h4 class="menu-section">
+                                <strong id="new-save-slot-label">SAVE SLOT 1</strong>
+                                <small>New rider</small>
+                            </h4>
                             <div class="save-steps" aria-hidden="true">
                                 <span id="new-save-step-1" class="active"
                                     >1 · RIDER</span
@@ -890,12 +873,7 @@
                         <div class="menu-view" id="menu-look-view" hidden>
                             <div class="menu-view-head">
                                 <div>
-                                    <span
-                                        class="save-label"
-                                        data-icon-before="garage"
-                                        >GARAGE</span
-                                    >
-                                    <h3 id="garage-rider">Your rider</h3>
+                                    <h3 data-icon-before="garage">Garage</h3>
                                 </div>
                                 <button
                                     class="menu-back"
@@ -905,6 +883,10 @@
                                     BACK
                                 </button>
                             </div>
+                            <h4 class="menu-section">
+                                <strong id="garage-rider"></strong>
+                                <small id="garage-slot"></small>
+                            </h4>
                             <div id="garage-look"></div>
                             <button
                                 class="primary"
@@ -919,12 +901,7 @@
                         <div class="menu-view" id="menu-how-view" hidden>
                             <div class="menu-view-head">
                                 <div>
-                                    <span
-                                        class="save-label"
-                                        data-icon-before="book"
-                                        >RIDER HANDBOOK</span
-                                    >
-                                    <h3>How to play</h3>
+                                    <h3 data-icon-before="book">How to play</h3>
                                 </div>
                                 <button
                                     class="menu-back"
@@ -1026,10 +1003,7 @@
                         <div class="menu-view" id="menu-settings-view" hidden>
                             <div class="menu-view-head">
                                 <div>
-                                    <span class="save-label" data-icon-before="gear"
-                                        >PREFERENCES</span
-                                    >
-                                    <h3>Settings</h3>
+                                    <h3 data-icon-before="gear">Settings</h3>
                                 </div>
                                 <button
                                     class="menu-back"
@@ -1051,7 +1025,7 @@
                                     id="settings-tab-general"
                                     aria-controls="settings-general"
                                     aria-selected="true"
-                                    data-icon-before="gear"
+                                    data-icon-before="sliders"
                                 >
                                     GENERAL
                                 </button>
@@ -1073,200 +1047,127 @@
                                 role="tabpanel"
                                 aria-labelledby="settings-tab-general"
                             >
-                                <h4 class="settings-section">DISPLAY</h4>
-                                <div
-                                    class="setting-group"
-                                    role="group"
-                                    aria-labelledby="setting-label-1"
+                                <h4 class="menu-section"><strong>DISPLAY</strong></h4>
+                                <label
+                                    class="setting-group setting-toggle"
+                                    for="setting-fullscreen"
                                     id="setting-fullscreen-group"
                                 >
-                                    <span
-                                        class="setting-label"
-                                        id="setting-label-1"
-                                        >FULLSCREEN</span
+                                    <span class="setting-label" id="setting-label-1">FULLSCREEN</span>
+                                    <button
+                                        type="button"
+                                        class="setting-switch"
+                                        id="setting-fullscreen"
+                                        role="switch"
+                                        aria-checked="false"
+                                        aria-labelledby="setting-label-1"
+                                        data-on="on"
+                                        data-off="off"
                                     >
-                                    <div
-                                        class="setting-options"
-                                        style="--options: 2"
-                                    >
-                                        <button
-                                            type="button"
-                                            class="setting-option"
-                                            data-fullscreen="on"
-                                        >
-                                            On
-                                        </button>
-                                        <button
-                                            type="button"
-                                            class="setting-option"
-                                            data-fullscreen="off"
-                                        >
-                                            Off
-                                        </button>
-                                    </div>
-                                </div>
-                                <div
-                                    class="setting-group"
-                                    role="group"
-                                    aria-labelledby="setting-label-2"
+                                        <span class="setting-switch-knob"></span>
+                                    </button>
+                                </label>
+                                <label
+                                    class="setting-group setting-toggle"
+                                    for="setting-shake"
                                 >
-                                    <span
-                                        class="setting-label"
-                                        id="setting-label-2"
-                                        >SCENERY</span
+                                    <span class="setting-label" id="setting-label-3">SCREEN SHAKE</span>
+                                    <button
+                                        type="button"
+                                        class="setting-switch"
+                                        id="setting-shake"
+                                        role="switch"
+                                        aria-checked="false"
+                                        aria-labelledby="setting-label-3"
+                                        data-setting="shake"
+                                        data-on="on"
+                                        data-off="off"
                                     >
-                                    <div
-                                        class="setting-options"
-                                        style="--options: 2"
-                                    >
-                                        <button
-                                            type="button"
-                                            class="setting-option"
-                                            data-setting="scenery"
-                                            data-value="full"
-                                        >
-                                            Full
-                                        </button>
-                                        <button
-                                            type="button"
-                                            class="setting-option"
-                                            data-setting="scenery"
-                                            data-value="reduced"
-                                        >
-                                            Reduced
-                                        </button>
-                                    </div>
-                                </div>
-                                <div
-                                    class="setting-group"
-                                    role="group"
-                                    aria-labelledby="setting-label-3"
+                                        <span class="setting-switch-knob"></span>
+                                    </button>
+                                </label>
+                                <label
+                                    class="setting-group setting-toggle"
+                                    for="setting-controls"
                                 >
-                                    <span
-                                        class="setting-label"
-                                        id="setting-label-3"
-                                        >SCREEN SHAKE</span
+                                    <span class="setting-label" id="setting-label-4">ON-SCREEN CONTROLS</span>
+                                    <button
+                                        type="button"
+                                        class="setting-switch"
+                                        id="setting-controls"
+                                        role="switch"
+                                        aria-checked="false"
+                                        aria-labelledby="setting-label-4"
+                                        data-setting="controls"
+                                        data-on="show"
+                                        data-off="hide"
                                     >
-                                    <div
-                                        class="setting-options"
-                                        style="--options: 2"
-                                    >
-                                        <button
-                                            type="button"
-                                            class="setting-option"
-                                            data-setting="shake"
-                                            data-value="on"
-                                        >
-                                            On
-                                        </button>
-                                        <button
-                                            type="button"
-                                            class="setting-option"
-                                            data-setting="shake"
-                                            data-value="off"
-                                        >
-                                            Off
-                                        </button>
-                                    </div>
-                                </div>
-                                <div
-                                    class="setting-group"
-                                    role="group"
-                                    aria-labelledby="setting-label-4"
-                                >
-                                    <span
-                                        class="setting-label"
-                                        id="setting-label-4"
-                                        >ON-SCREEN CONTROLS</span
-                                    >
-                                    <div
-                                        class="setting-options"
-                                        style="--options: 2"
-                                    >
-                                        <button
-                                            type="button"
-                                            class="setting-option"
-                                            data-setting="controls"
-                                            data-value="show"
-                                        >
-                                            Show
-                                        </button>
-                                        <button
-                                            type="button"
-                                            class="setting-option"
-                                            data-setting="controls"
-                                            data-value="hide"
-                                        >
-                                            Hide
-                                        </button>
-                                    </div>
-                                </div>
+                                        <span class="setting-switch-knob"></span>
+                                    </button>
+                                </label>
 
-                                <h4 class="settings-section">AUDIO</h4>
-                                <div
-                                    class="setting-group"
-                                    role="group"
-                                    aria-labelledby="setting-label-5"
+                                <label
+                                    class="setting-group setting-toggle"
+                                    for="setting-scenery"
                                 >
-                                    <span
-                                        class="setting-label"
-                                        id="setting-label-5"
-                                        >SOUND</span
+                                    <span class="setting-label" id="setting-label-2">PERFORMANCE MODE</span>
+                                    <button
+                                        type="button"
+                                        class="setting-switch"
+                                        id="setting-scenery"
+                                        role="switch"
+                                        aria-checked="false"
+                                        aria-labelledby="setting-label-2"
+                                        aria-describedby="setting-note-scenery"
+                                        data-setting="scenery"
+                                        data-on="reduced"
+                                        data-off="full"
                                     >
-                                    <div
-                                        class="setting-options"
-                                        style="--options: 2"
-                                    >
-                                        <button
-                                            type="button"
-                                            class="setting-option"
-                                            data-setting="sound"
-                                            data-value="on"
-                                        >
-                                            On
-                                        </button>
-                                        <button
-                                            type="button"
-                                            class="setting-option"
-                                            data-setting="sound"
-                                            data-value="off"
-                                        >
-                                            Off
-                                        </button>
-                                    </div>
-                                </div>
-                                <div
-                                    class="setting-group"
-                                    role="group"
-                                    aria-labelledby="setting-label-music"
+                                        <span class="setting-switch-knob"></span>
+                                    </button>
+                                    <span class="setting-note" id="setting-note-scenery">
+                                        Leaves out trees, shadows and heat haze, and thins out rain and snow, so the game runs smoothly on slower devices.
+                                    </span>
+                                </label>
+                                <h4 class="menu-section"><strong>AUDIO</strong></h4>
+                                <label
+                                    class="setting-group setting-toggle"
+                                    for="setting-sound"
                                 >
-                                    <span
-                                        class="setting-label"
-                                        id="setting-label-music"
-                                        >MUSIC</span
+                                    <span class="setting-label" id="setting-label-5">SOUND</span>
+                                    <button
+                                        type="button"
+                                        class="setting-switch"
+                                        id="setting-sound"
+                                        role="switch"
+                                        aria-checked="false"
+                                        aria-labelledby="setting-label-5"
+                                        data-setting="sound"
+                                        data-on="on"
+                                        data-off="off"
                                     >
-                                    <div
-                                        class="setting-options"
-                                        style="--options: 2"
+                                        <span class="setting-switch-knob"></span>
+                                    </button>
+                                </label>
+                                <label
+                                    class="setting-group setting-toggle"
+                                    for="setting-music"
+                                >
+                                    <span class="setting-label" id="setting-label-music">MUSIC</span>
+                                    <button
+                                        type="button"
+                                        class="setting-switch"
+                                        id="setting-music"
+                                        role="switch"
+                                        aria-checked="false"
+                                        aria-labelledby="setting-label-music"
+                                        data-setting="music"
+                                        data-on="on"
+                                        data-off="off"
                                     >
-                                        <button
-                                            type="button"
-                                            class="setting-option"
-                                            data-setting="music"
-                                            data-value="on"
-                                        >
-                                            On
-                                        </button>
-                                        <button
-                                            type="button"
-                                            class="setting-option"
-                                            data-setting="music"
-                                            data-value="off"
-                                        >
-                                            Off
-                                        </button>
-                                    </div>
-                                </div>
+                                        <span class="setting-switch-knob"></span>
+                                    </button>
+                                </label>
                                 <div
                                     class="setting-group"
                                     role="group"
@@ -1294,78 +1195,36 @@
                                     </div>
                                 </div>
 
-                                <h4 class="settings-section">GAMEPLAY</h4>
-                                <div
-                                    class="setting-group"
-                                    role="group"
-                                    aria-labelledby="setting-label-7"
+                                <h4 class="menu-section"><strong>GAMEPLAY</strong></h4>
+                                <label
+                                    class="setting-group setting-toggle"
+                                    for="setting-haptics"
                                     id="setting-haptics-group"
                                 >
-                                    <span
-                                        class="setting-label"
-                                        id="setting-label-7"
-                                        >VIBRATION</span
+                                    <span class="setting-label" id="setting-label-7">VIBRATION</span>
+                                    <button
+                                        type="button"
+                                        class="setting-switch"
+                                        id="setting-haptics"
+                                        role="switch"
+                                        aria-checked="false"
+                                        aria-labelledby="setting-label-7"
+                                        aria-describedby="setting-note-haptics"
+                                        data-setting="haptics"
+                                        data-on="on"
+                                        data-off="off"
                                     >
-                                    <div
-                                        class="setting-options"
-                                        style="--options: 2"
-                                    >
-                                        <button
-                                            type="button"
-                                            class="setting-option"
-                                            data-setting="haptics"
-                                            data-value="on"
-                                        >
-                                            On
-                                        </button>
-                                        <button
-                                            type="button"
-                                            class="setting-option"
-                                            data-setting="haptics"
-                                            data-value="off"
-                                        >
-                                            Off
-                                        </button>
-                                    </div>
-                                </div>
-                                <div
-                                    class="setting-group"
-                                    role="group"
-                                    aria-labelledby="setting-label-rumble"
-                                    id="setting-rumble-group"
-                                    hidden
-                                >
-                                    <span
-                                        class="setting-label"
-                                        id="setting-label-rumble"
-                                        >CONTROLLER RUMBLE</span
-                                    >
-                                    <div
-                                        class="setting-options"
-                                        style="--options: 2"
-                                    >
-                                        <button
-                                            type="button"
-                                            class="setting-option"
-                                            data-setting="rumble"
-                                            data-value="on"
-                                        >
-                                            On
-                                        </button>
-                                        <button
-                                            type="button"
-                                            class="setting-option"
-                                            data-setting="rumble"
-                                            data-value="off"
-                                        >
-                                            Off
-                                        </button>
-                                    </div>
-                                </div>
+                                        <span class="setting-switch-knob"></span>
+                                    </button>
+                                    <span class="setting-note" id="setting-note-haptics">
+                                        A buzz on landings and crashes, on your phone or controller.
+                                    </span>
+                                </label>
                                 <div
                                     class="setting-group"
                                     role="group"
                                     aria-labelledby="setting-label-8"
+                                    aria-describedby="setting-note-ghost"
                                 >
                                     <span
                                         class="setting-label"
@@ -1401,6 +1260,11 @@
                                             Off
                                         </button>
                                     </div>
+                                    <p class="setting-note" id="setting-note-ghost">
+                                        Mine races your own best run. World
+                                        races the world's best instead, when
+                                        it is faster.
+                                    </p>
                                 </div>
                                 <button
                                     type="button"
@@ -1411,7 +1275,7 @@
                                     RESET ALL SETTINGS
                                 </button>
 
-                                <h4 class="settings-section">ABOUT</h4>
+                                <h4 class="menu-section"><strong>ABOUT</strong></h4>
                                 <button
                                     type="button"
                                     class="menu-back settings-reset"
@@ -1493,10 +1357,9 @@
                     <div class="notification-scroll">
                         <div class="menu-view-head">
                             <div>
-                                <span class="save-label" data-icon-before="bell"
-                                    >WHAT HAPPENED</span
-                                >
-                                <h3 id="notification-title">Notifications</h3>
+                                <h3 id="notification-title" data-icon-before="bell">
+                                    Notifications
+                                </h3>
                             </div>
                             <button
                                 type="button"
@@ -1598,7 +1461,7 @@
             aria-describedby="update-text"
         >
             <div class="modal">
-                <span class="modal-badge">UPDATE</span>
+                <span class="modal-badge" data-icon-before="update">UPDATE</span>
                 <h2 id="update-title">Update ready</h2>
                 <p id="update-text">
                     A new version of Hjulben is installed. Reload to keep

@@ -70,7 +70,7 @@ export const TOOL_INFO = {
   },
   apple: {
     title: "Apple",
-    hint: "Click to place. Riders must collect every apple to finish. The nisse is optional.",
+    hint: "Click to place. Riders must collect every apple to finish. The nisse is optional. Checkpoints are flags a rider can go back to after a crash, for long trails.",
     fields: [
       {
         key: "kind",
@@ -79,6 +79,7 @@ export const TOOL_INFO = {
         options: () => [
           ["apple", "Apple"],
           ["nisse", "Nisse"],
+          ["checkpoint", "Checkpoint"],
         ],
       },
     ],
@@ -251,6 +252,11 @@ export function saveToolSettings() {
 /** Whether the Apple tool is set to place the trail's nisse. */
 export function placingNisse() {
   return toolSettings.apple?.kind === "nisse";
+}
+
+/** Whether the Apple tool is set to place a checkpoint. */
+export function placingCheckpoint() {
+  return toolSettings.apple?.kind === "checkpoint";
 }
 
 /** The layer a Block or Cut drag works on: "terrain" or "back". */
