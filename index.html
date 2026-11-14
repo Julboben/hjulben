@@ -471,10 +471,7 @@
                         <div class="menu-view" id="menu-credits-view" hidden>
                             <div class="menu-view-head">
                                 <div>
-                                    <span class="save-label" data-icon-before="star"
-                                        >THE PEOPLE BEHIND IT</span
-                                    >
-                                    <h3>Credits</h3>
+                                    <h3 data-icon-before="star">Credits</h3>
                                 </div>
                                 <button
                                     class="menu-back"
@@ -496,10 +493,7 @@
                         <div class="menu-view" id="menu-changelog-view" hidden>
                             <div class="menu-view-head">
                                 <div>
-                                    <span class="save-label" data-icon-before="update"
-                                        >PATCH NOTES</span
-                                    >
-                                    <h3>What’s new</h3>
+                                    <h3 data-icon-before="update">What’s new</h3>
                                 </div>
                                 <button
                                     class="menu-back"
@@ -519,10 +513,7 @@
                         >
                             <div class="menu-view-head">
                                 <div>
-                                    <span class="save-label" data-icon-before="trophy"
-                                        >TROPHY CASE</span
-                                    >
-                                    <h3>Achievements</h3>
+                                    <h3 data-icon-before="trophy">Achievements</h3>
                                 </div>
                                 <button
                                     class="menu-back"
@@ -545,10 +536,7 @@
                         <div class="menu-view" id="menu-riders-view" hidden>
                             <div class="menu-view-head">
                                 <div>
-                                    <span class="save-label" data-icon-before="helmet"
-                                        >SAVEGAMES</span
-                                    >
-                                    <h3>Riders</h3>
+                                    <h3 data-icon-before="helmet">Riders</h3>
                                 </div>
                                 <button
                                     class="menu-back"
@@ -591,10 +579,7 @@
                         <div class="menu-view" id="menu-trail-view" hidden>
                             <div class="menu-view-head">
                                 <div>
-                                    <span class="save-label" data-icon-before="flag"
-                                        >TRAIL SELECT</span
-                                    >
-                                    <h3>Choose a trail</h3>
+                                    <h3 data-icon-before="flag">Choose a trail</h3>
                                 </div>
                                 <button
                                     class="menu-back"
@@ -635,10 +620,7 @@
                         >
                             <div class="menu-view-head">
                                 <div>
-                                    <span class="save-label" data-icon-before="trophy"
-                                        >HALL OF FAME</span
-                                    >
-                                    <h3>Leaderboard</h3>
+                                    <h3 data-icon-before="crown">Leaderboard</h3>
                                 </div>
                                 <button
                                     class="menu-back"
@@ -726,12 +708,9 @@
                         <div class="menu-view" id="menu-save-view" hidden>
                             <div class="menu-view-head">
                                 <div>
-                                    <span
-                                        class="save-label"
-                                        id="new-save-slot-label"
-                                        >SAVE SLOT 1</span
-                                    >
-                                    <h3 id="new-save-title">Who are you?</h3>
+                                    <h3 id="new-save-title" data-icon-before="helmet">
+                                        Who are you?
+                                    </h3>
                                 </div>
                                 <button
                                     class="menu-back"
@@ -741,6 +720,10 @@
                                     BACK
                                 </button>
                             </div>
+                            <h4 class="menu-section">
+                                <strong id="new-save-slot-label">SAVE SLOT 1</strong>
+                                <small>New rider</small>
+                            </h4>
                             <div class="save-steps" aria-hidden="true">
                                 <span id="new-save-step-1" class="active"
                                     >1 · RIDER</span
@@ -890,12 +873,7 @@
                         <div class="menu-view" id="menu-look-view" hidden>
                             <div class="menu-view-head">
                                 <div>
-                                    <span
-                                        class="save-label"
-                                        data-icon-before="garage"
-                                        >GARAGE</span
-                                    >
-                                    <h3 id="garage-rider">Your rider</h3>
+                                    <h3 data-icon-before="garage">Garage</h3>
                                 </div>
                                 <button
                                     class="menu-back"
@@ -905,6 +883,10 @@
                                     BACK
                                 </button>
                             </div>
+                            <h4 class="menu-section">
+                                <strong id="garage-rider"></strong>
+                                <small id="garage-slot"></small>
+                            </h4>
                             <div id="garage-look"></div>
                             <button
                                 class="primary"
@@ -919,12 +901,7 @@
                         <div class="menu-view" id="menu-how-view" hidden>
                             <div class="menu-view-head">
                                 <div>
-                                    <span
-                                        class="save-label"
-                                        data-icon-before="book"
-                                        >RIDER HANDBOOK</span
-                                    >
-                                    <h3>How to play</h3>
+                                    <h3 data-icon-before="book">How to play</h3>
                                 </div>
                                 <button
                                     class="menu-back"
@@ -1026,10 +1003,7 @@
                         <div class="menu-view" id="menu-settings-view" hidden>
                             <div class="menu-view-head">
                                 <div>
-                                    <span class="save-label" data-icon-before="gear"
-                                        >PREFERENCES</span
-                                    >
-                                    <h3>Settings</h3>
+                                    <h3 data-icon-before="gear">Settings</h3>
                                 </div>
                                 <button
                                     class="menu-back"
@@ -1073,7 +1047,7 @@
                                 role="tabpanel"
                                 aria-labelledby="settings-tab-general"
                             >
-                                <h4 class="settings-section">DISPLAY</h4>
+                                <h4 class="menu-section"><strong>DISPLAY</strong></h4>
                                 <div
                                     class="setting-group"
                                     role="group"
@@ -1202,7 +1176,7 @@
                                     </div>
                                 </div>
 
-                                <h4 class="settings-section">AUDIO</h4>
+                                <h4 class="menu-section"><strong>AUDIO</strong></h4>
                                 <div
                                     class="setting-group"
                                     role="group"
@@ -1294,7 +1268,7 @@
                                     </div>
                                 </div>
 
-                                <h4 class="settings-section">GAMEPLAY</h4>
+                                <h4 class="menu-section"><strong>GAMEPLAY</strong></h4>
                                 <div
                                     class="setting-group"
                                     role="group"
@@ -1411,7 +1385,7 @@
                                     RESET ALL SETTINGS
                                 </button>
 
-                                <h4 class="settings-section">ABOUT</h4>
+                                <h4 class="menu-section"><strong>ABOUT</strong></h4>
                                 <button
                                     type="button"
                                     class="menu-back settings-reset"
@@ -1493,7 +1467,9 @@
                     <div class="notification-scroll">
                         <div class="menu-view-head">
                             <div>
-                                <h3 id="notification-title">Notifications</h3>
+                                <h3 id="notification-title" data-icon-before="bell">
+                                    Notifications
+                                </h3>
                             </div>
                             <button
                                 type="button"

@@ -1700,17 +1700,6 @@ h2 {
     }
 }
 
-.settings-section {
-    margin: 12px 0 0;
-    color: var(--color-green);
-    font-size: var(--text-sm);
-    font-weight: var(--weight-heavy);
-    letter-spacing: 1.5px;
-    &:first-child {
-        margin-top: 0;
-    }
-}
-
 .settings-reset {
     justify-self: start;
     margin-top: 6px;
@@ -2053,22 +2042,19 @@ h2 {
         color: var(--color-gender-female);
     }
 }
-/* The Garage's title: the rider's name, then their gender. A long name is
-   cut short so the gender symbol and the Back button keep their places. */
+/* The Garage's rider: the name, then their gender. A long name is cut short
+   so the gender symbol and the save slot keep their places. */
 #garage-rider {
     min-width: 0;
     display: flex;
     align-items: center;
     gap: 8px;
+    text-transform: uppercase;
     & .garage-rider-name {
         min-width: 0;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
-    }
-    & .save-gender {
-        --px: 2px;
-        padding: 4px;
     }
 }
 .save-slot-copy {
@@ -2284,13 +2270,17 @@ h2 {
         min-width: 0;
     }
     & h3 {
-        margin: 5px 0 0;
+        --px: 3px;
+        margin: 0;
+        display: flex;
+        align-items: center;
         font-size: calc(var(--font-display-step) * 2);
         line-height: 0.9;
         text-transform: uppercase;
-        /* The gap is for the label above; a title on its own sits level with Back. */
-        &:first-child {
-            margin-top: 0;
+        /* Quieter than the title, so the screen's name reads first. */
+        &::before {
+            margin: 0 12px 0 0;
+            color: var(--color-text-muted);
         }
     }
 }
@@ -2325,17 +2315,24 @@ h2 {
         color: var(--color-danger-text);
     }
 }
-.trail-section-title {
+/* A heading within a menu screen's list, with an optional note on the right. */
+.menu-section {
     grid-column: 1 / -1;
-    margin-top: 8px;
+    margin: 8px 0 0;
     padding: 9px 2px 4px;
     display: flex;
     align-items: baseline;
     justify-content: space-between;
     gap: 12px;
     border-bottom: 1px solid var(--color-border);
+    font-size: inherit;
+    font-weight: inherit;
     &:first-child {
         margin-top: 0;
+    }
+    /* Right under the screen's header, it names what the whole screen is for. */
+    .menu-view-head + & {
+        margin: -4px 0 12px;
     }
     & strong {
         color: var(--color-green);
