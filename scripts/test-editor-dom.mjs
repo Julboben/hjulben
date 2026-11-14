@@ -218,6 +218,8 @@ const reported = (report, label) => {
   check('a scale handle lines a side up with another block', report.scaled.left === 213, `(${json(report.scaled)})`);
   check('a guide shows what the scaled side lined up with', json(report.scaleGuides) === json([['x', 213]]), `(${json(report.scaleGuides)})`);
   check('Cmd held mid-scale follows the pointer', report.scaledFree.left === 204, `(${json(report.scaledFree)})`);
+  check('the scale frame goes round a curved block, not its curve handles', Math.abs(report.bulgeFrameGaps[0] - report.bulgeFrameGaps[1]) < 0.01, `(${json(report.bulgeFrameGaps)})`);
+  check('stretching a curved block from one side keeps the other side still', Math.abs(report.bulgeLeft[1] - report.bulgeLeft[0]) < 0.01, `(${json(report.bulgeLeft)})`);
   check('N turns snapping off and on', report.offByKey && report.onByKey);
 }
 

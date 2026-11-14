@@ -783,6 +783,31 @@ if (kind === 'snap') {
   fire('pointermove', { clientX: stretched.x - cameraX - 9, clientY: stretched.y - cameraY, metaKey: true });
   fire('pointerup');
   out.scaledFree = box();
+  // A block whose left edge bulges out to 60 left of its corners, on curve
+  // handles reaching 80 out. Stretched from the right, its visible left edge
+  // stays where it was, and the frame goes round the bulge, not the handles.
+  const { flattenBoundary } = await import('../../js/terrain-geometry.js');
+  const node = (id, x, y, inHandle, outHandle, edge = 'straight') =>
+    ({ id, x: B + x, y: B + y, mode: 'corner', in: inHandle && [B + inHandle[0], B + inHandle[1]], out: outHandle && [B + outHandle[0], B + outHandle[1]], edge });
+  editorState.trail.terrainBlocks.push({
+    id: 'bulge', material: 'rock', inner: [],
+    outer: { id: 'bulge-outer', nodes: [
+      node('q1', 500, 400, [420, 430], null), node('q2', 700, 400, null, null),
+      node('q3', 700, 500, null, null), node('q4', 500, 500, null, [420, 470], 'curve'),
+    ] },
+  });
+  const visibleLeft = () => Math.min(...flattenBoundary(current().terrainBlocks.at(-1).outer).points.map(([x]) => x)) - B;
+  editorState.selection = { kind: 'block', blockIndex: editorState.trail.terrainBlocks.length - 1 };
+  out.bulgeLeft = [visibleLeft()];
+  const frame = scaleFrame();
+  out.bulgeFrameGaps = [B + out.bulgeLeft[0] - frame.frame.left, frame.frame.right - (B + 700)];
+  const right = frame.handles.find(handle => handle.hx === 1 && handle.hy === 0);
+  setSnapping(false);
+  fire('pointerdown', { clientX: right.x - cameraX, clientY: right.y - cameraY });
+  fire('pointermove', { clientX: right.x - cameraX + 100, clientY: right.y - cameraY });
+  fire('pointerup');
+  setSnapping(true);
+  out.bulgeLeft.push(visibleLeft());
   // N turns snapping off, and on again.
   key('n', { code: 'KeyN' });
   out.offByKey = snappingOn() === false;
