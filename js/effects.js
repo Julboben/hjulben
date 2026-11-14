@@ -15,6 +15,8 @@ const MAX_CLUMPS = 6;
 const DIRT_PICKUP = { dirt: 1, grass: .7, sand: .6, snow: .8 };
 /** Spin (rad/s) above which clumps start to fly off the tyre. */
 const FLING_SPIN = 40;
+/** How fast particles fall (px/s²), unless they set their own gravity. */
+const PARTICLE_GRAVITY = 210;
 
 // Tyre load, against the load at rest, from which a tyre is drawn flat or
 // bulging, and how long (s) each level is held; see squishTyres.
@@ -61,18 +63,20 @@ export function createEffects() {
     }
   }
 
+  /** What a landing knocks up off the ground, more on loose ground (see `roost` in materials.js). */
   function dustPuff(wheel, impactSpeed) {
     const x = wheel.contact?.pointX ?? wheel.x;
     const y = (wheel.contact?.pointY ?? wheel.y + RADIUS) - 2;
-    const spray = (terrainMaterials[wheel.material] || terrainMaterials.grass).spray;
-    const count = Math.round(clamp(impactSpeed / 40, 3, 9));
+    const { spray, roost } = terrainMaterials[wheel.material] || terrainMaterials.grass;
+    const count = Math.round(clamp(impactSpeed / 40, 3, 9) * roost.landing);
     for (let index = 0; index < count; index++) {
       const side = index % 2 ? 1 : -1;
-      const life = .3 + Math.random() * .25;
+      const life = (.3 + Math.random() * .25) * roost.hang;
       particles.push({
         x: x + side * (2 + Math.random() * 6), y,
-        vx: side * (30 + Math.random() * 50), vy: -(10 + Math.random() * 30),
-        life, max: life, color: spray[index % spray.length], size: 2, drag: 5
+        vx: side * (30 + Math.random() * 50), vy: -roost.lift * (10 + Math.random() * 30),
+        life, max: life, color: spray[index % spray.length], size: Math.random() < roost.chunks ? 4 : 2, drag: 5,
+        gravity: PARTICLE_GRAVITY * roost.fall
       });
     }
   }
@@ -120,20 +124,23 @@ export function createEffects() {
       sprayAccumulator = Math.min(sprayAccumulator, .8);
       return;
     }
+    // How much is thrown, how high and how far depends on the ground (see
+    // `roost` in materials.js).
+    const { spray, roost } = terrainMaterials[wheel.material] || terrainMaterials.grass;
     const intensity = clamp(magnitude / 210, .15, 1) * (braking ? 1.5 : .8 + ride.throttle * .7);
-    sprayAccumulator += intensity * STEP * 24;
+    sprayAccumulator += intensity * STEP * 24 * roost.amount;
     while (sprayAccumulator >= 1) {
       sprayAccumulator--;
       const direction = Math.sign(speed || ride.facing);
-      const spray = (terrainMaterials[wheel.material] || terrainMaterials.grass).spray;
       const color = spray[Math.floor(Math.random() * spray.length)];
-      const life = .28 + Math.random() * .32;
+      const life = (.28 + Math.random() * .32) * roost.hang;
       particles.push({
         x: (wheel.contact?.pointX ?? wheel.x) - direction * (RADIUS - 2),
         y: (wheel.contact?.pointY ?? terrainAt(trail, wheel.x, wheel.y).y) - 2,
-        vx: speed * .12 - direction * (35 + Math.random() * (braking ? 95 : 65)),
-        vy: -(25 + Math.random() * (braking ? 90 : 55)),
-        life, max: life, color, size: Math.random() < .7 ? 2 : 4, drag: 2.5, splatter: true
+        vx: speed * .12 - direction * roost.reach * (35 + Math.random() * (braking ? 95 : 65)),
+        vy: -roost.lift * (25 + Math.random() * (braking ? 90 : 55)),
+        life, max: life, color, size: Math.random() < roost.chunks ? 4 : 2, drag: 2.5,
+        gravity: PARTICLE_GRAVITY * roost.fall, splatter: true
       });
     }
   }
@@ -329,7 +336,7 @@ export function createEffects() {
       p.life -= dt;
       if (p.drag) p.vx *= Math.exp(-p.drag * dt);
       // Particles fall unless they set their own gravity, as smoke rises.
-      p.x += p.vx * dt; p.y += p.vy * dt; p.vy += (p.gravity ?? 210) * dt;
+      p.x += p.vx * dt; p.y += p.vy * dt; p.vy += (p.gravity ?? PARTICLE_GRAVITY) * dt;
       if (p.splatter) {
         // The floor under the particle, so spray in a cave lands on the cave
         // floor instead of jumping onto the rock above it.
