@@ -765,6 +765,24 @@ if (kind === 'snap') {
   fire('pointermove', world(B + corner.left, B + 215));
   fire('pointerup');
   out.pointY = current().terrainBlocks.at(-1).outer.nodes.map(node => node.y - B).sort((a, b) => a - b)[0];
+  // A scale handle dragged to within 3 of the first square's right edge
+  // stretches the block onto it, with a guide; Cmd held, it follows the
+  // pointer.
+  const { scaleFrame } = await import('../../js/editor/scale.js');
+  const before = box();
+  fire('pointerdown', world(B + before.left + 10, B + (before.top + before.bottom) / 2));
+  fire('pointerup');
+  const side = scaleFrame().handles.find(handle => handle.hx === -1 && handle.hy === 0);
+  fire('pointerdown', { clientX: side.x - cameraX, clientY: side.y - cameraY });
+  fire('pointermove', { clientX: side.x - cameraX + 213 + 3 - before.left, clientY: side.y - cameraY });
+  out.scaleGuides = editorState.snapLines.map(({ axis, at }) => [axis, at - B]);
+  fire('pointerup');
+  out.scaled = box();
+  const stretched = scaleFrame().handles.find(handle => handle.hx === -1 && handle.hy === 0);
+  fire('pointerdown', { clientX: stretched.x - cameraX, clientY: stretched.y - cameraY });
+  fire('pointermove', { clientX: stretched.x - cameraX - 9, clientY: stretched.y - cameraY, metaKey: true });
+  fire('pointerup');
+  out.scaledFree = box();
   // N turns snapping off, and on again.
   key('n', { code: 'KeyN' });
   out.offByKey = snappingOn() === false;
