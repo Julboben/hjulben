@@ -808,6 +808,26 @@ if (kind === 'snap') {
   fire('pointerup');
   setSnapping(true);
   out.bulgeLeft.push(visibleLeft());
+  // Escape backs out, then asks, and a second press while it asks leaves the
+  // editor by its back link. Presses straight after one another never ask, so
+  // a run of them to deselect stays in the editor.
+  let now = 0;
+  performance.now = () => now;
+  let left = 0;
+  document.querySelector('.back-game').addEventListener('click', () => left++);
+  const toast = document.getElementById('editor-toast');
+  const escape = (after) => { now += after; key('Escape'); };
+  escape(10000);
+  escape(200);
+  escape(200);
+  escape(200);
+  out.escapeRun = [editorState.selection, left, toast.textContent.includes('Press Esc again')];
+  escape(1000);
+  out.escapeAsks = [left, toast.hidden === false && toast.textContent.includes('Press Esc again')];
+  escape(5000);
+  out.escapeAsksAgain = left;
+  escape(300);
+  out.escapeLeaves = left;
   // N turns snapping off, and on again.
   key('n', { code: 'KeyN' });
   out.offByKey = snappingOn() === false;
