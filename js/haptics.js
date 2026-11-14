@@ -63,13 +63,12 @@ const BUZZ_THRESHOLD = 0.08;
 
 /**
  * @param {{
- *   phoneEnabled: () => boolean,
- *   padEnabled: () => boolean,
+ *   enabled: () => boolean,
  *   gamepad: () => Gamepad | null,
  *   now?: () => number,
  * }} options
  */
-export function createHaptics({ phoneEnabled, padEnabled, gamepad, now = () => performance.now() }) {
+export function createHaptics({ enabled, gamepad, now = () => performance.now() }) {
   // Until then a pulse is playing that a buzz must not cut off.
   let busyUntil = 0;
   let lastThump = -Infinity;
@@ -79,7 +78,7 @@ export function createHaptics({ phoneEnabled, padEnabled, gamepad, now = () => p
 
   /** @returns {any} the gamepad's actuator, if it can play dual-rumble */
   function actuator() {
-    if (!padEnabled()) return null;
+    if (!enabled()) return null;
     const actuator = /** @type {any} */ (gamepad())?.vibrationActuator;
     return typeof actuator?.playEffect === 'function' ? actuator : null;
   }
@@ -122,7 +121,7 @@ export function createHaptics({ phoneEnabled, padEnabled, gamepad, now = () => p
     }
     const effect = KINDS[kind](Math.min(1, Math.max(0, strength)));
     const pattern = phonePattern ?? effect.phone;
-    if (phone && pattern !== null && phoneEnabled() && typeof navigator.vibrate === 'function')
+    if (phone && pattern !== null && enabled() && typeof navigator.vibrate === 'function')
       navigator.vibrate(pattern);
     const motors = actuator();
     if (motors) playPulses(motors, effect.pad);

@@ -142,7 +142,7 @@ const WIN_SETTLE = 0.7;
 // Ground shadows: one colour, each sample with its own alpha.
 const SHADOW_COLOR = "rgb(31,53,39)";
 // Rain and snow: how many particles the view's size scales up to, and the
-// lower ceiling on touch screens and with reduced scenery, where fill rate is
+// lower ceiling on touch screens and in performance mode, where fill rate is
 // the tighter budget.
 const PARTICLE_SCALE_MAX = 2.2,
   PARTICLE_SCALE_LIGHT = 1.1;

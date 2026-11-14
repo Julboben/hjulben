@@ -33,6 +33,13 @@ import {
 // Runs made without a savegame have no name.
 const runnerName = name => name || 'RIDER';
 
+/** Shows a setting's switch: on for its on value, which the knob spells out. */
+export function showSwitch(button, value) {
+  const on = value === button.dataset.on;
+  button.setAttribute('aria-checked', String(on));
+  /** @type {HTMLElement} */ (button.firstElementChild).textContent = on ? 'on' : 'off';
+}
+
 /** Loads saves and preferences into the session. */
 export function loadStoredState() {
   session.preferences = sanitizePreferences(loadPreferences(DEFAULT_PREFERENCES));
@@ -1915,20 +1922,25 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
   // Gamepad buttons aren't remappable, so the diagram is drawn once.
   $('gamepad-diagram').append(...createGamepadDiagram());
 
-  /** Rumble is offered while a gamepad that can rumble is connected. */
-  function syncRumbleSetting() {
+  // Vibration is offered on a phone that can vibrate, and while a gamepad that
+  // can rumble is connected. Desktop browsers have navigator.vibrate too, but
+  // no motor to run.
+  const coarsePointer = window.matchMedia('(pointer: coarse)');
+  const phoneVibrates = 'vibrate' in navigator && coarsePointer.matches;
+  function syncVibrationSetting() {
     const pads = typeof navigator.getGamepads === 'function' ? [...navigator.getGamepads()] : [];
-    $('setting-rumble-group').hidden = !pads.some(canRumble);
+    $('setting-haptics-group').hidden = !phoneVibrates && !pads.some(canRumble);
   }
-  window.addEventListener('gamepadconnected', syncRumbleSetting);
-  window.addEventListener('gamepaddisconnected', syncRumbleSetting);
+  window.addEventListener('gamepadconnected', syncVibrationSetting);
+  window.addEventListener('gamepaddisconnected', syncVibrationSetting);
 
   function syncSettings() {
-    syncRumbleSetting();
-    document.querySelectorAll('[data-setting]').forEach(button => {
+    syncVibrationSetting();
+    document.querySelectorAll('.setting-option[data-setting]').forEach(button => {
       const value = button.dataset.setting === 'ghost' ? ghostMode() : session.preferences[button.dataset.setting];
       button.setAttribute('aria-pressed', String(value === button.dataset.value));
     });
+    document.querySelectorAll('.setting-switch[data-setting]').forEach(button => showSwitch(button, session.preferences[button.dataset.setting]));
     $('setting-volume').value = String(session.preferences.volume);
     $('setting-volume-value').textContent = String(session.preferences.volume);
     buildKeyBindings();
@@ -2100,8 +2112,11 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
   });
   document.querySelectorAll('[data-setting]').forEach(button => {
     button.addEventListener('click', () => {
-      if (button.dataset.setting === 'ghost') setGhostMode(button.dataset.value);
-      else session.preferences[button.dataset.setting] = button.dataset.value;
+      const { setting } = button.dataset;
+      if (setting === 'ghost') setGhostMode(button.dataset.value);
+      else if (button.matches('.setting-switch')) {
+        session.preferences[setting] = session.preferences[setting] === button.dataset.on ? button.dataset.off : button.dataset.on;
+      } else session.preferences[setting] = button.dataset.value;
       persistPreferences();
       drawBackground();
     });
@@ -2112,9 +2127,6 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     onPreferences();
   });
   $('setting-volume').addEventListener('change', () => { savePreferences(session.preferences); sounds.menuMove(); });
-  const coarsePointer = window.matchMedia('(pointer: coarse)');
-  // Phone vibration: desktop browsers have navigator.vibrate too, but no motor to run.
-  $('setting-haptics-group').hidden = !('vibrate' in navigator) || !coarsePointer.matches;
 
   let resetArmed = false, resetTimer = 0;
   $('reset-settings').addEventListener('click', event => {

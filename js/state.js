@@ -40,9 +40,8 @@ export const DEFAULT_PREFERENCES = {
   music: 'off',
   volume: 80,
   shake: reducedMotion ? 'off' : 'on',
-  haptics: 'off',
-  // Gamepad rumble is on out of the box, as on a console; phone vibration is not.
-  rumble: 'on',
+  // On out of the box, as on a console, for the phone and the gamepad alike.
+  haptics: 'on',
   ghost: 'on',
   headlight: 'on',
   bindings: DEFAULT_BINDINGS
@@ -50,7 +49,7 @@ export const DEFAULT_PREFERENCES = {
 
 const CHOICES = {
   scenery: ['full', 'reduced'], controls: ['show', 'hide'], sound: ['on', 'off'], music: ['on', 'off'],
-  shake: ['on', 'off'], haptics: ['on', 'off'], rumble: ['on', 'off'], ghost: GHOST_MODES,
+  shake: ['on', 'off'], haptics: ['on', 'off'], ghost: GHOST_MODES,
   headlight: ['on', 'off']
 };
 

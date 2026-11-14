@@ -30,7 +30,7 @@ import { riderPalette } from './drawing.js';
 import { gearCard, legacyRider, lookOf, lookParts, newlyUnlockedItems } from './cosmetics.js';
 import { createOverlay } from './ui/overlay.js';
 import { keyChoices, keyTextNodes } from './ui/key-text.js';
-import { createMenu, loadStoredState } from './ui/menu.js';
+import { createMenu, loadStoredState, showSwitch } from './ui/menu.js';
 import { $, session, currentTrailEntry, trailKey, nisseKey, timeText, isRankedSource, bonusUnlock, riderLook, progressOf, debugMode, ghostMode, newlyOpenedBonusTrails } from './state.js';
 import { notify } from './notifications.js';
 import { isNight } from './time-of-day.js';
@@ -240,8 +240,7 @@ export function startGame({ shared = null } = {}) {
 
   // Phone vibration and gamepad rumble. Watching a replay is not riding, so it stays still.
   const haptics = createHaptics({
-    phoneEnabled: () => !replay && session.preferences.haptics === 'on',
-    padEnabled: () => !replay && session.preferences.rumble === 'on',
+    enabled: () => !replay && session.preferences.haptics === 'on',
     gamepad: () => input.activeGamepad(),
   });
 
@@ -283,10 +282,7 @@ export function startGame({ shared = null } = {}) {
   }
 
   function syncFullscreenSetting() {
-    const on = Boolean(fullscreenElement());
-    document.querySelectorAll('[data-fullscreen]').forEach(button => {
-      button.setAttribute('aria-pressed', String((button.dataset.fullscreen === 'on') === on));
-    });
+    showSwitch($('setting-fullscreen'), fullscreenElement() ? 'on' : 'off');
   }
 
   function setEscapeLock(on) {
@@ -948,7 +944,7 @@ export function startGame({ shared = null } = {}) {
       ? submitOnlineRun(key, { look: session.look, token: saveGame.token, playerId: saveGame.playerId, run })
       : null;
     if (ranked && saveGame?.token && slowMotion) {
-      overlay.toast('Not posted to the world board: the game ran in slow motion · Try Reduced scenery in Settings', 6000);
+      overlay.toast('Not posted to the world board: the game ran in slow motion · Try Performance mode in Settings', 6000);
     }
     overlay.showResults({
       official, bonus: session.trailSource === 'bonus', time, previousBest, rank, worldPending: !!submission,
@@ -1337,10 +1333,7 @@ export function startGame({ shared = null } = {}) {
   // and restart is wanted most after a crash.
   $('restart-control').addEventListener('click', () => handlePress('restart'));
   $('menu').addEventListener('click', () => { sounds.menuBack(); showMainMenu(); });
-  document.querySelectorAll('[data-fullscreen]').forEach(button => button.addEventListener('click', () => {
-    const wantOn = button.dataset.fullscreen === 'on';
-    if (wantOn !== Boolean(fullscreenElement())) toggleFullscreen();
-  }));
+  $('setting-fullscreen').addEventListener('click', toggleFullscreen);
   const fullscreenSupported = Boolean(document.fullscreenEnabled || document.webkitFullscreenEnabled || game.webkitRequestFullscreen);
   $('setting-fullscreen-group').hidden = !fullscreenSupported;
   syncFullscreenSetting();

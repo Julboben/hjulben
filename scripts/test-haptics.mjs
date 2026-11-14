@@ -26,12 +26,11 @@ function fakePad() {
 const phone = [];
 Object.defineProperty(globalThis.navigator, 'vibrate', { configurable: true, value: pattern => { phone.push(pattern); return true; } });
 
-function setup({ pad = fakePad(), phoneOn = true, padOn = true } = {}) {
+function setup({ pad = fakePad(), on = true } = {}) {
   let time = 1000;
   phone.length = 0;
   const haptics = createHaptics({
-    phoneEnabled: () => phoneOn,
-    padEnabled: () => padOn,
+    enabled: () => on,
     gamepad: () => pad?.gamepad ?? null,
     now: () => time,
   });
@@ -116,16 +115,11 @@ function setup({ pad = fakePad(), phoneOn = true, padOn = true } = {}) {
 
 // Settings and missing hardware.
 {
-  const off = setup({ padOn: false });
+  const off = setup({ on: false });
   off.haptics.play('jolt');
   off.haptics.skid(1);
-  assert.equal(off.pad.effects.length, 0, 'rumble off: the gamepad stays still');
-  assert.deepEqual(phone, [30], 'but the phone still vibrates');
-
-  const quiet = setup({ phoneOn: false });
-  quiet.haptics.play('jolt');
-  assert.equal(phone.length, 0, 'phone vibration off');
-  assert.equal(quiet.pad.effects.length, 1, 'the gamepad still rumbles');
+  assert.equal(off.pad.effects.length, 0, 'vibration off: the gamepad stays still');
+  assert.equal(phone.length, 0, 'and so does the phone');
 
   const none = setup({ pad: null });
   assert.doesNotThrow(() => { none.haptics.play('crash'); none.haptics.skid(1); none.haptics.stop(); }, 'no gamepad is fine');

@@ -161,11 +161,11 @@ Editor drafts do not overwrite trail files. Official trails live in `trails/offi
 
 The dashboard's Settings view includes:
 
-- Full or reduced scenery
+- Performance mode, which draws lighter scenery for slower devices
 - Visible or hidden on-screen controls
 - Sound on or off, music on or off, and master volume
 - Screen shake (off by default when the system prefers reduced motion)
-- Vibration on landings and crashes (on devices that support it)
+- Vibration on landings and crashes, on phones that can vibrate and controllers that can rumble
 - Ghost: your best run, the world's best (falls back to yours offline, and races whichever is faster), or off
 - Keyboard bindings
 - Fullscreen mode
