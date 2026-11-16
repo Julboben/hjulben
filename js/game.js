@@ -1164,6 +1164,7 @@ export function startGame({ shared = null } = {}) {
     effects.layTracks(ride);
     effects.wheelGrime(ride, stepInput.braking);
     effects.squishTyres(ride);
+    effects.riderWetness(ride);
     // A crash throws away the feat in progress; reaching the finish completes it.
     if (replay) feats.reset();
     else if (ride.status === 'running') feats.step(ride.rear.grounded, ride.front.grounded).forEach(trackAchievements);

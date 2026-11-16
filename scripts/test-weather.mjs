@@ -1,10 +1,14 @@
-// Weather: the settings and their defaults, the presets, and the wind that
-// props, rain, snow and the wind's sound all share. Every trail file spells
-// out all of its weather.
+// Weather: the settings and their defaults, the presets, the wind that props,
+// rain, snow and the wind's sound all share, and rain soaking the rider. Every
+// trail file spells out all of its weather.
 import assert from 'node:assert/strict';
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { normalizeTrail, validateTrail } from '../js/trail-schema.js';
+import { RADIUS, STEP } from '../js/config.js';
+import { createEffects } from '../js/effects.js';
+import { createRide, stepRide } from '../js/ride.js';
+import { rectangle } from './lib/terrain-fixtures.mjs';
 import {
   WEATHER_DEFAULTS, WEATHER_KEYS, WEATHER_LEVELS, WEATHER_PRESETS, WIND_DIRECTIONS,
   rainSlant, resolveWeather, snowDrift, windSign,
@@ -75,6 +79,37 @@ import {
     }
   }
   assert.ok(count > 30);
+}
+
+// Rain soaks a rider standing out in it slowly and from the top down, never
+// through, while a roof keeps one dry.
+{
+  const rainy = (rain, blocks = []) => normalizeTrail({
+    // Set on the ground, under any roof, rather than on the topmost surface.
+    name: 'Rain', start: { x: 120, y: 320 - RADIUS, facing: 1 }, finish: { x: 1400, y: null }, apples: [], spikes: [],
+    terrainBlocks: [rectangle(0, 320, 1600, 620, 'grass', 'ground'), ...blocks],
+    weather: { rain, wind: 0 },
+  });
+  const standFor = (trail, seconds) => {
+    const ride = createRide(trail), effects = createEffects();
+    effects.reset(trail);
+    for (let step = 0; step < Math.round(seconds / STEP); step++) {
+      stepRide(ride, { braking: true });
+      effects.riderWetness(ride);
+    }
+    return { ...effects.riderWet };
+  };
+  const storm = standFor(rainy(0.9), 30);
+  assert.ok(storm.head > 0.7 && storm.head < 0.8, `a storm soaks the head as far as it will (${storm.head})`);
+  assert.ok(storm.head > storm.body && storm.body > storm.legs && storm.legs > storm.boots && storm.boots > 0.3, 'from the top down');
+  const early = standFor(rainy(0.9), 5);
+  assert.ok(early.head > 0.1 && early.head < 0.3, `and slowly (${early.head})`);
+  const drizzle = standFor(rainy(0.25), 30);
+  assert.ok(drizzle.head > 0.15 && drizzle.head < 0.25, `a drizzle only dampens (${drizzle.head})`);
+  // A roof well over the rider's head, reaching past them on both sides.
+  const sheltered = standFor(rainy(0.9, [rectangle(0, 200, 400, 230, 'stone', 'roof')]), 10);
+  assert.deepEqual(sheltered, { boots: 0, legs: 0, body: 0, head: 0 }, 'a roof keeps the rider dry');
+  assert.deepEqual(standFor(rainy(0), 10), { boots: 0, legs: 0, body: 0, head: 0 }, 'no rain, no wet');
 }
 
 console.log('Weather tests passed.');

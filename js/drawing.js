@@ -5,9 +5,11 @@ import {
   terrainSurfacesAt,
 } from "./terrain.js";
 import { terrainMaterials } from "./materials.js";
-import { lookParts } from "./cosmetics.js";
+import { lookParts, wetLookParts } from "./cosmetics.js";
 import {
   BIKE_LAMPS,
+  RIDER_HAND,
+  RIDER_HEAD,
   RIDER_PEG,
   bodyPose,
   lampColors,
@@ -2383,8 +2385,10 @@ function drawRiderHead(rect, parts, colors, { bare = !parts.helmet, loose = fals
   if (bare) {
     drawBareHead(rect, colors, parts.hair, parts.face);
     drawFaceWear(rect, parts.faceWear);
-  } else if (shape === "mx") drawMxHelmet(rect, colors);
-  else if (isHeadwear(shape)) {
+  } else if (shape === "mx") {
+    drawMxHelmet(rect, colors);
+    drawHelmetBeads(rect, parts.wet?.head);
+  } else if (isHeadwear(shape)) {
     if (!loose) {
       const { extra } = parts.hair;
       const hair = extra && !HAIR_UNDER_HEADWEAR.has(extra) ? { ...parts.hair, extra: null } : parts.hair;
@@ -2392,7 +2396,26 @@ function drawRiderHead(rect, parts, colors, { bare = !parts.helmet, loose = fals
       drawFaceWear(rect, parts.faceWear);
     }
     drawHeadwear(rect, shape, colors);
-  } else drawHelmetShell(rect, colors);
+  } else {
+    drawHelmetShell(rect, colors);
+    drawHelmetBeads(rect, parts.wet?.head);
+  }
+}
+
+// Beads of water left on a helmet shell, more the wetter the head, each a
+// glint over a drop: on the crown, the side and the chin, where the motocross
+// helmet and the full-face shell are both painted.
+const HELMET_BEADS = [
+  { x: -3, y: -2, from: 0.4 },
+  { x: -1, y: -6, from: 0.7 },
+  { x: 1, y: 0, from: 1 },
+];
+function drawHelmetBeads(rect, wet = 0) {
+  for (const bead of HELMET_BEADS) {
+    if (wet < bead.from) continue;
+    rect(bead.x, bead.y, 2, 2, WATER_COLORS.splash[0]);
+    rect(bead.x, bead.y + 2, 2, 2, WATER_COLORS.splash[1]);
+  }
 }
 
 // The full-face helmet facing right: a shell with a stripe over the crown, a
@@ -2590,12 +2613,6 @@ export function drawBareHead(rect, colors, hair, face = null) {
     });
 }
 
-// The riding pose, in bike body coordinates before lean: where the helmet's
-// centre sits at rest, over the collar, and the hand on the handlebar every
-// bike model shares. riderSeatedPose in bike-lamps.js moves the joints with
-// lean and landing flex, and the root of the hair's tail follows the head.
-const RIDER_HEAD = [-1, -44];
-const RIDER_HAND = [16, -28];
 // Kick-starting, the foot goes up from RIDER_PEG onto the kick lever and
 // stamps it down through its swing.
 const RIDER_KICK_TOP = [-8, -10];
@@ -7327,8 +7344,9 @@ export function createGameArt(ctx) {
     dirt = null,
     squish = null,
     foot = null,
+    wet = null,
   }) {
-    const parts = lookParts(look);
+    const parts = wetLookParts(lookParts(look), wet);
     const modelId = bikeModel(look, bike);
     const model = BIKES[modelId];
     tyre = squish?.rear.level ? squish.rear : null;
@@ -7672,7 +7690,9 @@ export function createGameArt(ctx) {
   // One tiny cached head as worn, one bare head, and one loose helmet, per
   // look. Rotating the sprite with nearest-neighbour sampling keeps it sharp.
   function ragdollHeadSprite(parts, mode) {
-    const key = parts.key + "|" + mode;
+    // Only the head's own wetness shows on it, so the rest of a wet rider's
+    // drying doesn't fill the cache with copies.
+    const key = `${lookParts(parts.look).key}|${parts.wet?.head ?? 0}|${mode}`;
     if (headSprites.has(key)) return headSprites.get(key);
 
     const canvas = createCanvas(32 / ART_PIXEL, 38 / ART_PIXEL);
@@ -7708,10 +7728,10 @@ export function createGameArt(ctx) {
     ctx.restore();
   }
 
-  /** Draws the thrown rider, and the helmet if it has been knocked off. */
-  function drawRagdoll(ragdoll, look) {
+  /** Draws the thrown rider, `wet` as riderWetness says, and the helmet if it has been knocked off. */
+  function drawRagdoll(ragdoll, look, wet = null) {
     const p = ragdoll.points;
-    const parts = lookParts(look);
+    const parts = wetLookParts(lookParts(look), wet);
     const colors = parts.palette;
     const outline = "#263b36";
     const facing = p.head.drawFacing ?? 1;
