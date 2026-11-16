@@ -1091,16 +1091,16 @@ fire('pointerup');
   editorState.cameraX = cameraX;
 }
 
-// Beside the sun's level, the glare it gives, which clouds temper.
+// Beside the sun's level, the glare it gives, which rain puts out.
 {
   const { syncInspector } = await import('../../js/editor/inspector.js');
   const weather = editorState.trail.weather;
-  editorState.trail.weather = { ...weather, sun: 1, clouds: 0 };
+  editorState.trail.weather = { ...weather, sun: 1, rain: 0, clouds: 0 };
   syncInspector();
   report.sunClear = document.getElementById('weather-sun-value').textContent;
-  editorState.trail.weather = { ...weather, sun: 1, clouds: 1 };
+  editorState.trail.weather = { ...weather, sun: 1, rain: 1, clouds: 0 };
   syncInspector();
-  report.sunCloudy = document.getElementById('weather-sun-value').textContent;
+  report.sunRainy = document.getElementById('weather-sun-value').textContent;
   editorState.trail.weather = weather;
   syncInspector();
 }

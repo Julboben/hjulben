@@ -7,6 +7,10 @@ import { terrainAt } from './terrain.js';
 import { inGlass } from './glass.js';
 import { ringArea } from './terrain-geometry.js';
 import { WATER_COLORS, submergedFraction, waterAt } from './water.js';
+import { RIDER_HAND, RIDER_HEAD, RIDER_PEG, riderKnee } from './bike-lamps.js';
+import { riderBodyFrame } from './rider-hair.js';
+import { rainSlant, resolveWeather, windSign } from './weather.js';
+import { weatherGroundAt } from './weather-fall.js';
 
 const MAX_PARTICLES = 400;
 const MAX_SKID_MARKS = 120;
@@ -20,6 +24,16 @@ const DIRT_PICKUP = { dirt: 1, grass: .7, sand: .6, snow: .8 };
 const FLING_SPIN = 40;
 /** How fast particles fall (px/s²), unless they set their own gravity. */
 const PARTICLE_GRAVITY = 210;
+// How fast (per second) the rider's clothes soak up the water they are in,
+// and dry off out of it: soaked in a quarter of a second, dry in twelve.
+const WET_SOAK = 4, WET_DRY = 1 / 12;
+// Rain wets the rider from the top down, as far as each part's share of the
+// rain's strength, and slowly: a storm takes about twenty seconds to soak
+// them as far as it will, and never soaks them through as a dunk does.
+const RAIN_WET = { head: .85, body: .75, legs: .6, boots: .4 };
+const RAIN_SOAK = 1 / 25;
+// Wetness from which a part drips, and the drops a second it sheds soaked.
+const DRIP_FROM = .3, DRIP_RATE = 6;
 
 // Tyre load, against the load at rest, from which a tyre is drawn flat or
 // bulging, and how long (s) each level is held; see squishTyres.
@@ -49,6 +63,12 @@ export function createEffects() {
   const dirtAccumulator = { rear: 0, front: 0 };
   /** How flat each tyre is drawn, 0 … 2, and which way the ground is from its centre. */
   const tyreSquish = { rear: { level: 0, hold: 0, dx: 0, dy: 1 }, front: { level: 0, hold: 0, dx: 0, dy: 1 } };
+  /** How wet each part of the rider is; see riderWetness. @type {import('./cosmetics.js').Wetness} */
+  const riderWet = { boots: 0, legs: 0, body: 0, head: 0 };
+  /** Drops building up at each spot that drips (see riderJoints' `drips`). */
+  const dripAccumulator = [0, 0, 0, 0];
+  /** How hard it rains, 0 … 1, and how far the drops drift sideways per unit they fall. */
+  const rain = { strength: 0, drift: 0 };
 
   function reset(nextTrail) {
     trail = nextTrail;
@@ -58,6 +78,11 @@ export function createEffects() {
     wheelDirt.rear.length = 0; wheelDirt.front.length = 0;
     dirtAccumulator.rear = 0; dirtAccumulator.front = 0;
     for (const squish of [tyreSquish.rear, tyreSquish.front]) { squish.level = 0; squish.hold = 0; }
+    riderWet.boots = 0; riderWet.legs = 0; riderWet.body = 0; riderWet.head = 0;
+    dripAccumulator.fill(0);
+    const air = resolveWeather(trail.weather);
+    rain.strength = air.rain;
+    rain.drift = windSign(air) * rainSlant(air.wind);
     weather.time = 0; weather.flash = 0; weather.x = .5; weather.distance = .5;
     weather.nextLightning = trail.weather?.lightning ? 2.5 + Math.random() * 4 : Infinity;
   }
@@ -359,6 +384,56 @@ export function createEffects() {
     }
   }
 
+  /**
+   * The rider's clothes soak up the water each part of them is in, and the
+   * rain where nothing overhead shelters them, and dry off out of both,
+   * dripping from the boot, the knee, the hem and the glove while they are
+   * wet. cosmetics.js's wetLookParts draws them wet.
+   */
+  function riderWetness(ride) {
+    const bodies = ride.water ?? [];
+    // On a dry trail without water the rider never gets wet.
+    if (!bodies.length && !rain.strength) return;
+    const joints = riderJoints(ride);
+    const under = point => bodies.length > 0 && waterAt(bodies, point.x, point.y) !== null;
+    const share = points => points.filter(under).length / points.length;
+    const { foot, knee, hip, shoulder, hand, head } = joints;
+    const shin = midpoint(foot, knee), thigh = midpoint(knee, hip), chest = midpoint(hip, shoulder);
+    // The rain reaches the rider where it would land on them or below them,
+    // as it is drawn.
+    const rained = rain.strength > 0 && weatherGroundAt(trail, head.x, head.y, rain.drift).y >= head.y;
+    const rainWet = part => (rained ? RAIN_WET[part] * rain.strength : 0);
+    soak('boots', under(foot) ? 1 : 0, rainWet('boots'));
+    soak('legs', share([shin, knee, thigh, hip]), rainWet('legs'));
+    soak('body', share([hip, chest, shoulder, hand]), rainWet('body'));
+    soak('head', under(head) ? 1 : 0, rainWet('head'));
+    joints.drips.forEach(({ part, at: point }, index) => {
+      const wet = riderWet[part];
+      if (wet <= DRIP_FROM || under(point)) { dripAccumulator[index] = 0; return; }
+      dripAccumulator[index] += (wet - DRIP_FROM) / (1 - DRIP_FROM) * DRIP_RATE * STEP * (.5 + Math.random());
+      if (dripAccumulator[index] < 1) return;
+      dripAccumulator[index]--;
+      const life = .5 + Math.random() * .3;
+      particles.push({
+        x: point.x + (Math.random() - .5) * 2, y: point.y + 2,
+        vx: point.vx * .9, vy: point.vy + 10,
+        life, max: life, color: WATER_COLORS.splash[Math.random() < .5 ? 1 : 2], size: 2, drag: 1.5, splatter: true
+      });
+    });
+  }
+
+  /**
+   * Moves a part's wetness towards how much of it is under water, `inWater`,
+   * quickly, or more slowly towards how wet the rain leaves it, `inRain`;
+   * past both it dries.
+   */
+  function soak(part, inWater, inRain) {
+    const wet = riderWet[part];
+    if (inWater > wet) riderWet[part] = Math.min(inWater, wet + WET_SOAK * STEP);
+    else if (inRain > wet) riderWet[part] = Math.min(inRain, wet + RAIN_SOAK * rain.strength * STEP);
+    else riderWet[part] = Math.max(inWater, inRain, wet - WET_DRY * STEP);
+  }
+
   /** Advances weather by one step; returns a thunder strike when one happens. */
   function stepWeather() {
     weather.time += STEP;
@@ -401,5 +476,47 @@ export function createEffects() {
     removeExpired(tyreTracks, MAX_TYRE_TRACKS);
   }
 
-  return { particles, skidMarks, tyreTracks, wheelDirt, tyreSquish, weather, reset, burst, dustPuff, exhaustPuff, crashDebris, brakeMarks, layTracks, terrainSpray, splash, shatter, crack, waterWake, wheelGrime, squishTyres, stepWeather, update, prune };
+  return { particles, skidMarks, tyreTracks, wheelDirt, tyreSquish, riderWet, weather, reset, burst, dustPuff, exhaustPuff, crashDebris, brakeMarks, layTracks, terrainSpray, splash, shatter, crack, waterWake, wheelGrime, squishTyres, riderWetness, stepWeather, update, prune };
+}
+
+const midpoint = (a, b) => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
+
+/**
+ * Where the rider's joints are in the world, on the bike as drawBike draws
+ * them or thrown off it, and the spots water drips from: each with the part
+ * whose wetness it sheds, and how fast it moves (units a second).
+ */
+function riderJoints(ride) {
+  if (ride.ragdoll) {
+    const { foot, knee, hip, shoulder, hand, head } = ride.ragdoll.points;
+    const moving = point => ({ x: point.x, y: point.y, vx: (point.x - point.ox) / STEP, vy: (point.y - point.oy) / STEP });
+    return {
+      foot, knee, hip, shoulder, hand, head,
+      drips: [
+        { part: 'boots', at: moving(foot) }, { part: 'legs', at: moving(knee) },
+        { part: 'body', at: moving(hip) }, { part: 'body', at: moving(hand) },
+      ],
+    };
+  }
+  const { rear, front, facing, leanVisual } = ride;
+  const frame = riderBodyFrame({ rear, front, facing, leanVisual }, true);
+  const { hip, shoulder } = frame.seated;
+  const knee = riderKnee(hip, RIDER_PEG);
+  const vx = (rear.x - rear.ox + front.x - front.ox) / 2 / STEP, vy = (rear.y - rear.oy + front.y - front.oy) / 2 / STEP;
+  const moving = (x, y) => ({ ...frame.bodyPoint(x, y), vx, vy });
+  return {
+    foot: frame.bodyPoint(RIDER_PEG[0], RIDER_PEG[1]),
+    knee: frame.bodyPoint(knee[0], knee[1]),
+    hip: frame.bodyPoint(hip[0], hip[1]),
+    shoulder: frame.bodyPoint(shoulder[0], shoulder[1]),
+    hand: frame.bodyPoint(RIDER_HAND[0], RIDER_HAND[1]),
+    head: frame.headPoint(RIDER_HEAD[0], RIDER_HEAD[1]),
+    // The boot drips from its toe and the jacket from its hem, behind the hip.
+    drips: [
+      { part: 'boots', at: moving(RIDER_PEG[0] + 4, RIDER_PEG[1] + 3) },
+      { part: 'legs', at: moving(knee[0], knee[1]) },
+      { part: 'body', at: moving(hip[0] - 2, hip[1] + 3) },
+      { part: 'body', at: moving(RIDER_HAND[0], RIDER_HAND[1]) },
+    ],
+  };
 }

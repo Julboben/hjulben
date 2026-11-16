@@ -2776,7 +2776,7 @@
   "spikes": [],
   "water": [],
   "weather": {
-    "sun": 0.85,
+    "sun": 0.65,
     "clouds": 0.3,
     "fog": 0,
     "rain": 0,
@@ -2785,7 +2785,7 @@
     "wind": 0.3,
     "windDirection": "left"
   },
-  "timeOfDay": 8,
+  "timeOfDay": 10,
   "lesson": "Floating islands, tested: launch up to one off a kicker, drop from one onto the next, turn for a run-up to a high one, and keep your height down under a sod roof. A miss lands in the valley and costs a loop, not the run.",
   "alsoNew": "Fields floating high above the farm, a crow's nest and an island with a sod roof.",
   "world": "First Rides",

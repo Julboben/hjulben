@@ -88,7 +88,8 @@ check('back walls never block lights', lightReach(closedRing, 700, 50, 1, 0, 150
 
 const sky = (timeOfDay, weather) => glareStrength({ timeOfDay, weather });
 check('a bright clear noon sun glares', sky(12, { sun: 1, clouds: 0.15 }) > 0.9);
-check('a cloudy or weak sun does not glare', sky(12, { sun: 0.7, clouds: 0.35 }) === 0 && sky(12, { sun: 1, clouds: 1 }) === 0);
+check('a weak sun does not glare', sky(12, { sun: 0.6, clouds: 0 }) === 0);
+check('clouds alone do not dim the sun, only one passing in front', sky(12, { sun: 1, clouds: 1 }) === sky(12, { sun: 1, clouds: 0 }));
 check('rain puts the glare out', sky(12, { sun: 1, clouds: 0.15, rain: 1 }) === 0);
 check('the moon never glares', [21, 22, 0, 3, 4].every((hour) => sky(hour, { sun: 1, clouds: 0 }) === 0));
 const clear = (hour) => sky(hour, { sun: 1, clouds: 0 });

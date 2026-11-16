@@ -20,11 +20,11 @@ export const WEATHER_LEVELS = /** @type {const} */ ([
 export const WIND_DIRECTIONS = /** @type {const} */ (["left", "right"]);
 
 /**
- * The weather of a trail that leaves a setting out: a sunny day with a few
- * clouds and a light breeze from the right.
+ * The weather of a new trail, and of one that leaves a setting out: a sunny
+ * day with some glare, a few clouds and a light breeze from the right.
  */
 export const WEATHER_DEFAULTS = Object.freeze({
-  sun: 1,
+  sun: 0.65,
   clouds: 0.2,
   fog: 0,
   rain: 0,

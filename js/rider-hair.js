@@ -77,6 +77,12 @@ export function riderBodyFrame({ rear, front, facing = 1, flipVisual = facing, l
     return { x: cosAngle * flippedX - sinAngle * pitchedY, y: sinAngle * flippedX + cosAngle * pitchedY };
   };
   return {
+    seated,
+    /** A point on the bike's body, without the rider's lean moving it. */
+    bodyPoint(localX, localY) {
+      const offset = rotate(localX, localY, bodyDrop);
+      return { x: mx + offset.x, y: my + offset.y };
+    },
     point(localX, localY) {
       const offset = rotate(localX + seated.torsoDX, localY + seated.torsoDY, bodyDrop);
       return { x: mx + offset.x, y: my + offset.y };
@@ -281,18 +287,18 @@ function createChain(root, rest, lengths, pull = 1) {
 }
 
 /**
- * The rider's hair tail: a ponytail or a braid.
+ * The rider's hair tail: a ponytail or a braid. It is drawn in `colors`, the
+ * tail's colours as in lookParts().hair, which darken as the hair gets wet.
  * @param {string} tail  a key of HAIR_TAILS
- * @param {{ strands: string[], outline: string, shine: string }} colors
- *   the tail's colours, as in lookParts().hair
  */
-export function createRiderHair(root, rest, tail, colors) {
+export function createRiderHair(root, rest, tail) {
   const chain = createChain(root, rest, HAIR_TAILS[tail]);
   return {
     get root() { return chain.root; },
     update: chain.update,
     settle: chain.settle,
-    draw(pixelPath, drawnRoot) {
+    /** @param {{ strands: string[], outline: string, shine: string }} colors */
+    draw(pixelPath, drawnRoot, colors) {
       const spine = chain.spine(drawnRoot);
       if (tail === 'braid') drawBraid(pixelPath, spine, colors, drawnRoot.forward);
       else drawPonytail(pixelPath, spine, colors);
@@ -384,20 +390,21 @@ function drawBraid(pixelPath, spine, colors, forward) {
 }
 
 /**
- * What trails behind the rider, as in lookParts().accessory: a cloth ribbon
- * on a chain, widening from the root to the tip, with a shaded edge, or a
- * balloon on its string.
- * @param {{ shape: string, fill: string, light: string, shade: string, outline: string }} accessory
+ * What trails behind the rider, a `shape` of ACCESSORIES: a cloth ribbon on a
+ * chain, widening from the root to the tip, with a shaded edge, or a balloon
+ * on its string. It is drawn in the colours of `accessory`, as in
+ * lookParts().accessory, which darken as it gets wet.
  */
-export function createRiderAccessory(root, rest, accessory) {
-  const { lengths, width: [rootWidth, tipWidth], gravity = 1, balloon = false, tip = 0 } = ACCESSORIES[accessory.shape];
+export function createRiderAccessory(root, rest, shape) {
+  const { lengths, width: [rootWidth, tipWidth], gravity = 1, balloon = false, tip = 0 } = ACCESSORIES[shape];
   const chain = createChain(root, rest, lengths, gravity);
   return {
-    behindHair: Boolean(ACCESSORIES[accessory.shape].behindHair),
+    behindHair: Boolean(ACCESSORIES[shape].behindHair),
     get root() { return chain.root; },
     update: chain.update,
     settle: chain.settle,
-    draw(pixelPath, drawnRoot) {
+    /** @param {{ fill: string, light: string, shade: string, outline: string }} accessory */
+    draw(pixelPath, drawnRoot, accessory) {
       const spine = chain.spine(drawnRoot);
       const last = spine.length - 1;
       if (balloon) {
@@ -445,12 +452,13 @@ export function createRiderAccessory(root, rest, accessory) {
  * Everything that trails behind a rider in `parts` (lookParts): their
  * hair's tail and their outfit's accessory, as one piece driven by the hair's
  * state, with `accessory` the accessory's own root and rest. Drawn from
- * the hair's drawn root, the accessory moved with it.
+ * the hair's drawn root, the accessory moved with it, in the colours of the
+ * parts it is given (wetLookParts darkens them).
  */
 export function createRiderTrails(state, parts) {
-  const tail = parts.hair.tail ? createRiderHair(state.root, state.rest, parts.hair.tail, parts.hair) : null;
+  const tail = parts.hair.tail ? createRiderHair(state.root, state.rest, parts.hair.tail) : null;
   const accessory = parts.accessory && state.accessory
-    ? createRiderAccessory(state.accessory.root, state.accessory.rest, parts.accessory) : null;
+    ? createRiderAccessory(state.accessory.root, state.accessory.rest, parts.accessory.shape) : null;
   let root = { ...state.root };
   const accessoryState = next => ({ ...next, root: next.accessory.root, rest: next.accessory.rest });
   return {
@@ -465,13 +473,14 @@ export function createRiderTrails(state, parts) {
       tail?.settle(seconds, next);
       if (accessory && next.accessory) accessory.settle(seconds, accessoryState(next));
     },
-    draw(pixelPath, drawnRoot) {
+    /** @param {import('./cosmetics.js').LookParts} colors */
+    draw(pixelPath, drawnRoot, colors) {
       const drawAccessory = () => {
         const { x, y } = accessory.root;
-        accessory.draw(pixelPath, { x: x + drawnRoot.x - root.x, y: y + drawnRoot.y - root.y });
+        accessory.draw(pixelPath, { x: x + drawnRoot.x - root.x, y: y + drawnRoot.y - root.y }, colors.accessory);
       };
       if (accessory?.behindHair) drawAccessory();
-      tail?.draw(pixelPath, drawnRoot);
+      tail?.draw(pixelPath, drawnRoot, colors.hair);
       if (accessory && !accessory.behindHair) drawAccessory();
     }
   };

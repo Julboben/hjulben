@@ -1,6 +1,8 @@
 // Water bodies: the data format, validation, and how the bike and rider behave in them.
 import assert from 'node:assert/strict';
-import { simulateRun } from '../js/ride.js';
+import { STEP } from '../js/config.js';
+import { createEffects } from '../js/effects.js';
+import { createRide, simulateRun, stepRide } from '../js/ride.js';
 import { createBlankTrail, normalizeTrail, validateTrail } from '../js/trail-schema.js';
 import { trailHash } from '../js/trail-hash.js';
 import { WATER_SIZE, WATER_WIPEOUT_DEPTH, deepWater, normalizeWater, waterAt, wheelImmersion } from '../js/water.js';
@@ -171,6 +173,34 @@ const errors = trail => validateTrail(trail).filter(message => message.type === 
   assert.ok(flights.every((f) => Math.abs(f.x) <= DRAGONFLY_RANGE.x && f.y <= -DRAGONFLY_RANGE.low + 2 && f.y >= -DRAGONFLY_RANGE.high - 2), 'over the water, within range');
   assert.ok(new Set(flights.map((f) => f.x)).size > 3, 'and darting about');
   assert.deepEqual(dragonflyAt(0, 0.4, 0), dragonflyAt(0, 0.4, 0), 'still at time 0');
+}
+
+// Riding through a ford soaks the rider's boots and legs, not their head;
+// out of it they drip, and dry off slowly.
+{
+  const ford = normalizeTrail(flatTrail({ water: [{ x: 400, y: 296, width: 300, depth: 24 }] }));
+  const ride = createRide(ford), effects = createEffects();
+  effects.reset(ford);
+  const wettest = { boots: 0, legs: 0, body: 0, head: 0 };
+  let leftAt = null, dripped = 0;
+  for (let step = 0; step < 2000 && ride.status === 'running'; step++) {
+    stepRide(ride, { accelerating: true, leanInput: 0 });
+    const drops = effects.particles.length;
+    effects.riderWetness(ride);
+    if (leftAt !== null) dripped += effects.particles.length - drops;
+    for (const part of Object.keys(wettest)) wettest[part] = Math.max(wettest[part], effects.riderWet[part]);
+    if (leftAt === null && ride.rear.x > 760) leftAt = { step, wet: { ...effects.riderWet } };
+    if (leftAt && step - leftAt.step === Math.round(2 / STEP)) break;
+  }
+  assert.ok(leftAt, 'the bike gets through the ford');
+  assert.equal(wettest.boots, 1, 'the boots are soaked');
+  assert.ok(wettest.legs > 0.4, 'the legs are wet');
+  assert.equal(wettest.head, 0, 'the head stays dry');
+  assert.ok(dripped > 0, 'the rider drips once out of the water');
+  const drying = leftAt.wet.boots - effects.riderWet.boots;
+  assert.ok(drying > 0.1 && drying < 0.3, `two seconds out of the water dry the boots a little (${drying.toFixed(2)})`);
+  effects.reset(ford);
+  assert.deepEqual({ ...effects.riderWet }, { boots: 0, legs: 0, body: 0, head: 0 }, 'a new ride starts dry');
 }
 
 console.log('Water tests passed.');

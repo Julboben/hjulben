@@ -5,9 +5,6 @@
     "y": 106.22403643627621
   },
   "description": "Drop in, then climb to the tree house the only way there is: back and forth across the hollow. Each ledge on the west wall is higher than the last, and the faces between them are too steep to climb from a standstill. Ride up the east ramp as high as you can, let the bike roll back, turn (Space) and drive down into the hollow; the speed carries you up and over the next lip. Lean forward on the faces so the wheelie doesn't flip you, and lean back when you ride down them again. Up top, ride the plank onto the tree house.",
-  "lesson": "Turn around again and again to climb to a tree house, zig-zagging up between ramps. Combines wheelies, steep descents, drops and turning around.",
-  "alsoNew": "Light rain, a tree house at the top.",
-  "world": "The Woods",
   "start": {
     "x": 2900,
     "y": null,
@@ -251,7 +248,7 @@
           {
             "id": "n7gr",
             "x": 300,
-            "y": 4.9455268988793435,
+            "y": 4.9455,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -486,15 +483,18 @@
   "water": [],
   "weather": {
     "sun": 0.3,
-    "clouds": 0.65,
+    "clouds": 0.35,
     "fog": 0,
-    "rain": 0.3,
+    "rain": 0.05,
     "snow": 0,
     "lightning": 0,
     "wind": 0.35,
     "windDirection": "left"
   },
   "timeOfDay": 19,
+  "lesson": "Turn around again and again to climb to a tree house, zig-zagging up between ramps. Combines wheelies, steep descents, drops and turning around.",
+  "alsoNew": "Light rain, a tree house at the top.",
+  "world": "The Woods",
   "backdrop": "forest",
   "medals": {
     "gold": 10,

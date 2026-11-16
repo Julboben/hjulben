@@ -5,9 +5,6 @@
     "y": 379.34985078664056
   },
   "description": "Drops and step-downs, from a 40 unit stump ledge to a 90 unit stone dike. Come to each lip slowly, lean back as the front wheel goes over so the bike lands rear wheel first, then let the front come down and ride away down the landing. The steps in the middle are a staircase: roll them one by one. Watch the squirrel at the start.",
-  "lesson": "Small drops and step-downs, landing rear wheel first.",
-  "alsoNew": "The squirrel, stone dike props.",
-  "world": "The Woods",
   "start": {
     "x": -500,
     "y": 108,
@@ -684,15 +681,18 @@
   "water": [],
   "weather": {
     "sun": 0.75,
-    "clouds": 0.25,
+    "clouds": 1,
     "fog": 0,
-    "rain": 0,
+    "rain": 0.55,
     "snow": 0,
     "lightning": 0,
     "wind": 0.25,
     "windDirection": "left"
   },
   "timeOfDay": 12,
+  "lesson": "Small drops and step-downs, landing rear wheel first.",
+  "alsoNew": "The squirrel, stone dike props.",
+  "world": "The Woods",
   "backdrop": "forest",
   "medals": {
     "gold": 10,

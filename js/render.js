@@ -27,7 +27,8 @@ import {
 } from "./drawing.js";
 import { fallLine, terrainAt, groundShadowSamples, terrainGeometry, terrainRaycastAt } from "./terrain.js";
 import { finishHeight } from "./trail-schema.js";
-import { waterBodies, waterColumns, surfaceWave } from "./water.js";
+import { waterColumns, surfaceWave } from "./water.js";
+import { WEATHER_COLUMN, weatherGroundAt } from "./weather-fall.js";
 import { createTerrainRenderer } from "./terrain-render.js";
 import { riderCollisionPoints } from "./ride.js";
 import { probeClearance } from "./debug-hud.js";
@@ -46,7 +47,7 @@ import {
   freeAccessoryRoot,
   freeAccessoryRestDirection,
 } from "./rider-hair.js";
-import { lookParts } from "./cosmetics.js";
+import { lookParts, wetLookParts } from "./cosmetics.js";
 import { reducedMotion } from "./state.js";
 import { createLighting } from "./lighting.js";
 import { CRANE_LIGHTS, LAMP_HEAD } from "./city-props.js";
@@ -299,9 +300,10 @@ export function createRenderer(canvas, { still = false } = {}) {
     pixelScale = 1;
   /** Each rider's foot, by ride; see stepFoot. */
   const feet = new WeakMap();
-  /** The player's tyre dirt from the effects; the ghost's wheels stay clean. */
+  /** The player's tyre dirt and wet clothes from the effects; the ghost stays clean and dry. */
   let wheelDirt = null,
-    wheelSquish = null;
+    wheelSquish = null,
+    riderWet = null;
   let hair = null,
     ghostHair = null,
     flipVisual = 1,
@@ -909,9 +911,9 @@ export function createRenderer(canvas, { still = false } = {}) {
       propScene.weather,
     );
     drawProps("front", full, glowMask.art, area);
-    if (hair) hair.draw(glowMask.tools.pixelPath, currentHairRoot(ride, false, flipVisual, look));
+    if (hair) hair.draw(glowMask.tools.pixelPath, currentHairRoot(ride, false, flipVisual, look), riderParts(look));
     glowMask.art.drawBike(bikeDrawing(ride, look, flipVisual, state));
-    if (ride.ragdoll) glowMask.art.drawRagdoll(ride.ragdoll, look);
+    if (ride.ragdoll) glowMask.art.drawRagdoll(ride.ragdoll, look, riderWet);
     const context = glowLayer.context;
     context.setTransform(1, 0, 0, 1, 0, 0);
     context.globalCompositeOperation = "destination-out";
@@ -1064,9 +1066,9 @@ export function createRenderer(canvas, { still = false } = {}) {
 
     place(xrayRider);
     if (hair)
-      hair.draw(xrayRider.tools.pixelPath, currentHairRoot(ride, false, flipVisual, look));
+      hair.draw(xrayRider.tools.pixelPath, currentHairRoot(ride, false, flipVisual, look), riderParts(look));
     xrayRider.art.drawBike(bikeDrawing(ride, look, flipVisual, state));
-    if (ride.ragdoll) xrayRider.art.drawRagdoll(ride.ragdoll, look);
+    if (ride.ragdoll) xrayRider.art.drawRagdoll(ride.ragdoll, look, riderWet);
 
     const context = xrayRider.context;
     context.setTransform(1, 0, 0, 1, 0, 0);
@@ -1329,13 +1331,19 @@ export function createRenderer(canvas, { still = false } = {}) {
       dirt: wheelDirt,
       squish: wheelSquish,
       foot: feet.get(ride) ?? null,
+      wet: riderWet,
     };
+  }
+
+  /** The player's look as worn, wet where the effects say they are. */
+  function riderParts(look) {
+    return wetLookParts(lookParts(look), riderWet);
   }
 
   // The hair is many overlapping strokes, so drawing them straight at ghost
   // alpha stacks them up nearly opaque. Draw it solid off screen, then blend
   // the result once.
-  function drawGhostHair(root) {
+  function drawGhostHair(root, look) {
     const transform = ctx.getTransform();
     const x0 = Math.max(0, Math.floor(transform.a * (root.x - GHOST_HAIR_REACH) + transform.e));
     const y0 = Math.max(0, Math.floor(transform.d * (root.y - GHOST_HAIR_REACH) + transform.f));
@@ -1348,7 +1356,7 @@ export function createRenderer(canvas, { still = false } = {}) {
     fitLayer(ghostHairLayer, width, height);
     ghostHairLayer.context.setTransform(transform.a, 0, 0, transform.d, transform.e - x0, transform.f - y0);
     ghostHairLayer.context.imageSmoothingEnabled = false;
-    ghostHair.draw(ghostHairLayer.tools.pixelPath, root);
+    ghostHair.draw(ghostHairLayer.tools.pixelPath, root, lookParts(look));
     ctx.save();
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.globalAlpha = GHOST_ALPHA;
@@ -1372,7 +1380,7 @@ export function createRenderer(canvas, { still = false } = {}) {
       )
     )
       return;
-    if (ghostHair) drawGhostHair(currentHairRoot(ghost, false, ghost.facing, look));
+    if (ghostHair) drawGhostHair(currentHairRoot(ghost, false, ghost.facing, look), look);
     ctx.globalAlpha = GHOST_ALPHA;
     gameArt.drawBike({
       rear: ghost.rear,
@@ -1514,64 +1522,12 @@ export function createRenderer(canvas, { still = false } = {}) {
    * moves, so the drops never line up into rows. A drop lands somewhere new
    * each time it falls past the bottom.
    */
-  // The first terrain or water surface along each slanted falling path, for
-  // rain and snow to land on. Weather drifts sideways by `drift` world units
-  // per unit fallen, so every point on one path shares x - drift * y; paths
-  // are cached by that, and each is cast against the terrain only once. A
-  // path is cast from above the highest terrain, as rain falls from the sky,
-  // so anything overhead shelters what is under it, however far above the
-  // view it is. The casts don't depend on the camera, so they last until the
-  // slant or the terrain changes.
-  const weatherGround = new WeakMap();
-  const WEATHER_COLUMN = ART_PIXEL * 2;
   // How much of the camera's vertical movement rain and snow follow. Sideways
   // they move with the world at their depth, for parallax; up and down they
   // keep nearly to the screen, or a rider falling as fast as the flakes would
   // see the snow stand still (or rise), and one riding upward would see it
   // rush past.
   const WEATHER_VERTICAL_PARALLAX = 0.05;
-
-  function weatherGroundAt(x, y, drift) {
-    const geometry = terrainGeometry(trail);
-    let cache = weatherGround.get(trail);
-    if (!cache || cache.geometry !== geometry)
-      weatherGround.set(
-        trail,
-        (cache = { geometry, water: waterBodies(trail), paths: new Map(), slant: NaN, columns: null }),
-      );
-    const slant = Math.round(drift * 100) / 100;
-    // Nearly every call is for the same slant as the last.
-    let columns;
-    if (cache.slant === slant) columns = cache.columns;
-    else {
-      columns = cache.paths.get(slant);
-      if (!columns) {
-        // Only a slider being dragged changes the slant; keep just the latest few.
-        if (cache.paths.size >= 8) cache.paths.delete(cache.paths.keys().next().value);
-        cache.paths.set(slant, (columns = new Map()));
-      }
-      cache.slant = slant;
-      cache.columns = columns;
-    }
-    const column = Math.round((x - slant * y) / WEATHER_COLUMN);
-    let hit = columns.get(column);
-    if (hit === undefined) {
-      const along = (atY) => column * WEATHER_COLUMN + slant * atY;
-      hit = { y: Infinity, water: false };
-      if (geometry) {
-        const top = geometry.bounds.top - 1,
-          bottom = geometry.bounds.bottom + 1;
-        const contact = terrainRaycastAt(trail, along(top), top, along(bottom), bottom);
-        if (contact) hit.y = contact.y;
-      }
-      for (const body of cache.water) {
-        const at = along(body.y);
-        if (at >= body.x && at <= body.x + body.width && body.y < hit.y) hit = { y: body.y, water: true };
-      }
-      columns.set(column, hit);
-    }
-    return hit;
-  }
 
   // `drift` is how far the drops are blown sideways per unit they fall
   // (negative to the left), from the wind.
@@ -1620,7 +1576,7 @@ export function createRenderer(canvas, { still = false } = {}) {
       // Rain stops at the first terrain or water it reaches, with a splash.
       const worldX = left - ART_PIXEL / 2 + cameraX,
         worldY = top + cameraY;
-      const hit = weatherGroundAt(worldX, worldY, drift);
+      const hit = weatherGroundAt(trail, worldX, worldY, drift);
       // Where along its slant this drop meets the ground.
       const landX = worldX + drift * (hit.y - worldY);
       const surface = hit.water ? hit.y + surfaceWave(landX, propScene.time) : hit.y;
@@ -1714,7 +1670,7 @@ export function createRenderer(canvas, { still = false } = {}) {
     // the ground rather than stepping with it. The paths are cast a column
     // (WEATHER_COLUMN) at a time, so the floor is worked out once per column
     // a gust crosses and kept for the rest of that gust.
-    const groundAt = (x) => weatherGroundAt(x, cameraY, 0).y;
+    const groundAt = (x) => weatherGroundAt(trail, x, cameraY, 0).y;
     const floors = new Map();
     const floorAt = (x) => {
       const column = Math.round(x / WEATHER_COLUMN);
@@ -1858,7 +1814,7 @@ export function createRenderer(canvas, { still = false } = {}) {
         top = Math.round(y / ART_PIXEL) * ART_PIXEL;
       const worldX = left + size / 2 + cameraX,
         worldY = top + size + cameraY;
-      const hit = weatherGroundAt(worldX, worldY, drift);
+      const hit = weatherGroundAt(trail, worldX, worldY, drift);
       const ground = Math.round((hit.y - cameraY) / ART_PIXEL) * ART_PIXEL;
       const alpha = 0.45 + depth * 0.4;
       if (top + size > ground) {
@@ -2135,6 +2091,7 @@ export function createRenderer(canvas, { still = false } = {}) {
     effects.update(animationDt);
     wheelDirt = effects.wheelDirt;
     wheelSquish = effects.tyreSquish;
+    riderWet = effects.riderWet;
     // Fireworks go off in the sky behind the land and the buildings. They
     // keep the real clock, as the scene's own slows to a stop at the finish.
     if (fireworks?.active()) {
@@ -2157,10 +2114,10 @@ export function createRenderer(canvas, { still = false } = {}) {
     if (fog) drawFog(fog, focus, ride.facing);
     drawGhost(ghost, ghostLook ?? look, ghostDt);
     hair = updateHair(hair, ride, look, ride.status === "won" ? 0 : animationDt);
-    if (hair) hair.draw(pixelPath, currentHairRoot(ride, false, flipVisual, look));
+    if (hair) hair.draw(pixelPath, currentHairRoot(ride, false, flipVisual, look), riderParts(look));
     drawBike(ride, look, flipVisual, ride.ragdoll ? "ragdoll" : state);
     if (debug) drawPhysicsOverlay(ride.vehicle, ride);
-    if (ride.ragdoll) gameArt.drawRagdoll(ride.ragdoll, look);
+    if (ride.ragdoll) gameArt.drawRagdoll(ride.ragdoll, look, riderWet);
     // Water props in front are drawn before the water, so what is under the
     // surface looks wet.
     drawProps("front", full, gameArt, null, true);
@@ -2211,6 +2168,7 @@ export function createRenderer(canvas, { still = false } = {}) {
     flipVisual = ride.facing;
     wheelDirt = null;
     wheelSquish = null;
+    riderWet = null;
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.setTransform(worldToDevice, 0, 0, worldToDevice, 0, 0);
@@ -2219,7 +2177,7 @@ export function createRenderer(canvas, { still = false } = {}) {
     ctx.translate(-cameraX, -cameraY);
     backdrop?.(ctx, { x: cameraX, y: cameraY, width: W, height: H });
     hair = updateHair(hair, ride, look, 0);
-    if (hair) hair.draw(pixelPath, currentHairRoot(ride, false, flipVisual, look));
+    if (hair) hair.draw(pixelPath, currentHairRoot(ride, false, flipVisual, look), lookParts(look));
     const lit = headlights;
     // In the dark the bike's lights are on, whatever the setting.
     if (dark) headlights = true;
