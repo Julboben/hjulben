@@ -325,7 +325,7 @@ export function createLighting() {
     const geometry = terrainGeometry(trail);
     const backWalls = backWallGeometry(trail);
     const { weather = {} } = trail;
-    const key = `${trail.timeOfDay}|${weather.rain || 0}|${weather.lightning || 0}|${weather.sun ?? 1}|${weather.clouds ?? 0.35}`;
+    const key = `${trail.timeOfDay}|${weather.rain || 0}|${weather.snow || 0}|${weather.fog || 0}|${weather.lightning || 0}|${weather.sun}`;
     let entry = bakes.get(trail);
     if (!entry || entry.geometry !== geometry || entry.backWalls !== backWalls || entry.key !== key) {
       entry = bake(trail, ambientFor(trail));

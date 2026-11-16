@@ -376,7 +376,7 @@ import {
   stallSignLines,
   turbineAngle,
 } from "./countryside-props.js";
-import { resolveWeather, windSign } from "./weather.js";
+import { WEATHER_DEFAULTS, resolveWeather, windSign } from "./weather.js";
 import { dayBlend, normalizeHour } from "./time-of-day.js";
 import {
   CORGI_BOUNDS,
@@ -1373,13 +1373,13 @@ export function sunLight({
   timeOfDay,
 } = {}) {
   const time = hourPalette(timeOfDay);
-  const sunshine = Math.max(0, Math.min(1, weather.sun ?? 1));
-  const cloudiness = Math.max(0, Math.min(1, weather.clouds ?? 0.35));
+  const sunshine = Math.max(0, Math.min(1, weather.sun ?? WEATHER_DEFAULTS.sun));
   return {
     x: width * 0.77 - cameraX * 0.015,
     y: 85 + time.sunDrop - Math.max(cameraY, -SUN_CLIMB_LIMIT) * 0.08,
     sunshine,
-    strength: sunshine * (1 - cloudiness * 0.55) * time.light,
+    // Clouds only dim the sun when one passes in front of it (`clouded`).
+    strength: sunshine * time.light,
     // The sun's disc grows with its shine, and low in the sky.
     radius: (28 + sunshine * 8) * time.sunScale,
     // How much of it a passing cloud hides, 0…1: known only once the sky is

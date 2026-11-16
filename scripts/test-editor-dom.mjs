@@ -82,7 +82,7 @@ const reported = (report, label) => {
   check('a block in view is drawn', report.blockFillsInView > 0);
   check('a block out of view is not', report.blockFillsOutOfView === 0, `(${report.blockFillsOutOfView})`);
   check('a clear sun says it glares', report.sunClear === '100% · full glare', `(${report.sunClear})`);
-  check('and the same sun behind clouds does not', report.sunCloudy === '100% · no glare', `(${report.sunCloudy})`);
+  check('and the same sun in the rain does not', report.sunRainy === '100% · no glare', `(${report.sunRainy})`);
   check('the JSON box is filled as its dialog opens', report.jsonFilled);
   check('and follows edits while it is open', report.jsonFollowsOpen);
   check('but is left alone while it is closed', report.jsonLeftClosed);

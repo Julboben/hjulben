@@ -598,8 +598,8 @@ function showWeatherValue(key) {
 
 /**
  * Beside the sun's level, the glare the game gives it: a strong sun glares
- * and casts rays, which the level alone doesn't tell, as clouds, fog, rain
- * and the time of day all temper it.
+ * and casts rays, which the level alone doesn't tell, as fog, rain and the
+ * time of day all temper it. Clouds only dim it as they pass in front.
  */
 function showSunGlare() {
   const sun = Number($("weather-sun").value) || 0;
