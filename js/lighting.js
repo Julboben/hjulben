@@ -155,6 +155,17 @@ const SHEEN = 0.2,
 // The glint where the reflection crosses a pane's top right corner: a pixel
 // cross, as for lamps (see drawFlare).
 const PANE_FLARE = [2, 1, 0];
+// Lens flare: ghosts of the sun on the line from it through the middle of the
+// view, as [how far along (1 is the middle), radius in world units, ring width
+// (0 for a solid disc), colour, brightness at full glare].
+const LENS_GHOSTS = [
+  [0.35, 4, 0, "#ffe0a8", 0.35],
+  [0.62, 12, 0, "#cfeec8", 0.12],
+  [0.9, 6, 0, "#ffd2a0", 0.22],
+  [1.25, 22, 4, "#d8c8ff", 0.16],
+  [1.5, 8, 0, "#bfe8f0", 0.18],
+  [1.9, 30, 0, "#ffe6c0", 0.07],
+];
 
 const rgb = ([r, g, b]) => `rgb(${r},${g},${b})`;
 const towardWhite = (color, amount) => color.map((value) => Math.round(value + (255 - value) * amount));
@@ -664,7 +675,10 @@ export function createLighting() {
       // A cloud over the sun dims all its shine, and lets it dazzle as it comes out.
       const clear = 1 - sun.clouded;
       const glare = sunGlare(entry, trail, sun, cameraX + sun.x, cameraY + sun.y) * clear;
-      if (glare > 0.01) drawGlare(ctx, entry, options, sun, color, glare, left, top);
+      if (glare > 0.01) {
+        drawGlare(ctx, entry, options, sun, color, glare, left, top);
+        drawGhosts(ctx, options, sun, glare);
+      }
       // A low sun shines on water and glass well after its glare has faded:
       // in full from half the glare, and fading out with it more slowly.
       const shine = Math.min(1, Math.sqrt(entry.glare * 2)) * clear;
@@ -934,6 +948,38 @@ export function createLighting() {
         ctx.fillRect(x - ART_PIXEL, top, ART_PIXEL, ART_PIXEL);
         ctx.fillRect(x + ART_PIXEL, top, ART_PIXEL, ART_PIXEL);
         ctx.fillRect(x, top - ART_PIXEL, ART_PIXEL, ART_PIXEL);
+      }
+    }
+    ctx.restore();
+  }
+
+  // Lens flare: faint ghosts of the sun strung along the line from it through
+  // the middle of the view, so they swing about as the camera moves. Pixel
+  // discs and a ring on the art grid, as bright as the glare, so they fade as
+  // terrain or a cloud covers the sun.
+  function drawGhosts(ctx, { cameraX, cameraY, width, height }, sun, glare) {
+    const sx = cameraX + sun.x,
+      sy = cameraY + sun.y;
+    const dx = cameraX + width / 2 - sx,
+      dy = cameraY + height / 2 - sy;
+    ctx.save();
+    ctx.globalCompositeOperation = "screen";
+    for (const [along, radius, ring, color, brightness] of LENS_GHOSTS) {
+      const cx = Math.round((sx + dx * along) / ART_PIXEL) * ART_PIXEL,
+        cy = Math.round((sy + dy * along) / ART_PIXEL) * ART_PIXEL;
+      const cells = radius / ART_PIXEL,
+        hole = ring ? (radius - ring) / ART_PIXEL : 0;
+      ctx.fillStyle = color;
+      ctx.globalAlpha = brightness * glare;
+      for (let row = -cells; row <= cells; row++) {
+        const reach = Math.floor(Math.sqrt(cells * cells - row * row));
+        const inner = Math.abs(row) < hole ? Math.ceil(Math.sqrt(hole * hole - row * row)) : 0;
+        const y = cy + row * ART_PIXEL;
+        if (!inner) ctx.fillRect(cx - reach * ART_PIXEL, y, (reach * 2 + 1) * ART_PIXEL, ART_PIXEL);
+        else {
+          ctx.fillRect(cx - reach * ART_PIXEL, y, (reach - inner + 1) * ART_PIXEL, ART_PIXEL);
+          ctx.fillRect(cx + inner * ART_PIXEL, y, (reach - inner + 1) * ART_PIXEL, ART_PIXEL);
+        }
       }
     }
     ctx.restore();
