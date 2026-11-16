@@ -141,6 +141,8 @@ const SCENERY_SHADOWS = {
 const WIN_SETTLE = 0.7;
 // Ground shadows: one colour, each sample with its own alpha.
 const SHADOW_COLOR = "rgb(31,53,39)";
+// How much a cloud over the sun fades shadows.
+const CLOUD_SHADE = 0.6;
 // Rain and snow: how many particles the view's size scales up to, and the
 // lower ceiling on touch screens and in performance mode, where fill rate is
 // the tighter budget.
@@ -515,6 +517,8 @@ export function createRenderer(canvas, { still = false } = {}) {
   // cheaper to set than a colour string is to build and parse. The rects are
   // snapped to the art grid as pixelRect would.
   function drawShadowBlob(samples, centerX, width, alpha, thickness) {
+    // In a cloud's shade there is only soft light from the sky, so shadows fade.
+    alpha *= 1 - CLOUD_SHADE * frameSun.clouded;
     ctx.fillStyle = SHADOW_COLOR;
     for (const sample of samples) {
       const along = (sample.x - centerX) / width;
@@ -2114,7 +2118,7 @@ export function createRenderer(canvas, { still = false } = {}) {
 
     ctx.setTransform(worldToDevice, 0, 0, worldToDevice, 0, 0);
     ctx.imageSmoothingEnabled = false;
-    gameArt.drawBackground({
+    const clouded = gameArt.drawBackground({
       width: W,
       height: H,
       palette: trail,
@@ -2124,6 +2128,8 @@ export function createRenderer(canvas, { still = false } = {}) {
       smooth: true,
       sceneTime: propScene.time,
     });
+    // A cloud over the sun takes its strength, so shadows fall straight down.
+    frameSun = { ...frameSun, clouded, strength: frameSun.strength * (1 - clouded) };
     ctx.save();
     ctx.translate(-cameraX, -cameraY);
     effects.update(animationDt);

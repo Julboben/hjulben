@@ -5,7 +5,8 @@ import assert from 'node:assert/strict';
 import { rectangle, blockTrail } from './lib/terrain-fixtures.mjs';
 
 const { bakeLightField, lightFieldAt, lightReach } = await import('../js/light-field.js');
-const { adaptToGlare, glareStrength, sunVisible } = await import('../js/lighting.js');
+const { adaptToGlare, sunVisible } = await import('../js/lighting.js');
+const { glareStrength } = await import('../js/drawing.js');
 
 let failures = 0;
 const backWall = (left, top, right, bottom) => ({ ...rectangle(left, top, right, bottom, 'concrete', `back-${left}`), layer: 'back' });
@@ -103,12 +104,14 @@ check('the glare fades in after dawn and out by dusk', clear(5) === 0 && clear(6
     backWall(600, -200, 900, 300),
     { ...rectangle(1200, -200, 1500, 300, 'glass', 'window'), layer: 'back' },
   ]);
-  check('a sun in open sky is seen whole', sunVisible(city, 1800, 0) === 1);
-  check('a sun behind terrain is hidden', sunVisible(city, 150, 0) === 0);
-  check('and behind a back wall', sunVisible(city, 750, 0) === 0);
-  const edge = sunVisible(city, 300, 0);
+  check('a sun in open sky is seen whole', sunVisible(city, 1800, 0, 36) === 1);
+  check('a sun behind terrain is hidden', sunVisible(city, 150, 0, 36) === 0);
+  check('and behind a back wall', sunVisible(city, 750, 0, 36) === 0);
+  const edge = sunVisible(city, 300, 0, 36);
   check('a sun half behind a wall is partly seen', edge > 0.3 && edge < 0.7, edge);
-  check('a sun behind glass is seen', sunVisible(city, 1350, 0) === 1);
+  check('a sun behind glass is seen', sunVisible(city, 1350, 0, 36) === 1);
+  const low = sunVisible(city, 340, 0, 45);
+  check('a bigger, lower sun is still partly hidden where a smaller one is clear', sunVisible(city, 340, 0, 36) === 1 && low < 1, low);
 }
 
 // The eyes get used to the sun's glare: a sun that comes out dazzles for about

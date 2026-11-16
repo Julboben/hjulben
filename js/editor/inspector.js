@@ -1,5 +1,5 @@
 // The selection and trail panels on the right.
-import { TEXT_PROPS, canRotate } from "../drawing.js";
+import { TEXT_PROPS, canRotate, glareStrength } from "../drawing.js";
 import {
   cubicPoint,
   edgeCurve,
@@ -17,7 +17,6 @@ import {
 } from "../trail-schema.js";
 import { store } from "../local-store.js";
 import { WEATHER_LEVELS, WEATHER_PRESETS, resolveWeather } from "../weather.js";
-import { glareStrength } from "../lighting.js";
 import { startWindsock } from "./windsock.js";
 import { TIME_MARKS, clockTime, hourName, normalizeHour } from "../time-of-day.js";
 import {

@@ -534,9 +534,10 @@ const cloudLayers = new Map();
  * small cumulus that grow into big banks, then from 30% a deck that fills in from the top of the sky on
  * a lumpy underside, with banks and thin streaks below it, lowering until,
  * at full cover, it fills the sky. The sun shows as a pale glow through cloud.
- * Returns the canvas and how far left and up of the view to draw it.
+ * Returns the canvas, how far left and up of the view to draw it, and how
+ * much of the sun's disc (`sunRadius` across) the cloud covers, 0…1.
  */
-function cloudLayer({ width, height, scrollX, cloudShift, cloudiness, color, glow, glowSize = 1, sunX, sunY }) {
+function cloudLayer({ width, height, scrollX, cloudShift, cloudiness, color, glow, glowSize = 1, sunX, sunY, sunRadius }) {
   const cell = CLOUD_CELL;
   const gx0 = Math.floor(scrollX / cell),
     gy0 = Math.floor(-cloudShift / cell);
@@ -547,8 +548,9 @@ function cloudLayer({ width, height, scrollX, cloudShift, cloudiness, color, glo
   // The sun in cloud space.
   const sunU = sunX + scrollX,
     sunV = sunY - cloudShift;
-  const key = [gx0, gy0, cols, rows, cloudiness, color, glow, glowSize, Math.round(sunU / cell), Math.round(sunV / cell)].join("|");
-  if (cloudLayers.has(key)) return { canvas: cloudLayers.get(key), offsetX, offsetY };
+  const key = [gx0, gy0, cols, rows, cloudiness, color, glow, glowSize, Math.round(sunU / cell), Math.round(sunV / cell), Math.round(sunRadius)].join("|");
+  const cached = cloudLayers.get(key);
+  if (cached) return { ...cached, offsetX, offsetY };
 
   const canvas = createCanvas(cols, rows);
   const g = canvas.getContext("2d");
@@ -558,11 +560,23 @@ function cloudLayer({ width, height, scrollX, cloudShift, cloudiness, color, glo
     vTop = gy0 * cell,
     vBottom = (gy0 + rows) * cell;
   const rowOf = (v) => Math.round(v / cell) - gy0;
+  // The sun's disc in the layer's cells, and which of them the cloud covers.
+  const sc = Math.round(sunU / cell) - gx0,
+    sr = Math.round(sunV / cell) - gy0,
+    reach = Math.ceil(sunRadius / cell),
+    side = reach * 2 + 1;
+  const covered = new Uint8Array(side * side);
+  const fill = (i, r, w, h) => {
+    g.fillRect(i, r, w, h);
+    for (let y = Math.max(r, sr - reach); y < Math.min(r + h, sr + reach + 1); y++)
+      for (let x = Math.max(i, sc - reach); x < Math.min(i + w, sc + reach + 1); x++)
+        covered[(y - sr + reach) * side + x - sc + reach] = 1;
+  };
   // Fills column i of the layer from v0 down to v1.
   const span = (i, v0, v1) => {
     const r0 = Math.max(0, rowOf(v0)),
       r1 = Math.min(rows, rowOf(v1));
-    if (r1 > r0) g.fillRect(i, r0, 1, r1 - r0);
+    if (r1 > r0) fill(i, r0, 1, r1 - r0);
   };
 
   // The deck: from 30% it hangs in from the top on a lumpy underside of
@@ -580,7 +594,7 @@ function cloudLayer({ width, height, scrollX, cloudShift, cloudiness, color, glo
     }
     return bottom;
   };
-  if (deck === Infinity) g.fillRect(0, 0, cols, rows);
+  if (deck === Infinity) fill(0, 0, cols, rows);
   else if (deck > 0)
     for (let i = 0; i < cols; i++) span(i, vTop, deckBottom(uLeft + i * cell));
 
@@ -633,8 +647,8 @@ function cloudLayer({ width, height, scrollX, cloudShift, cloudiness, color, glo
           const v = rowV - 4 - n(8) * 16;
           const r = rowOf(v),
             c0 = Math.round(u0 / cell) - gx0;
-          g.fillRect(c0, r, Math.round(length / cell), 1);
-          g.fillRect(c0 + 3, r + 1, Math.round((length * 0.6) / cell), 1);
+          fill(c0, r, Math.round(length / cell), 1);
+          fill(c0 + 3, r + 1, Math.round((length * 0.6) / cell), 1);
         }
       }
     }
@@ -644,8 +658,6 @@ function cloudLayer({ width, height, scrollX, cloudShift, cloudiness, color, glo
   // only over cloud. There is none when it is turned off.
   if (glow) {
     g.globalCompositeOperation = "source-atop";
-    const sc = Math.round(sunU / cell) - gx0,
-      sr = Math.round(sunV / cell) - gy0;
     for (const [size, amount] of [[13, 0.45], [9, 1]]) {
       const radius = Math.round(size * glowSize);
       g.fillStyle = mixHex(color, glow, amount);
@@ -656,9 +668,18 @@ function cloudLayer({ width, height, scrollX, cloudShift, cloudiness, color, glo
     }
   }
 
-  cloudLayers.set(key, canvas);
+  let inside = 0,
+    hidden = 0;
+  for (let dy = -reach; dy <= reach; dy++)
+    for (let dx = -reach; dx <= reach; dx++) {
+      if (dx * dx + dy * dy > reach * reach) continue;
+      inside++;
+      hidden += covered[(dy + reach) * side + dx + reach];
+    }
+  const layer = { canvas, sunCover: hidden / inside };
+  cloudLayers.set(key, layer);
   if (cloudLayers.size > 4) cloudLayers.delete(cloudLayers.keys().next().value);
-  return { canvas, offsetX, offsetY };
+  return { ...layer, offsetX, offsetY };
 }
 
 // The colour set every look of the day starts from and overrides.
@@ -1274,6 +1295,32 @@ function backdropLayers(theme, c) {
   ];
 }
 
+// Strong sun: above this strength (see sunLight) the sun glares and casts
+// rays, growing to full at SUN_GLARE + SUN_GLARE_RANGE.
+const SUN_GLARE = 0.6,
+  SUN_GLARE_RANGE = 0.3;
+// How far toward white a sun at full glare is drawn.
+const SUN_LIGHTEN = 0.25;
+
+/**
+ * How strongly the sun glares on a trail, 0…1: only a bright, mostly clear
+ * daytime sun does, and rain, storms, fog or the moon put it out.
+ */
+export function glareStrength(trail) {
+  const { weather = {} } = trail;
+  const { moon } = timeOfDayPalette(trail);
+  if (moon >= 0.5) return 0;
+  const { strength } = sunLight({ width: 0, weather, timeOfDay: trail.timeOfDay });
+  const storm = Math.max(
+    Number(weather.rain) || 0,
+    Number(weather.snow) || 0,
+    Number(weather.lightning) || 0,
+  );
+  const fog = Math.max(0, Math.min(1, Number(weather.fog) || 0));
+  const glare = ((strength - SUN_GLARE) / SUN_GLARE_RANGE) * (1 - Math.min(1, storm)) * (1 - fog) * (1 - moon);
+  return Math.max(0, Math.min(1, glare));
+}
+
 export function sunLight({
   width,
   cameraX = 0,
@@ -1289,6 +1336,11 @@ export function sunLight({
     y: 85 + time.sunDrop - Math.max(cameraY, -SUN_CLIMB_LIMIT) * 0.08,
     sunshine,
     strength: sunshine * (1 - cloudiness * 0.55) * time.light,
+    // The sun's disc grows with its shine, and low in the sky.
+    radius: (28 + sunshine * 8) * time.sunScale,
+    // How much of it a passing cloud hides, 0…1: known only once the sky is
+    // drawn (see drawBackground).
+    clouded: 0,
   };
 }
 
@@ -5214,6 +5266,7 @@ export function createGameArt(ctx) {
   /**
    * `smooth` is for contexts that map world units to many device pixels: shapes
    * keep their pixel grid but are placed at their exact scroll position.
+   * Returns how much of the sun the clouds hide, 0…1.
    */
   function drawBackground({
     width,
@@ -5256,6 +5309,7 @@ export function createGameArt(ctx) {
     });
     const storminess = Math.max(rain, lightning);
     const fog = fogAmount(weather);
+    let sunCover = 0;
     // Fog washes over everything drawn so far, so each layer further back
     // ends up behind more of it.
     const fogWash = (amount) => {
@@ -5317,15 +5371,9 @@ export function createGameArt(ctx) {
         });
       } else {
         ctx.globalAlpha = light.strength * (1 - time.moon);
-        placed(light.x, light.y, 4, (x, y) =>
-          drawPixelDisc(
-            x,
-            y,
-            (28 + light.sunshine * 8) * time.sunScale,
-            time.sun,
-            4,
-          ),
-        );
+        // A sun strong enough to glare is a step lighter.
+        const color = mixHex(time.sun, "#ffffff", SUN_LIGHTEN * glareStrength(palette));
+        placed(light.x, light.y, 4, (x, y) => drawPixelDisc(x, y, light.radius, color, 4));
       }
       ctx.restore();
     }
@@ -5355,9 +5403,12 @@ export function createGameArt(ctx) {
         glowSize: 1 - time.moon * 0.3,
         sunX: light.x,
         sunY: light.y,
+        sunRadius: light.radius,
       });
+      const alpha = 0.7 + cloudiness * 0.3;
+      sunCover = layer.sunCover * alpha;
       ctx.save();
-      ctx.globalAlpha = 0.7 + cloudiness * 0.3;
+      ctx.globalAlpha = alpha;
       ctx.drawImage(
         layer.canvas,
         snap(-layer.offsetX),
@@ -5402,6 +5453,7 @@ export function createGameArt(ctx) {
       ctx.fillStyle = `rgba(38, 55, 62, ${storminess * 0.2})`;
       ctx.fillRect(0, 0, width, height);
     }
+    return sunCover;
   }
 
   /**
