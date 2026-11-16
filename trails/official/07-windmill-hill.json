@@ -5,9 +5,6 @@
     "y": 63.49066131332046
   },
   "description": "The steep hill has to be climbed three times. Lean forward so the front wheel stays down, and if you stall, roll back for a longer run-up. Beyond it, take the apple in the valley, turn (Space) and ride back over: the bump at the foot of the hill throws you up onto the ledge for the high apple. Turn once more and climb it again, then splash through the pond to the gate.",
-  "lesson": "Steep climbs. Lean forward to keep the front down, and if you stall, roll back, turn and try again with a run-up. Combines momentum, turning and braking.",
-  "alsoNew": "Morning light, more clouds, the farmhouse.",
-  "world": "First Rides",
   "start": {
     "x": -48.000630672223,
     "y": null,
@@ -884,7 +881,7 @@
   "spikes": [],
   "water": [],
   "weather": {
-    "sun": 0.7,
+    "sun": 0.65,
     "clouds": 0.2,
     "fog": 0,
     "rain": 0,
@@ -894,6 +891,9 @@
     "windDirection": "left"
   },
   "timeOfDay": 12,
+  "lesson": "Steep climbs. Lean forward to keep the front down, and if you stall, roll back, turn and try again with a run-up. Combines momentum, turning and braking.",
+  "alsoNew": "Morning light, more clouds, the farmhouse.",
+  "world": "First Rides",
   "medals": {
     "gold": 34,
     "silver": 44,
