@@ -1301,24 +1301,68 @@ const SUN_GLARE = 0.6,
   SUN_GLARE_RANGE = 0.3;
 // How far toward white a sun at full glare is drawn.
 const SUN_LIGHTEN = 0.25;
+// Sunbeams show best with a low sun and in light haze. A sun this far down
+// (see sunDrop) is fully low; a low sun's rays are this much stronger than its
+// glare, this much longer and this far toward RAY_WARM. Light haze, up to
+// HAZE_BEST fog, makes them up to this much stronger and longer, and they
+// fade out again by HAZE_GONE.
+const LOW_SUN_DROP = 70,
+  LOW_RAYS = 0.6,
+  LOW_RAY_LENGTH = 0.3,
+  LOW_RAY_WARMTH = 0.25,
+  HAZE_BEST = 0.25,
+  HAZE_GONE = 0.8,
+  HAZE_RAYS = 0.4,
+  HAZE_RAY_LENGTH = 0.15;
+export const RAY_WARM = "#ff9a52";
 
-/**
- * How strongly the sun glares on a trail, 0…1: only a bright, mostly clear
- * daytime sun does, and rain, storms, fog or the moon put it out.
- */
-export function glareStrength(trail) {
+// A sun's glare before fog dims it, 0 and up, how much fog there is and how
+// low the sun is, 0…1; null when the moon is up.
+function sunShine(trail) {
   const { weather = {} } = trail;
-  const { moon } = timeOfDayPalette(trail);
-  if (moon >= 0.5) return 0;
+  const { moon, sunDrop } = timeOfDayPalette(trail);
+  if (moon >= 0.5) return null;
   const { strength } = sunLight({ width: 0, weather, timeOfDay: trail.timeOfDay });
   const storm = Math.max(
     Number(weather.rain) || 0,
     Number(weather.snow) || 0,
     Number(weather.lightning) || 0,
   );
-  const fog = Math.max(0, Math.min(1, Number(weather.fog) || 0));
-  const glare = ((strength - SUN_GLARE) / SUN_GLARE_RANGE) * (1 - Math.min(1, storm)) * (1 - fog) * (1 - moon);
-  return Math.max(0, Math.min(1, glare));
+  return {
+    glare: Math.max(0, ((strength - SUN_GLARE) / SUN_GLARE_RANGE) * (1 - Math.min(1, storm)) * (1 - moon)),
+    fog: Math.max(0, Math.min(1, Number(weather.fog) || 0)),
+    low: Math.max(0, Math.min(1, sunDrop / LOW_SUN_DROP)),
+  };
+}
+
+/**
+ * How strongly the sun glares on a trail, 0…1: only a bright, mostly clear
+ * daytime sun does, and rain, storms, fog or the moon put it out.
+ */
+export function glareStrength(trail) {
+  const shine = sunShine(trail);
+  return shine ? Math.min(1, shine.glare * (1 - shine.fog)) : 0;
+}
+
+/**
+ * How a trail's sunbeams show, apart from the glow round the sun: their
+ * `strength` (0 and up; 1 is a clear noon's), how much `longer` they reach
+ * and how far their colour turns toward RAY_WARM (`warmth`). A low sun keeps
+ * its rays longer and warmer as its glare fades, and light haze shows them
+ * best, where thick fog hides them.
+ */
+export function sunRays(trail) {
+  const shine = sunShine(trail);
+  if (!shine) return { strength: 0, longer: 1, warmth: 0 };
+  const { glare, fog, low } = shine;
+  // How hazy, 0…1: rising to the best haze, then thinning out as fog thickens.
+  const haze = fog <= HAZE_BEST ? fog / HAZE_BEST : Math.max(0, 1 - (fog - HAZE_BEST) / (HAZE_GONE - HAZE_BEST));
+  const hazy = fog <= HAZE_BEST ? 1 + HAZE_RAYS * haze : (1 + HAZE_RAYS) * haze;
+  return {
+    strength: Math.min(1, Math.min(1, glare) * (1 + LOW_RAYS * low)) * hazy,
+    longer: 1 + LOW_RAY_LENGTH * low + HAZE_RAY_LENGTH * haze,
+    warmth: LOW_RAY_WARMTH * low,
+  };
 }
 
 export function sunLight({

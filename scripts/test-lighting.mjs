@@ -6,7 +6,7 @@ import { rectangle, blockTrail } from './lib/terrain-fixtures.mjs';
 
 const { bakeLightField, lightFieldAt, lightReach } = await import('../js/light-field.js');
 const { adaptToGlare, sunVisible } = await import('../js/lighting.js');
-const { glareStrength } = await import('../js/drawing.js');
+const { glareStrength, sunRays } = await import('../js/drawing.js');
 
 let failures = 0;
 const backWall = (left, top, right, bottom) => ({ ...rectangle(left, top, right, bottom, 'concrete', `back-${left}`), layer: 'back' });
@@ -93,6 +93,18 @@ check('rain puts the glare out', sky(12, { sun: 1, clouds: 0.15, rain: 1 }) === 
 check('the moon never glares', [21, 22, 0, 3, 4].every((hour) => sky(hour, { sun: 1, clouds: 0 }) === 0));
 const clear = (hour) => sky(hour, { sun: 1, clouds: 0 });
 check('the glare fades in after dawn and out by dusk', clear(5) === 0 && clear(6) < clear(7) && clear(7) <= clear(12) && clear(19) < clear(12) && clear(20) === 0);
+
+// Sunbeams show best with a low sun and in light haze, and thick fog, storms
+// and the moon put them out.
+{
+  const rays = (timeOfDay, weather) => sunRays({ timeOfDay, weather: { sun: 1, clouds: 0, ...weather } });
+  const noon = rays(12), evening = rays(19), haze = rays(12, { fog: 0.25 });
+  check('a clear noon has full rays', noon.strength === 1 && noon.longer === 1 && noon.warmth === 0);
+  check('a low sun keeps its rays longer and warmer than its glare', evening.strength > clear(19) && evening.longer > 1 && evening.warmth > 0, JSON.stringify(evening));
+  check('light haze shows the rays best', haze.strength > noon.strength && haze.longer > noon.longer, JSON.stringify(haze));
+  check('thick fog hides them', rays(12, { fog: 0.8 }).strength === 0 && rays(12, { fog: 0.55 }).strength < haze.strength);
+  check('rain and the moon put them out', rays(12, { rain: 1 }).strength === 0 && rays(0).strength === 0);
+}
 
 // The sky and its sun are drawn behind everything, so terrain or a back wall
 // in front of the sun hides it, and its glare fades with how much is hidden.

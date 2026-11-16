@@ -15,7 +15,9 @@ import {
   propRotation,
   propWallFit,
   glareStrength,
+  RAY_WARM,
   sunLight,
+  sunRays,
   timeOfDayPalette,
 } from "./drawing.js";
 import { bakeLightField, lightFieldAt, lightReach } from "./light-field.js";
@@ -121,6 +123,9 @@ export function sunVisible(trail, x, y, radius) {
 
 // Sun rays: [angle offset from straight at the view's centre, beam half-width,
 // length as a fraction of the view's diagonal, brightness].
+// Sunbeams show sharpest while something cuts across the sun: with half of it
+// hidden, its rays are this much stronger again.
+const EDGE_RAYS = 0.8;
 const SUN_RAYS = [
   [-0.42, 0.05, 1.1, 0.8],
   [-0.2, 0.09, 1.25, 1],
@@ -338,6 +343,7 @@ export function createLighting() {
       ambient,
       field,
       glare: glareStrength(trail),
+      rays: sunRays(trail),
       shade: null,
       sky: rgb(ambient.sky),
       alwaysOn: ambient.sky.some((value) => value < 255),
@@ -674,9 +680,11 @@ export function createLighting() {
       const color = hexRgb(timeOfDayPalette(trail).sun || "#fff2c8");
       // A cloud over the sun dims all its shine, and lets it dazzle as it comes out.
       const clear = 1 - sun.clouded;
-      const glare = sunGlare(entry, trail, sun, cameraX + sun.x, cameraY + sun.y) * clear;
+      const open = sunOpen(entry, trail, sun, cameraX + sun.x, cameraY + sun.y) * clear;
+      const glare = entry.glare * open;
       if (glare > 0.01) {
-        drawGlare(ctx, entry, options, sun, color, glare, left, top);
+        const rays = entry.rays.strength * open * (1 + EDGE_RAYS * 4 * open * (1 - open));
+        drawGlare(ctx, entry, options, sun, color, glare, rays, left, top);
         drawGhosts(ctx, options, sun, glare);
       }
       // A low sun shines on water and glass well after its glare has faded:
@@ -787,14 +795,14 @@ export function createLighting() {
     }
   }
 
-  // The rays' gradients for a colour, drawn from the origin (translated to the
+  // The rays' gradients for a colour and length (see sunRays), drawn from the origin (translated to the
   // sun as they are used) and kept, as a radial gradient is dear to build.
-  function rayGradients(color) {
-    const key = color.join(",");
+  function rayGradients(color, longer) {
+    const key = `${color.join(",")}|${longer}`;
     let list = gradients.get(key);
     if (list) return list;
     const [cr, cg, cb] = color;
-    const diagonal = Math.hypot(cols, rows);
+    const diagonal = Math.hypot(cols, rows) * longer;
     list = SUN_RAYS.map(([, , length, level]) => {
       const gradient = raysContext.createRadialGradient(0, 0, 0, 0, 0, length * diagonal);
       let from = 0;
@@ -811,21 +819,22 @@ export function createLighting() {
     return list;
   }
 
-  // How strongly the sun glares from its place (sx, sy) in the world: less
+  // How much of the sun shows from its place (sx, sy) in the world, 0…1: less
   // when that place is dark, as when the view is deep in a cave, and as
   // terrain or a back wall in front of the sun hides it.
-  function sunGlare(entry, trail, sun, sx, sy) {
+  function sunOpen(entry, trail, sun, sx, sy) {
     const seen = entry.field ? Math.max(0, lightFieldAt(entry.field, sx, sy) * 2 - 1) : 1;
-    return entry.glare * seen * (seen > 0 ? sunVisible(trail, sx, sy, sun.radius) : 0);
+    return seen * (seen > 0 ? sunVisible(trail, sx, sy, sun.radius) : 0);
   }
 
-  // The glare of a strong sun: a halo round it and slow rays fanning down
-  // across the view, kept out of caves and rock by the baked shade.
-  // Screened on top so it only ever brightens. The rays are only drawn
-  // again when the sun has moved a pixel on screen or their sway has moved
-  // on (about every third frame), and the shade is only cut out again when
-  // the view has moved; otherwise the kept canvas is laid over the scene.
-  function drawGlare(ctx, entry, { cameraX, cameraY, width, height, time = 0 }, sun, color, glare, left, top) {
+  // The glare of a strong sun: a halo round it as strong as `glare`, and slow
+  // rays fanning down across the view as strong as `rays` (see sunRays),
+  // kept out of caves and rock by the baked shade. Screened on top so it only
+  // ever brightens. The rays are only drawn again when the sun has moved a
+  // pixel on screen, their sway has moved on (about every third frame) or
+  // their strength has changed a step, and the shade is only cut out again
+  // when the view has moved; otherwise the kept canvas is laid over the scene.
+  function drawGlare(ctx, entry, { cameraX, cameraY, width, height, time = 0 }, sun, color, glare, rays, left, top) {
     const sx = cameraX + sun.x,
       sy = cameraY + sun.y;
     if (!raysCanvas) {
@@ -836,12 +845,18 @@ export function createLighting() {
       oy = Math.round((sy - top) / ART_PIXEL);
     const toward = Math.atan2(height * 0.6 - sun.y, width * 0.5 - sun.x);
     const sway = Math.floor(time * 20);
-    const key = `${ox}|${oy}|${Math.round(toward * 100)}|${sway}|${color}|${sun.radius}`;
+    // The whole glare is laid on as strong as the halo, so the rays are drawn
+    // as strong as they are beside it, over again where that is more than once.
+    const beside = Math.round((rays / glare) * 20) / 20;
+    const { longer, warmth } = entry.rays;
+    const warm = hexRgb(RAY_WARM);
+    const rayColor = color.map((value, index) => Math.round(value + (warm[index] - value) * warmth));
+    const key = `${ox}|${oy}|${Math.round(toward * 100)}|${sway}|${color}|${sun.radius}|${beside}`;
     if (key !== raysKey) {
       raysKey = key;
       const g = raysContext;
-      const diagonal = Math.hypot(cols, rows);
-      const rays = rayGradients(color);
+      const diagonal = Math.hypot(cols, rows) * longer;
+      const beams = rayGradients(rayColor, longer);
       g.setTransform(1, 0, 0, 1, 0, 0);
       g.globalCompositeOperation = "source-over";
       g.globalAlpha = 1;
@@ -850,18 +865,19 @@ export function createLighting() {
       g.imageSmoothingEnabled = false;
       g.translate(ox, oy);
       const swayTime = sway / 20;
-      SUN_RAYS.forEach(([offset, spread, length], index) => {
-        const angle = toward + offset + Math.sin(swayTime * 0.21 + index * 2.3) * 0.025;
-        const pulse = 0.7 + 0.3 * Math.sin(swayTime * 0.55 + index * 1.7);
-        const reach = length * diagonal;
-        g.globalAlpha = pulse;
-        g.fillStyle = rays[index];
-        g.beginPath();
-        g.moveTo(0, 0);
-        g.arc(0, 0, reach, angle - spread, angle + spread);
-        g.closePath();
-        g.fill();
-      });
+      for (let remaining = beside; remaining > 0; remaining--)
+        SUN_RAYS.forEach(([offset, spread, length], index) => {
+          const angle = toward + offset + Math.sin(swayTime * 0.21 + index * 2.3) * 0.025;
+          const pulse = 0.7 + 0.3 * Math.sin(swayTime * 0.55 + index * 1.7);
+          const reach = length * diagonal;
+          g.globalAlpha = pulse * Math.min(1, remaining);
+          g.fillStyle = beams[index];
+          g.beginPath();
+          g.moveTo(0, 0);
+          g.arc(0, 0, reach, angle - spread, angle + spread);
+          g.closePath();
+          g.fill();
+        });
       g.globalAlpha = 1;
       const halo = sprite(150, color);
       g.drawImage(halo.image, -halo.r, -halo.r);
