@@ -2482,7 +2482,7 @@ Example trail: easy.
   "spikes": [],
   "water": [],
   "weather": {
-    "sun": 0.7,
+    "sun": 0.65,
     "clouds": 0.15,
     "fog": 0,
     "rain": 0,
