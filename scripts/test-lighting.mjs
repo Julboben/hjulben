@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import { rectangle, blockTrail } from './lib/terrain-fixtures.mjs';
 
 const { bakeLightField, lightFieldAt, lightReach } = await import('../js/light-field.js');
-const { glareStrength, sunVisible } = await import('../js/lighting.js');
+const { adaptToGlare, glareStrength, sunVisible } = await import('../js/lighting.js');
 
 let failures = 0;
 const backWall = (left, top, right, bottom) => ({ ...rectangle(left, top, right, bottom, 'concrete', `back-${left}`), layer: 'back' });
@@ -109,6 +109,28 @@ check('the glare fades in after dawn and out by dusk', clear(5) === 0 && clear(6
   const edge = sunVisible(city, 300, 0);
   check('a sun half behind a wall is partly seen', edge > 0.3 && edge < 0.7, edge);
   check('a sun behind glass is seen', sunVisible(city, 1350, 0) === 1);
+}
+
+// The eyes get used to the sun's glare: a sun that comes out dazzles for about
+// a second, one that rises slowly hardly does, and one that ducks behind a
+// pillar for a moment dazzles a little when it comes back.
+{
+  const watch = (glareAt, seconds, adapted = 0) => {
+    let peak = 0;
+    for (let time = 0; time < seconds; time += 1 / 60) {
+      adapted = adaptToGlare(adapted, glareAt(time), 1 / 60);
+      peak = Math.max(peak, glareAt(time) - adapted);
+    }
+    return { adapted, peak };
+  };
+  check('a steady sun never dazzles', watch(() => 1, 3, 1).peak === 0);
+  const out = watch(() => 1, 3);
+  check('a sun coming out dazzles', out.peak > 0.9, out.peak);
+  check('and the dazzle settles within about a second', 1 - watch(() => 1, 1).adapted < 0.05 && out.adapted > 0.999);
+  const slow = watch((time) => Math.min(1, time / 4), 5);
+  check('a slowly rising glare hardly dazzles', slow.peak < 0.1, slow.peak);
+  const blink = watch((time) => (time < 0.2 ? 0 : 1), 1, 1);
+  check('a sun hidden for a moment dazzles a little', blink.peak > 0.1 && blink.peak < 0.35, blink.peak);
 }
 
 // Lights stop at the terrain: a ray into the ground goes only skin deep,

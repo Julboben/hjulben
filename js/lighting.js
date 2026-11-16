@@ -22,6 +22,7 @@ import { dayBlend, normalizeHour } from "./time-of-day.js";
 import { backWallGeometry, terrainAt, terrainGeometry } from "./terrain.js";
 import { terrainSolidAt } from "./terrain-runtime.js";
 import { isSeeThrough } from "./materials.js";
+import { surfaceWave, waterColumns } from "./water.js";
 import { LANTERN_CENTRE } from "./cave-props.js";
 import { CRANE_LIGHTS, LAMP_HEAD } from "./city-props.js";
 import { HUT_WINDOW_CENTRE } from "./mountain-props.js";
@@ -125,7 +126,53 @@ const SUN_RAYS = [
   [0.45, 0.05, 0.9, 0.6],
 ];
 
+// The eyes getting used to the sun's glare: how fast, per second, they adjust
+// to more of it and to less. Less is slower, so a sun that ducks behind a
+// pillar for a moment still dazzles a little when it comes back.
+const ADAPT_LIGHT = 3.2,
+  ADAPT_DARK = 1.2;
+// How bright the dazzle of a sun coming out is at the sun, at its strongest,
+// and how far its glow reaches, as a fraction of the view's diagonal.
+const DAZZLE = 0.75,
+  DAZZLE_REACH = 0.65;
+// Glitter on water is thickest within about this many world units of the
+// sun's x, and thin elsewhere; the path of light under the sun is this bright.
+const GLITTER_SPREAD = 120,
+  GLITTER_PATH = 0.35;
+
 const rgb = ([r, g, b]) => `rgb(${r},${g},${b})`;
+const towardWhite = (color, amount) => color.map((value) => Math.round(value + (255 - value) * amount));
+
+/**
+ * How used to the sun's glare the eyes are after `dt` seconds of seeing
+ * `glare` (0…1), coming from `adapted`. Glare above that dazzles.
+ */
+export function adaptToGlare(adapted, glare, dt) {
+  const rate = glare > adapted ? ADAPT_LIGHT : ADAPT_DARK;
+  return adapted + (glare - adapted) * (1 - Math.exp(-rate * dt));
+}
+
+// Two whole numbers hashed to 0…1, so the glitter looks random but needs no
+// state and looks the same whenever the scene is drawn again.
+function hash(a, b) {
+  let h = Math.imul(a, 374761393) + Math.imul(b, 668265263);
+  h = Math.imul(h ^ (h >>> 13), 1274126177);
+  return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
+}
+
+/**
+ * The twinkle on one art-pixel column of water at `time`, or null: each
+ * column flashes briefly now and then, more often the nearer it is to under
+ * the sun (`near`, 0…1). `depth` is in art pixels below the surface.
+ */
+function glitterTwinkle(column, time, near) {
+  const period = 0.6 + 0.8 * hash(column, -1);
+  const turn = time / period + hash(column, -2);
+  const cycle = Math.floor(turn);
+  if (hash(column, cycle * 2) > 0.03 + 0.3 * near) return null;
+  const roll = hash(column, cycle * 2 + 1);
+  return { brightness: Math.sin(Math.PI * (turn - cycle)) ** 2, depth: roll < 0.7 ? 0 : roll < 0.85 ? 1 : 2 };
+}
 
 // Each hour's ambient light, blended once.
 const hourAmbients = new Map();
@@ -202,6 +249,11 @@ export function createLighting() {
     raysKey = "",
     glareEntry = null,
     headlights = true;
+  // How used to the sun's glare the eyes are, for the ride and scene time
+  // they last saw it (see drawDazzle).
+  let adapted = 0,
+    adaptedRide = null,
+    adaptedTime = 0;
   const bakes = new WeakMap();
   const sprites = new Map();
   // The rays' gradients, drawn from the origin, by colour (see rayGradients).
@@ -568,11 +620,12 @@ export function createLighting() {
 
   /**
    * Multiplies everything already drawn by the light map, then adds a pixel
-   * glint on each light's source, and the glare of a strong sun. Draws in
-   * world space; `width` and `height` are the view's size in world units.
-   * Returns false when the view is in full daylight and the scene needed no
-   * shading. `sun` is the sun's place and strength for this view (see
-   * sunLight), when the caller has it already.
+   * glint on each light's source, and a strong sun's glare, its glitter on
+   * the ride's water and its dazzle as it comes out. Draws in world space;
+   * `width` and `height` are the view's size in world units. Returns false
+   * when the view is in full daylight and the scene needed no shading. `sun`
+   * is the sun's place and strength for this view (see sunLight), when the
+   * caller has it already; `still` is for reduced motion.
    */
   function draw(ctx, options) {
     const { trail, cameraX, cameraY, width, height } = options;
@@ -581,7 +634,15 @@ export function createLighting() {
       top = Math.floor(cameraY / ART_PIXEL) * ART_PIXEL;
     ensure(Math.ceil(width / ART_PIXEL) + 2, Math.ceil(height / ART_PIXEL) + 2);
     const lit = (entry.alwaysOn || viewIsLit(entry, left, top)) && shadeScene(ctx, entry, options, left, top);
-    if (entry.glare > 0) drawGlare(ctx, entry, options, left, top);
+    if (entry.glare > 0) {
+      const sun =
+        options.sun ?? sunLight({ width, cameraX, cameraY, weather: trail.weather, timeOfDay: trail.timeOfDay });
+      const color = hexRgb(timeOfDayPalette(trail).sun || "#fff2c8");
+      const glare = sunGlare(entry, trail, cameraX + sun.x, cameraY + sun.y);
+      if (glare > 0.01) drawGlare(ctx, entry, options, sun, color, glare, left, top);
+      drawGlitter(ctx, entry, options, sun, color);
+      drawDazzle(ctx, options, sun, color, glare);
+    }
     return lit;
   }
 
@@ -707,26 +768,27 @@ export function createLighting() {
     return list;
   }
 
+  // How strongly the sun glares from its place (sx, sy) in the world: less
+  // when that place is dark, as when the view is deep in a cave, and as
+  // terrain or a back wall in front of the sun hides it.
+  function sunGlare(entry, trail, sx, sy) {
+    const seen = entry.field ? Math.max(0, lightFieldAt(entry.field, sx, sy) * 2 - 1) : 1;
+    return entry.glare * seen * (seen > 0 ? sunVisible(trail, sx, sy) : 0);
+  }
+
   // The glare of a strong sun: a halo round it and slow rays fanning down
-  // across the view, kept out of caves and rock by the baked shade. It fades
-  // when the sun's place in the world is dark, as when the view is deep in a
-  // cave, and as terrain or a back wall in front of the sun hides it.
+  // across the view, kept out of caves and rock by the baked shade.
   // Screened on top so it only ever brightens. The rays are only drawn
   // again when the sun has moved a pixel on screen or their sway has moved
   // on (about every third frame), and the shade is only cut out again when
   // the view has moved; otherwise the kept canvas is laid over the scene.
-  function drawGlare(ctx, entry, { trail, cameraX, cameraY, width, height, time = 0, sun = null }, left, top) {
-    sun ??= sunLight({ width, cameraX, cameraY, weather: trail.weather, timeOfDay: trail.timeOfDay });
+  function drawGlare(ctx, entry, { cameraX, cameraY, width, height, time = 0 }, sun, color, glare, left, top) {
     const sx = cameraX + sun.x,
       sy = cameraY + sun.y;
-    const seen = entry.field ? Math.max(0, lightFieldAt(entry.field, sx, sy) * 2 - 1) : 1;
-    const glare = entry.glare * seen * (seen > 0 ? sunVisible(trail, sx, sy) : 0);
-    if (glare <= 0.01) return;
     if (!raysCanvas) {
       raysCanvas = createCanvas(cols, rows);
       raysContext = raysCanvas.getContext("2d");
     }
-    const color = hexRgb(timeOfDayPalette(trail).sun || "#fff2c8");
     const ox = Math.round((sx - left) / ART_PIXEL),
       oy = Math.round((sy - top) / ART_PIXEL);
     const toward = Math.atan2(height * 0.6 - sun.y, width * 0.5 - sun.x);
@@ -791,6 +853,81 @@ export function createLighting() {
     ctx.globalCompositeOperation = "screen";
     ctx.globalAlpha = 0.24 * glare;
     ctx.drawImage(image, left, top, cols * ART_PIXEL, rows * ART_PIXEL);
+    ctx.restore();
+  }
+
+  // Glitter on water in a clear sun: a faint path of light along the surface
+  // under the sun, and twinkles on it, thick there and thin elsewhere. Only
+  // water in daylight glitters, and with reduced motion only the path shows.
+  function drawGlitter(ctx, entry, { trail, ride, cameraX, cameraY, width, height, time = 0, still = false }, sun, color) {
+    if (!ride?.water?.length) return;
+    const compiled = terrainGeometry(trail);
+    const sx = cameraX + sun.x;
+    const path = rgb(towardWhite(color, 0.4)),
+      spark = rgb(towardWhite(color, 0.65));
+    ctx.save();
+    ctx.globalCompositeOperation = "screen";
+    for (const body of ride.water) {
+      if (body.x > cameraX + width || body.x + body.width < cameraX || body.y > cameraY + height || body.y < cameraY)
+        continue;
+      const surface = Math.round(body.y / ART_PIXEL) * ART_PIXEL;
+      for (const { x, segments } of waterColumns(compiled, body, ART_PIXEL)) {
+        if (x < cameraX - ART_PIXEL || x > cameraX + width || Math.abs(segments[0][0] - body.y) >= 0.5) continue;
+        const y = surface + surfaceWave(x, time);
+        const lit = Math.max(0, Math.min(1, (lightFieldAt(entry.field, x, y - ART_PIXEL) - 0.6) / 0.4));
+        // A low sun glitters on water well after its glare has faded: in full
+        // from half the glare, and fading out with it more slowly.
+        const strength = Math.min(1, Math.sqrt(entry.glare * 2)) * lit;
+        if (strength <= 0) continue;
+        const near = Math.exp(-(((x - sx) / GLITTER_SPREAD) ** 2));
+        ctx.fillStyle = path;
+        ctx.globalAlpha = GLITTER_PATH * near * strength;
+        ctx.fillRect(x, y, ART_PIXEL, ART_PIXEL);
+        if (still) continue;
+        const twinkle = glitterTwinkle(x / ART_PIXEL, time, near);
+        if (!twinkle) continue;
+        const alpha = twinkle.brightness * strength,
+          top = y + twinkle.depth * ART_PIXEL;
+        ctx.fillStyle = spark;
+        ctx.globalAlpha = alpha;
+        ctx.fillRect(x, top, ART_PIXEL, ART_PIXEL);
+        // The brightest, right under the sun, catch it as a little cross.
+        if (twinkle.depth || near < 0.55 || twinkle.brightness < 0.6) continue;
+        ctx.globalAlpha = alpha * 0.6;
+        ctx.fillRect(x - ART_PIXEL, top, ART_PIXEL, ART_PIXEL);
+        ctx.fillRect(x + ART_PIXEL, top, ART_PIXEL, ART_PIXEL);
+        ctx.fillRect(x, top - ART_PIXEL, ART_PIXEL, ART_PIXEL);
+      }
+    }
+    ctx.restore();
+  }
+
+  // The eyes adjusting as the sun comes out from behind a hill or the view
+  // leaves a cave: a glow from the sun across the view, as strong as the glare
+  // has outgrown what the eyes are used to, settling over about a second. A
+  // new ride starts used to its sun, and with reduced motion there is none.
+  function drawDazzle(ctx, { ride, cameraX, cameraY, width, height, time = 0, still = false }, sun, color, glare) {
+    if (ride !== adaptedRide || still) {
+      adaptedRide = ride;
+      adapted = glare;
+      adaptedTime = time;
+      return;
+    }
+    adapted = adaptToGlare(adapted, glare, Math.max(0, Math.min(0.25, time - adaptedTime)));
+    adaptedTime = time;
+    const dazzle = (glare - adapted) * DAZZLE;
+    if (dazzle <= 0.01) return;
+    const [r, g, b] = towardWhite(color, 0.5);
+    const x = cameraX + sun.x,
+      y = cameraY + sun.y;
+    const gradient = ctx.createRadialGradient(x, y, 0, x, y, Math.hypot(width, height) * DAZZLE_REACH);
+    gradient.addColorStop(0, `rgba(${r},${g},${b},${dazzle})`);
+    gradient.addColorStop(0.35, `rgba(${r},${g},${b},${dazzle * 0.43})`);
+    gradient.addColorStop(1, `rgba(${r},${g},${b},${dazzle * 0.16})`);
+    ctx.save();
+    ctx.globalCompositeOperation = "screen";
+    ctx.fillStyle = gradient;
+    ctx.fillRect(cameraX, cameraY, width, height);
     ctx.restore();
   }
 

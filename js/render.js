@@ -2175,6 +2175,7 @@ export function createRenderer(canvas, { still = false } = {}) {
       time: propScene.time,
       flip: flipVisual,
       sun: frameSun,
+      still: reducedMotion,
       lights: fireworks?.lights(),
     });
     drawPropGlows(ride, look, ride.ragdoll ? "ragdoll" : state, full);
