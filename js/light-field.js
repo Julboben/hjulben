@@ -425,3 +425,70 @@ export function lightFieldAt(field, wx, wy) {
   if (c < 0 || c >= field.width || r < 0) return 1;
   return field.light[Math.min(r, field.height - 1) * field.width + c];
 }
+
+// Sunbeams: air the sun reaches directly, with sun-shaded air around it, lit
+// in slanting beams as dust and haze catch the light. The more of the air
+// within SHAFT_SPREAD world units is in the sun's shade, the stronger the
+// beam: a narrow gap into the dark gives crisp beams, a wide opening that
+// lets the sun into most of a space only faint ones, and open ground none.
+// Beams start showing at SHAFT_SHADE of the air in shade, are full by
+// SHAFT_SHADE + SHAFT_SHADE_RANGE, and fade over SHAFT_REACH world units from
+// where they enter the shade.
+const SHAFT_SPREAD = 48,
+  SHAFT_SHADE = 0.35,
+  SHAFT_SHADE_RANGE = 0.5,
+  SHAFT_REACH = 320;
+
+/**
+ * How bright the sun's beams are in each texel of a light field, 0…1, for a
+ * sun `slant` texels across per texel up and to the right; null when there
+ * are none. Beams come in bands across their width, the same for every beam.
+ */
+export function bakeSunShafts(field, slant) {
+  const { width, height, rock, unit } = field;
+  const size = width * height;
+  // Direct sun, swept row by row from the top: air is lit as much as the air
+  // up the slant from it, blended between the two texels there, so a beam's
+  // edges soften as it goes. Beyond the right edge is open sky.
+  // Working arrays share the light field's scratch slots, free once it is baked.
+  const sun = scratchArray("a", Float32Array, size, 0);
+  const step = Math.floor(slant),
+    frac = slant - step;
+  const above = (i, c) => {
+    const a = c + step;
+    const near = a < width ? sun[i - width + step] : 1,
+      far = a + 1 < width ? sun[i - width + step + 1] : 1;
+    return near + (far - near) * frac;
+  };
+  for (let c = 0; c < width; c++) sun[c] = rock[c] ? 0 : 1;
+  for (let r = 1; r < height; r++)
+    for (let c = 0, i = r * width; c < width; c++, i++) sun[i] = rock[i] ? 0 : above(i, c);
+  // The share of the air nearby that is in the sun's shade.
+  const air = scratchArray("b", Float32Array, size, 0),
+    shade = scratchArray("c", Float32Array, size, 0);
+  for (let i = 0; i < size; i++) {
+    air[i] = rock[i] ? 0 : 1;
+    shade[i] = air[i] * (1 - sun[i]);
+  }
+  const spread = Math.max(1, Math.round(SHAFT_SPREAD / unit));
+  boxBlur(air, width, height, spread);
+  boxBlur(shade, width, height, spread);
+  // How far each texel is down its beam from where it entered the shade.
+  const depth = scratchArray("d", Float32Array, size, 0);
+  const values = new Float32Array(size);
+  let any = false;
+  for (let r = 0; r < height; r++)
+    for (let c = 0, i = r * width; c < width; c++, i++) {
+      if (rock[i] || sun[i] <= 0 || air[i] <= 0) continue;
+      const shaded = smooth((shade[i] / air[i] - SHAFT_SHADE) / SHAFT_SHADE_RANGE);
+      if (shaded <= 0) continue;
+      const up = Math.round(c + slant);
+      depth[i] = r > 0 && up < width ? depth[i - width + up - c] + 1 : 0;
+      // Bands across the beams, in hard steps for the pixel look.
+      const across = (c + slant * r) * unit;
+      const band = Math.round(Math.max(0, Math.min(1, 0.55 + 0.25 * Math.sin(across * 0.045) + 0.2 * Math.sin(across * 0.115 + 1.3))) * 3) / 3;
+      values[i] = sun[i] * shaded * Math.exp((-depth[i] * unit) / SHAFT_REACH) * band;
+      if (values[i] > 0) any = true;
+    }
+  return any ? values : null;
+}

@@ -20,7 +20,7 @@ import {
   sunRays,
   timeOfDayPalette,
 } from "./drawing.js";
-import { bakeLightField, lightFieldAt, lightReach } from "./light-field.js";
+import { bakeLightField, bakeSunShafts, lightFieldAt, lightReach } from "./light-field.js";
 import { dayBlend, normalizeHour } from "./time-of-day.js";
 import { backWallGeometry, terrainAt, terrainGeometry } from "./terrain.js";
 import { terrainSolidAt } from "./terrain-runtime.js";
@@ -160,6 +160,12 @@ const SHEEN = 0.2,
 // The glint where the reflection crosses a pane's top right corner: a pixel
 // cross, as for lamps (see drawFlare).
 const PANE_FLARE = [2, 1, 0];
+// Sunbeams through gaps into shade (see bakeSunShafts): how bright they are
+// at full strength, and the dust in them, one mote now and then in each patch
+// of the world this many units across.
+const SHAFT_BRIGHTNESS = 0.6,
+  MOTE = "#fff3d6",
+  MOTE_PATCH = 48;
 // Lens flare: ghosts of the sun on the line from it through the middle of the
 // view, as [how far along (1 is the middle), radius in world units, ring width
 // (0 for a solid disc), colour, brightness at full glare].
@@ -267,6 +273,11 @@ export function ambientFor(trail) {
 }
 
 const hexRgb = (hex) => [1, 3, 5].map((at) => parseInt(hex.slice(at, at + 2), 16));
+// The sun's colour turned `warmth` of the way toward a low sun's (see sunRays).
+const warmed = (color, warmth) => {
+  const warm = hexRgb(RAY_WARM);
+  return color.map((value, index) => Math.round(value + (warm[index] - value) * warmth));
+};
 
 export function createLighting() {
   let canvas = null,
@@ -287,6 +298,10 @@ export function createLighting() {
     glareEntry = null,
     glintCanvas = null,
     glintContext = null,
+    shaftCanvas = null,
+    shaftContext = null,
+    shaftKey = "",
+    shaftEntry = null,
     headlights = true;
   // How used to the sun's glare the eyes are, for the ride and scene time
   // they last saw it (see drawDazzle).
@@ -306,8 +321,8 @@ export function createLighting() {
     context = canvas.getContext("2d");
     lightCanvas = createCanvas(cols, rows);
     lightContext = lightCanvas.getContext("2d");
-    glareCanvas = raysCanvas = glintCanvas = null;
-    glareKey = raysKey = "";
+    glareCanvas = raysCanvas = glintCanvas = shaftCanvas = null;
+    glareKey = raysKey = shaftKey = "";
     gradients.clear();
   }
 
@@ -393,9 +408,33 @@ export function createLighting() {
       entry.shade = shadeImage && toCanvas(shadeImage);
       entry.tiles = tiles;
       entry.tileCols = tileCols;
+      entry.shafts = entry.rays.strength > 0 ? bakeShafts(trail, field, entry.rays) : null;
     }
     entry.props = propLights(trail, entry);
     return entry;
+  }
+
+  // The sun's beams through gaps into shade (see bakeSunShafts): how bright
+  // each texel is, an image of them in their colour, and which tiles of the
+  // field have any, for skipping views with none.
+  function bakeShafts(trail, field, rays) {
+    const values = bakeSunShafts(field, rays.slant);
+    if (!values) return null;
+    const [r, g, b] = towardWhite(warmed(hexRgb(timeOfDayPalette(trail).sun || "#fff2c8"), rays.warmth), 0.5);
+    const { width, height } = field;
+    const image = new ImageData(width, height);
+    const tileCols = Math.ceil(width / TILE);
+    const tiles = new Uint8Array(tileCols * Math.ceil(height / TILE));
+    for (let i = 0, at = 0; i < values.length; i++, at += 4) {
+      if (!values[i]) continue;
+      image.data[at] = r;
+      image.data[at + 1] = g;
+      image.data[at + 2] = b;
+      image.data[at + 3] = values[i] * 255;
+      const c = i % width;
+      tiles[Math.floor((i - c) / width / TILE) * tileCols + Math.floor(c / TILE)] = 1;
+    }
+    return { values, image: toCanvas(image), tiles, tileCols };
   }
 
   function toCanvas(image) {
@@ -646,8 +685,11 @@ export function createLighting() {
 
   // Whether any of the view isn't in full daylight.
   function viewIsLit(entry, left, top) {
-    const { field, tiles, tileCols } = entry;
-    if (!field) return false;
+    return Boolean(entry.field) && tilesInView(entry.field, entry.tiles, entry.tileCols, left, top);
+  }
+
+  /** Whether any of a field's marked tiles is in the view at (left, top). */
+  function tilesInView(field, tiles, tileCols, left, top) {
     const span = field.unit * TILE;
     const c0 = Math.max(0, Math.floor((left - field.x) / span)),
       c1 = Math.min(tileCols - 1, Math.floor((left + cols * ART_PIXEL - field.x) / span));
@@ -682,6 +724,7 @@ export function createLighting() {
       const clear = 1 - sun.clouded;
       const open = sunOpen(entry, trail, sun, cameraX + sun.x, cameraY + sun.y) * clear;
       const glare = entry.glare * open;
+      if (entry.shafts) drawShafts(ctx, entry, options, sun, left, top);
       if (glare > 0.01) {
         const rays = entry.rays.strength * open * (1 + EDGE_RAYS * 4 * open * (1 - open));
         drawGlare(ctx, entry, options, sun, color, glare, rays, left, top);
@@ -819,6 +862,57 @@ export function createLighting() {
     return list;
   }
 
+  // Sunbeams through gaps into shade (see bakeSunShafts), as strong as the
+  // sun's rays, so a passing cloud dims them too, and screened on like the
+  // glare. They are only cut to the view again when it has moved. Dust drifts
+  // in them, a mote now and then in each patch of the world, showing only
+  // where it is in a beam; with reduced motion there is none.
+  function drawShafts(ctx, entry, { time = 0, still = false }, sun, left, top) {
+    const { field, shafts } = entry;
+    const strength = entry.rays.strength * (1 - sun.clouded);
+    if (strength <= 0.01 || !tilesInView(field, shafts.tiles, shafts.tileCols, left, top)) return;
+    if (!shaftCanvas) {
+      shaftCanvas = createCanvas(cols, rows);
+      shaftContext = shaftCanvas.getContext("2d");
+    }
+    const key = `${left}|${top}`;
+    if (key !== shaftKey || entry !== shaftEntry) {
+      shaftKey = key;
+      shaftEntry = entry;
+      shaftContext.clearRect(0, 0, cols, rows);
+      shaftContext.imageSmoothingEnabled = true;
+      drawField(shaftContext, shafts.image, field, left, top);
+    }
+    ctx.save();
+    ctx.imageSmoothingEnabled = false;
+    ctx.globalCompositeOperation = "screen";
+    ctx.globalAlpha = SHAFT_BRIGHTNESS * strength;
+    ctx.drawImage(shaftCanvas, left, top, cols * ART_PIXEL, rows * ART_PIXEL);
+    if (!still) {
+      ctx.fillStyle = MOTE;
+      const right = left + cols * ART_PIXEL,
+        bottom = top + rows * ART_PIXEL;
+      for (let cy = Math.floor(top / MOTE_PATCH); cy * MOTE_PATCH < bottom; cy++)
+        for (let cx = Math.floor(left / MOTE_PATCH); cx * MOTE_PATCH < right; cx++) {
+          const patch = cx * 7919 + cy;
+          const life = 6 + 6 * hash(patch, -1),
+            turn = time / life + hash(patch, -2),
+            round = Math.floor(turn),
+            age = (turn - round) * life;
+          const x = (cx + hash(patch, round * 2)) * MOTE_PATCH + Math.sin(age * 0.7 + patch) * 6,
+            y = (cy + hash(patch, round * 2 + 1)) * MOTE_PATCH + age * 1.6;
+          const c = Math.floor((x - field.x) / field.unit),
+            r = Math.floor((y - field.y) / field.unit);
+          if (c < 0 || r < 0 || c >= field.width || r >= field.height) continue;
+          const beam = shafts.values[r * field.width + c];
+          if (beam < 0.15) continue;
+          ctx.globalAlpha = Math.sin((Math.PI * age) / life) * Math.min(1, beam * 2) * strength * 0.8;
+          ctx.fillRect(Math.round(x / ART_PIXEL) * ART_PIXEL, Math.round(y / ART_PIXEL) * ART_PIXEL, ART_PIXEL, ART_PIXEL);
+        }
+    }
+    ctx.restore();
+  }
+
   // How much of the sun shows from its place (sx, sy) in the world, 0…1: less
   // when that place is dark, as when the view is deep in a cave, and as
   // terrain or a back wall in front of the sun hides it.
@@ -849,8 +943,7 @@ export function createLighting() {
     // as strong as they are beside it, over again where that is more than once.
     const beside = Math.round((rays / glare) * 20) / 20;
     const { longer, warmth } = entry.rays;
-    const warm = hexRgb(RAY_WARM);
-    const rayColor = color.map((value, index) => Math.round(value + (warm[index] - value) * warmth));
+    const rayColor = warmed(color, warmth);
     const key = `${ox}|${oy}|${Math.round(toward * 100)}|${sway}|${color}|${sun.radius}|${beside}`;
     if (key !== raysKey) {
       raysKey = key;

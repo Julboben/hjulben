@@ -4,7 +4,7 @@
 import assert from 'node:assert/strict';
 import { rectangle, blockTrail } from './lib/terrain-fixtures.mjs';
 
-const { bakeLightField, lightFieldAt, lightReach } = await import('../js/light-field.js');
+const { bakeLightField, bakeSunShafts, lightFieldAt, lightReach } = await import('../js/light-field.js');
 const { adaptToGlare, sunVisible } = await import('../js/lighting.js');
 const { glareStrength, sunRays } = await import('../js/drawing.js');
 
@@ -147,6 +147,46 @@ check('the glare fades in after dawn and out by dusk', clear(5) === 0 && clear(6
   check('a slowly rising glare hardly dazzles', slow.peak < 0.1, slow.peak);
   const blink = watch((time) => (time < 0.2 ? 0 : 1), 1, 1);
   check('a sun hidden for a moment dazzles a little', blink.peak > 0.1 && blink.peak < 0.35, blink.peak);
+}
+
+// Sunbeams: the sun shines down its slant through a gap in a cave's roof in
+// a beam that stops at the floor. A gap too narrow for the roof's thickness
+// lets none through, a wide opening lights the cave too much for a strong
+// beam, and open ground has none.
+{
+  const cave = (roof) => blockTrail([
+    rectangle(-400, 300, 600, 1000, 'grass', 'left'), ...roof, rectangle(1700, 300, 2400, 1000, 'grass', 'right'),
+    rectangle(600, 600, 1700, 1000, 'stone', 'floor'), backWall(600, 380, 1700, 600),
+  ]);
+  const beams = (trail) => {
+    const field = bakeLightField(trail, NOON);
+    const values = bakeSunShafts(field, 0.5);
+    return (x, y) => {
+      const c = Math.floor((x - field.x) / field.unit),
+        r = Math.floor((y - field.y) / field.unit);
+      return values && c >= 0 && r >= 0 && c < field.width && r < field.height ? values[r * field.width + c] : 0;
+    };
+  };
+  const strongest = (beam) => {
+    let most = 0;
+    for (let x = 600; x < 1700; x += 4) for (let y = 384; y < 600; y += 4) most = Math.max(most, beam(x, y));
+    return most;
+  };
+  // Holes 30 and 60 wide in a roof 80 thick; a beam through the second
+  // slants down to the left, half as far across as it falls. Its edges are
+  // soft, so faint light (under FAINT) spills a little beside it.
+  const FAINT = 0.05;
+  const holes = beams(cave([rectangle(600, 300, 1000, 380, 'stone', 'a'), rectangle(1030, 300, 1300, 380, 'stone', 'b'), rectangle(1360, 300, 1700, 380, 'stone', 'c')]));
+  check('the sun shines through a hole in a cave roof', holes(1250, 500) > 0.15, holes(1250, 500));
+  check('in a slanting beam, and nowhere else', holes(1330, 500) < FAINT && holes(900, 500) < FAINT && holes(1200, 592) > 0.15);
+  check('not through a hole too narrow for the roof', strongest((x, y) => (x < 1100 ? holes(x, y) : 0)) < FAINT);
+  check('nor inside the rock', holes(1100, 340) === 0 && holes(1250, 640) === 0);
+  const wide = beams(cave([rectangle(600, 300, 1000, 380, 'stone', 'a')]));
+  check('a wide opening gives only a faint beam', strongest(wide) < strongest(holes) / 2, `${strongest(wide)} ${strongest(holes)}`);
+  const open = beams(blockTrail([rectangle(0, 300, 2000, 900, 'grass', 'ground')]));
+  let most = 0;
+  for (let x = 0; x < 2000; x += 8) for (let y = 0; y < 300; y += 8) most = Math.max(most, open(x, y));
+  check('open ground has no beams', most === 0, most);
 }
 
 // Lights stop at the terrain: a ray into the ground goes only skin deep,

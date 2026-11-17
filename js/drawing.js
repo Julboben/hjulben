@@ -1316,6 +1316,10 @@ const LOW_SUN_DROP = 70,
   HAZE_GONE = 0.8,
   HAZE_RAYS = 0.4,
   HAZE_RAY_LENGTH = 0.15;
+// How far across sunlight falls per unit down, from the sun up to the right:
+// steep at noon, and flatter by LOW_SLANT more with a low sun.
+const NOON_SLANT = 0.5,
+  LOW_SLANT = 0.8;
 export const RAY_WARM = "#ff9a52";
 
 // A sun's glare before fog dims it, 0 and up, how much fog there is and how
@@ -1348,14 +1352,15 @@ export function glareStrength(trail) {
 
 /**
  * How a trail's sunbeams show, apart from the glow round the sun: their
- * `strength` (0 and up; 1 is a clear noon's), how much `longer` they reach
- * and how far their colour turns toward RAY_WARM (`warmth`). A low sun keeps
- * its rays longer and warmer as its glare fades, and light haze shows them
+ * `strength` (0 and up; 1 is a clear noon's), how much `longer` they reach,
+ * how far their colour turns toward RAY_WARM (`warmth`) and how far across
+ * the light falls per unit down (`slant`). A low sun keeps its rays longer
+ * and warmer as its glare fades, and falls flatter; light haze shows them
  * best, where thick fog hides them.
  */
 export function sunRays(trail) {
   const shine = sunShine(trail);
-  if (!shine) return { strength: 0, longer: 1, warmth: 0 };
+  if (!shine) return { strength: 0, longer: 1, warmth: 0, slant: NOON_SLANT };
   const { glare, fog, low } = shine;
   // How hazy, 0…1: rising to the best haze, then thinning out as fog thickens.
   const haze = fog <= HAZE_BEST ? fog / HAZE_BEST : Math.max(0, 1 - (fog - HAZE_BEST) / (HAZE_GONE - HAZE_BEST));
@@ -1364,6 +1369,7 @@ export function sunRays(trail) {
     strength: Math.min(1, Math.min(1, glare) * (1 + LOW_RAYS * low)) * hazy,
     longer: 1 + LOW_RAY_LENGTH * low + HAZE_RAY_LENGTH * haze,
     warmth: LOW_RAY_WARMTH * low,
+    slant: NOON_SLANT + LOW_SLANT * low,
   };
 }
 
