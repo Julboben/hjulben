@@ -545,10 +545,14 @@ if (kind === 'group') {
   setTab('objects');
   const groupRow = name => document.getElementById('object-groups').children[['terrain', 'back', 'backProps', 'frontProps', 'water', 'spikes', 'apples'].indexOf(name)];
   const rowName = (group, index) => groupRow(group).children[1].children[index].children[0];
+  // Opening the tab reveals what is already selected, so a group may be open.
+  const openGroup = name => {
+    if (groupRow(name).children.length < 2) groupRow(name).children[0].children[0].click();
+  };
   const picked = () => editor.selection?.kind === 'items'
     ? editor.selection.items.map(item => `${item.type}${item.index}`)
     : editor.selection ? [`${editor.selection.kind}${editor.selection.index}`] : [];
-  groupRow('spikes').children[0].children[0].click();
+  openGroup('spikes');
   rowName('spikes', 0).click();
   out.listPlain = picked();
   // A lone spike has no size.
@@ -558,7 +562,7 @@ if (kind === 'group') {
   out.spikeSize = field('selection-size').textContent;
   rowName('spikes', 0).dispatch('click', { ctrlKey: true });
   out.listRemoved = picked();
-  groupRow('backProps').children[0].children[0].click();
+  openGroup('backProps');
   rowName('backProps', 0).click();
   rowName('backProps', 1).dispatch('click', { shiftKey: true });
   out.listRange = picked();
@@ -604,6 +608,21 @@ if (kind === 'group') {
   out.split = [points() - pointsBefore, editor.selection?.kind, editor.selection?.index];
   undo.click();
   out.splitUndone = points() === pointsBefore;
+
+  // Either handle of a smooth point turns the other to stay in line with it.
+  const { updateSelectedPosition } = await import('../../js/editor/inspector.js');
+  editor.selection = { kind: 'blockPoint', blockIndex: 0, boundaryIndex: 0, index: 1 };
+  syncInspector();
+  set('selection-node', 'smooth');
+  const smoothNode = () => current().terrainBlocks[0].outer.nodes[1];
+  out.smoothTurns = ['out', 'in'].map(side => {
+    const { x, y } = smoothNode();
+    editor.selection = { kind: 'blockHandle', blockIndex: 0, boundaryIndex: 0, index: 1, side };
+    updateSelectedPosition(x, y - 30);
+    const other = smoothNode()[side === 'out' ? 'in' : 'out'];
+    return Math.abs(other[0] - x) < 1e-6 && other[1] > y;
+  });
+  undo.click();
 
   // Whole blocks are placed by the top-left of their box.
   editor.selection = { kind: 'block', blockIndex: 0 };
@@ -865,7 +884,9 @@ if (kind === 'locks') {
   const out = { errors: [] };
   const title = () => document.getElementById('selection-title').textContent;
   const groupRow = key => document.getElementById('object-groups').children[['terrain', 'back', 'backProps', 'frontProps', 'water', 'spikes', 'apples'].indexOf(key)];
-  const groupLock = key => groupRow(key).children[0].children[1];
+  // A group's row holds its name, then its hide button, then its lock.
+  const groupHide = key => groupRow(key).children[0].children[1];
+  const groupLock = key => groupRow(key).children[0].children[2];
   const box = () => {
     drag([1000, 100], [1400, 500]);
     return editor.selection;
@@ -887,6 +908,10 @@ if (kind === 'locks') {
   out.groupLockKeys = [...localStorage.store.keys()].filter(name => name.includes('locked-groups'));
   // Locked, the same press draws a box, which takes only the apple.
   out.boxOverWall = box()?.kind ?? null;
+  // The apple's group shows it is selected, opens to show it, and names it.
+  out.appleGroupMarked = groupRow('apples').children[0].classList.contains('selected');
+  out.appleRevealed = groupRow('apples').children.length === 2;
+  out.appleTitle = title();
   key('a', { code: 'KeyA', metaKey: true });
   out.selectAllBlocks = (editor.selection.items || []).filter(item => item.type === 'block').map(item => item.index);
   // The Block tool can't add to a locked group.
@@ -902,10 +927,9 @@ if (kind === 'locks') {
   // Unlocking the group, then locking only the apple.
   groupLock('back').click();
   out.badgeGone = document.getElementById('tab-objects').getAttribute('data-icon-after');
-  groupRow('apples').children[0].children[0].click();
   const appleRow = groupRow('apples').children[1].children[0];
   out.appleName = appleRow.children[0].textContent;
-  appleRow.children[1].click();
+  appleRow.children[2].click();
   editor.selection = null;
   // Cmd draws a box even over the (now unlocked) back wall.
   drag([1150, 250], [1250, 350], { metaKey: true });
@@ -918,6 +942,65 @@ if (kind === 'locks') {
   groupLock('terrain').click();
   out.releasedOnLock = editor.selection;
   groupLock('terrain').click();
+
+  // The inspector's lock button, and L, lock what is selected; Unlock all frees it.
+  drag([200, 450], [200, 450]);
+  out.lockButtonShown = document.getElementById('lock-selection').hidden === false;
+  document.getElementById('lock-selection').click();
+  out.buttonLocked = editor.selection === null && document.getElementById('unlock-all').hidden === false;
+  document.getElementById('unlock-all').click();
+  out.unlockedAll = document.getElementById('unlock-all').hidden && document.getElementById('tab-objects').getAttribute('data-icon-after') === null;
+  drag([200, 450], [200, 450]);
+  key('l', { code: 'KeyL' });
+  out.keyLocked = editor.selection === null && document.getElementById('unlock-all').hidden === false;
+  document.getElementById('unlock-all').click();
+
+  // The filter keeps only the groups with a matching name, opened; Collapse all closes them.
+  const filter = document.getElementById('objects-filter');
+  filter.value = 'APP';
+  filter.dispatch('input');
+  const shownGroups = () => document.getElementById('object-groups').children;
+  out.filtered = [shownGroups().length, shownGroups()[0]?.children.length];
+  filter.value = 'nothing like it';
+  filter.dispatch('input');
+  out.noMatch = shownGroups().length === 0 && document.getElementById('objects-no-match').hidden === false;
+  filter.value = '';
+  filter.dispatch('input');
+  out.collapseShown = document.getElementById('collapse-all').hidden === false;
+  document.getElementById('collapse-all').click();
+  out.collapsed = [...shownGroups()].every(group => group.children.length === 1) && document.getElementById('collapse-all').hidden;
+  // Open all opens every group with something in it; a lock inside one shows on its row.
+  document.getElementById('open-all').click();
+  out.openedAll = [...shownGroups()].every(group => group.children.length === 2 || group.children[0].children[0].disabled)
+    && document.getElementById('open-all').hidden;
+  // A group with only some of it flagged shows its button half lit.
+  const mark = button => groupRow('apples').children[0].children[button].getAttribute('aria-pressed') === 'mixed';
+  const lockMark = () => mark(2);
+  out.markBefore = lockMark();
+  groupRow('apples').children[1].children[0].children[2].click();
+  out.markAfter = lockMark();
+  document.getElementById('unlock-all').click();
+
+  // Hiding the apples: the canvas can't pick them, the tab says so, and Show all brings them back.
+  groupHide('apples').click();
+  out.hiddenBadge = document.getElementById('tab-objects').getAttribute('data-icon-after');
+  const boxesApple = () => {
+    editor.selection = null;
+    const picked = box();
+    return picked?.kind === 'apple' || Boolean(picked?.items?.some(item => item.type === 'apple'));
+  };
+  out.hiddenBoxed = boxesApple();
+  document.getElementById('show-all').click();
+  out.shownAgain = document.getElementById('show-all').hidden && boxesApple();
+  // One hidden apple marks its group with a closed eye; the inspector's eye hides the selection.
+  groupRow('apples').children[1].children[0].children[1].click();
+  out.hideMark = mark(1);
+  document.getElementById('show-all').click();
+  drag([200, 450], [200, 450]);
+  out.hideButtonShown = document.getElementById('hide-selection').hidden === false;
+  document.getElementById('hide-selection').click();
+  out.buttonHid = editor.selection === null && document.getElementById('show-all').hidden === false;
+  document.getElementById('show-all').click();
 
   // A cut skips a locked group: lock the terrain and cut through the slab.
   groupLock('terrain').click();

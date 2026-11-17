@@ -119,16 +119,21 @@ export function replaceBlock(index, block) {
   editor.trail.terrainBlocks = next;
 }
 
-/** A smooth node keeps its handles collinear, so moving one moves the other. */
-export function realignSmooth(boundary, index) {
+/**
+ * A smooth node keeps its handles collinear, so moving one moves the other:
+ * the `moved` handle ("in" or "out") stays where it was put, and the other
+ * turns to face it, keeping its own length.
+ */
+export function realignSmooth(boundary, index, moved) {
   const node = boundary.nodes[index];
   if (!node.in || !node.out) return;
-  const inLength = Math.hypot(node.in[0] - node.x, node.in[1] - node.y);
-  const outLength = Math.hypot(node.out[0] - node.x, node.out[1] - node.y);
-  if (inLength < 1e-6 || outLength < 1e-6) return;
-  const dx = (node.in[0] - node.x) / inLength,
-    dy = (node.in[1] - node.y) / inLength;
-  node.out = [node.x - dx * outLength, node.y - dy * outLength];
+  const other = moved === "in" ? "out" : "in";
+  const movedLength = Math.hypot(node[moved][0] - node.x, node[moved][1] - node.y);
+  const otherLength = Math.hypot(node[other][0] - node.x, node[other][1] - node.y);
+  if (movedLength < 1e-6 || otherLength < 1e-6) return;
+  const dx = (node[moved][0] - node.x) / movedLength,
+    dy = (node[moved][1] - node.y) / movedLength;
+  node[other] = [node.x - dx * otherLength, node.y - dy * otherLength];
 }
 
 /**

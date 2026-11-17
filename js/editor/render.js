@@ -30,8 +30,9 @@ import { $, art, backWallArt, canvas, ctx, terrainArt, tools } from "./dom.js";
 import { drawPreviewFrame } from "./preview.js";
 import { drawMinimap } from "./minimap.js";
 import { scaleFrame, scaling } from "./scale.js";
-import { selectionBox } from "./selection.js";
+import { itemPosition, selectionBox } from "./selection.js";
 import { rotateHandle, rotationAngle } from "./rotate.js";
+import { anyHidden, hiddenSignature, isHidden } from "./locks.js";
 import { gridSpacing } from "./snap.js";
 import { editor, waters } from "./state.js";
 import { PLACING_TOOLS, placingNisse, toolSettings } from "./tools.js";
@@ -48,6 +49,11 @@ export const GAME_ART_KEY = "hjulben-editor-game-art-v1";
  */
 let terrainFingerprint = null;
 let terrainTrail = null;
+// While anything is hidden, the game's art draws a copy of the trail without
+// the hidden blocks, which reads everything else through to the trail itself.
+// Its terrain is compiled once and then kept up to date alongside the trail's,
+// until what is hidden changes: { source, signature, trail }, or null.
+let drawn = null;
 // Each block's fingerprint, and the block it was taken of, by index.
 let blockPrints = [];
 let printedBlocks = [];
@@ -111,7 +117,12 @@ export function syncTerrain() {
     const anchored = groundAnchoredObjects((x) => near.some((box) => x >= box.left && x <= box.right));
     remember(list, prints);
     measureAll();
-    updateTerrain(editor.trail, new Set(changed.map((index) => list[index])));
+    const edited = new Set(changed.map((index) => list[index]));
+    updateTerrain(editor.trail, edited);
+    if (drawn) {
+      drawn.trail.terrainBlocks = shownBlocks();
+      updateTerrain(drawn.trail, edited);
+    }
     keepCoveredObjectsInPlace(anchored);
     return;
   }
@@ -119,6 +130,9 @@ export function syncTerrain() {
   const fingerprint = prints.join(",");
   if (fingerprint === terrainFingerprint && list.length === printedBlocks.length) {
     remember(list, prints);
+    // The same shapes in new blocks: the drawn copy follows them, so a later
+    // edit to one of them is noticed there too.
+    if (drawn) drawn.trail.terrainBlocks = shownBlocks();
     return;
   }
   // Read while the compiled terrain is still the one on screen.
@@ -127,7 +141,26 @@ export function syncTerrain() {
   terrainFingerprint = fingerprint;
   measureBlocks();
   invalidateTerrain(editor.trail);
+  drawn = null;
   keepCoveredObjectsInPlace(anchored);
+}
+
+const shownBlocks = () => blocks().filter((_, index) => !isHidden("block", index));
+
+/** What the game's art draws, while anything is hidden (see drawnTrail). */
+function drawnTrail() {
+  if (!anyHidden()) {
+    drawn = null;
+    return editor.trail;
+  }
+  const signature = hiddenSignature();
+  if (drawn?.source !== editor.trail || drawn.signature !== signature)
+    drawn = {
+      source: editor.trail,
+      signature,
+      trail: Object.assign(Object.create(editor.trail), { terrainBlocks: shownBlocks() }),
+    };
+  return drawn.trail;
 }
 
 function remember(list, prints) {
@@ -295,7 +328,7 @@ function drawBlocks() {
   const gameArt = showGameArt();
   const view = viewBox();
   for (const [blockIndex, block] of blocks().entries()) {
-    if (!blockInView(blockIndex, view)) continue;
+    if (!blockInView(blockIndex, view) || isHidden("block", blockIndex)) continue;
     const material = terrainMaterials[block.material] || terrainMaterials.grass;
     const back = isBackWall(block);
     // With game art showing, the blocks are already drawn exactly as they
@@ -368,7 +401,7 @@ function drawBackWalls() {
   if (!showGameArt()) {
     const view = viewBox();
     for (const [blockIndex, block] of blocks().entries()) {
-      if (!isBackWall(block) || !blockInView(blockIndex, view)) continue;
+      if (!isBackWall(block) || !blockInView(blockIndex, view) || isHidden("block", blockIndex)) continue;
       const material = terrainMaterials[block.material] || terrainMaterials.grass;
       traceBlock(block);
       ctx.fillStyle = material.fill;
@@ -381,7 +414,7 @@ function drawBackWalls() {
   const { width, height } = viewportSize();
   ctx.save();
   ctx.imageSmoothingEnabled = false;
-  backWallArt.draw(ctx, editor.trail, editor.cameraX, editor.cameraY, width / editor.zoom, height / editor.zoom);
+  backWallArt.draw(ctx, drawnTrail(), editor.cameraX, editor.cameraY, width / editor.zoom, height / editor.zoom);
   ctx.restore();
 }
 
@@ -391,12 +424,13 @@ function drawTerrain() {
     const { width, height } = viewportSize();
     ctx.save();
     ctx.imageSmoothingEnabled = false;
-    terrainArt.draw(ctx, editor.trail, editor.cameraX, editor.cameraY, width / editor.zoom, height / editor.zoom);
+    terrainArt.draw(ctx, drawnTrail(), editor.cameraX, editor.cameraY, width / editor.zoom, height / editor.zoom);
     ctx.restore();
   }
   // Graffiti is painted onto the rock, so it goes straight over the terrain.
-  for (const prop of editor.trail.props || [])
-    if (PAINTED_PROPS.has(prop.type)) art.drawWallPaint(editor.trail, prop);
+  editor.trail.props.forEach((prop, index) => {
+    if (PAINTED_PROPS.has(prop.type) && !isHidden("prop", index)) art.drawWallPaint(editor.trail, prop);
+  });
   drawBlocks();
   drawPendingShape(editor.pendingShape);
 }
@@ -450,8 +484,8 @@ function stillScene() {
 
 function drawProps(layer) {
   const scene = stillScene();
-  for (const prop of editor.trail.props || []) {
-    if (prop.layer !== layer || PAINTED_PROPS.has(prop.type)) continue;
+  for (const [index, prop] of editor.trail.props.entries()) {
+    if (prop.layer !== layer || PAINTED_PROPS.has(prop.type) || isHidden("prop", index)) continue;
     art.drawProp(
       prop.type,
       prop.x,
@@ -475,8 +509,8 @@ const GLOWING_PROPS = new Set(["lamp", "crane", "lantern", "torch", "fireplace",
  * lanterns, torches, mushrooms and a camera tower's tally light always.
  */
 function drawPropGlows(dark) {
-  for (const prop of editor.trail.props || []) {
-    if (!GLOWING_PROPS.has(prop.type)) continue;
+  for (const [index, prop] of editor.trail.props.entries()) {
+    if (!GLOWING_PROPS.has(prop.type) || isHidden("prop", index)) continue;
     art.drawPropGlow(
       prop.type,
       prop.x,
@@ -498,6 +532,7 @@ function drawPropGlows(dark) {
 
 function drawSpikes() {
   for (const [index, spike] of editor.trail.spikes.entries()) {
+    if (isHidden("spike", index)) continue;
     art.drawSpike(spike.x, spike.y, spike.radius);
     if (!isSelected("spike", index)) continue;
     ctx.beginPath();
@@ -519,6 +554,7 @@ function drawWater() {
   if (!list.length) return;
   const compiled = terrainGeometry(editor.trail);
   list.forEach((raw, index) => {
+    if (isHidden("water", index)) return;
     const body = normalizeWater(raw);
     art.drawWater(body, waterColumns(compiled, body), 0);
     const selected = isSelected("water", index);
@@ -536,9 +572,10 @@ function drawWater() {
 
 function drawObjects() {
   drawSpikes();
-  for (const apple of editor.trail.apples)
-    art.drawApple(apple.x, objectY(apple, 60));
-  if (editor.trail.nisse) drawNisse(tools, editor.trail.nisse.x, objectY(editor.trail.nisse, NISSE_GROUND_LIFT));
+  editor.trail.apples.forEach((apple, index) => {
+    if (!isHidden("apple", index)) art.drawApple(apple.x, objectY(apple, 60));
+  });
+  if (editor.trail.nisse && !isHidden("nisse", 0)) drawNisse(tools, editor.trail.nisse.x, objectY(editor.trail.nisse, NISSE_GROUND_LIFT));
   art.drawFlag(editor.trail.finish.x, finishY(), true, 0);
   if (editor.selection?.kind === "finish") {
     // The petals the bike has to touch.
@@ -632,6 +669,7 @@ function drawHandles() {
   for (const [blockIndex, block] of blocks().entries()) {
     // The selected block's curve handles can reach past its box.
     if (blockIndex !== editor.selection?.blockIndex && !blockInView(blockIndex, view)) continue;
+    if (isHidden("block", blockIndex)) continue;
     boundaryEntries(block).forEach(({ boundary, hole }, boundaryIndex) => {
       boundary.nodes.forEach((node, index) => {
         drawHandle(
@@ -662,25 +700,23 @@ function drawHandles() {
       });
     });
   }
-  editor.trail.apples.forEach((apple, index) =>
-    drawHandle(
-      apple.x,
-      objectY(apple, 60),
-      isSelected("apple", index),
-      "#ef8150",
-    ),
-  );
-  editor.trail.props.forEach((prop, index) =>
-    drawHandle(prop.x, objectY(prop), isSelected("prop", index), "#83d1ce"),
-  );
-  if (editor.trail.nisse)
+  editor.trail.apples.forEach((apple, index) => {
+    if (!isHidden("apple", index))
+      drawHandle(apple.x, objectY(apple, 60), isSelected("apple", index), "#ef8150");
+  });
+  editor.trail.props.forEach((prop, index) => {
+    if (!isHidden("prop", index))
+      drawHandle(prop.x, objectY(prop), isSelected("prop", index), "#83d1ce");
+  });
+  if (editor.trail.nisse && !isHidden("nisse", 0))
     drawHandle(editor.trail.nisse.x, objectY(editor.trail.nisse, NISSE_GROUND_LIFT), isSelected("nisse", 0), "#d63b2c");
-  editor.trail.spikes.forEach((spike, index) =>
-    drawHandle(spike.x, spike.y, isSelected("spike", index), "#e65e56"),
-  );
-  waters().forEach((body, index) =>
-    drawHandle(...waterHandle(body), isSelected("water", index), "#5fb4d4"),
-  );
+  editor.trail.spikes.forEach((spike, index) => {
+    if (!isHidden("spike", index)) drawHandle(spike.x, spike.y, isSelected("spike", index), "#e65e56");
+  });
+  waters().forEach((body, index) => {
+    if (!isHidden("water", index))
+      drawHandle(...waterHandle(body), isSelected("water", index), "#5fb4d4");
+  });
   const startY = Number.isFinite(editor.trail.start.y)
     ? editor.trail.start.y
     : groundY(editor.trail.start.x) - 12;
@@ -751,6 +787,7 @@ export function render() {
   );
   drawOutlineHover();
   drawHandles();
+  drawListHover();
   drawOutlineHoverRing();
   drawScaleFrame();
   drawRotateHandle();
@@ -802,6 +839,38 @@ function drawOutlineHoverRing() {
   ctx.strokeStyle = "#fff3be";
   ctx.lineWidth = 2 / editor.zoom;
   ctx.stroke();
+}
+
+/**
+ * Outline the thing whose row the pointer is over in the Objects tab: a block
+ * by its rings, water by its rectangle, and anything else by a ring round
+ * where it stands, wide enough to see at any zoom.
+ */
+function drawListHover() {
+  const item = editor.listHover;
+  if (!item) return;
+  ctx.save();
+  ctx.strokeStyle = "#fff3be";
+  ctx.fillStyle = "#fff3be33";
+  ctx.lineWidth = 3 / editor.zoom;
+  ctx.setLineDash([8 / editor.zoom, 5 / editor.zoom]);
+  ctx.beginPath();
+  const block = item.type === "block" ? blocks()[item.index] : null;
+  const body = item.type === "water" ? waters()[item.index] : null;
+  if (block) boundaryEntries(block).forEach(({ boundary }) => traceBoundary(boundary));
+  else if (body) ctx.rect(body.x, body.y, body.width, body.depth);
+  else {
+    const position = itemPosition(item);
+    if (!position) {
+      ctx.restore();
+      return;
+    }
+    const spike = item.type === "spike" ? editor.trail.spikes[item.index] : null;
+    ctx.arc(...position, Math.max(spike?.radius ?? 0, 18 / editor.zoom) + 4 / editor.zoom, 0, Math.PI * 2);
+  }
+  ctx.fill("evenodd");
+  ctx.stroke();
+  ctx.restore();
 }
 
 /** The box around selected blocks, with the handles that scale them. */

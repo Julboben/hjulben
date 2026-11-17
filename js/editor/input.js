@@ -33,6 +33,7 @@ import {
 } from "./rotate.js";
 import {
   flushInspector,
+  lockSelection,
   selectedPosition,
   syncInspector,
   updateSelectedPosition,
@@ -73,7 +74,7 @@ import {
 import { clampZoom, editor } from "./state.js";
 import { NOTICE_TIME, refuseEdit, refuseReadOnly, showStatus, statusShowing } from "./status.js";
 import { PLACING_TOOLS, TOOL_KEYS, setTool, toolSettings } from "./tools.js";
-import { groupLabel, isGroupLocked, toolGroup } from "./locks.js";
+import { groupLabel, isGroupHidden, isGroupLocked, toolGroup } from "./locks.js";
 import { commitWater } from "./water.js";
 import {
   beginPreviewDrag,
@@ -722,10 +723,12 @@ export function bindInput() {
       canvas.setPointerCapture(event.pointerId);
       return;
     }
-    // A tool that adds to, or cuts, a locked group does nothing until it is unlocked.
+    // A tool that adds to, or cuts, a locked or hidden group does nothing until
+    // it is unlocked or shown: what it drew couldn't be seen or changed.
     const group = toolGroup(editor.tool, toolSettings);
-    if (!editor.readOnly && group && isGroupLocked(group)) {
-      showStatus("warning", `The ${groupLabel(group).toLowerCase()} group is locked. Unlock it in the Objects tab.`);
+    if (!editor.readOnly && group && (isGroupLocked(group) || isGroupHidden(group))) {
+      const [state, undo] = isGroupLocked(group) ? ["locked", "Unlock"] : ["hidden", "Show"];
+      showStatus("warning", `The ${groupLabel(group).toLowerCase()} group is ${state}. ${undo} it in the Objects tab.`);
       return;
     }
     if (editor.tool === "block" || editor.tool === "cut" || editor.tool === "water") {
@@ -1256,6 +1259,10 @@ export function bindInput() {
     }
     if (event.code === "KeyY") {
       toggleGameArt();
+      return;
+    }
+    if (event.code === "KeyL") {
+      lockSelection();
       return;
     }
     if (event.code === "KeyM") {

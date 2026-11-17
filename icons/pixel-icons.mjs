@@ -618,6 +618,29 @@ export default {
     ####.####
     #########
   `,
+  // An open eye for what the editor shows, and a closed one for what it hides.
+  eye: `
+    .........
+    .........
+    ..#####..
+    .#..#..#.
+    #..###..#
+    .#..#..#.
+    ..#####..
+    .........
+    .........
+  `,
+  'eye-closed': `
+    .........
+    .........
+    .........
+    #.......#
+    .#.....#.
+    ..#####..
+    .#..#..#.
+    .........
+    .........
+  `,
   // The Objects tab's groups, closed and open.
   'caret-right': `
     #..

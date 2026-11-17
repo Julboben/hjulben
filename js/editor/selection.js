@@ -291,12 +291,32 @@ export function blocksSelection(indices) {
   return makeSelection(indices.map((index) => ({ type: "block", index })));
 }
 
+// What each kind of item is called in a group's title. Only those a trail
+// can hold more than one of are ever counted past one, and they all take an S.
+const KIND_NAMES = {
+  block: "BLOCK",
+  back: "BACK WALL",
+  point: "POINT",
+  prop: "PROP",
+  apple: "APPLE",
+  spike: "SPIKE",
+  water: "WATER",
+  nisse: "NISSE",
+  start: "START",
+  finish: "FINISH",
+};
+
+/** A group's title: how many of each kind it holds, such as "2 PROPS · 1 APPLE". */
 export function groupTitle(items) {
-  const picked = items.filter((item) => item.type === "block");
-  if (picked.length !== items.length) return `${items.length} ITEMS`;
-  return picked.every((item) => isBackWall(blocks()[item.index]))
-    ? `${picked.length} BACK WALLS`
-    : `${picked.length} BLOCKS`;
+  const counts = new Map();
+  for (const item of items) {
+    const kind =
+      item.type === "block" && isBackWall(blocks()[item.index]) ? "back" : item.type;
+    counts.set(kind, (counts.get(kind) || 0) + 1);
+  }
+  return [...counts]
+    .map(([kind, count]) => `${count} ${KIND_NAMES[kind]}${count === 1 ? "" : "S"}`)
+    .join(" · ");
 }
 
 /** Every point of a block, outer rings first. */

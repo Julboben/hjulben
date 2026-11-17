@@ -50,7 +50,8 @@ import { pushHistory, snapshot, updateHistoryButtons } from "./history.js";
 import { scheduleAutosave } from "./autosave.js";
 import { updateVersionChip } from "./drafts.js";
 import { closeMenu, updateValidationBadge } from "./menu.js";
-import { renderObjects } from "./objects.js";
+import { setItemHidden, setItemLocked } from "./locks.js";
+import { objectName, renderObjects } from "./objects.js";
 import { refuseEdit, showStatus } from "./status.js";
 import {
   finishY,
@@ -66,6 +67,7 @@ import {
   moveItems,
   releaseLocked,
   revealItem,
+  sameItem,
   selectedOf,
   selectionBox,
   flippableProps,
@@ -190,6 +192,39 @@ function deleteLabel(selection) {
   return "DELETE SELECTION";
 }
 
+/**
+ * What locking or hiding the selection would take: its blocks, whole or through a point,
+ * edge or handle, and its objects. The start and finish can't be locked.
+ */
+function lockTargets() {
+  const targets = selectionItems()
+    .map((item) => (item.type === "point" ? { type: "block", index: item.blockIndex } : item))
+    .filter((item) => item.type !== "start" && item.type !== "finish");
+  if (Number.isInteger(editor.selection?.blockIndex))
+    targets.push({ type: "block", index: editor.selection.blockIndex });
+  return targets.filter(
+    (item, at) => targets.findIndex((other) => sameItem(other, item)) === at,
+  );
+}
+
+/**
+ * Lock or hide everything selected that can be. Either lets go of what it
+ * takes, as locking or hiding a row in Objects does.
+ */
+function flagSelection(setFlag, message) {
+  const targets = lockTargets();
+  if (!targets.length) return;
+  for (const item of targets) setFlag(item.type, item.index, true);
+  showStatus("info", message);
+  syncInspector();
+  render();
+}
+
+export const lockSelection = () =>
+  flagSelection(setItemLocked, "Locked the selection. Unlock it in OBJECTS.");
+const hideSelection = () =>
+  flagSelection(setItemHidden, "Hid the selection. Show it again in OBJECTS.");
+
 /** The selected blocks when only whole blocks are selected, which can be resized. */
 function resizableBlocks() {
   const kind = editor.selection?.kind;
@@ -258,8 +293,9 @@ export function syncInspector({ live = false } = {}) {
         ? groupTitle(editor.selection.items)
         : BLOCK_KINDS.includes(editor.selection.kind)
           ? blockTitle(editor.selection)
-          : editor.selection.kind.replace(/([A-Z])/g, " $1").toUpperCase();
+          : (objectName(editor.selection.kind, editor.selection.index) || editor.selection.kind).toUpperCase();
   $("selection-empty").hidden = Boolean(editor.selection);
+  $("lock-selection").hidden = $("hide-selection").hidden = !lockTargets().length;
   if (position) {
     $("selection-x").value = Math.round(position[0]);
     $("selection-y").value = Math.round(position[1]);
@@ -476,8 +512,10 @@ export function updateSelectedPosition(x, y) {
     if (!boundary) return;
     const node = boundary.nodes[editor.selection.index];
     if (!node) return;
-    if (kind === "blockHandle") node[editor.selection.side] = [x, y];
-    else {
+    if (kind === "blockHandle") {
+      node[editor.selection.side] = [x, y];
+      if (node.mode === "smooth") realignSmooth(boundary, editor.selection.index, editor.selection.side);
+    } else {
       const dx = x - node.x,
         dy = y - node.y;
       node.x = x;
@@ -487,7 +525,6 @@ export function updateSelectedPosition(x, y) {
       if (node.in) node.in = [node.in[0] + dx, node.in[1] + dy];
       if (node.out) node.out = [node.out[0] + dx, node.out[1] + dy];
     }
-    if (node.mode === "smooth") realignSmooth(boundary, editor.selection.index);
   } else if (kind === "blockEdge") {
     // Dragging an edge stretches it: the handles follow so the curve keeps its
     // shape rather than collapsing into its chord.
@@ -822,6 +859,9 @@ export function bindInspector() {
     });
 
   $("selection-on-ground").addEventListener("click", putOnGround);
+
+  $("lock-selection").addEventListener("click", lockSelection);
+  $("hide-selection").addEventListener("click", hideSelection);
 
   $("selection-material").addEventListener("change", (event) => {
     const material = event.target.value;

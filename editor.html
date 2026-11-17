@@ -492,7 +492,33 @@
                             Cmd/Ctrl-click adds it to the selection or takes it
                             out, and Shift-click adds every row up to it.
                             Anything locked is still drawn, but can't be
-                            selected or changed.
+                            selected or changed. Anything hidden isn't drawn
+                            in the editor, but stays in the trail.
+                        </p>
+                        <input
+                            class="objects-filter"
+                            id="objects-filter"
+                            type="search"
+                            placeholder="Filter by name"
+                            aria-label="Filter by name"
+                            autocomplete="off"
+                        />
+                        <div class="objects-actions">
+                            <button class="wide-action" id="open-all" type="button" hidden>
+                                OPEN ALL
+                            </button>
+                            <button class="wide-action" id="collapse-all" type="button" hidden>
+                                COLLAPSE ALL
+                            </button>
+                            <button class="wide-action" id="show-all" type="button" hidden>
+                                SHOW ALL
+                            </button>
+                            <button class="wide-action" id="unlock-all" type="button" hidden>
+                                UNLOCK ALL
+                            </button>
+                        </div>
+                        <p class="objects-hint" id="objects-no-match" hidden>
+                            Nothing here is named like that.
                         </p>
                         <section class="tool-group" id="named-groups-section" hidden>
                             <h3>GROUPS</h3>
@@ -541,8 +567,30 @@
 
                 <aside class="inspector" id="inspector">
                     <div class="panel-head">
-                        <span>INSPECTOR</span
-                        ><strong id="selection-title">NOTHING SELECTED</strong>
+                        <span>INSPECTOR</span>
+                        <div class="selection-head">
+                            <strong id="selection-title">NOTHING SELECTED</strong>
+                            <button
+                                class="icon-button"
+                                id="hide-selection"
+                                type="button"
+                                aria-label="Hide the selection"
+                                title="Hide the selection in the editor, to work on what is behind it. Show it again in OBJECTS."
+                                hidden
+                            >
+                                <span data-icon="eye" aria-hidden="true"></span>
+                            </button>
+                            <button
+                                class="icon-button"
+                                id="lock-selection"
+                                type="button"
+                                aria-label="Lock the selection"
+                                title="Lock the selection, so it can't be picked or changed (L). Unlock it in OBJECTS."
+                                hidden
+                            >
+                                <span data-icon="unlock" aria-hidden="true"></span>
+                            </button>
+                        </div>
                     </div>
                     <p class="tool-hint" id="selection-empty">
                         Select something to edit it. Trail settings are in
@@ -618,9 +666,7 @@
                                 <select id="selection-node">
                                     <option value="corner">Corner</option>
                                     <option value="smooth">Smooth</option>
-                                    <option value="independent">
-                                        Independent
-                                    </option>
+                                    <option value="independent">Curved corner</option>
                                 </select></label
                             >
                             <label id="selection-edge-row" hidden
@@ -1076,6 +1122,7 @@
                         <div><dt><kbd data-mod>⌘</kbd> <kbd>Shift</kbd> <kbd>]</kbd> <kbd>[</kbd></dt><dd>To front, to back</dd></div>
                         <div><dt><kbd data-mod>⌘</kbd> <kbd>G</kbd></dt><dd>Group (Shift: ungroup)</dd></div>
                         <div><dt><kbd>R</kbd></dt><dd>Rotate 15° (Shift: back)</dd></div>
+                        <div><dt><kbd>L</kbd></dt><dd>Lock; unlock in Objects</dd></div>
                         <div><dt><kbd data-mod>⌘</kbd> <kbd>Z</kbd></dt><dd>Undo</dd></div>
                         <div><dt><kbd data-mod>⌘</kbd> <kbd>Shift</kbd> <kbd>Z</kbd></dt><dd>Redo</dd></div>
                     </dl>

@@ -1102,7 +1102,6 @@ export function setBoundaryEdge(boundary, index, curved) {
 }
 
 /** 'corner' drops both handles, 'smooth' aligns them, 'independent' frees them. */
-/** 'corner' drops both handles, 'smooth' aligns them, 'independent' frees them. */
 export function setNodeMode(boundary, index, mode) {
   const nodes = boundary.nodes.slice();
   const count = nodes.length;
