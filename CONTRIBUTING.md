@@ -113,7 +113,8 @@ When changing physics values, validate at least these cases:
 
 A change to how the bike rides needs `RIDE_VERSION` in `js/ride.js` bumped, which starts fresh leaderboards, ghosts and best times on every trail, and every replay re-recorded. So changes that need one wait here, to go in together with the next one that does:
 
-- Nothing is waiting.
+- Drop `mode` from the points in trail files. It never changes the ride, only how the editor drags a point's curve handles, and the editor can tell it from the handles: none is a corner, two in a straight line is smooth, anything else is a curved corner (the editor's name for what files call `independent`). It is part of the trail hash, so taking it out changes every trail's hash, which costs nothing when a bump starts fresh boards anyway.
+- Hash only what decides a run. `trailHash` in `js/trail-hash.js` hashes the terrain blocks as the file writes them, so things the ride never uses change a trail's hash and start fresh boards: the ids of blocks and points, each point's `mode`, and the first block's material, which only changes how the ground looks. Hashing the ground's shape instead (each solid block's outline and caves, as the points and curve handles draw them), with the start, finish, apples, spikes and water, would let editor-only changes like these keep a trail's boards. It changes every trail's hash once, so it belongs with a bump.
 
 ## Stylesheets
 
