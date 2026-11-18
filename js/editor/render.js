@@ -314,14 +314,44 @@ export function startY(x, y) {
 // plain terrain is drawn instead.
 export const GAME_ART_MIN_ZOOM = 0.35;
 
-// Back walls in the editor: shaded like the game draws them, with a dotted
-// outline and their own point colour, so they read as behind the terrain.
+// Back walls in the editor: shaded like the game draws them and outlined
+// behind the terrain, so what the terrain covers shows no edge, with their own
+// point colour so their corners can still be found and grabbed there.
 const BACK_WALL_SHADE = "#1b263380";
-const BACK_WALL_OUTLINE = "#b9c7ff99";
 const BACK_WALL_POINT = "#a99cf0";
 
 function showGameArt() {
   return editor.gameArt && editor.zoom >= GAME_ART_MIN_ZOOM;
+}
+
+/**
+ * Stroke one of a block's boundaries, in the plain outline or dashed as
+ * selected. Outlines go one boundary at a time: stroke() takes no fill rule,
+ * and tracing a whole block at once would also stroke the shared seam where a
+ * cave meets its own outer boundary twice.
+ */
+function strokeBoundary(boundary, material, gameArt, selected) {
+  ctx.strokeStyle = selected ? "#fff3be" : gameArt ? "#17262b99" : material.edge;
+  ctx.lineWidth = selected
+    ? 3 / editor.zoom
+    : gameArt
+      ? 1.5 / editor.zoom
+      : Math.max(2.5, 1.5 / editor.zoom);
+  if (selected) ctx.setLineDash([8 / editor.zoom, 5 / editor.zoom]);
+  ctx.beginPath();
+  traceBoundary(boundary);
+  ctx.stroke();
+  ctx.setLineDash([]);
+}
+
+/** Whether a block's boundary is drawn as selected. */
+function boundarySelected(blockIndex, boundaryIndex) {
+  return (
+    blockSelected(blockIndex) ||
+    (editor.selection?.kind === "blockBoundary" &&
+      editor.selection.blockIndex === blockIndex &&
+      editor.selection.boundaryIndex === boundaryIndex)
+  );
 }
 
 function drawBlocks() {
@@ -342,34 +372,11 @@ function drawBlocks() {
       ctx.fill("evenodd");
       ctx.globalAlpha = 1;
     }
-    // The outline is stroked one boundary at a time: stroke() takes no fill rule,
-    // and tracing a whole block at once would also stroke the shared seam where
-    // a cave meets its own outer boundary twice.
-    const selected = blockSelected(blockIndex);
+    // A back wall's plain outline was drawn behind the terrain, so only a
+    // selected one is outlined here, whole and on top.
     boundaryEntries(block).forEach(({ boundary }, boundaryIndex) => {
-      const highlighted =
-        selected ||
-        (editor.selection?.kind === "blockBoundary" &&
-          editor.selection.blockIndex === blockIndex &&
-          editor.selection.boundaryIndex === boundaryIndex);
-      ctx.strokeStyle = highlighted
-        ? "#fff3be"
-        : back
-          ? BACK_WALL_OUTLINE
-          : gameArt
-            ? "#17262b99"
-            : material.edge;
-      ctx.lineWidth = highlighted
-        ? 3 / editor.zoom
-        : gameArt || back
-          ? 1.5 / editor.zoom
-          : Math.max(2.5, 1.5 / editor.zoom);
-      if (highlighted) ctx.setLineDash([8 / editor.zoom, 5 / editor.zoom]);
-      else if (back) ctx.setLineDash([3 / editor.zoom, 4 / editor.zoom]);
-      ctx.beginPath();
-      traceBoundary(boundary);
-      ctx.stroke();
-      ctx.setLineDash([]);
+      const selected = boundarySelected(blockIndex, boundaryIndex);
+      if (selected || !back) strokeBoundary(boundary, material, gameArt, selected);
     });
   }
 }
@@ -395,27 +402,33 @@ function drawPendingShape(shape) {
 
 /**
  * Back walls, behind everything but the sky: the game's art when it shows,
- * else their material darkened like the game draws them.
+ * else their material darkened like the game draws them, each outlined like
+ * terrain.
  */
 function drawBackWalls() {
-  if (!showGameArt()) {
-    const view = viewBox();
-    for (const [blockIndex, block] of blocks().entries()) {
-      if (!isBackWall(block) || !blockInView(blockIndex, view) || isHidden("block", blockIndex)) continue;
-      const material = terrainMaterials[block.material] || terrainMaterials.grass;
+  const gameArt = showGameArt();
+  if (gameArt) {
+    const { width, height } = viewportSize();
+    ctx.save();
+    ctx.imageSmoothingEnabled = false;
+    backWallArt.draw(ctx, drawnTrail(), editor.cameraX, editor.cameraY, width / editor.zoom, height / editor.zoom);
+    ctx.restore();
+  }
+  const view = viewBox();
+  for (const [blockIndex, block] of blocks().entries()) {
+    if (!isBackWall(block) || !blockInView(blockIndex, view) || isHidden("block", blockIndex)) continue;
+    const material = terrainMaterials[block.material] || terrainMaterials.grass;
+    if (!gameArt) {
       traceBlock(block);
       ctx.fillStyle = material.fill;
       ctx.fill("evenodd");
       ctx.fillStyle = BACK_WALL_SHADE;
       ctx.fill("evenodd");
     }
-    return;
+    boundaryEntries(block).forEach(({ boundary }, boundaryIndex) => {
+      if (!boundarySelected(blockIndex, boundaryIndex)) strokeBoundary(boundary, material, gameArt, false);
+    });
   }
-  const { width, height } = viewportSize();
-  ctx.save();
-  ctx.imageSmoothingEnabled = false;
-  backWallArt.draw(ctx, drawnTrail(), editor.cameraX, editor.cameraY, width / editor.zoom, height / editor.zoom);
-  ctx.restore();
 }
 
 function drawTerrain() {
