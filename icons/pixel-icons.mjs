@@ -85,18 +85,15 @@ export default {
     `,
   },
   // On the editor's picker buttons, which open a search instead of a dropdown.
-  search: {
-    palette: { w: '#f5f1df' },
-    grid: `
-      .www...
-      w...w..
-      w...w..
-      w...w..
-      .www...
-      ....ww.
-      .....ww
-    `,
-  },
+  search: `
+    .###...
+    #...#..
+    #...#..
+    #...#..
+    .###...
+    ....##.
+    .....##
+  `,
   'rotate-right': `
     .........
     ..###....

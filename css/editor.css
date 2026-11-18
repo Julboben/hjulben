@@ -202,7 +202,8 @@ button:disabled:hover { background: var(--color-surface); }
 .more-items { padding: 6px; display: grid; gap: 2px; }
 .more-items button { width: 100%; min-height: 34px; padding: 0 10px; display: flex; align-items: center; gap: 10px; border-color: transparent; background: none; box-shadow: none; color: var(--color-text); font-size: var(--text-sm); font-weight: var(--weight-heavy); letter-spacing: 1px; text-align: left; text-transform: uppercase; }
 .more-items button:hover, .more-items button:focus-visible { border-color: var(--color-border); background: var(--color-surface); outline: none; }
-.more-items [data-icon] { color: var(--color-text-muted); }
+/* Narrower icons are centred in the width of the usual 9 pixels, so every label starts in line. */
+.more-items [data-icon] { margin-inline: calc((9 - var(--icon-w)) * var(--px, 2px) / 2); color: var(--color-text-muted); }
 .more-items span:not([data-icon]) { flex: 1; }
 .more-items kbd { padding: 1px 5px; border: 1px solid var(--color-border); color: var(--color-text-muted); font: inherit; font-size: var(--text-xs); }
 .more-items .danger-item, .more-items .danger-item [data-icon] { color: var(--color-danger-text); }
@@ -334,8 +335,9 @@ html[data-sandbox] body::after {
 .primary-action:disabled, .primary-action:disabled:hover { border-color: var(--color-border); background: var(--color-surface); color: var(--color-text-muted); opacity: .6; }
 .more-items button:disabled:hover { border-color: transparent; background: none; }
 .picker-trigger { min-height: 34px; padding: 4px 28px 4px 9px; display: flex; align-items: center; gap: 8px; border-color: var(--color-border); background-color: var(--color-input); box-shadow: none; color: var(--color-text); font-weight: var(--weight-regular); text-align: left; }
-/* button:hover resets the whole background, so the icon is restated for both states. */
-.picker-trigger, .picker-trigger:hover { background-image: var(--icon-search); background-repeat: no-repeat; background-position: right 10px center; background-size: 14px 14px; }
+.picker-trigger { position: relative; }
+/* The magnifier, drawn in the text colour so it shows in either theme. */
+.picker-trigger::after { content: ""; position: absolute; top: 50%; right: 10px; width: 14px; height: 14px; margin-top: -7px; background: var(--color-text-muted); -webkit-mask: var(--icon-search) center / 100% 100% no-repeat; mask: var(--icon-search) center / 100% 100% no-repeat; }
 .picker-trigger:hover { background-color: var(--color-input-hover); }
 .side-panel .picker-trigger { width: 100%; }
 .editor-header .picker-trigger { min-width: 180px; max-width: 280px; }
