@@ -17,6 +17,8 @@ import { blocks } from "./blocks.js";
 import { $ } from "./dom.js";
 import {
   LOCK_GROUPS,
+  allHidden,
+  allLocked,
   anyHidden,
   anyLocked,
   groupOf,
@@ -26,12 +28,12 @@ import {
   isItemLocked,
   isLocked,
   pruneItemFlags,
+  setAllHidden,
+  setAllLocked,
   setGroupHidden,
   setGroupLocked,
   setItemHidden,
   setItemLocked,
-  showAll,
-  unlockAll,
 } from "./locks.js";
 import { syncInspector } from "./inspector.js";
 import { render, renderView } from "./render.js";
@@ -364,26 +366,29 @@ const objectOf = (entry) =>
 
 /**
  * The tab's badge, a lock while anything is locked or else a closed eye while
- * anything is hidden, and the Show all and Unlock all buttons.
+ * anything is hidden, and the buttons that hide and lock everything, half lit
+ * while only some of it is. Like a group's, a half-lit one flags everything.
  */
 function syncLockedState() {
   const tab = $("tab-objects");
   const badge = anyLocked() ? "lock" : anyHidden() ? "eye-closed" : null;
   if (badge) tab.setAttribute("data-icon-after", badge);
   else tab.removeAttribute("data-icon-after");
-  $("show-all").hidden = !anyHidden();
-  $("unlock-all").hidden = !anyLocked();
+  const hidden = groupState(allHidden(), anyHidden());
+  const locked = groupState(allLocked(), anyLocked());
+  $("flag-everything").replaceChildren(
+    flagButton("hide", hidden, "everything", () => {
+      setAllHidden(hidden !== true);
+      changed();
+    }),
+    flagButton("lock", locked, "everything", () => {
+      setAllLocked(locked !== true);
+      changed();
+    }),
+  );
 }
 
 export function bindObjects() {
-  $("unlock-all").addEventListener("click", () => {
-    unlockAll();
-    changed();
-  });
-  $("show-all").addEventListener("click", () => {
-    showAll();
-    changed();
-  });
   $("collapse-all").addEventListener("click", () => {
     expanded.clear();
     renderObjects();
@@ -465,8 +470,8 @@ export function renderObjects() {
     const label = `all ${group.label.toLowerCase()}`;
     head.append(
       toggle,
-      // A click on a half-lit button flags the whole group; what was flagged
-      // on its own stays so, and shows again once the group is let go.
+      // A click on a half-lit button flags the whole group, and the next lets
+      // all of it go, what was flagged on its own included.
       flagButton("hide", groupState(groupHidden, all.some((entry) => entry.hidden)), label, () => {
         setGroupHidden(group.key, !groupHidden);
         changed();
@@ -533,11 +538,11 @@ export function renderObjects() {
   const shownGroups = groups.filter(Boolean);
   $("object-groups").replaceChildren(...shownGroups);
   $("objects-no-match").hidden = Boolean(named.length || shownGroups.length);
-  // Each button shows only when it has something to do. A group with nothing
+  // Each button is greyed out while it has nothing to do. A group with nothing
   // in it can't be opened.
   const toggles = [...named, ...shownGroups].map((group) => group.firstChild.firstChild);
-  $("collapse-all").hidden = !toggles.some((toggle) => toggle.getAttribute("aria-expanded") === "true");
-  $("open-all").hidden = !toggles.some(
+  $("collapse-all").disabled = !toggles.some((toggle) => toggle.getAttribute("aria-expanded") === "true");
+  $("open-all").disabled = !toggles.some(
     (toggle) => toggle.getAttribute("aria-expanded") === "false" && !toggle.disabled,
   );
   if (reveal)

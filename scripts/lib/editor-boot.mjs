@@ -883,7 +883,8 @@ if (kind === 'locks') {
 
   const out = { errors: [] };
   const title = () => document.getElementById('selection-title').textContent;
-  const groupRow = key => document.getElementById('object-groups').children[['terrain', 'back', 'backProps', 'frontProps', 'water', 'spikes', 'apples'].indexOf(key)];
+  const LOCK_KEYS = ['terrain', 'back', 'backProps', 'frontProps', 'water', 'spikes', 'apples'];
+  const groupRow = key => document.getElementById('object-groups').children[LOCK_KEYS.indexOf(key)];
   // A group's row holds its name, then its hide button, then its lock.
   const groupHide = key => groupRow(key).children[0].children[1];
   const groupLock = key => groupRow(key).children[0].children[2];
@@ -943,17 +944,32 @@ if (kind === 'locks') {
   out.releasedOnLock = editor.selection;
   groupLock('terrain').click();
 
-  // The inspector's lock button, and L, lock what is selected; Unlock all frees it.
+  // The buttons above the groups that hide and lock everything: off, on, or
+  // "mixed" while only some is, when a click flags everything first.
+  const everythingButton = kind => document.getElementById('flag-everything').children[kind === 'hide' ? 0 : 1];
+  const everything = kind => everythingButton(kind).getAttribute('aria-pressed');
+  const letGo = kind => {
+    if (everything(kind) === 'false') return;
+    if (everything(kind) === 'mixed') everythingButton(kind).click();
+    everythingButton(kind).click();
+  };
+  out.lockEverything = [everything('lock')];
+  everythingButton('lock').click();
+  out.lockEverything.push(everything('lock'), LOCK_KEYS.every(key => groupLock(key).getAttribute('aria-pressed') === 'true'));
+  everythingButton('lock').click();
+  out.lockEverything.push(everything('lock'));
+
+  // The inspector's lock button, and L, lock what is selected; the lock above the groups frees it.
   drag([200, 450], [200, 450]);
   out.lockButtonShown = document.getElementById('lock-selection').hidden === false;
   document.getElementById('lock-selection').click();
-  out.buttonLocked = editor.selection === null && document.getElementById('unlock-all').hidden === false;
-  document.getElementById('unlock-all').click();
-  out.unlockedAll = document.getElementById('unlock-all').hidden && document.getElementById('tab-objects').getAttribute('data-icon-after') === null;
+  out.buttonLocked = editor.selection === null && everything('lock') !== 'false';
+  letGo('lock');
+  out.unlockedAll = everything('lock') === 'false' && document.getElementById('tab-objects').getAttribute('data-icon-after') === null;
   drag([200, 450], [200, 450]);
   key('l', { code: 'KeyL' });
-  out.keyLocked = editor.selection === null && document.getElementById('unlock-all').hidden === false;
-  document.getElementById('unlock-all').click();
+  out.keyLocked = editor.selection === null && everything('lock') !== 'false';
+  letGo('lock');
 
   // The filter keeps only the groups with a matching name, opened; Collapse all closes them.
   const filter = document.getElementById('objects-filter');
@@ -966,22 +982,28 @@ if (kind === 'locks') {
   out.noMatch = shownGroups().length === 0 && document.getElementById('objects-no-match').hidden === false;
   filter.value = '';
   filter.dispatch('input');
-  out.collapseShown = document.getElementById('collapse-all').hidden === false;
+  out.collapseShown = document.getElementById('collapse-all').disabled === false;
   document.getElementById('collapse-all').click();
-  out.collapsed = [...shownGroups()].every(group => group.children.length === 1) && document.getElementById('collapse-all').hidden;
+  out.collapsed = [...shownGroups()].every(group => group.children.length === 1) && document.getElementById('collapse-all').disabled;
   // Open all opens every group with something in it; a lock inside one shows on its row.
   document.getElementById('open-all').click();
   out.openedAll = [...shownGroups()].every(group => group.children.length === 2 || group.children[0].children[0].disabled)
-    && document.getElementById('open-all').hidden;
+    && document.getElementById('open-all').disabled;
   // A group with only some of it flagged shows its button half lit.
   const mark = button => groupRow('apples').children[0].children[button].getAttribute('aria-pressed') === 'mixed';
   const lockMark = () => mark(2);
   out.markBefore = lockMark();
   groupRow('apples').children[1].children[0].children[2].click();
   out.markAfter = lockMark();
-  document.getElementById('unlock-all').click();
+  // The group's button then locks all of the group, and the next click frees
+  // all of it rather than going back to the one apple.
+  groupLock('apples').click();
+  out.groupToggle = [groupLock('apples').getAttribute('aria-pressed')];
+  groupLock('apples').click();
+  out.groupToggle.push(groupLock('apples').getAttribute('aria-pressed'));
+  letGo('lock');
 
-  // Hiding the apples: the canvas can't pick them, the tab says so, and Show all brings them back.
+  // Hiding the apples: the canvas can't pick them, the tab says so, and the eye above the groups brings them back.
   groupHide('apples').click();
   out.hiddenBadge = document.getElementById('tab-objects').getAttribute('data-icon-after');
   const boxesApple = () => {
@@ -990,17 +1012,17 @@ if (kind === 'locks') {
     return picked?.kind === 'apple' || Boolean(picked?.items?.some(item => item.type === 'apple'));
   };
   out.hiddenBoxed = boxesApple();
-  document.getElementById('show-all').click();
-  out.shownAgain = document.getElementById('show-all').hidden && boxesApple();
+  letGo('hide');
+  out.shownAgain = everything('hide') === 'false' && boxesApple();
   // One hidden apple marks its group with a closed eye; the inspector's eye hides the selection.
   groupRow('apples').children[1].children[0].children[1].click();
   out.hideMark = mark(1);
-  document.getElementById('show-all').click();
+  letGo('hide');
   drag([200, 450], [200, 450]);
   out.hideButtonShown = document.getElementById('hide-selection').hidden === false;
   document.getElementById('hide-selection').click();
-  out.buttonHid = editor.selection === null && document.getElementById('show-all').hidden === false;
-  document.getElementById('show-all').click();
+  out.buttonHid = editor.selection === null && everything('hide') !== 'false';
+  letGo('hide');
 
   // A cut skips a locked group: lock the terrain and cut through the slab.
   groupLock('terrain').click();

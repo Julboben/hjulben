@@ -162,15 +162,17 @@ const reported = (report, label) => {
   check('a cut leaves a locked group alone', report.cutRefused);
   check('locking what is selected lets go of it', report.slabSelected === 'block' && report.releasedOnLock === null, `(${report.slabSelected}, ${JSON.stringify(report.releasedOnLock)})`);
   check('the inspector lock button locks the selection', report.lockButtonShown && report.buttonLocked);
-  check('Unlock all frees everything', report.unlockedAll);
+  check('the half-lit lock above the groups locks every group, then unlocks everything', JSON.stringify(report.lockEverything) === JSON.stringify(['mixed', 'true', true, 'false']));
+  check('a second click on the lock above the groups frees everything', report.unlockedAll);
   check('L locks the selection', report.keyLocked);
   check('the filter keeps only matching groups, open', JSON.stringify(report.filtered) === '[1,2]', `(${JSON.stringify(report.filtered)})`);
   check('a filter that matches nothing says so', report.noMatch);
   check('Collapse all closes every group', report.collapseShown && report.collapsed);
   check('Open all opens every group with something in it', report.openedAll);
   check('a group\'s lock is half lit when something in it is locked', report.markBefore === false && report.markAfter === true);
+  check('a group button locks all of the group, then frees all of it', JSON.stringify(report.groupToggle) === JSON.stringify(['true', 'false']));
   check('a hidden group marks the tab and a selection box leaves it out', report.hiddenBadge === 'eye-closed' && report.hiddenBoxed === false, `(${report.hiddenBadge}, ${report.hiddenBoxed})`);
-  check('Show all brings hidden things back', report.shownAgain);
+  check('the eye above the groups brings hidden things back', report.shownAgain);
   check('a group\'s eye is half lit when something in it is hidden', report.hideMark);
   check('the inspector eye button hides the selection', report.hideButtonShown && report.buttonHid);
 }

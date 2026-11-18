@@ -69,8 +69,15 @@ button:hover, .back-game:hover { background: var(--color-surface-hover); }
 .side-tab[data-icon-after]::after { --px: 1px; --gap: 6px; margin: 0 calc(-1 * (var(--icon-w) * var(--px) + var(--gap))) 0 var(--gap); }
 /* Outside a label, the field would take the browser's own text size. */
 .objects-filter { margin-bottom: 10px; font-size: var(--text-xs); font-weight: var(--weight-heavy); letter-spacing: .5px; }
-.objects-actions { display: flex; flex-wrap: wrap; column-gap: 6px; }
-.objects-actions .wide-action { flex: 1; width: auto; padding: 0 6px; white-space: nowrap; }
+/* Laid out like a group row, so the buttons that hide and lock everything sit
+   above the eye and lock columns. Open all and Collapse all are greyed out
+   while they would do nothing, rather than hidden, so nothing below moves. */
+.objects-actions { margin-bottom: 10px; display: flex; gap: 4px; }
+.objects-actions button { width: 30px; min-height: 28px; border: 0; border-radius: 0; background: var(--color-row); box-shadow: none; color: var(--color-text-muted); }
+.objects-actions button:hover:not(:disabled) { background: var(--color-row-hover); }
+.objects-actions button:disabled:hover { background: var(--color-row); }
+.objects-flag-everything { display: flex; gap: 4px; }
+.objects-actions-label { margin: 0 auto 0 6px; align-self: center; color: var(--color-text-muted); font-size: var(--text-xs); font-weight: var(--weight-heavy); letter-spacing: 1.5px; }
 .objects-hint { margin: 0 0 10px; color: var(--color-text-muted); font-size: var(--text-xs); line-height: 1.4; }
 .object-groups, .object-items { margin: 0; padding: 0; list-style: none; }
 .object-groups { display: grid; gap: 4px; }

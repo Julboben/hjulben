@@ -226,10 +226,20 @@ export function hiddenSignature() {
 
 // ---- Changing --------------------------------------------------------------
 
+/**
+ * Flag a whole group or let it go. Either way what was flagged on its own in
+ * it is forgotten, so letting the group go frees all of it rather than
+ * bringing back the single items.
+ */
 function setGroupFlag(kind, key, on) {
-  const groups = current()[kind].groups;
+  const { groups, items } = current()[kind];
   if (on) groups.add(key);
   else groups.delete(key);
+  const all = [["block", editor.trail.terrainBlocks || []], ...Object.entries(LISTS())];
+  for (const [type, list] of all)
+    list.forEach((object, index) => {
+      if (groupOf(type, object) === key) items.delete(itemKey(type, index));
+    });
   save(kind);
 }
 
@@ -247,16 +257,24 @@ export const setGroupHidden = (key, hidden) => setGroupFlag("hide", key, hidden)
 export const setItemLocked = (type, index, locked) => setItemFlag("lock", type, index, locked);
 export const setItemHidden = (type, index, hidden) => setItemFlag("hide", type, index, hidden);
 
-function clearFlags(kind) {
-  current()[kind].groups.clear();
-  current()[kind].items.clear();
+/**
+ * Flag every group on this trail, or with `on` false, let go of every group
+ * and every single item alike.
+ */
+function flagEverything(kind, on) {
+  const { groups, items } = current()[kind];
+  if (on) for (const { key } of LOCK_GROUPS) groups.add(key);
+  else {
+    groups.clear();
+    items.clear();
+  }
   save(kind);
 }
 
-/** Unlock every group and item on this trail. */
-export const unlockAll = () => clearFlags("lock");
-/** Show every hidden group and item on this trail. */
-export const showAll = () => clearFlags("hide");
+export const setAllLocked = (locked) => flagEverything("lock", locked);
+export const setAllHidden = (hidden) => flagEverything("hide", hidden);
+export const allLocked = () => LOCK_GROUPS.every(({ key }) => isGroupLocked(key));
+export const allHidden = () => LOCK_GROUPS.every(({ key }) => isGroupHidden(key));
 
 /**
  * Forget item locks and hides that match nothing on the trail any more, such

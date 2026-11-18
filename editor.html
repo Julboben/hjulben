@@ -504,18 +504,14 @@
                             autocomplete="off"
                         />
                         <div class="objects-actions">
-                            <button class="wide-action" id="open-all" type="button" hidden>
-                                OPEN ALL
+                            <button class="icon-button" id="open-all" type="button" title="Open all groups" aria-label="Open all groups">
+                                <span data-icon="unfold" aria-hidden="true"></span>
                             </button>
-                            <button class="wide-action" id="collapse-all" type="button" hidden>
-                                COLLAPSE ALL
+                            <button class="icon-button" id="collapse-all" type="button" title="Collapse all groups" aria-label="Collapse all groups">
+                                <span data-icon="fold" aria-hidden="true"></span>
                             </button>
-                            <button class="wide-action" id="show-all" type="button" hidden>
-                                SHOW ALL
-                            </button>
-                            <button class="wide-action" id="unlock-all" type="button" hidden>
-                                UNLOCK ALL
-                            </button>
+                            <span class="objects-actions-label" aria-hidden="true">ALL</span>
+                            <span class="objects-flag-everything" id="flag-everything"></span>
                         </div>
                         <p class="objects-hint" id="objects-no-match" hidden>
                             Nothing here is named like that.
