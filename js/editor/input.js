@@ -73,7 +73,7 @@ import {
 } from "./groups.js";
 import { clampZoom, editor } from "./state.js";
 import { NOTICE_TIME, refuseEdit, refuseReadOnly, showStatus, statusShowing } from "./status.js";
-import { PLACING_TOOLS, TOOL_KEYS, setTool, toolSettings } from "./tools.js";
+import { PLACING_TOOLS, TOOL_KEYS, setTab, setTool, toolSettings } from "./tools.js";
 import { groupLabel, isGroupHidden, isGroupLocked, toolGroup } from "./locks.js";
 import { commitWater } from "./water.js";
 import {
@@ -630,6 +630,9 @@ const shortcuts = /** @type {HTMLDialogElement} */ ($("shortcuts"));
  * tab, which keeps focus and would otherwise swallow V, C and the rest. Text
  * fields, selects and open dialogs and menus keep their keys.
  */
+// The side panel's tabs, numbered in the order they are shown.
+const TAB_KEYS = { Digit1: "tools", Digit2: "objects", Digit3: "trail" };
+
 function shortcutsReach() {
   const active = document.activeElement;
   if (!active || active === canvas || active === document.body) return true;
@@ -1240,6 +1243,18 @@ export function bindInput() {
     if (TOOL_KEYS[event.code] && !event.shiftKey) {
       setTool(TOOL_KEYS[event.code]);
       render();
+      return;
+    }
+    if (TAB_KEYS[event.code] && !event.shiftKey) {
+      setTab(TAB_KEYS[event.code]);
+      return;
+    }
+    // Like search on many sites: / goes straight to the Objects filter.
+    if (event.key === "/") {
+      event.preventDefault();
+      setTab("objects");
+      $("objects-filter").focus();
+      $("objects-filter").select();
       return;
     }
     if (event.key.startsWith("Arrow")) {

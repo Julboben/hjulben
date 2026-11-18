@@ -162,18 +162,9 @@
                             aria-selected="true"
                             aria-controls="panel-tools"
                             data-tab="tools"
+                            title="Tools (1)"
                         >
                             TOOLS
-                        </button>
-                        <button
-                            class="side-tab"
-                            role="tab"
-                            id="tab-trail"
-                            aria-selected="false"
-                            aria-controls="panel-trail"
-                            data-tab="trail"
-                        >
-                            TRAIL
                         </button>
                         <button
                             class="side-tab"
@@ -182,8 +173,20 @@
                             aria-selected="false"
                             aria-controls="panel-objects"
                             data-tab="objects"
+                            title="Objects (2)"
                         >
                             OBJECTS
+                        </button>
+                        <button
+                            class="side-tab"
+                            role="tab"
+                            id="tab-trail"
+                            aria-selected="false"
+                            aria-controls="panel-trail"
+                            data-tab="trail"
+                            title="Trail (3)"
+                        >
+                            TRAIL
                         </button>
                     </div>
 
@@ -488,12 +491,14 @@
                         hidden
                     >
                         <p class="objects-hint">
-                            Click a name to select it and bring it into view.
-                            Cmd/Ctrl-click adds it to the selection or takes it
-                            out, and Shift-click adds every row up to it.
-                            Anything locked is still drawn, but can't be
-                            selected or changed. Anything hidden isn't drawn
-                            in the editor, but stays in the trail.
+                            Click a name to select it and bring it into view,
+                            or a group to open or close it. Cmd/Ctrl-click adds
+                            a row to the selection or takes it out, and
+                            Shift-click adds every row from the last one
+                            clicked. Locked things are still drawn, but can't
+                            be selected or changed. Hidden things aren't drawn
+                            or selected in the editor, but stay in the trail
+                            and in play tests.
                         </p>
                         <input
                             class="objects-filter"
@@ -1132,6 +1137,8 @@
                         <div><dt><kbd>Y</kbd></dt><dd>Show or hide the game art</dd></div>
                         <div><dt><kbd>M</kbd></dt><dd>Show or hide the mini map</dd></div>
                         <div><dt><kbd>N</kbd></dt><dd>Snapping on or off</dd></div>
+                        <div><dt><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd></dt><dd>Tools, Objects, Trail tab</dd></div>
+                        <div><dt><kbd>/</kbd></dt><dd>Filter Objects by name</dd></div>
                         <div><dt><kbd>Home</kbd></dt><dd>Go to the start (Shift: whole trail)</dd></div>
                     </dl>
                 </section>

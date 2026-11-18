@@ -971,6 +971,18 @@ if (kind === 'locks') {
   out.keyLocked = editor.selection === null && everything('lock') !== 'false';
   letGo('lock');
 
+  // 1, 2 and 3 open the side panel's tabs, and / the Objects filter.
+  const panelShown = name => document.getElementById(`panel-${name}`).hidden === false;
+  key('1', { code: 'Digit1' });
+  out.tabKeys = [panelShown('tools')];
+  key('2', { code: 'Digit2' });
+  out.tabKeys.push(panelShown('objects'));
+  key('3', { code: 'Digit3' });
+  out.tabKeys.push(panelShown('trail'));
+  key('1', { code: 'Digit1' });
+  key('/', { code: 'Slash' });
+  out.filterKey = panelShown('objects') && document.activeElement === document.getElementById('objects-filter');
+
   // The filter keeps only the groups with a matching name, opened; Collapse all closes them.
   const filter = document.getElementById('objects-filter');
   filter.value = 'APP';

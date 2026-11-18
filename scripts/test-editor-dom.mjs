@@ -165,6 +165,8 @@ const reported = (report, label) => {
   check('the half-lit lock above the groups locks every group, then unlocks everything', JSON.stringify(report.lockEverything) === JSON.stringify(['mixed', 'true', true, 'false']));
   check('a second click on the lock above the groups frees everything', report.unlockedAll);
   check('L locks the selection', report.keyLocked);
+  check('1, 2 and 3 open the Tools, Objects and Trail tabs', report.tabKeys.every(Boolean));
+  check('/ opens the Objects filter', report.filterKey);
   check('the filter keeps only matching groups, open', JSON.stringify(report.filtered) === '[1,2]', `(${JSON.stringify(report.filtered)})`);
   check('a filter that matches nothing says so', report.noMatch);
   check('Collapse all closes every group', report.collapseShown && report.collapsed);
