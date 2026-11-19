@@ -761,25 +761,21 @@
                                     max="180"
                                     step="1"
                             /></label>
-                            <div class="field-row" id="selection-rotate-row" hidden>
-                                Rotate
-                                <span class="segmented">
-                                    <button type="button" id="rotate-ccw">↺ 90°</button>
-                                    <button type="button" id="rotate-cw">↻ 90°</button>
-                                </span>
-                            </div>
-                            <div class="field-row" id="selection-mirror-row" hidden>
-                                Flip
-                                <span class="segmented">
-                                    <button type="button" id="mirror-horizontal" title="Flip left to right (X)">⇆ Horizontal</button>
-                                    <button type="button" id="mirror-vertical" title="Flip upside down (Shift+X)">⇅ Vertical</button>
-                                </span>
-                            </div>
-                            <div class="field-row" id="selection-order-row" hidden>
-                                Order
-                                <span class="segmented">
-                                    <button type="button" id="order-back" title="Send behind the others of its kind (⌘⇧[)">To back</button>
-                                    <button type="button" id="order-front" title="Bring in front of the others of its kind (⌘⇧])">To front</button>
+                            <div class="field-row" id="selection-arrange-row" hidden>
+                                Arrange
+                                <span class="segmented arrange">
+                                    <span class="arrange-group" id="arrange-rotate">
+                                        <button type="button" id="rotate-ccw" title="Turn 90° to the left"><span data-icon="rotate-left" aria-hidden="true"></span></button>
+                                        <button type="button" id="rotate-cw" title="Turn 90° to the right"><span data-icon="rotate-right" aria-hidden="true"></span></button>
+                                    </span>
+                                    <span class="arrange-group" id="arrange-mirror">
+                                        <button type="button" id="mirror-horizontal" title="Flip left to right (X)"><span data-icon="flip-horizontal" aria-hidden="true"></span></button>
+                                        <button type="button" id="mirror-vertical" title="Flip upside down (Shift+X)"><span data-icon="flip-vertical" aria-hidden="true"></span></button>
+                                    </span>
+                                    <span class="arrange-group" id="arrange-order">
+                                        <button type="button" id="order-back" title="Send behind the others of its kind (⌘⇧[)"><span data-icon="order-back" aria-hidden="true"></span></button>
+                                        <button type="button" id="order-front" title="Bring in front of the others of its kind (⌘⇧])"><span data-icon="order-front" aria-hidden="true"></span></button>
+                                    </span>
                                 </span>
                             </div>
                             <label id="selection-radius-row" hidden
@@ -828,7 +824,7 @@
                             >
                                 Optional. Hide it off the main line.
                             </p>
-                            <button class="danger" id="delete-selection">
+                            <button class="danger" id="delete-selection" data-icon-before="trash">
                                 DELETE SELECTION
                             </button>
                         </fieldset>

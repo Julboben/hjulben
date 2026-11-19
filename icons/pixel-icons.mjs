@@ -529,6 +529,42 @@ export default {
     #.......#
     #########
   `,
+  // The inspector's Arrange buttons: flip across a dotted line, and send a
+  // thing behind or bring it in front of what it overlaps.
+  'flip-horizontal': `
+    ....#....
+    #.......#
+    ##..#..##
+    ###...#.#
+    ####.#..#
+    ###...#.#
+    ##..#..##
+    #.......#
+    ....#....
+  `,
+  'flip-vertical': { rotate: 'flip-horizontal', turns: 1 },
+  'order-back': `
+    ######...
+    #....#...
+    #....#...
+    #....####
+    #....####
+    #########
+    ...######
+    ...######
+    ...######
+  `,
+  'order-front': `
+    ######...
+    #....#...
+    #....#...
+    #..######
+    #..######
+    #########
+    ...######
+    ...######
+    ...######
+  `,
   // The editor's grid, shown or hidden from the More menu.
   grid: `
     .#..#..#.

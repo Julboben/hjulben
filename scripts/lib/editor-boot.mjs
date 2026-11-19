@@ -417,7 +417,7 @@ if (kind === 'rotate') {
 
   // The 800 by 300 slab turns about its centre into a 300 by 800 one.
   drag([200, 450], [200, 450]);
-  out.blockRowShown = document.getElementById('selection-rotate-row').hidden === false;
+  out.blockRowShown = document.getElementById('arrange-rotate').hidden === false;
   out.blockHandle = Boolean(rotateHandle());
   const slab = bounds(current().terrainBlocks[0]);
   turnHandle([400, 450], 90);
@@ -433,7 +433,7 @@ if (kind === 'rotate') {
   drag([600, 290], [600, 290]);
   out.propTitle = document.getElementById('selection-title').textContent;
   out.propFieldShown = document.getElementById('selection-rotation-row').hidden === false;
-  out.propButtonsHidden = document.getElementById('selection-rotate-row').hidden === true;
+  out.propButtonsHidden = document.getElementById('arrange-rotate').hidden === true;
   turnHandle([600, 300], 20, { shiftKey: true });
   out.snapped = current().props[0].rotation;
   undo.click();
@@ -471,7 +471,7 @@ if (kind === 'rotate') {
   drag([1100, 230], [1100, 230]);
   out.waterTitle = document.getElementById('selection-title').textContent;
   out.waterHandle = rotateHandle();
-  out.waterRowHidden = document.getElementById('selection-rotate-row').hidden === true;
+  out.waterRowHidden = document.getElementById('arrange-rotate').hidden === true;
   process.stdout.write(JSON.stringify(out));
   process.exit(0);
 }
@@ -637,7 +637,7 @@ if (kind === 'group') {
   editor.selection = { kind: 'items', items: [{ type: 'block', index: 0 }, { type: 'prop', index: 0 }] };
   syncInspector();
   const middle = (selectionBox().left + selectionBox().right) / 2;
-  out.mirrorShown = field('selection-mirror-row').hidden === false;
+  out.mirrorShown = field('arrange-mirror').hidden === false;
   field('mirror-horizontal').click();
   out.mirrored = [Math.round(prop().x - (2 * middle - propBefore.x)), Boolean(prop().flip) !== Boolean(propBefore.flip)];
   undo.click();
@@ -648,14 +648,14 @@ if (kind === 'group') {
   undo.click();
   editor.selection = { kind: 'prop', index: 0 };
   syncInspector();
-  out.propMirrorHidden = field('selection-mirror-row').hidden === true;
+  out.propMirrorHidden = field('arrange-mirror').hidden === true;
   const propsBefore = JSON.stringify(current().props);
   key('X', { code: 'KeyX', shiftKey: true });
   out.shiftXOnProp = JSON.stringify(current().props) === propsBefore;
 
   // To front puts a prop last in its list, where it is drawn over the others,
   // and the selection follows it; Cmd+Shift+[ sends it back.
-  out.orderShown = field('selection-order-row').hidden === false;
+  out.orderShown = field('arrange-order').hidden === false && field('selection-arrange-row').hidden === false;
   const first = JSON.stringify(current().props[0]);
   field('order-front').click();
   out.toFront = [JSON.stringify(current().props.at(-1)) === first, editor.selection?.index === current().props.length - 1];

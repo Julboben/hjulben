@@ -355,10 +355,12 @@ export function syncInspector({ live = false } = {}) {
   $("selection-rotation-row").hidden = !selectedProp || !canRotate(selectedProp.type);
   if (selectedProp && document.activeElement !== $("selection-rotation"))
     $("selection-rotation").value = selectedProp.rotation || 0;
-  // A lone prop has its own Rotation field; blocks and groups turn by a quarter.
-  $("selection-rotate-row").hidden = Boolean(selectedProp) || !canRotateSelection();
-  $("selection-mirror-row").hidden = !canMirrorSelection();
-  $("selection-order-row").hidden = !canOrderSelection();
+  // Arrange shows the buttons that apply. A lone prop has its own Rotation
+  // field; blocks and groups turn by a quarter.
+  $("arrange-rotate").hidden = Boolean(selectedProp) || !canRotateSelection();
+  $("arrange-mirror").hidden = !canMirrorSelection();
+  $("arrange-order").hidden = !canOrderSelection();
+  $("selection-arrange-row").hidden = ["rotate", "mirror", "order"].every((group) => $(`arrange-${group}`).hidden);
   const spikes = selectedOf("spike").map((index) => editor.trail.spikes[index]);
   for (const key of ["radius", "spin"]) {
     $(`selection-${key}-row`).hidden = !spikes.length;

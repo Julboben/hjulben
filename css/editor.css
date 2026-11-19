@@ -132,6 +132,9 @@ fieldset:disabled :is(input, select, textarea, button) { opacity: .55; cursor: n
 #edit-preview.active { border-color: var(--color-accent); background: var(--color-accent); color: var(--color-accent-ink); }
 .segmented { display: inline-flex; gap: 2px; }
 .segmented button { flex: 1; min-height: 26px; padding: 4px 10px; border-width: 1px; font-size: var(--text-xs); }
+/* Arrange: one row of icon buttons, the groups that apply sharing its width. */
+.arrange-group { display: contents; }
+.segmented.arrange button { min-width: 0; padding: 4px 0; }
 .segmented button.active { border-color: var(--color-accent); background: var(--color-accent); color: var(--color-accent-ink); }
 /* Presets that set a group at once (the weather, the time of day), and the
    wind's direction beside a windsock that shows how hard it blows. */
