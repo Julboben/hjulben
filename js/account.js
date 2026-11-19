@@ -19,9 +19,8 @@ export const passkeysSupported = () => typeof window !== 'undefined' && window.i
 
 // --- base64url <-> bytes (WebAuthn JSON uses base64url for every binary field)
 
-const fromB64url = text => Uint8Array.from(atob(text.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0));
-const toB64url = buffer => btoa(String.fromCharCode(...new Uint8Array(buffer)))
-  .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+const fromB64url = text => Uint8Array.fromBase64(text, { alphabet: 'base64url' });
+const toB64url = buffer => new Uint8Array(buffer).toBase64({ alphabet: 'base64url', omitPadding: true });
 
 async function call(action, body, { method = 'POST', token = null } = {}) {
   let res;

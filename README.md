@@ -73,9 +73,9 @@ This serves the game at `http://127.0.0.1:8080` (set `PORT` to change it) and le
 
 | Browser                    | Minimum version |
 | -------------------------- | --------------- |
-| Safari (macOS, iOS/iPadOS) | 17.5            |
-| Chrome, Edge               | 123             |
-| Firefox                    | 120 (121 for the editor) |
+| Safari (macOS, iOS/iPadOS) | 18.4            |
+| Chrome, Edge               | 140             |
+| Firefox                    | 140             |
 
 ## Inspiration
 

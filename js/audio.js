@@ -171,8 +171,6 @@ export function createAudio(getSnapshot) {
       resumeContext();
       return;
     }
-    const AudioContext = window.AudioContext || window.webkitAudioContext;
-    if (!AudioContext) return;
     const context = new AudioContext();
     // iOS reports 'interrupted' (and Safari 'suspended') when another app
     // takes the sound; a stop that isn't ours is undone by the next gesture

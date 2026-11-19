@@ -260,7 +260,7 @@ export function startGame({ shared = null } = {}) {
     }
   }
 
-  const fullscreenElement = () => document.fullscreenElement || document.webkitFullscreenElement;
+  const fullscreenElement = () => document.fullscreenElement;
   const coarsePointer = window.matchMedia('(pointer: coarse)').matches;
 
   // A phone turned sideways shows the "turn your phone upright" screen over
@@ -274,13 +274,8 @@ export function startGame({ shared = null } = {}) {
   function toggleFullscreen() {
     if (!menu.isOpen()) sounds.menuSelect();
     const leaving = Boolean(fullscreenElement());
-    const action = leaving
-      ? (document.exitFullscreen?.bind(document) || document.webkitExitFullscreen?.bind(document))
-      : (game.requestFullscreen?.bind(game) || game.webkitRequestFullscreen?.bind(game));
-    if (!action) return;
     fullscreenExitRequested = leaving;
-    const result = action();
-    if (result?.catch) result.catch(() => { fullscreenExitRequested = false; });
+    (leaving ? document.exitFullscreen() : game.requestFullscreen()).catch(() => { fullscreenExitRequested = false; });
   }
 
   function syncFullscreenSetting() {
@@ -1347,11 +1342,9 @@ export function startGame({ shared = null } = {}) {
   $('restart-control').addEventListener('click', () => handlePress('restart'));
   $('menu').addEventListener('click', () => { sounds.menuBack(); showMainMenu(); });
   $('setting-fullscreen').addEventListener('click', toggleFullscreen);
-  const fullscreenSupported = Boolean(document.fullscreenEnabled || document.webkitFullscreenEnabled || game.webkitRequestFullscreen);
-  $('setting-fullscreen-group').hidden = !fullscreenSupported;
+  $('setting-fullscreen-group').hidden = !document.fullscreenEnabled;
   syncFullscreenSetting();
   document.addEventListener('fullscreenchange', handleFullscreenChange);
-  document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
   function resize() {
     renderer.resize();
     redraw = true;

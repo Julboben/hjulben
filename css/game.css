@@ -118,8 +118,7 @@ select:focus-visible {
         letter-spacing: 0.2em;
         animation: boot-loader 0.2s 0.4s both;
     }
-    /* :is() forgives the prefixed pseudo-class in browsers that don't know it. */
-    &:is(:fullscreen, :-webkit-full-screen) {
+    &:fullscreen {
         width: 100vw;
         height: 100vh;
         max-width: none;
@@ -2924,7 +2923,6 @@ h2 {
         width: 9px;
         height: 6px;
         background: var(--color-accent-ink);
-        -webkit-mask: var(--icon-check) center / 100% 100% no-repeat;
         mask: var(--icon-check) center / 100% 100% no-repeat;
     }
 }
@@ -3327,13 +3325,11 @@ h2 {
     min-height: 260px;
     overflow: hidden;
     outline: none;
-    -webkit-mask-image: linear-gradient(transparent, #000 14%, #000 86%, transparent);
     mask-image: linear-gradient(transparent, #000 14%, #000 86%, transparent);
     cursor: default;
     user-select: none;
     &.credits-still {
         overflow: auto;
-        -webkit-mask-image: none;
         mask-image: none;
         user-select: auto;
     }

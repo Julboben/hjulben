@@ -84,7 +84,7 @@ const rules = names.map(name => {
   const selector = `[data-icon="${name}"],\n[data-icon-before="${name}"]::before,\n[data-icon-after="${name}"]::after`;
   // Colour icons are drawn as they are; the rest are masks filled with the text colour.
   const colour = Object.keys(palette).length
-    ? '\n    background: var(--icon) center / 100% 100% no-repeat;\n    -webkit-mask: none;\n    mask: none;'
+    ? '\n    background: var(--icon) center / 100% 100% no-repeat;\n    mask: none;'
     : '';
   return `${selector} {\n    --icon: var(--icon-${name});\n    --icon-w: ${rows[0].length};\n    --icon-h: ${rows.length};${colour}\n}`;
 });
@@ -103,7 +103,6 @@ ${urls.join('\n')}
     height: calc(var(--icon-h) * var(--px, 2px));
     vertical-align: middle;
     background: currentColor;
-    -webkit-mask: var(--icon) center / 100% 100% no-repeat;
     mask: var(--icon) center / 100% 100% no-repeat;
 }
 [data-icon-before]::before {

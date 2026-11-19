@@ -121,7 +121,6 @@
     height: calc(var(--icon-h) * var(--px, 2px));
     vertical-align: middle;
     background: currentColor;
-    -webkit-mask: var(--icon) center / 100% 100% no-repeat;
     mask: var(--icon) center / 100% 100% no-repeat;
 }
 [data-icon-before]::before {
@@ -139,7 +138,6 @@
     --icon-w: 32;
     --icon-h: 32;
     background: var(--icon) center / 100% 100% no-repeat;
-    -webkit-mask: none;
     mask: none;
 }
 [data-icon="arrow-right"],
@@ -177,7 +175,6 @@
     --icon-w: 7;
     --icon-h: 5;
     background: var(--icon) center / 100% 100% no-repeat;
-    -webkit-mask: none;
     mask: none;
 }
 [data-icon="search"],
@@ -271,7 +268,6 @@
     --icon-w: 9;
     --icon-h: 9;
     background: var(--icon) center / 100% 100% no-repeat;
-    -webkit-mask: none;
     mask: none;
 }
 [data-icon="nisse"],
@@ -281,7 +277,6 @@
     --icon-w: 9;
     --icon-h: 9;
     background: var(--icon) center / 100% 100% no-repeat;
-    -webkit-mask: none;
     mask: none;
 }
 [data-icon="headlight"],
