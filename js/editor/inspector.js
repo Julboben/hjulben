@@ -70,6 +70,7 @@ import {
   sameItem,
   selectedOf,
   selectionBox,
+  faceStart,
   flippableProps,
   selectionItems,
 } from "./selection.js";
@@ -337,7 +338,6 @@ export function syncInspector({ live = false } = {}) {
   $("selection-node-row").hidden = editor.selection?.kind !== "blockPoint";
   $("selection-edge-row").hidden = editor.selection?.kind !== "blockEdge";
   $("split-edge").hidden = editor.selection?.kind !== "blockEdge";
-  $("selection-facing-row").hidden = editor.selection?.kind !== "start";
   // A group's props and spikes share their type, layer, flip, radius and spin
   // fields. Where they differ the field shows Mixed, and a new value sets them all.
   const props = selectedOf("prop").map((index) => editor.trail.props[index]);
@@ -358,11 +358,14 @@ export function syncInspector({ live = false } = {}) {
   // field; blocks and groups turn by a quarter.
   $("arrange-rotate").hidden = Boolean(selectedProp) || !canRotateSelection();
   $("arrange-mirror").hidden = !canMirrorSelection();
-  // Props that face a way face left or right, lit for the way they all face.
-  // With blocks, flipping turns them round instead.
-  $("arrange-facing").hidden = !flippable.length || canMirrorSelection();
+  // The start, and props that face a way, face left or right, lit for the
+  // way they all face. With blocks, flipping turns props round instead.
+  const start = editor.selection?.kind === "start";
+  $("arrange-facing").hidden = !start && (!flippable.length || canMirrorSelection());
   for (const [id, left] of [["face-left", true], ["face-right", false]]) {
-    const on = flippable.length > 0 && flippable.every((prop) => Boolean(prop.flip) === left);
+    const on = start
+      ? editor.trail.start.facing < 0 === left
+      : flippable.length > 0 && flippable.every((prop) => Boolean(prop.flip) === left);
     $(id).classList.toggle("active", on);
     $(id).setAttribute("aria-pressed", String(on));
   }
@@ -408,8 +411,6 @@ export function syncInspector({ live = false } = {}) {
       $("selection-node").value = node.mode;
     }
   }
-  if (editor.selection?.kind === "start")
-    $("selection-facing").value = String(editor.trail.start.facing);
   if (editor.selection?.kind === "prop") {
     $("selection-prop-text").value = editor.trail.props[editor.selection.index].text || "";
   }
@@ -982,19 +983,11 @@ export function bindInspector() {
     render();
   });
 
-  $("selection-facing").addEventListener("change", (event) => {
-    if (editor.selection?.kind !== "start") return;
-    pushHistory();
-    editor.trail.start.facing = Number(event.target.value) < 0 ? -1 : 1;
-    rememberToolSetting("start", "facing", String(editor.trail.start.facing));
-    syncInspector();
-    render();
-  });
-
   for (const [id, flip] of [["face-left", true], ["face-right", false]])
     $(id).addEventListener("click", () => {
       const chosen = flippableProps().filter((prop) => Boolean(prop.flip) !== flip);
-      if (chosen.length) {
+      if (editor.selection?.kind === "start") faceStart(flip ? -1 : 1);
+      else if (chosen.length) {
         pushHistory();
         for (const prop of chosen) {
           if (flip) prop.flip = true;

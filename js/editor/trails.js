@@ -247,7 +247,10 @@ function versionRow({ title, detail, current, onOpen, onDelete, openLabel }) {
   if (onDelete) {
     const remove = document.createElement("button");
     remove.className = "danger-inline";
-    remove.textContent = "×";
+    const icon = document.createElement("span");
+    icon.dataset.icon = "trash";
+    icon.setAttribute("aria-hidden", "true");
+    remove.append(icon);
     remove.title = "Delete this draft";
     remove.setAttribute("aria-label", `Delete draft from ${title}`);
     remove.addEventListener("click", onDelete);

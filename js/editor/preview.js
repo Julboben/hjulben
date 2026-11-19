@@ -60,6 +60,7 @@ async function drawThumbnail() {
 export function syncPreviewControls() {
   const framed = Boolean(editor.trail.preview);
   $("edit-preview").textContent = editing ? "DONE" : "EDIT PREVIEW";
+  $("edit-preview").dataset.iconBefore = editing ? "check" : "camera";
   $("edit-preview").classList.toggle("active", editing);
   $("reset-preview").disabled = !framed;
   $("preview-note").textContent = editing

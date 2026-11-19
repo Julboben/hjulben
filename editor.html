@@ -299,7 +299,7 @@
                                 ></canvas>
                                 <p class="tool-hint" id="preview-note"></p>
                                 <div class="preview-actions">
-                                    <button type="button" id="edit-preview">EDIT PREVIEW</button>
+                                    <button type="button" id="edit-preview" data-icon-before="camera">EDIT PREVIEW</button>
                                     <button type="button" id="reset-preview">RESET TO AUTOMATIC</button>
                                 </div>
                             </fieldset>
@@ -452,8 +452,8 @@
                                 <div class="field-row wind-row">
                                     <span>Blowing</span>
                                     <span class="segmented" role="group" aria-label="Wind direction">
-                                        <button type="button" id="wind-left" aria-label="Wind blowing left">← Left</button>
-                                        <button type="button" id="wind-right" aria-label="Wind blowing right">Right →</button>
+                                        <button type="button" id="wind-left" aria-label="Wind blowing left" data-icon-before="arrow-left">Left</button>
+                                        <button type="button" id="wind-right" aria-label="Wind blowing right" data-icon-after="arrow-right">Right</button>
                                     </span>
                                     <canvas
                                         id="windsock"
@@ -566,13 +566,6 @@
                             <button class="wide-action" id="split-edge" hidden>
                                 SPLIT EDGE
                             </button>
-                            <label id="selection-facing-row" hidden
-                                >Facing
-                                <select id="selection-facing">
-                                    <option value="1">Right</option>
-                                    <option value="-1">Left</option>
-                                </select></label
-                            >
                             <label id="selection-prop-type-row" hidden
                                 >Prop
                                 <select id="selection-prop-type">
@@ -784,7 +777,7 @@
                                     step="1"
                             /></label>
                             <label id="selection-spin-row" hidden
-                                >Spin (turns/s, − for ↺)
+                                >Spin (turns/s, − is anticlockwise)
                                 <input
                                     id="selection-spin"
                                     type="number"
@@ -889,7 +882,7 @@
             <ul class="versions-list" id="versions-list"></ul>
             <p class="versions-note" id="versions-empty">No drafts yet.</p>
             <div class="data-actions versions-actions">
-                <button id="versions-save-draft">SAVE CURRENT AS DRAFT</button>
+                <button id="versions-save-draft" data-icon-before="save">SAVE CURRENT AS DRAFT</button>
             </div>
         </dialog>
         <dialog class="shortcuts confirm-dialog" id="publish-confirm" aria-labelledby="publish-confirm-title">
@@ -907,7 +900,7 @@
             </p>
             <form method="dialog" class="data-actions confirm-actions">
                 <button value="cancel" autofocus>CANCEL</button>
-                <button value="overwrite" class="danger-solid">OVERWRITE FILE</button>
+                <button value="overwrite" class="danger-solid" data-icon-before="publish">OVERWRITE FILE</button>
             </form>
         </dialog>
         <dialog class="shortcuts confirm-dialog" id="rename-dialog" aria-labelledby="rename-title">

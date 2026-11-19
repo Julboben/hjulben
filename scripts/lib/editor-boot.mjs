@@ -652,6 +652,17 @@ if (kind === 'group') {
   out.propMirrorHidden = field('arrange-mirror').hidden === true;
   // A lone prop that faces a way shows its arrows, and Delete names it.
   out.loneProp = [field('arrange-facing').hidden === false, field('face-right').classList.contains('active'), field('delete-selection').textContent];
+  // The start faces left or right with the same arrows, and X turns it round.
+  editor.selection = { kind: 'start' };
+  syncInspector();
+  field('face-left').click();
+  out.startFacing = [field('arrange-facing').hidden === false, current().start.facing, field('face-left').classList.contains('active')];
+  key('x', { code: 'KeyX' });
+  out.startFacing.push(current().start.facing);
+  undo.click();
+  undo.click();
+  editor.selection = { kind: 'prop', index: 0 };
+  syncInspector();
   const propsBefore = JSON.stringify(current().props);
   key('X', { code: 'KeyX', shiftKey: true });
   out.shiftXOnProp = JSON.stringify(current().props) === propsBefore;
@@ -1134,13 +1145,13 @@ if (kind === 'nisse') {
   const shows = () => [marker.dataset.tool, marker.firstElementChild.dataset.icon];
   out.markerButton = [shows()];
   document.getElementById('tool-menu-marker').click();
-  menu.children.find(item => item.children?.[2]?.textContent === 'Finish')?.click();
+  menu.children.find(item => item.children?.some(child => child.textContent === 'Finish'))?.click();
   out.markerButton.push([...shows(), editor.tool, toolSettings.marker.tool]);
   key('g', { code: 'KeyG' });
   out.markerButton.push([...shows(), editor.tool]);
   // Its menu also sets which way the start faces.
   document.getElementById('tool-menu-marker').click();
-  menu.children.find(item => item.children?.[2]?.textContent === 'Left')?.click();
+  menu.children.find(item => item.children?.some(child => child.textContent === 'Left'))?.click();
   out.markerButton.push(toolSettings.start.facing);
 
   // A change made in the inspector carries over to the next thing placed.

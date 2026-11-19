@@ -38,11 +38,8 @@ function choose(tool, key, value) {
   render();
 }
 
-/**
- * A menu item: a check, then an icon (or, with `indent`, the room of one, to
- * line up under items that have icons), the label and the tool's key.
- */
-function menuItem(text, { checked = null, icon = null, indent = false, key = "", onChoose }) {
+/** A menu item: a check, then its icon, if any, the label and the tool's key. */
+function menuItem(text, { checked = null, icon = null, key = "", onChoose }) {
   const item = document.createElement("button");
   item.type = "button";
   item.setAttribute("role", checked === null ? "menuitem" : "menuitemradio");
@@ -50,13 +47,16 @@ function menuItem(text, { checked = null, icon = null, indent = false, key = "",
   const mark = document.createElement("span");
   mark.className = "tool-menu-check";
   mark.setAttribute("aria-hidden", "true");
-  mark.textContent = checked ? "✓" : "";
+  if (checked) {
+    const tick = document.createElement("span");
+    tick.dataset.icon = "check";
+    mark.append(tick);
+  }
   item.append(mark);
-  if (icon || indent) {
+  if (icon) {
     const symbol = document.createElement("span");
     symbol.setAttribute("aria-hidden", "true");
-    if (icon) symbol.dataset.icon = icon;
-    else symbol.className = "tool-menu-indent";
+    symbol.dataset.icon = icon;
     item.append(symbol);
   }
   const label = document.createElement("span");
@@ -104,7 +104,6 @@ function markerMenu() {
   const tools = MARKER_TOOLS.map((tool) =>
     menuItem(TOOL_INFO[tool].title, {
       checked: toolSettings.marker.tool === tool,
-      icon: TOOL_INFO[tool].icon,
       key: TOOL_KEY_LABELS[tool],
       onChoose: () => {
         closeToolMenu();
@@ -115,10 +114,10 @@ function markerMenu() {
   );
   const rule = document.createElement("div");
   rule.className = "tool-menu-rule";
-  const facing = FACING_OPTIONS.map(([value, text]) =>
+  const facing = FACING_OPTIONS.map(([value, text, icon]) =>
     menuItem(text, {
       checked: toolSettings.start.facing === value,
-      indent: true,
+      icon,
       onChoose: () => choose("start", "facing", value),
     }),
   );

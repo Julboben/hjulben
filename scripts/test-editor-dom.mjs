@@ -55,8 +55,8 @@ const reported = (report, label) => {
   check('deleting it removes the field', report.deleted);
   check('and undo brings it back', report.restored && report.restored.x === report.moved.x);
   check('a spike\'s radius set in the inspector carries over to the next spike', JSON.stringify(report.nextSpike?.slice(-2)) === '[30,30]', `(${JSON.stringify(report.nextSpike)})`);
-  check('Start and Finish share a button showing the one used last, and its menu sets the start\'s facing',
-    JSON.stringify(report.markerButton) === JSON.stringify([['start', 'helmet'], ['finish', 'flag', 'finish', 'finish'], ['start', 'helmet', 'start'], '-1']), `(${JSON.stringify(report.markerButton)})`);
+  check('Start and Finish share a flag button that takes up the one used last, and its menu sets the start\'s facing',
+    JSON.stringify(report.markerButton) === JSON.stringify([['start', 'flag'], ['finish', 'flag', 'finish', 'finish'], ['start', 'flag', 'start'], '-1']), `(${JSON.stringify(report.markerButton)})`);
 }
 
 // ---------------------------------------------------------------------------
@@ -303,6 +303,7 @@ const reported = (report, label) => {
   check('flipping carries a prop across and turns it round', json(report.mirrored) === json([0, true]), `(${json(report.mirrored)})`);
   check('X flips it too', report.keyMirrored === 0, `(${report.keyMirrored})`);
   check('a prop alone has no block flip', report.propMirrorHidden);
+  check('the start faces left with the arrows, and X turns it back', JSON.stringify(report.startFacing) === JSON.stringify([true, -1, true, 1]), `(${JSON.stringify(report.startFacing)})`);
   check('a lone ladder shows its facing arrows, Right lit, and Delete names it', JSON.stringify(report.loneProp) === JSON.stringify([true, true, 'DELETE LADDER']), `(${JSON.stringify(report.loneProp)})`);
   check('and Shift+X leaves it alone', report.shiftXOnProp);
   check('a prop can be brought to the front or sent to the back', report.orderShown);

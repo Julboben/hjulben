@@ -81,7 +81,7 @@ export const TOOL_INFO = {
     hint: "Click to place scenery. Props don't collide.",
   },
   start: {
-    icon: "helmet",
+    icon: "flag",
     title: "Start",
     hint: "Click to move the start.",
   },
@@ -106,10 +106,10 @@ const DEFAULT_TOOL_SETTINGS = {
 /** The tools that share one button, which shows the one used last. */
 export const MARKER_TOOLS = ["start", "finish"];
 
-/** Which way the start can face, as the shared button's menu offers it. */
+/** Which way the start can face, as the shared button's menu offers it: left first, as the inspector's arrows are. */
 export const FACING_OPTIONS = [
-  ["1", "Right"],
-  ["-1", "Left"],
+  ["-1", "Left", "arrow-left"],
+  ["1", "Right", "arrow-right"],
 ];
 
 // Single-key tool shortcuts, used while the canvas has focus.
