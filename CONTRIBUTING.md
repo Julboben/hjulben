@@ -236,7 +236,7 @@ All work goes to `main` through pull requests. Only merging a release PR deploys
 
 The release PR is opened by GitHub Actions, so its CI run waits for a maintainer's approval. That's optional: Prepare release already ran every check.
 
-The notes are written by Copilot CLI from the merged pull requests and commits. To pin the wording yourself, add lines to a PR description (or commit message); they are used as written and the PR's commits are not summarised:
+The notes are written by Copilot CLI from the merged pull requests and commits. To write a note yourself, add lines to a PR description (or commit message); the PR's commits are then not summarised. Copilot keeps what every pinned line says, but merges the lines about the same feature into one note and leaves out details nobody would miss, so a feature built over many commits still gets one note:
 
 ```text
 Changelog: Added a desert trail.

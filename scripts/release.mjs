@@ -8,7 +8,9 @@
 //       Prints a release's notes from CHANGELOG.md.
 //
 // Notes come from merged PRs and commits. A PR or commit description can pin
-// its own lines, which are used as written instead of being summarised:
+// its own lines, which are kept instead of being summarised from the commits.
+// Pinned lines about the same feature are merged, so a feature built over many
+// commits still gets one note:
 //   Changelog: Added a desert trail.
 //   Changelog: fixed: The camera no longer jumps at the start.
 //   Changelog: heads up: The leaderboard has been reset.
@@ -121,7 +123,7 @@ async function collectChanges(since, token) {
 function describeChanges({ pinned, pulls, commits }) {
   const commitLine = c => `- ${c.subject}${c.body ? ` — ${c.body.replace(/\s+/g, ' ')}` : ''} [files: ${c.files.join(', ')}]`;
   const parts = [];
-  if (pinned.length) parts.push('PINNED NOTES (include each one, keep the wording, only choose a type when it is missing):\n' + pinned.map(p => `- ${p.type ? `[${p.type}] ` : ''}${p.text}`).join('\n'));
+  if (pinned.length) parts.push('PINNED NOTES (written by the developers: keep every fact a player would notice, merge the ones about the same feature, only choose a type when it is missing):\n' + pinned.map(p => `- ${p.type ? `[${p.type}] ` : ''}${p.text}`).join('\n'));
   for (const pr of pulls) parts.push(`PULL REQUEST #${pr.number}: ${pr.title}\n${pr.body}\nCommits:\n${pr.commits.map(commitLine).join('\n')}`);
   if (commits.length) parts.push('COMMITS:\n' + commits.map(commitLine).join('\n'));
   return parts.join('\n\n');
@@ -144,12 +146,13 @@ async function writeNotesWithAI(changes, previous) {
     'You write the player-facing patch notes for Hjulben, a 2D physics-based trials motorbike browser game with online leaderboards, ghosts, rider customisation and a trail editor.',
     'Turn the developer changes into short notes for players. Rules:',
     '- Only include changes a player or trail creator would notice. Leave out refactors, tests, CI, docs, build scripts, caches and service-worker updates.',
-    '- Merge related commits into one note. Prefer fewer, meaningful notes (usually 2 to 8).',
+    '- Merge related commits and pinned notes into one note: one note per feature, and one per part of the trail editor (such as its layout, a tab or the inspector), not one per change. Prefer fewer, meaningful notes.',
+    '- Leave out details nobody would miss, such as a new icon, a renamed label or a button moved within the same panel.',
     '- Plain, friendly sentences ending with a full stop. No commit hashes, PR numbers, file names or code names.',
-    '- Prefix trail editor changes with "Editor: ".',
+    '- Start trail editor notes with "In the editor, ".',
     '- type is "new" for new features or content, "improved" for changes to existing things, "fixed" for bug fixes.',
     '- type is "heads-up" only for things players must know about, such as a leaderboard reset, lost saves or progress, or something they need to do. Most releases have none.',
-    '- Include every pinned note, except that a fixed or improved note about something that is new in this same release goes into that thing\'s new note, or is left out: players never saw the earlier version.',
+    '- Keep what every pinned note says, merged as above, except that a fixed or improved note about something that is new in this same release goes into that thing\'s new note, or is left out: players never saw the earlier version.',
     '- Do not invent details that are not supported by the changes.',
     'Reply with JSON only, without a code fence: {"changes":[{"type":"heads-up|new|improved|fixed","text":"..."}]}'
   ].join('\n');
@@ -176,7 +179,7 @@ function fallbackNotes({ pinned, pulls, commits }) {
 const sortNotes = notes => notes
   .map((note, i) => ({ note, i }))
   .sort((a, b) => (CHANGE_TYPES.indexOf(a.note.type) - CHANGE_TYPES.indexOf(b.note.type))
-    || (/^editor:/i.test(a.note.text) - /^editor:/i.test(b.note.text)) || a.i - b.i)
+    || (/^in the editor,/i.test(a.note.text) - /^in the editor,/i.test(b.note.text)) || a.i - b.i)
   .map(({ note }) => note);
 
 function output(name, value) {
