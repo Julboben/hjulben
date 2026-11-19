@@ -486,12 +486,37 @@ const PLANTED_TOLERANCE = 24;
  */
 const PROP_SLOPE_WINDOW = 90;
 
-function propSlope(trail, prop, reference) {
+/**
+ * The ground under one end of a prop standing at `standing`. Where the rock
+ * there is solid at the prop's own height, it is that rock's top, uphill of
+ * the prop, but no further than PROP_SLOPE_WINDOW above it; where it is open,
+ * the first top below, as far down. A ledge over the prop's floor is passed
+ * over, because there is air between it and the prop: one end finding the
+ * ledge while the other found the floor would tip the prop steeply. Null
+ * when neither is in reach.
+ */
+function propEndGround(trail, x, standing) {
+  // Overlapping blocks each cross in and out, so the rock is solid wherever
+  // the count of blocks entered is above 0.
+  let depth = 0;
+  let top = null;
+  for (const surface of terrainSurfacesAt(trail, x)) {
+    if (surface.entering) {
+      if (depth++ === 0) top = surface.y;
+      if (top > standing) return top <= standing + PROP_SLOPE_WINDOW ? top : null;
+    } else if (--depth === 0 && surface.y >= standing) {
+      return top >= standing - PROP_SLOPE_WINDOW ? top : null;
+    }
+  }
+  return null;
+}
+
+function propSlope(trail, prop, standing) {
   let [left, right] = GROUND_ALIGNED_PROP_SPANS[prop.type];
   // A mirrored prop stands on the mirror image of its footprint.
   if (prop.flip) [left, right] = [-right, -left];
-  const a = surfaceAt(trail, prop.x + left, reference);
-  const b = surfaceAt(trail, prop.x + right, reference);
+  const a = propEndGround(trail, prop.x + left, standing);
+  const b = propEndGround(trail, prop.x + right, standing);
   if (a === null || b === null) return null;
   return (b - a) / (right - left);
 }
@@ -502,7 +527,7 @@ export function propAlignmentSlope(trail, prop) {
   const standing = propGroundHeight(trail, prop);
   if (standing === null) return 0;
   if (!isPlanted(trail, prop)) return 0;
-  const slope = propSlope(trail, prop, standing - PROP_SLOPE_WINDOW);
+  const slope = propSlope(trail, prop, standing);
   return slope === null ? 0 : slope;
 }
 

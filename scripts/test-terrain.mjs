@@ -166,6 +166,17 @@ assert.ok(
 );
 assert.equal(floatingTree(8), 0, "a floating prop keeps a trail base");
 
+// Crates on a cave floor under a low ledge stand level: the ledge's top is
+// a surface within reach of one end, but the floor is the one they stand on.
+const ledgeTrail = trailOf(
+  [
+    polygonBlock([[0, 250], [800, 250], [800, 400], [0, 400]], "stone", "floor"),
+    polygonBlock([[420, 138], [485, 157], [550, 160], [750, 160], [750, 190], [430, 190]], "stone", "ledge"),
+  ],
+  { finish: { x: 700, y: null }, start: { x: 20, y: null, facing: 1 } },
+);
+assert.equal(propAlignmentSlope(ledgeTrail, { x: 525, y: 250, type: "crates" }), 0, "a ledge over a prop doesn't tip it");
+
 // A rotated prop is posed by hand: its rotation replaces the slope, and its
 // trunks and posts no longer reach for the ground.
 const tiltedFence = { ...fence, rotation: 30 };
