@@ -5,7 +5,7 @@ import { normalizeTrail, validateTrail } from './trail-schema.js';
 // so a custom trail can be passed around with no server storage. The data is
 // the trail's JSON, deflated and base64url-encoded. The hash never reaches the
 // server, so link previews can't show the trail; short links would need a
-// server (see the roadmap in README.md).
+// server.
 
 const HASH_KEY = 'trail';
 // Bumped if the packing changes, so old links still open.

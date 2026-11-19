@@ -4,7 +4,7 @@ Notes for working on the game: setting up, testing, the code layout, conventions
 
 ## Setup
 
-Development needs Node.js 24 (the version CI uses) and npm. The game itself has no build step; npm packages are only used by the scripts and the Netlify functions. Run `npm ci`, then `npm run dev` to play and edit trails locally (see [Play](README.md#play)).
+Development needs Node.js 24 (the version CI uses) and npm. The game itself has no build step; npm packages are only used by the scripts and the Netlify functions. Run `npm ci`, then `npm run dev` to play and edit trails locally (see [Running locally](README.md#running-locally)).
 
 ## Project structure
 
@@ -65,10 +65,11 @@ Development needs Node.js 24 (the version CI uses) and npm. The game itself has 
 │   └── terrain.js      # Heightfield and collision sampling
 ├── editor.html         # Standalone visual trail editor
 ├── CHANGELOG.md        # Player-facing release notes (What's new screen and GitHub Releases)
+├── EDITOR.md           # The trail editor, from drawing terrain to publishing and share links
 ├── TRAIL_FORMAT.md     # trail schema and authoring guide
 ├── PHYSICS.md          # Physics status, validation and profiling notes
 ├── CONTRIBUTING.md     # Development, conventions and releasing (this file)
-└── README.md           # The game, how to play it, and the technical overview
+└── README.md           # The game, its features and how to play it
 ```
 
 The game itself intentionally has no runtime dependencies. Only the Netlify functions use npm packages.
@@ -76,6 +77,8 @@ The game itself intentionally has no runtime dependencies. Only the Netlify func
 ## Development notes
 
 The game's most important asset is its handling, tuned over many iterations: throttle response, braking, rider lean, suspension, momentum, and camera feel. Treat changes to it with care (see the checklist at the end of this section).
+
+`npm run dev` generates `trails/catalog.json` (official and bonus) and `trails/custom-catalog.json` (custom), regenerates them when a trail file changes, and lets the editor write trail files. It never reloads the page on its own, so a running game is not interrupted: refresh after changing code. The "Update ready" prompt a release shows players is left out on `localhost`, where every reload already gets the latest code; use a non-local address to see it.
 
 `sw.js`'s file list, `js/version.js`, `js/changelog.js` (from `CHANGELOG.md`), `css/icons.css`, the app icons and `TRAILS.md` (the career's overview, from the trail files and `trails/worlds.json`, written by `npm run trails` and the dev server), `TRAIL_AUTHORING_CONTEXT.md` (the trail spec, schema, materials and example trails bundled for trail authors) are generated: run `npm run sw`, `npm run icons` and `npm run context` after changing their sources. `npm test` fails while any of them is out of date.
 
@@ -197,7 +200,13 @@ UI icons are drawn as ASCII grids in `icons/pixel-icons.mjs` (`#` takes the text
 
 ## Online backend
 
-How online riders and the world leaderboard work for players is in the [README](README.md#online-riders-and-the-world-leaderboard).
+Online riders sign up with a passkey and nothing else. Deleting a slot with × only frees it on that device: the online rider, their cloud save and their world times stay, and logging in brings them back. **Delete Online** in Riders removes the rider from the server for good (name, cloud save, passkeys and world-board runs), after confirming with their passkey. Names are unique regardless of case, accents, spaces, `_`, `.` and `-`, and offensive or reserved names are refused.
+
+The world board doesn't trust times sent by the browser. A finished run is sent as its recorded inputs, and the server replays them through the same deterministic simulation (`js/ride.js`) against the official or bonus trail, checks that it finishes, and uses its own time. It keeps each rider's best run per trail, and that replay becomes the ghost when a save is restored. A run that can't be posted (offline, or the server didn't answer) is kept in `hjulben-pending-runs-v1` and sent the next time the dashboard opens, the browser comes back online, or the rider logs in. A run ridden in slow motion, because the device couldn't keep up with the physics, is kept on the device but not posted. `netlify/lib/rate-limit.mjs` limits how many runs a rider may post and how many passkey ceremonies an address may start each minute.
+
+When another rider takes an online rider's world record, or pushes them out of a trail's top ten, the server keeps a notice for them for 60 days, which the dashboard's bell shows the next time they open the game. A record lost again on the same trail before they come back is one notice, with the latest time.
+
+The cloud save is merged on the server rather than replaced: best times keep the faster, progress and lifetime stats the higher, achievements and nisse finds the union, so a device that uploads a stale copy never wipes out another device's progress. Sessions last 180 days; one used in its last 30 days gets a fresh token with the reply, so a rider who keeps playing is never signed out.
 
 Server code lives in `netlify/functions/` (`account.mjs`, `leaderboard.mjs`) and `netlify/lib/`. It uses Neon Postgres and keeps no server-side sessions: logins and passkey challenges are HMAC-signed tokens. `_headers` sets the content security policy and the other security headers for every page.
 
