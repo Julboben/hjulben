@@ -2,6 +2,72 @@
 /** @type {{ version: string, date: string, changes: { type: 'new' | 'improved' | 'fixed', text: string }[] }[]} */
 export const RELEASES = [
   {
+    "version": "0.6.8",
+    "date": "2026-11-19",
+    "changes": [
+      {
+        "type": "heads-up",
+        "text": "The game now needs Safari 18.4, Chrome 140 or Firefox 140 or newer."
+      },
+      {
+        "type": "heads-up",
+        "text": "Only props that face a way, such as animals, people, vehicles and arrow signs, can be flipped now. Trees, rocks, buildings and other scenery stay lit from the right like the terrain, and trails drop their flip when they load."
+      },
+      {
+        "type": "new",
+        "text": "Sunlight falls in beams through gaps into caves and shade, with dust drifting in them, strongest when a hill or cloud cuts across the sun, in haze, and in the morning and evening. Trail authors: a narrow gap on the sun's side lets a sunbeam into a dark space."
+      },
+      {
+        "type": "new",
+        "text": "Riding through water soaks your clothes: wading wets your boots and legs, a dunk soaks you through, and rain wets you from the top down unless something overhead keeps it off. Wet clothes drip and dry off over a few seconds."
+      },
+      {
+        "type": "new",
+        "text": "The sun casts a faint lens flare, water glitters in it, windows catch it as you pass, and it dazzles for a moment as it comes out from behind a hill or you ride out of a cave."
+      },
+      {
+        "type": "new",
+        "text": "In the editor, things can be hidden from the Objects tab or the inspector to work on what is behind them, and ⌘' hides the grid."
+      },
+      {
+        "type": "improved",
+        "text": "When a cloud passes over the sun, its glare fades and shadows soften. In strong sunshine the sun is brighter, and its rays no longer cross it."
+      },
+      {
+        "type": "improved",
+        "text": "In the editor, the tools float over the canvas, Objects has the left side to itself, the inspector or the trail's settings show on the right, and ⌘\\ hides both side panels."
+      },
+      {
+        "type": "improved",
+        "text": "In the editor, the Objects tab comes first (1, 2 and 3 switch tabs) and has a filter (/), buttons to open, collapse, show and unlock everything, and rows that outline their thing on the canvas when you point at them."
+      },
+      {
+        "type": "improved",
+        "text": "In the editor, the inspector has a lock button (L), and rotating, flipping, ordering and facing props or the start are one Arrange row of icons (X turns the start round)."
+      },
+      {
+        "type": "improved",
+        "text": "In the editor, what you change on a placed prop, spike or start carries over to the next one the tool places."
+      },
+      {
+        "type": "improved",
+        "text": "In the editor, back walls are outlined like terrain, the grid lines that stay when you zoom out are stronger, and the Independent point type is now called Curved corner."
+      },
+      {
+        "type": "fixed",
+        "text": "A prop under a low ledge no longer tips over as though it were on a steep slope."
+      },
+      {
+        "type": "fixed",
+        "text": "In the editor, what lines up with the grid zoomed out still lines up with it zoomed in, and dragging one curve handle of a smooth point turns the other with it."
+      },
+      {
+        "type": "fixed",
+        "text": "In the editor, dropdown arrows and the magnifier on the trail and prop pickers show in the light theme."
+      }
+    ]
+  },
+  {
     "version": "0.6.7",
     "date": "2026-11-14",
     "changes": [

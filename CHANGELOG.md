@@ -2,6 +2,31 @@
 
 Player-facing release notes. The game shows them under **What's new**, and each GitHub Release uses its section.
 
+## 0.6.8 — 2026-11-19
+
+### Heads up
+- The game now needs Safari 18.4, Chrome 140 or Firefox 140 or newer.
+- Only props that face a way, such as animals, people, vehicles and arrow signs, can be flipped now. Trees, rocks, buildings and other scenery stay lit from the right like the terrain, and trails drop their flip when they load.
+
+### New
+- Sunlight falls in beams through gaps into caves and shade, with dust drifting in them, strongest when a hill or cloud cuts across the sun, in haze, and in the morning and evening. Trail authors: a narrow gap on the sun's side lets a sunbeam into a dark space.
+- Riding through water soaks your clothes: wading wets your boots and legs, a dunk soaks you through, and rain wets you from the top down unless something overhead keeps it off. Wet clothes drip and dry off over a few seconds.
+- The sun casts a faint lens flare, water glitters in it, windows catch it as you pass, and it dazzles for a moment as it comes out from behind a hill or you ride out of a cave.
+- In the editor, things can be hidden from the Objects tab or the inspector to work on what is behind them, and ⌘' hides the grid.
+
+### Improved
+- When a cloud passes over the sun, its glare fades and shadows soften. In strong sunshine the sun is brighter, and its rays no longer cross it.
+- In the editor, the tools float over the canvas, Objects has the left side to itself, the inspector or the trail's settings show on the right, and ⌘\ hides both side panels.
+- In the editor, the Objects tab comes first (1, 2 and 3 switch tabs) and has a filter (/), buttons to open, collapse, show and unlock everything, and rows that outline their thing on the canvas when you point at them.
+- In the editor, the inspector has a lock button (L), and rotating, flipping, ordering and facing props or the start are one Arrange row of icons (X turns the start round).
+- In the editor, what you change on a placed prop, spike or start carries over to the next one the tool places.
+- In the editor, back walls are outlined like terrain, the grid lines that stay when you zoom out are stronger, and the Independent point type is now called Curved corner.
+
+### Fixed
+- A prop under a low ledge no longer tips over as though it were on a steep slope.
+- In the editor, what lines up with the grid zoomed out still lines up with it zoomed in, and dragging one curve handle of a smooth point turns the other with it.
+- In the editor, dropdown arrows and the magnifier on the trail and prop pickers show in the light theme.
+
 ## 0.6.7 — 2026-11-14
 
 ### Heads up
