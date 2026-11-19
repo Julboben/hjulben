@@ -214,6 +214,7 @@ function lockTargets() {
 function flagSelection(setFlag, message) {
   const targets = lockTargets();
   if (!targets.length) return;
+  pushHistory();
   for (const item of targets) setFlag(item.type, item.index, true);
   showStatus("info", message);
   syncInspector();

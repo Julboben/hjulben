@@ -167,6 +167,8 @@ const reported = (report, label) => {
   check('the half-lit lock above the groups locks every group, then unlocks everything', JSON.stringify(report.lockEverything) === JSON.stringify(['mixed', 'true', true, 'false']));
   check('a second click on the lock above the groups frees everything', report.unlockedAll);
   check('L locks the selection', report.keyLocked);
+  check('undo frees a lock and selects again, redo locks again, and undo shows what was hidden',
+    JSON.stringify(report.lockUndo) === '["false",true,true,true,"false"]', `(${JSON.stringify(report.lockUndo)})`);
   check('1, 2 and 3 open the Tools, Objects and Trail tabs', report.tabKeys.every(Boolean));
   check('/ opens the Objects filter', report.filterKey);
   check('the filter keeps only matching groups, open', JSON.stringify(report.filtered) === '[1,2]', `(${JSON.stringify(report.filtered)})`);

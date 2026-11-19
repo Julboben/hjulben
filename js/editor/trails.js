@@ -36,7 +36,7 @@ import {
   updateVersionChip,
 } from "./drafts.js";
 import { pushHistory } from "./history.js";
-import { moveLocks } from "./locks.js";
+import { flagsSnapshot, moveLocks } from "./locks.js";
 import { syncInspector } from "./inspector.js";
 import { render } from "./render.js";
 import { editor } from "./state.js";
@@ -119,7 +119,7 @@ export function loadTrailData(index) {
     const restored = normalizeTrail(autosave.trail);
     if (JSON.stringify(restored, null, 2) === editor.version.base) return trail;
     editor.version.restoredAt = autosave.at;
-    editor.history.push({ trail: JSON.stringify(trail), selection: null });
+    editor.history.push({ trail: JSON.stringify(trail), selection: null, flags: flagsSnapshot() });
     return restored;
   } catch (_) {
     return trail;

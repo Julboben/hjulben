@@ -971,6 +971,19 @@ if (kind === 'locks') {
   out.keyLocked = editor.selection === null && everything('lock') !== 'false';
   letGo('lock');
 
+  // Locking and hiding are undo steps: undo frees the lock and selects again
+  // what it took, redo locks it again, and the same goes for hiding everything.
+  drag([200, 450], [200, 450]);
+  key('l', { code: 'KeyL' });
+  document.getElementById('undo').click();
+  out.lockUndo = [everything('lock'), editor.selection !== null];
+  document.getElementById('redo').click();
+  out.lockUndo.push(everything('lock') !== 'false', editor.selection === null);
+  letGo('lock');
+  everythingButton('hide').click();
+  document.getElementById('undo').click();
+  out.lockUndo.push(everything('hide'));
+
   // 1, 2 and 3 open the side panel's tabs, and / the Objects filter.
   const panelShown = name => document.getElementById(`panel-${name}`).hidden === false;
   key('1', { code: 'Digit1' });

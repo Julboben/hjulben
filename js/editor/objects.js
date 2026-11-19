@@ -35,6 +35,7 @@ import {
   setItemHidden,
   setItemLocked,
 } from "./locks.js";
+import { pushHistory } from "./history.js";
 import { syncInspector } from "./inspector.js";
 import { render, renderView } from "./render.js";
 import {
@@ -170,7 +171,10 @@ function flagButton(kind, state, label, onClick, disabled = false) {
   icon.dataset.icon = FLAGS[kind][state === false ? "off" : "on"][1];
   icon.setAttribute("aria-hidden", "true");
   button.append(icon);
-  button.addEventListener("click", onClick);
+  button.addEventListener("click", () => {
+    pushHistory();
+    onClick();
+  });
   return button;
 }
 

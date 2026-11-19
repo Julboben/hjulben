@@ -226,6 +226,22 @@ export function hiddenSignature() {
 
 // ---- Changing --------------------------------------------------------------
 
+/** The current trail's locks and hides, for an undo step. */
+export function flagsSnapshot() {
+  const copy = ({ groups, items }) => ({ groups: [...groups], items: [...items] });
+  const { lock, hide } = current();
+  return { lock: copy(lock), hide: copy(hide) };
+}
+
+/** Put back the locks and hides of an undo step, and save them. */
+export function restoreFlags(saved) {
+  current();
+  for (const kind of ["lock", "hide"]) {
+    flags[kind] = { groups: new Set(saved[kind].groups), items: new Set(saved[kind].items) };
+    save(kind);
+  }
+}
+
 /**
  * Flag a whole group or let it go. Either way what was flagged on its own in
  * it is forgotten, so letting the group go frees all of it rather than
@@ -278,8 +294,8 @@ export const allHidden = () => LOCK_GROUPS.every(({ key }) => isGroupHidden(key)
 
 /**
  * Forget item locks and hides that match nothing on the trail any more, such
- * as after an undo past the moment something was locked, so a lookalike added
- * later isn't locked by surprise. Saves what is left.
+ * as after another version of it is opened, so a lookalike added later isn't
+ * locked by surprise. Saves what is left.
  */
 export function pruneItemFlags() {
   current();
