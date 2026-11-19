@@ -2,6 +2,52 @@
 
 Player-facing release notes. The game shows them under **What's new**, and each GitHub Release uses its section.
 
+## 0.6.8 — 2026-11-19
+
+### Heads up
+- The game now needs Safari 18.4, Chrome 140 or Firefox 140 or newer.
+- In the editor, flipping a tree, rock, building or other scenery no longer does anything, and trails drop it when they load.
+
+### New
+- Sunlight falls in beams through gaps into caves and other shade, with dust drifting in them. The beams are stronger when a hill or cloud cuts across the sun, in light haze, and in the morning and evening.
+- Trail authors: a narrow gap on the sun's side into a dark space lets a sunbeam in.
+- Riding through water soaks your clothes, part by part: wading wets your boots and legs, a dunk soaks you through. Rain wets you slowly from the top down, unless something overhead keeps it off. Wet clothes drip and dry off over a few seconds, and helmets keep a few beads of water.
+- A bright sun casts a faint lens flare across the view.
+- Water glitters in the sunshine.
+- The sun dazzles for a moment as it comes out from behind a hill or as you ride out of a cave.
+- Windows catch the sun as you ride past them.
+- In the editor, ⌘' or the More menu hides the grid, and while it is hidden things snap only to each other.
+- In the editor, groups and single things can be hidden from the Objects tab or the inspector, to work on what is behind them; the trail itself is unchanged.
+
+### Improved
+- In strong sunshine the sun is brighter, and its rays no longer cross it.
+- When a cloud passes over the sun, its glare fades and shadows soften until it comes out again.
+- Only props that face a way, such as animals, people, vehicles and arrow signs, can be flipped; trees, rocks and the rest stay lit from the right, like the terrain.
+- In the editor, the tools float over the canvas with a ▾ menu for their options, Objects has the left side to itself, the trail's settings show on the right while nothing is selected, and ⌘\ hides both side panels.
+- In the editor, the Objects tab comes before Trail, the keys 1, 2 and 3 open the Tools, Objects and Trail tabs, and / jumps to the Objects filter.
+- In the editor, a filter box in the Objects tab narrows the list to the names that match.
+- In the editor, the Objects tab can open, collapse, show and unlock everything at once, and a group's eye and lock are half lit when only some of it is hidden or locked.
+- In the editor, a group in Objects shows the selection bar when anything in it is selected, and opens to show what was selected on the canvas.
+- In the editor, pointing at a row in Objects outlines that thing on the canvas.
+- In the editor, the inspector titles a thing by its name in Objects, and a mixed selection by what it holds.
+- In the editor, the inspector has a lock button, and L locks what is selected.
+- In the editor, the inspector's rotate, flip and order buttons are one Arrange row of icons.
+- In the editor, a prop's facing is two arrows in the Arrange row, and Delete names the prop it deletes.
+- In the editor, the start's facing is the same two arrows as a prop's, and X turns the start round.
+- In the editor, what you change on a placed prop, spike or start carries over to the next one the tool places.
+- In the editor, Start and Finish share a toolbar button, and the start has a helmet icon so it no longer looks like Play test.
+- In the editor, the wind direction, preview, draft and publish buttons use the same pixel icons as the rest of the editor, and Start and Finish share the flag button.
+- In the editor, the grid lines that stay when you zoom out are drawn stronger.
+- In the editor, back walls are outlined like terrain and behind it, so they no longer show a dotted edge running under the ground.
+- In the editor, the Independent point type is now called Curved corner.
+
+### Fixed
+- A prop standing under a low ledge no longer tips over, as though it were on a steep slope.
+- In the editor, what lines up with the grid zoomed out still lines up with it zoomed in.
+- In the editor, dragging either curve handle of a smooth point turns the other with it.
+- In the editor, the arrow on dropdowns shows in the light theme.
+- In the editor, the magnifier on the trail and prop pickers shows in the light theme, and Quick pick's icon in the menu matches the others.
+
 ## 0.6.7 — 2026-11-14
 
 ### Heads up
