@@ -31,7 +31,6 @@ import { editor, waters } from "./state.js";
 import { refuseEdit, showStatus } from "./status.js";
 import {
   propTypeOptions,
-  renderToolSettings,
   saveToolSettings,
   setTool,
   toolSettings,
@@ -142,7 +141,6 @@ export function cyclePropType(direction) {
   if (editor.tool === "prop") {
     toolSettings.prop.type = next(toolSettings.prop.type);
     saveToolSettings();
-    renderToolSettings();
   } else if (selectedOf("prop").length) {
     const props = selectedOf("prop").map((index) => editor.trail.props[index]);
     const type = next(props[0].type);
@@ -165,7 +163,6 @@ export function toggleFlip() {
   if (editor.tool === "prop") {
     toolSettings.prop.flip = !toolSettings.prop.flip;
     saveToolSettings();
-    renderToolSettings();
   } else if (flippableProps().length) {
     const props = flippableProps();
     const flip = !props.every((prop) => prop.flip);

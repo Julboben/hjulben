@@ -1,4 +1,4 @@
-// The trail's thumbnail in the game's trail list. The Trail tab shows it live;
+// The trail's thumbnail in the game's trail list. The trail settings show it live;
 // Edit preview puts a frame on the canvas, the exact area the thumbnail shows,
 // to drag where it should look. The zoom is the same on every trail.
 import { TRAIL_PREVIEW, trailPreviewCentre } from "../trail-preview.js";
@@ -37,7 +37,7 @@ export function previewFrame() {
   return { left: x - width / 2, top: y - height / 2, width, height };
 }
 
-/** Redraws the Trail tab's thumbnail soon, once a run of changes settles. */
+/** Redraws the trail settings' thumbnail soon, once a run of changes settles. */
 export function schedulePreviewThumbnail() {
   clearTimeout(thumbnailTimer);
   thumbnailTimer = setTimeout(drawThumbnail, drag ? 60 : 150);
@@ -45,8 +45,8 @@ export function schedulePreviewThumbnail() {
 
 async function drawThumbnail() {
   const target = /** @type {HTMLCanvasElement} */ ($("trail-preview"));
-  // Only while it can be seen: the Trail tab is open.
-  if (!target || $("panel-trail").hidden) return;
+  // Only while it can be seen: nothing is selected, so the trail settings show.
+  if (!target || $("trail-settings").hidden) return;
   try {
     // The game's renderer is big, so it loads the first time a thumbnail is drawn.
     const { drawTrailPreview } = await import("../scene-preview.js");
@@ -56,7 +56,7 @@ async function drawThumbnail() {
   }
 }
 
-/** The Trail tab's buttons and note, for the trail as it is. */
+/** The preview's buttons and note, for the trail as it is. */
 export function syncPreviewControls() {
   const framed = Boolean(editor.trail.preview);
   $("edit-preview").textContent = editing ? "DONE" : "EDIT PREVIEW";

@@ -777,13 +777,6 @@ export function render() {
     cancelAnimationFrame(viewFrame);
     viewFrame = null;
   }
-  // The inspector only has something to show for a selection.
-  const inspector = $("inspector");
-  const open = Boolean(editor.selection);
-  if (inspector && inspector.classList.contains("open") !== open) {
-    inspector.classList.toggle("open", open);
-    inspector.inert = !open;
-  }
   const { width, height } = viewportSize();
   if (!width || !height) return;
   syncTerrain();
@@ -866,7 +859,7 @@ function drawOutlineHoverRing() {
 }
 
 /**
- * Outline the thing whose row the pointer is over in the Objects tab: a block
+ * Outline the thing whose row the pointer is over in the Objects panel: a block
  * by its rings, water by its rectangle, and anything else by a ring round
  * where it stands, wide enough to see at any zoom.
  */

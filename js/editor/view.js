@@ -143,3 +143,11 @@ export function updateGameArtButton() {
       ? `Game art shows from ${Math.round(GAME_ART_MIN_ZOOM * 100)}% zoom (Y to hide)`
       : "Hide game art (Y)";
 }
+
+/** Hide or show both side panels, leaving the canvas the whole width. */
+export function toggleSidePanels() {
+  const workspace = document.querySelector(".workspace");
+  const hidden = !workspace.classList.contains("panels-hidden");
+  workspace.classList.toggle("panels-hidden", hidden);
+  for (const panel of document.querySelectorAll(".toolbox, .inspector")) panel.inert = hidden;
+}

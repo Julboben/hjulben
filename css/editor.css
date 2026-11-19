@@ -54,27 +54,24 @@ input[type="checkbox"] { accent-color: var(--color-accent); }
 button, .back-game { border: 1px solid var(--color-border); border-radius: 2px; background: var(--color-surface); color: var(--color-text); box-shadow: 2px 2px 0 var(--color-shadow); font-weight: var(--weight-heavy); }
 .header-actions button { min-height: 34px; padding: 0 10px; font-size: var(--text-xs); }
 button:hover, .back-game:hover { background: var(--color-surface-hover); }
+/* As in Figma: the Objects list on the left, the inspector on the right (the
+   trail's own settings while nothing is selected), and the tools floating
+   over the canvas. ⌘\ hides both side panels; the columns animate shut and
+   each panel keeps its width, clipped while it slides. */
 .workspace { flex: 1; min-height: 0; display: grid; grid-template-columns: 240px minmax(320px, 1fr) 270px; overflow: hidden; transition: grid-template-columns .12s cubic-bezier(.2, .7, .3, 1); }
-.workspace:has(> .inspector:not(.open)) { grid-template-columns: 240px minmax(320px, 1fr) 0; }
-.toolbox, .inspector { padding: 14px; overflow: auto; background: var(--color-shell); }
-.toolbox { display: flex; flex-direction: column; border-right: 1px solid var(--color-border); }
-.inspector { border-left: 1px solid var(--color-border); }
-/* A drawer over the canvas, so opening it never resizes (and shifts) the view. */
-/* The column animates; the panel keeps its width and is clipped while it slides. */
-.inspector { width: 270px; visibility: visible; transition: visibility 0s; }
-.inspector:not(.open) { visibility: hidden; transition: visibility 0s .12s; }
-@media (prefers-reduced-motion: reduce) { .workspace, .inspector, .inspector:not(.open) { transition: none; } }
-.side-tabs { margin-bottom: 14px; display: grid; grid-template-columns: 1fr 1fr 1fr; border-bottom: 1px solid var(--color-border); }
-.side-tab { min-height: 34px; border: 0; border-bottom: 3px solid transparent; background: none; box-shadow: none; color: var(--color-text-muted); font-size: var(--text-sm); letter-spacing: 1.5px; }
-.side-tab:hover { background: none; color: var(--color-text); }
-.side-tab.active { border-bottom-color: var(--color-accent); color: var(--color-text); }
+.workspace.panels-hidden { grid-template-columns: 0 minmax(320px, 1fr) 0; }
+.toolbox, .inspector { padding: 14px; overflow: auto; background: var(--color-shell); transition: visibility 0s; }
+.workspace.panels-hidden > :is(.toolbox, .inspector) { visibility: hidden; transition: visibility 0s .12s; }
+.toolbox { width: 240px; display: flex; flex-direction: column; border-right: 1px solid var(--color-border); }
+.inspector { width: 270px; border-left: 1px solid var(--color-border); }
+@media (prefers-reduced-motion: reduce) { .workspace, .toolbox, .inspector { transition: none !important; } }
 .side-panel { flex: 1; }
 .tool-group { margin-bottom: 12px; }
-/* The Objects tab: every group and item on the trail, with its lock. */
-/* A badge beside the label. Its negative right margin cancels its own width, so
-   the label stays centred and on one line, as it is without the badge. */
-.side-tab { display: flex; align-items: center; justify-content: center; white-space: nowrap; }
-.side-tab[data-icon-after]::after { --px: 1px; --gap: 6px; margin: 0 calc(-1 * (var(--icon-w) * var(--px) + var(--gap))) 0 var(--gap); }
+/* The Objects panel: every group and item on the trail, with its lock. */
+.objects-head { margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.objects-head h2 { margin: 0; color: var(--color-text-muted); font-size: var(--text-xs); letter-spacing: 1.5px; }
+.objects-head .icon-button { width: 26px; min-height: 26px; color: var(--color-text-muted); font-size: var(--text-sm); }
+.objects-head .icon-button[aria-expanded="true"] { border-color: var(--color-accent); color: var(--color-accent-text); }
 /* Outside a label, the field would take the browser's own text size. */
 .objects-filter { margin-bottom: 10px; font-size: var(--text-xs); font-weight: var(--weight-heavy); letter-spacing: .5px; }
 /* Laid out like a group row, so the buttons that hide and lock everything sit
@@ -104,24 +101,34 @@ button:hover, .back-game:hover { background: var(--color-surface-hover); }
 .object-row.locked .object-name { color: var(--color-text-muted); }
 .object-row.selected .object-name { box-shadow: inset 3px 0 0 var(--color-accent); color: var(--color-text); }
 .tool-group h3 { margin: 0 0 6px; color: var(--color-text-muted); font-size: var(--text-xs); letter-spacing: 1.5px; }
-.tool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-.tool { width: 100%; min-height: 36px; padding: 7px 9px; display: flex; align-items: center; gap: 7px; text-align: left; font-size: var(--text-2xl); }
-.tool span:not([data-icon]) { font-size: var(--text-xs); text-transform: uppercase; }
-.tool.active { border-color: var(--color-accent); background: var(--color-accent); color: var(--color-accent-ink); }
-.tool-settings { margin: 4px 0 0; padding: 12px; border: 1px solid var(--color-accent); }
-.tool-settings legend { padding: 0 5px; color: var(--color-accent-text); font-size: var(--text-xs); font-weight: var(--weight-heavy); letter-spacing: 1.5px; }
+/* The tools float at the foot of the canvas. A tool with choices to make
+   before placing has a ▾ beside it, which opens them in a menu above. */
+.toolbar { position: absolute; left: 50%; bottom: 12px; z-index: 3; width: max-content; max-width: calc(100% - 24px); padding: 5px; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 2px; border: 1px solid var(--color-border); background: var(--color-shell); box-shadow: 3px 3px 0 var(--color-shadow); transform: translateX(-50%); }
+.tool { width: 40px; min-height: 40px; padding: 0; display: grid; place-items: center; border-color: transparent; background: none; box-shadow: none; font-size: var(--text-2xl); }
+.tool:hover:not(:disabled) { border-color: var(--color-border); background: var(--color-surface); }
+.tool.active, .tool.active:hover { border-color: var(--color-accent); background: var(--color-accent); color: var(--color-accent-ink); }
+.tool-menu-toggle { width: 16px; min-height: 40px; margin-left: -2px; padding: 0; display: grid; place-items: center; border-color: transparent; background: none; box-shadow: none; color: var(--color-text-muted); }
+.tool-menu-toggle [data-icon] { --px: 1px; }
+.tool-menu-toggle:hover:not(:disabled), .tool-menu-toggle[aria-expanded="true"] { border-color: var(--color-border); background: var(--color-surface); color: var(--color-text); }
+.toolbar-divider { width: 1px; height: 28px; margin: 0 5px; background: var(--color-border); }
+.tool-menu { position: absolute; z-index: 20; width: 210px; border: 1px solid var(--color-border); background: var(--color-shell); box-shadow: 5px 5px 0 var(--color-shadow); }
+.tool-menu-heading { padding: 4px 10px 6px; color: var(--color-text-muted); font-size: var(--text-xs); font-weight: var(--weight-heavy); letter-spacing: 1.5px; text-transform: uppercase; }
+.tool-menu button span.tool-menu-check { width: 12px; flex: none; color: var(--color-accent-text); }
+/* Room for an icon, so a choice without one lines up under those with one. */
+.tool-menu button span.tool-menu-indent { width: 18px; flex: none; }
+.tool-menu-rule { height: 1px; margin: 4px 6px; background: var(--color-border); }
 .tool-hint { margin: 0 0 10px; color: var(--color-text-soft); font-size: var(--text-xs); line-height: 1.5; }
 .side-panel label { margin-bottom: 10px; display: grid; gap: 5px; color: var(--color-text-muted); font-size: var(--text-xs); font-weight: var(--weight-heavy); letter-spacing: .5px; }
 .side-panel label.checkbox-row { grid-template-columns: 1fr auto; align-items: center; }
 .side-panel input, .side-panel select, .side-panel textarea { width: 100%; }
 .side-panel textarea { padding: 6px; resize: vertical; font-size: var(--text-md); font-weight: var(--weight-regular); letter-spacing: 0; }
 .side-panel input[type="checkbox"] { width: auto; min-height: 0; }
-.side-panel fieldset:not(.tool-settings) { margin: 15px 0 0; padding: 13px; border: 1px solid var(--color-border); }
+.side-panel fieldset { margin: 15px 0 0; padding: 13px; border: 1px solid var(--color-border); }
 .side-panel fieldset.field-group { min-width: 0; margin: 0; padding: 0; border: 0; }
 /* A read-only trail's fields can be read but not changed. */
 fieldset:disabled :is(input, select, textarea, button) { opacity: .55; cursor: not-allowed; }
 .tool:disabled { cursor: not-allowed; }
-.side-panel fieldset:not(.tool-settings) legend { padding: 0 5px; color: var(--color-text-muted); font-size: var(--text-xs); font-weight: var(--weight-heavy); letter-spacing: 1.5px; }
+.side-panel fieldset legend { padding: 0 5px; color: var(--color-text-muted); font-size: var(--text-xs); font-weight: var(--weight-heavy); letter-spacing: 1.5px; }
 .trail-preview { display: block; width: 100%; aspect-ratio: 3 / 1; margin-bottom: 8px; border: 1px solid var(--color-border); background: var(--color-paper); image-rendering: pixelated; }
 .preview-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
 .preview-actions button { min-height: 28px; padding: 4px 6px; border-width: 1px; font-size: var(--text-xs); }
@@ -176,10 +183,8 @@ fieldset:disabled :is(input, select, textarea, button) { opacity: .55; cursor: n
 .editor-toast { position: absolute; top: 12px; left: 50%; z-index: 2; max-width: min(560px, calc(100% - 24px)); padding: 9px 12px; border-left: 3px solid var(--color-info); background: var(--color-overlay); color: var(--color-text); box-shadow: 4px 4px 0 var(--color-shadow); font-size: var(--text-sm); line-height: 1.5; transform: translateX(-50%); pointer-events: none; }
 .editor-toast.warning { border-color: var(--color-warning); }
 .editor-toast.error { border-color: var(--color-error); }
-.canvas-help { position: absolute; left: 12px; bottom: 12px; padding: 7px 9px; background: var(--color-overlay-soft); color: var(--color-text-soft); font-size: var(--text-xs); pointer-events: none; }
-/* The mini map takes the bottom-right corner, and the help keeps clear of it. */
-.minimap { position: absolute; right: 12px; bottom: 12px; z-index: 1; display: block; border: 1px solid var(--color-border); background: var(--color-overlay-soft); cursor: pointer; touch-action: none; }
-.canvas-wrap:has(> .minimap:not([hidden])) .canvas-help { max-width: calc(100% - var(--minimap-width, 220px) - 48px); }
+/* The mini map takes the top-right corner, clear of the tools at the foot. */
+.minimap { position: absolute; top: 12px; right: 12px; z-index: 1; display: block; border: 1px solid var(--color-border); background: var(--color-overlay-soft); cursor: pointer; touch-action: none; }
 .panel-head { margin-bottom: 14px; display: flex; flex-direction: column; gap: 4px; }
 .panel-head span, .inspector legend { color: var(--color-text-muted); font-size: var(--text-xs); font-weight: var(--weight-heavy); letter-spacing: 1.5px; }
 .panel-head strong { font-size: 18px; }
@@ -259,19 +264,19 @@ button:disabled:hover { background: var(--color-surface); }
   .editor-header { flex-wrap: wrap; }
   .header-actions { width: 100%; flex-wrap: wrap; }
   .history-actions { margin-right: auto; }
-  .workspace, .workspace:has(> .inspector:not(.open)) { grid-template-columns: 210px minmax(280px, 1fr); overflow: visible; transition: none; }
-  .inspector { width: auto; grid-column: 1 / -1; border-top: 1px solid var(--color-border); border-left: 0; transition: none; }
-  .inspector:not(.open) { display: none; }
+  .workspace { grid-template-columns: 210px minmax(280px, 1fr); overflow: visible; transition: none; }
+  .workspace.panels-hidden { grid-template-columns: minmax(280px, 1fr); }
+  .workspace.panels-hidden > :is(.toolbox, .inspector) { display: none; }
+  .toolbox { width: auto; }
+  .inspector { width: auto; grid-column: 1 / -1; border-top: 1px solid var(--color-border); border-left: 0; }
 }
 @media (max-width: 600px) {
-  .workspace, .workspace:has(> .inspector:not(.open)) { grid-template-columns: 1fr; }
-  .toolbox { border-right: 0; border-bottom: 1px solid var(--color-border); }
-  .tool-grid { grid-template-columns: repeat(4, 1fr); }
-  .tool { justify-content: center; }
-  .tool span:not([data-icon]) { display: none; }
+  .workspace { grid-template-columns: 1fr; }
+  /* The canvas comes first, then what is selected, then the Objects list. */
+  .canvas-wrap { order: -1; }
+  .toolbox { order: 1; border-right: 0; border-top: 1px solid var(--color-border); }
   .canvas-wrap { min-height: 430px; }
   .minimap { display: none; }
-  .canvas-wrap .canvas-help { max-width: none; }
   .data-actions { grid-template-columns: 1fr; }
 }
 

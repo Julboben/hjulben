@@ -74,10 +74,10 @@ import {
   selectionItems,
 } from "./selection.js";
 import { editor, waters } from "./state.js";
-import { saveToolSettings, toolSettings } from "./tools.js";
+import { rememberToolSetting } from "./tools.js";
 import { moveWaterTo, waterDepthHint, waterHandle, waterSize } from "./water.js";
 import { NISSE_GROUND_LIFT } from "../nisse.js";
-import { syncPreviewControls } from "./preview.js";
+import { stopEditingPreview, syncPreviewControls } from "./preview.js";
 import { setMinimapIssues } from "./minimap.js";
 
 export function selectedPosition() {
@@ -273,6 +273,11 @@ function resizeBlocks(axis, size) {
 export function syncInspector({ live = false } = {}) {
   releaseLocked();
   syncTerrain();
+  // With nothing selected the panel holds the trail's own settings, as Figma
+  // shows the page's. The preview frame belongs to them, so selecting ends it.
+  if (editor.selection) stopEditingPreview();
+  $("trail-settings").hidden = Boolean(editor.selection);
+  $("inspector-kind").textContent = editor.selection ? "INSPECTOR" : "TRAIL";
   $("trail-name").value = editor.trail.name;
   $("trail-author").value = editor.trail.author || "";
   syncPreviewControls();
@@ -287,7 +292,7 @@ export function syncInspector({ live = false } = {}) {
   syncGroupFields(group);
   $("selection-fields").hidden = !editor.selection;
   $("selection-title").textContent = !editor.selection
-    ? "NOTHING SELECTED"
+    ? (editor.trail.name || "Untitled").toUpperCase()
     : group && !insideGroup(group)
       ? `${group.toUpperCase()} · GROUP`
       : editor.selection.kind === "items"
@@ -295,7 +300,6 @@ export function syncInspector({ live = false } = {}) {
         : BLOCK_KINDS.includes(editor.selection.kind)
           ? blockTitle(editor.selection)
           : (objectName(editor.selection.kind, editor.selection.index) || editor.selection.kind).toUpperCase();
-  $("selection-empty").hidden = Boolean(editor.selection);
   $("lock-selection").hidden = $("hide-selection").hidden = !lockTargets().length;
   if (position) {
     $("selection-x").value = Math.round(position[0]);
@@ -872,9 +876,7 @@ export function bindInspector() {
       pushHistory();
       for (const index of chosen)
         replaceBlock(index, { ...blocks()[index], material });
-      // The next block drawn uses the material last chosen.
-      toolSettings.block.material = material;
-      saveToolSettings();
+      rememberToolSetting("block", "material", material);
     }
     syncInspector();
     render();
@@ -893,8 +895,7 @@ export function bindInspector() {
         const { layer, ...block } = blocks()[index];
         replaceBlock(index, back ? { ...block, layer: "back" } : block);
       }
-      toolSettings.block.layer = back ? "back" : "terrain";
-      saveToolSettings();
+      rememberToolSetting("block", "layer", back ? "back" : "terrain");
     }
     syncInspector();
     render();
@@ -976,6 +977,7 @@ export function bindInspector() {
     if (editor.selection?.kind !== "start") return;
     pushHistory();
     editor.trail.start.facing = Number(event.target.value) < 0 ? -1 : 1;
+    rememberToolSetting("start", "facing", String(editor.trail.start.facing));
     syncInspector();
     render();
   });
@@ -989,6 +991,7 @@ export function bindInspector() {
         if (flip) prop.flip = true;
         else delete prop.flip;
       }
+      rememberToolSetting("prop", "flip", flip);
     }
     syncInspector();
     render();
@@ -1003,6 +1006,7 @@ export function bindInspector() {
       pushHistory();
       if (rotation === undefined) delete prop.rotation;
       else prop.rotation = rotation;
+      rememberToolSetting("prop", "rotation", rotation ?? 0);
     }
     syncInspector();
     render();
@@ -1030,6 +1034,7 @@ export function bindInspector() {
         prop.type = type;
         if (prop.type === "sign" && typeof prop.text !== "string") prop.text = "";
       }
+      rememberToolSetting("prop", "type", type);
     }
     syncInspector();
     render();
@@ -1043,6 +1048,7 @@ export function bindInspector() {
     if (chosen.length) {
       pushHistory();
       for (const prop of chosen) prop.layer = layer;
+      rememberToolSetting("prop", "layer", layer);
     }
     syncInspector();
     render();
@@ -1082,6 +1088,7 @@ export function bindInspector() {
         Math.min(SPIKE_RADIUS.max, Number(event.target.value) || SPIKE_RADIUS.default),
       );
       for (const spike of spikes) spike.radius = radius;
+      rememberToolSetting("spike", "radius", radius);
     }
     syncInspector();
     render();
@@ -1091,8 +1098,9 @@ export function bindInspector() {
     const spikes = selectedOf("spike").map((index) => editor.trail.spikes[index]);
     if (spikes.length && event.target.value !== "") {
       pushHistory();
-      const spin = Number(event.target.value);
-      for (const spike of spikes) spike.spin = Number.isFinite(spin) ? spin : 0;
+      const spin = Number.isFinite(Number(event.target.value)) ? Number(event.target.value) : 0;
+      for (const spike of spikes) spike.spin = spin;
+      rememberToolSetting("spike", "spin", spin);
     }
     syncInspector();
     render();

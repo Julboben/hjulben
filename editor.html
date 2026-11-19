@@ -154,121 +154,138 @@
 
             <section class="workspace">
                 <aside class="toolbox">
-                    <div class="side-tabs" role="tablist">
+                    <div class="objects-head">
+                        <h2>OBJECTS</h2>
                         <button
-                            class="side-tab active"
-                            role="tab"
-                            id="tab-tools"
-                            aria-selected="true"
-                            aria-controls="panel-tools"
-                            data-tab="tools"
-                            title="Tools (1)"
-                        >
-                            TOOLS
-                        </button>
-                        <button
-                            class="side-tab"
-                            role="tab"
-                            id="tab-objects"
-                            aria-selected="false"
-                            aria-controls="panel-objects"
-                            data-tab="objects"
-                            title="Objects (2)"
-                        >
-                            OBJECTS
-                        </button>
-                        <button
-                            class="side-tab"
-                            role="tab"
-                            id="tab-trail"
-                            aria-selected="false"
-                            aria-controls="panel-trail"
-                            data-tab="trail"
-                            title="Trail (3)"
-                        >
-                            TRAIL
-                        </button>
+                            class="icon-button"
+                            id="objects-help"
+                            type="button"
+                            aria-label="How the list works"
+                            aria-expanded="false"
+                            aria-controls="objects-hint"
+                            title="How the list works"
+                        >?</button>
+                    </div>
+                    <div class="side-panel" id="objects-panel">
+                        <p class="objects-hint" id="objects-hint" hidden>
+                            Click a name to select it and bring it into view,
+                            or a group to open or close it. Cmd/Ctrl-click adds
+                            a row to the selection or takes it out, and
+                            Shift-click adds every row from the last one
+                            clicked. Locked things are still drawn, but can't
+                            be selected or changed. Hidden things aren't drawn
+                            or selected in the editor, but stay in the trail
+                            and in play tests.
+                        </p>
+                        <input
+                            class="objects-filter"
+                            id="objects-filter"
+                            type="search"
+                            placeholder="Filter by name"
+                            aria-label="Filter by name"
+                            autocomplete="off"
+                        />
+                        <div class="objects-actions">
+                            <button class="icon-button" id="open-all" type="button" title="Open all groups" aria-label="Open all groups">
+                                <span data-icon="unfold" aria-hidden="true"></span>
+                            </button>
+                            <button class="icon-button" id="collapse-all" type="button" title="Collapse all groups" aria-label="Collapse all groups">
+                                <span data-icon="fold" aria-hidden="true"></span>
+                            </button>
+                            <span class="objects-actions-label" aria-hidden="true">ALL</span>
+                            <span class="objects-flag-everything" id="flag-everything"></span>
+                        </div>
+                        <p class="objects-hint" id="objects-no-match" hidden>
+                            Nothing here is named like that.
+                        </p>
+                        <section class="tool-group" id="named-groups-section" hidden>
+                            <h3>GROUPS</h3>
+                            <ul class="object-groups" id="named-groups"></ul>
+                        </section>
+                        <ul class="object-groups" id="object-groups"></ul>
                     </div>
 
-                    <div
-                        class="side-panel"
-                        id="panel-tools"
-                        role="tabpanel"
-                        aria-labelledby="tab-tools"
-                    >
-                        <section class="tool-group">
-                            <h3>NAVIGATE</h3>
-                            <div class="tool-grid">
-                                <button
-                                    class="tool active"
-                                    data-tool="select"
-                                    title="Select (V)"
-                                >
-                                    <span data-icon="cursor" aria-hidden="true"></span><span>Select</span>
-                                </button>
-                                <button
-                                    class="tool"
-                                    data-tool="pan"
-                                    title="Pan (H)"
-                                >
-                                    <span data-icon="pan" aria-hidden="true"></span><span>Pan</span>
-                                </button>
-                            </div>
-                        </section>
-                        <section class="tool-group">
-                            <h3>TERRAIN</h3>
-                            <div class="tool-grid">
-                                <button class="tool" data-tool="block">
-                                    <span data-icon="block" aria-hidden="true"></span><span>Block</span>
-                                </button>
-                                <button class="tool" data-tool="cut">
-                                    <span data-icon="scissors" aria-hidden="true"></span><span>Cut</span>
-                                </button>
-                            </div>
-                        </section>
-                        <section class="tool-group">
-                            <h3>OBJECTS</h3>
-                            <div class="tool-grid">
-                                <button class="tool" data-tool="apple">
-                                    <span data-icon="apple" aria-hidden="true"></span><span>Apple</span>
-                                </button>
-                                <button class="tool" data-tool="spike">
-                                    <span data-icon="spike" aria-hidden="true"></span><span>Spike</span>
-                                </button>
-                                <button class="tool" data-tool="prop">
-                                    <span data-icon="tree" aria-hidden="true"></span><span>Prop</span>
-                                </button>
-                                <button class="tool" data-tool="water">
-                                    <span data-icon="water" aria-hidden="true"></span><span>Water</span>
-                                </button>
-                            </div>
-                        </section>
-                        <section class="tool-group">
-                            <h3>COURSE</h3>
-                            <div class="tool-grid">
-                                <button class="tool" data-tool="start">
-                                    <span data-icon="play" aria-hidden="true"></span><span>Start</span>
-                                </button>
-                                <button class="tool" data-tool="finish">
-                                    <span data-icon="flag" aria-hidden="true"></span><span>Finish</span>
-                                </button>
-                            </div>
-                        </section>
-
-                        <fieldset class="tool-settings">
-                            <legend id="tool-settings-title">SELECT</legend>
-                            <p class="tool-hint" id="tool-hint"></p>
-                            <div id="tool-settings-fields"></div>
-                        </fieldset>
+                    <div class="toolbox-footer">
+                        <div class="zoom-controls">
+                            <button id="game-art" aria-pressed="false" aria-label="Show game art"><span data-icon="picture" aria-hidden="true"></span></button
+                            ><button id="zoom-out" aria-label="Zoom out"><span data-icon="minus" aria-hidden="true"></span></button
+                            ><span id="zoom-label">100%</span
+                            ><button id="zoom-in" aria-label="Zoom in"><span data-icon="plus" aria-hidden="true"></span></button>
+                        </div>
                     </div>
+                </aside>
 
-                    <div
-                        class="side-panel"
-                        id="panel-trail"
-                        role="tabpanel"
-                        aria-labelledby="tab-trail"
+                <div class="canvas-wrap" id="canvas-wrap">
+                    <canvas
+                        id="editor-canvas"
+                        tabindex="0"
+                        aria-label="Editable trail canvas"
+                    ></canvas>
+                    <canvas
+                        class="minimap"
+                        id="minimap"
+                        role="img"
+                        aria-label="The whole trail, with the part on screen framed: click or drag to go there"
+                        title="Click or drag to go there. M hides it."
                         hidden
-                    >
+                    ></canvas>
+                    <div class="toolbar" id="toolbar" role="toolbar" aria-label="Tools">
+                        <button class="tool active" data-tool="select"><span aria-hidden="true"></span></button>
+                        <button class="tool" data-tool="pan"><span aria-hidden="true"></span></button>
+                        <span class="toolbar-divider" aria-hidden="true"></span>
+                        <button class="tool" data-tool="block"><span aria-hidden="true"></span></button>
+                        <button class="tool-menu-toggle" id="tool-menu-block" type="button" aria-haspopup="menu" aria-expanded="false" aria-label="Block options" title="Block options"><span data-icon="caret-down" aria-hidden="true"></span></button>
+                        <button class="tool" data-tool="cut"><span aria-hidden="true"></span></button>
+                        <button class="tool-menu-toggle" id="tool-menu-cut" type="button" aria-haspopup="menu" aria-expanded="false" aria-label="Cut options" title="Cut options"><span data-icon="caret-down" aria-hidden="true"></span></button>
+                        <span class="toolbar-divider" aria-hidden="true"></span>
+                        <button class="tool" data-tool="apple"><span aria-hidden="true"></span></button>
+                        <button class="tool-menu-toggle" id="tool-menu-apple" type="button" aria-haspopup="menu" aria-expanded="false" aria-label="Apple options" title="Apple options"><span data-icon="caret-down" aria-hidden="true"></span></button>
+                        <button class="tool" data-tool="spike"><span aria-hidden="true"></span></button>
+                        <button class="tool" data-tool="prop"><span aria-hidden="true"></span></button>
+                        <button class="tool-menu-toggle" id="tool-menu-prop" type="button" aria-haspopup="dialog" aria-label="Choose a prop" title="Choose a prop"><span data-icon="caret-down" aria-hidden="true"></span></button>
+                        <button class="tool" data-tool="water"><span aria-hidden="true"></span></button>
+                        <span class="toolbar-divider" aria-hidden="true"></span>
+                        <button class="tool" id="tool-marker" data-tool="start"><span aria-hidden="true"></span></button>
+                        <button class="tool-menu-toggle" id="tool-menu-marker" type="button" aria-haspopup="menu" aria-expanded="false" aria-label="Start and finish" title="Start and finish"><span data-icon="caret-down" aria-hidden="true"></span></button>
+                    </div>
+                    <div class="tool-menu more-items" id="tool-menu" role="menu" hidden></div>
+                    <div
+                        class="editor-toast"
+                        id="editor-toast"
+                        role="status"
+                        aria-live="polite"
+                        hidden
+                    ></div>
+                </div>
+
+                <aside class="inspector" id="inspector">
+                    <div class="panel-head">
+                        <span id="inspector-kind">INSPECTOR</span>
+                        <div class="selection-head">
+                            <strong id="selection-title">NOTHING SELECTED</strong>
+                            <button
+                                class="icon-button"
+                                id="hide-selection"
+                                type="button"
+                                aria-label="Hide the selection"
+                                title="Hide the selection in the editor, to work on what is behind it. Show it again in OBJECTS."
+                                hidden
+                            >
+                                <span data-icon="eye" aria-hidden="true"></span>
+                            </button>
+                            <button
+                                class="icon-button"
+                                id="lock-selection"
+                                type="button"
+                                aria-label="Lock the selection"
+                                title="Lock the selection, so it can't be picked or changed (L). Unlock it in OBJECTS."
+                                hidden
+                            >
+                                <span data-icon="unlock" aria-hidden="true"></span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="side-panel" id="trail-settings">
                         <fieldset class="field-group" id="trail-fields">
                             <label
                                 >Name <input id="trail-name" type="text"
@@ -483,120 +500,6 @@
                         </fieldset>
                     </div>
 
-                    <div
-                        class="side-panel"
-                        id="panel-objects"
-                        role="tabpanel"
-                        aria-labelledby="tab-objects"
-                        hidden
-                    >
-                        <p class="objects-hint">
-                            Click a name to select it and bring it into view,
-                            or a group to open or close it. Cmd/Ctrl-click adds
-                            a row to the selection or takes it out, and
-                            Shift-click adds every row from the last one
-                            clicked. Locked things are still drawn, but can't
-                            be selected or changed. Hidden things aren't drawn
-                            or selected in the editor, but stay in the trail
-                            and in play tests.
-                        </p>
-                        <input
-                            class="objects-filter"
-                            id="objects-filter"
-                            type="search"
-                            placeholder="Filter by name"
-                            aria-label="Filter by name"
-                            autocomplete="off"
-                        />
-                        <div class="objects-actions">
-                            <button class="icon-button" id="open-all" type="button" title="Open all groups" aria-label="Open all groups">
-                                <span data-icon="unfold" aria-hidden="true"></span>
-                            </button>
-                            <button class="icon-button" id="collapse-all" type="button" title="Collapse all groups" aria-label="Collapse all groups">
-                                <span data-icon="fold" aria-hidden="true"></span>
-                            </button>
-                            <span class="objects-actions-label" aria-hidden="true">ALL</span>
-                            <span class="objects-flag-everything" id="flag-everything"></span>
-                        </div>
-                        <p class="objects-hint" id="objects-no-match" hidden>
-                            Nothing here is named like that.
-                        </p>
-                        <section class="tool-group" id="named-groups-section" hidden>
-                            <h3>GROUPS</h3>
-                            <ul class="object-groups" id="named-groups"></ul>
-                        </section>
-                        <ul class="object-groups" id="object-groups"></ul>
-                    </div>
-
-                    <div class="toolbox-footer">
-                        <div class="zoom-controls">
-                            <button id="game-art" aria-pressed="false" aria-label="Show game art"><span data-icon="picture" aria-hidden="true"></span></button
-                            ><button id="zoom-out" aria-label="Zoom out"><span data-icon="minus" aria-hidden="true"></span></button
-                            ><span id="zoom-label">100%</span
-                            ><button id="zoom-in" aria-label="Zoom in"><span data-icon="plus" aria-hidden="true"></span></button>
-                        </div>
-                    </div>
-                </aside>
-
-                <div class="canvas-wrap" id="canvas-wrap">
-                    <canvas
-                        id="editor-canvas"
-                        tabindex="0"
-                        aria-label="Editable trail canvas"
-                    ></canvas>
-                    <canvas
-                        class="minimap"
-                        id="minimap"
-                        role="img"
-                        aria-label="The whole trail, with the part on screen framed: click or drag to go there"
-                        title="Click or drag to go there. M hides it."
-                        hidden
-                    ></canvas>
-                    <div class="canvas-help">
-                        DRAG BLOCKS OR POINTS · DOUBLE-CLICK A BLOCK EDGE TO ADD
-                        A POINT · TWO-FINGER PAN · PINCH TO ZOOM · ? FOR ALL
-                        SHORTCUTS
-                    </div>
-                    <div
-                        class="editor-toast"
-                        id="editor-toast"
-                        role="status"
-                        aria-live="polite"
-                        hidden
-                    ></div>
-                </div>
-
-                <aside class="inspector" id="inspector">
-                    <div class="panel-head">
-                        <span>INSPECTOR</span>
-                        <div class="selection-head">
-                            <strong id="selection-title">NOTHING SELECTED</strong>
-                            <button
-                                class="icon-button"
-                                id="hide-selection"
-                                type="button"
-                                aria-label="Hide the selection"
-                                title="Hide the selection in the editor, to work on what is behind it. Show it again in OBJECTS."
-                                hidden
-                            >
-                                <span data-icon="eye" aria-hidden="true"></span>
-                            </button>
-                            <button
-                                class="icon-button"
-                                id="lock-selection"
-                                type="button"
-                                aria-label="Lock the selection"
-                                title="Lock the selection, so it can't be picked or changed (L). Unlock it in OBJECTS."
-                                hidden
-                            >
-                                <span data-icon="unlock" aria-hidden="true"></span>
-                            </button>
-                        </div>
-                    </div>
-                    <p class="tool-hint" id="selection-empty">
-                        Select something to edit it. Trail settings are in
-                        TRAIL.
-                    </p>
                     <ul
                         class="selection-issues"
                         id="selection-issues"
@@ -1137,7 +1040,7 @@
                         <div><dt><kbd>Y</kbd></dt><dd>Show or hide the game art</dd></div>
                         <div><dt><kbd>M</kbd></dt><dd>Show or hide the mini map</dd></div>
                         <div><dt><kbd>N</kbd></dt><dd>Snapping on or off</dd></div>
-                        <div><dt><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd></dt><dd>Tools, Objects, Trail tab</dd></div>
+                        <div><dt><kbd data-mod>⌘</kbd> <kbd>\</kbd></dt><dd>Hide or show the side panels</dd></div>
                         <div><dt><kbd>/</kbd></dt><dd>Filter Objects by name</dd></div>
                         <div><dt><kbd>Home</kbd></dt><dd>Go to the start (Shift: whole trail)</dd></div>
                     </dl>

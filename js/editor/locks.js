@@ -12,7 +12,7 @@ import { isBackWall } from "../trail-schema.js";
 import { editor, waters } from "./state.js";
 import { currentEntry } from "./trails.js";
 
-/** The groups the Objects tab lists, in the order it lists them. */
+/** The groups the Objects panel lists, in the order it lists them. */
 export const LOCK_GROUPS = [
   { key: "terrain", label: "Terrain" },
   { key: "back", label: "Back walls" },

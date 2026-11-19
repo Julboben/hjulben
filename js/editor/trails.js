@@ -402,6 +402,7 @@ export function updateTrailControls() {
   for (const id of ["rename-trail", "save-draft", "versions-save-draft"]) $(id).hidden = readOnly;
   for (const tool of document.querySelectorAll("[data-tool]"))
     tool.disabled = readOnly && !NAVIGATION_TOOLS.has(tool.dataset.tool);
+  for (const toggle of document.querySelectorAll(".tool-menu-toggle")) toggle.disabled = readOnly;
   // A disabled fieldset disables every control inside it, including the
   // segmented and picker buttons built from its selects.
   for (const id of ["selection-fieldset", "trail-fields"]) $(id).disabled = readOnly;

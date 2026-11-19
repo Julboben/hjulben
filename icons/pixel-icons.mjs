@@ -603,7 +603,7 @@ export default {
     ####.####
     #########
   `,
-  // An open padlock, for what the editor's Objects tab has left unlocked.
+  // An open padlock, for what the editor's Objects panel has left unlocked.
   unlock: `
     ..#####..
     .##...##.
@@ -638,7 +638,7 @@ export default {
     .........
     .........
   `,
-  // The Objects tab's groups, closed and open.
+  // The Objects panel's groups, closed and open.
   'caret-right': `
     #..
     ##.
@@ -647,7 +647,7 @@ export default {
     #..
   `,
   'caret-down': { rotate: 'caret-right', turns: 1 },
-  // The Objects tab's Open all and Collapse all: arrows pointing away from a
+  // The Objects panel's Open all and Collapse all: arrows pointing away from a
   // line, and towards it.
   unfold: `
     ....#....

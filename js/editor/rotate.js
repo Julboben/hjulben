@@ -19,7 +19,7 @@ import {
 } from "./selection.js";
 import { HIT_REACH, editor } from "./state.js";
 import { refuseEdit } from "./status.js";
-import { renderToolSettings, saveToolSettings, toolSettings } from "./tools.js";
+import { saveToolSettings, toolSettings } from "./tools.js";
 import { moveWaterTo } from "./water.js";
 
 // Degrees a Shift-drag snaps to and R turns by.
@@ -169,7 +169,6 @@ export function rotateSelection(degrees) {
     toolSettings.prop.rotation =
       normalizeRotation((Number(toolSettings.prop.rotation) || 0) + degrees) ?? 0;
     saveToolSettings();
-    renderToolSettings();
     render();
     return true;
   }

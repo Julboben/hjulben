@@ -1,4 +1,4 @@
-// The Objects tab: everything on the trail, grouped, where groups and single
+// The Objects panel on the left: everything on the trail, grouped, where groups and single
 // items are hidden and shown, locked and unlocked, and where a click finds and
 // selects a thing.
 // Cmd/Ctrl-click adds a thing to the selection or takes it out, and
@@ -111,7 +111,7 @@ function names() {
   return list;
 }
 
-/** The name the Objects tab lists a block or object under, such as "Tree 3". */
+/** The name the Objects panel lists a block or object under, such as "Tree 3". */
 export function objectName(type, index) {
   return names().find((entry) => entry.type === type && entry.index === index)?.name || null;
 }
@@ -382,15 +382,10 @@ const objectOf = (entry) =>
   entry.type === "block" ? blocks()[entry.index] : editor.trail.props[entry.index];
 
 /**
- * The tab's badge, a lock while anything is locked or else a closed eye while
- * anything is hidden, and the buttons that hide and lock everything, half lit
- * while only some of it is. Like a group's, a half-lit one flags everything.
+ * The buttons that hide and lock everything, half lit while only some of it
+ * is. Like a group's, a half-lit one flags everything.
  */
 function syncLockedState() {
-  const tab = $("tab-objects");
-  const badge = anyLocked() ? "lock" : anyHidden() ? "eye-closed" : null;
-  if (badge) tab.setAttribute("data-icon-after", badge);
-  else tab.removeAttribute("data-icon-after");
   const hidden = groupState(allHidden(), anyHidden());
   const locked = groupState(allLocked(), anyLocked());
   $("flag-everything").replaceChildren(
@@ -406,6 +401,12 @@ function syncLockedState() {
 }
 
 export function bindObjects() {
+  // How the list works, kept out of the way once it is known.
+  $("objects-help").addEventListener("click", () => {
+    const hint = $("objects-hint");
+    hint.hidden = !hint.hidden;
+    $("objects-help").setAttribute("aria-expanded", String(!hint.hidden));
+  });
   $("collapse-all").addEventListener("click", () => {
     expanded.clear();
     renderObjects();
@@ -421,13 +422,9 @@ export function bindObjects() {
   });
 }
 
-/** Redraw the list, if the tab is open and anything in it changed. */
+/** Redraw the list, if anything in it changed. */
 export function renderObjects() {
   syncLockedState();
-  if ($("panel-objects").hidden) {
-    shown = null;
-    return;
-  }
   const list = entries();
   const selected = selectedKeys();
   const reveal = revealNew(list, selected);
@@ -563,5 +560,5 @@ export function renderObjects() {
     (toggle) => toggle.getAttribute("aria-expanded") === "false" && !toggle.disabled,
   );
   if (reveal)
-    $("panel-objects").querySelector(`[data-key="${reveal}"]`)?.scrollIntoView({ block: "nearest" });
+    $("objects-panel").querySelector(`[data-key="${reveal}"]`)?.scrollIntoView({ block: "nearest" });
 }

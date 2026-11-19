@@ -540,12 +540,10 @@ if (kind === 'group') {
   undo.click();
   undo.click();
 
-  // Selecting from the Objects tab: Cmd/Ctrl-click toggles, Shift-click adds a range.
-  const { setTab } = await import('../../js/editor/tools.js');
-  setTab('objects');
+  // Selecting from the Objects panel: Cmd/Ctrl-click toggles, Shift-click adds a range.
   const groupRow = name => document.getElementById('object-groups').children[['terrain', 'back', 'backProps', 'frontProps', 'water', 'spikes', 'apples'].indexOf(name)];
   const rowName = (group, index) => groupRow(group).children[1].children[index].children[0];
-  // Opening the tab reveals what is already selected, so a group may be open.
+  // The list reveals what is already selected, so a group may be open.
   const openGroup = name => {
     if (groupRow(name).children.length < 2) groupRow(name).children[0].children[0].click();
   };
@@ -868,7 +866,7 @@ if (kind === 'snap') {
 
 // A roof or cave ceiling placed or dragged over something standing on the
 // ground must not lift it onto the new top.
-// Locking a group or an item in the Objects tab, and what it then refuses.
+// Locking a group or an item in the Objects panel, and what it then refuses.
 if (kind === 'locks') {
   const { editor } = await import('../../js/editor/state.js');
   // Find the camera as the interact checks do.
@@ -898,13 +896,8 @@ if (kind === 'locks') {
   out.unlockedTakesWall = title();
   editor.selection = null;
 
-  // The stub DOM only finds tool buttons by selector, so the tab is opened directly.
-  const { setTab } = await import('../../js/editor/tools.js');
-  setTab('objects');
-  out.panelShown = document.getElementById('panel-objects').hidden === false;
   out.groupCount = document.getElementById('object-groups').children.length;
   groupLock('back').click();
-  out.badge = document.getElementById('tab-objects').getAttribute('data-icon-after');
   // A group lock belongs to this trail alone.
   out.groupLockKeys = [...localStorage.store.keys()].filter(name => name.includes('locked-groups'));
   // Locked, the same press draws a box, which takes only the apple.
@@ -927,7 +920,6 @@ if (kind === 'locks') {
 
   // Unlocking the group, then locking only the apple.
   groupLock('back').click();
-  out.badgeGone = document.getElementById('tab-objects').getAttribute('data-icon-after');
   const appleRow = groupRow('apples').children[1].children[0];
   out.appleName = appleRow.children[0].textContent;
   appleRow.children[2].click();
@@ -965,7 +957,7 @@ if (kind === 'locks') {
   document.getElementById('lock-selection').click();
   out.buttonLocked = editor.selection === null && everything('lock') !== 'false';
   letGo('lock');
-  out.unlockedAll = everything('lock') === 'false' && document.getElementById('tab-objects').getAttribute('data-icon-after') === null;
+  out.unlockedAll = everything('lock') === 'false';
   drag([200, 450], [200, 450]);
   key('l', { code: 'KeyL' });
   out.keyLocked = editor.selection === null && everything('lock') !== 'false';
@@ -984,17 +976,29 @@ if (kind === 'locks') {
   document.getElementById('undo').click();
   out.lockUndo.push(everything('hide'));
 
-  // 1, 2 and 3 open the side panel's tabs, and / the Objects filter.
-  const panelShown = name => document.getElementById(`panel-${name}`).hidden === false;
-  key('1', { code: 'Digit1' });
-  out.tabKeys = [panelShown('tools')];
-  key('2', { code: 'Digit2' });
-  out.tabKeys.push(panelShown('objects'));
-  key('3', { code: 'Digit3' });
-  out.tabKeys.push(panelShown('trail'));
-  key('1', { code: 'Digit1' });
+  // / goes to the Objects filter, and ⌘\ hides both side panels and brings them back.
   key('/', { code: 'Slash' });
-  out.filterKey = panelShown('objects') && document.activeElement === document.getElementById('objects-filter');
+  out.filterKey = document.activeElement === document.getElementById('objects-filter');
+  document.activeElement = null;
+  const workspace = document.querySelector('.workspace');
+  key('\\', { code: 'Backslash', metaKey: true });
+  out.panelsKey = [workspace.classList.contains('panels-hidden')];
+  key('\\', { code: 'Backslash', metaKey: true });
+  out.panelsKey.push(workspace.classList.contains('panels-hidden'));
+
+  // With nothing selected the inspector holds the trail's own settings, named after it.
+  editor.selection = null;
+  const { syncInspector } = await import('../../js/editor/inspector.js');
+  syncInspector();
+  out.trailSettings = [
+    document.getElementById('trail-settings').hidden === false,
+    document.getElementById('inspector-kind').textContent,
+    title() === (editor.trail.name || 'Untitled').toUpperCase(),
+  ];
+  drag([200, 450], [200, 450]);
+  out.trailSettings.push(document.getElementById('trail-settings').hidden === true, document.getElementById('inspector-kind').textContent);
+  editor.selection = null;
+  syncInspector();
 
   // The filter keeps only the groups with a matching name, opened; Collapse all closes them.
   const filter = document.getElementById('objects-filter');
@@ -1028,9 +1032,8 @@ if (kind === 'locks') {
   out.groupToggle.push(groupLock('apples').getAttribute('aria-pressed'));
   letGo('lock');
 
-  // Hiding the apples: the canvas can't pick them, the tab says so, and the eye above the groups brings them back.
+  // Hiding the apples: the canvas can't pick them, and the eye above the groups brings them back.
   groupHide('apples').click();
-  out.hiddenBadge = document.getElementById('tab-objects').getAttribute('data-icon-after');
   const boxesApple = () => {
     editor.selection = null;
     const picked = box();
@@ -1089,11 +1092,16 @@ if (kind === 'nisse') {
 
   const out = {};
   const { toolSettings } = await import('../../js/editor/tools.js');
-  // The stub DOM keeps appended options as children, not in `options`.
-  const walk = node => [node, ...[...(node.children || [])].flatMap(walk)];
-  out.placeField = walk(document.getElementById('tool-settings-fields')).some(node => node.value === 'nisse');
-  // What the Place select's change handler does.
-  toolSettings.apple.kind = 'nisse';
+  const { editor } = await import('../../js/editor/state.js');
+  // The Apple tool's ▾ menu offers the nisse; choosing it takes up the tool.
+  toolButton('select').click();
+  document.getElementById('tool-menu-apple').click();
+  const menu = document.getElementById('tool-menu');
+  const nisseItem = menu.children.find(item => item.children?.[1]?.textContent === 'Nisse');
+  out.menuShown = menu.hidden === false && Boolean(nisseItem);
+  nisseItem?.click();
+  out.menuChose = [toolSettings.apple.kind, editor.tool, menu.hidden];
+
   fire('pointerdown', world(300, 200));
   fire('pointerup');
   out.placed = current().nisse;
@@ -1108,6 +1116,32 @@ if (kind === 'nisse') {
   document.getElementById('undo').click();
   out.restored = current().nisse;
   toolSettings.apple.kind = 'apple';
+
+  // Start and Finish share a button, which shows the one used last: its menu
+  // takes up Finish, and G takes up Start again.
+  const marker = document.getElementById('tool-marker');
+  const shows = () => [marker.dataset.tool, marker.firstElementChild.dataset.icon];
+  out.markerButton = [shows()];
+  document.getElementById('tool-menu-marker').click();
+  menu.children.find(item => item.children?.[2]?.textContent === 'Finish')?.click();
+  out.markerButton.push([...shows(), editor.tool, toolSettings.marker.tool]);
+  key('g', { code: 'KeyG' });
+  out.markerButton.push([...shows(), editor.tool]);
+  // Its menu also sets which way the start faces.
+  document.getElementById('tool-menu-marker').click();
+  menu.children.find(item => item.children?.[2]?.textContent === 'Left')?.click();
+  out.markerButton.push(toolSettings.start.facing);
+
+  // A change made in the inspector carries over to the next thing placed.
+  toolButton('spike').click();
+  fire('pointerdown', world(300, 100));
+  fire('pointerup');
+  const radius = document.getElementById('selection-radius');
+  radius.value = '30';
+  radius.dispatch('change');
+  fire('pointerdown', world(700, 100));
+  fire('pointerup');
+  out.nextSpike = current().spikes.map(spike => spike.radius);
   process.stdout.write(JSON.stringify(out));
   process.exit(0);
 }
@@ -1141,7 +1175,7 @@ if (kind === 'covered') {
   for (const [x, y] of [[700, 400], [700, 500], [400, 500]]) fire('pointermove', world(x, y));
   fire('pointerup');
   // The finish tool clicked inside the cave puts the finish on its floor.
-  toolButton('finish').click();
+  key('f', { code: 'KeyF' });
   fire('pointerdown', world(650, 450));
   fire('pointerup');
   out.caveFinishY = current().finish.y;

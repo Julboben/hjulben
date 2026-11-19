@@ -7,6 +7,7 @@ import { editor } from "./state.js";
 import { openPicker } from "./picker.js";
 import { editingPreview, startEditingPreview, stopEditingPreview } from "./preview.js";
 import { render } from "./render.js";
+import { syncInspector } from "./inspector.js";
 import { toggleGameArt } from "./view.js";
 import { propThumbnail } from "./thumbnails.js";
 import {
@@ -14,7 +15,6 @@ import {
   TOOL_KEY_LABELS,
   materialLabel,
   saveToolSettings,
-  setTab,
   setTool,
   toolSettings,
 } from "./tools.js";
@@ -34,10 +34,6 @@ const group = (label, options) => {
   return node;
 };
 
-/** The tool buttons' icons, so each tool looks the same here as in the panel. */
-const toolIcon = (name) =>
-  document.querySelector(`[data-tool="${name}"] [data-icon]`)?.dataset.icon ?? "";
-
 // Built fresh each time, so it always lists the props in editor.html. It is
 // never put in the page: the picker only reads its options and sets its value.
 function quickPickSelect() {
@@ -48,7 +44,7 @@ function quickPickSelect() {
       Object.entries(TOOL_INFO).map(([name, info]) =>
         option(`tool:${name}`, info.title, {
           marker: TOOL_KEY_LABELS[name] ?? "",
-          icon: toolIcon(name),
+          icon: info.icon,
         }),
       ),
     ),
@@ -94,10 +90,12 @@ function choose(value) {
     return;
   }
   if (kind === "trail") {
-    // Like the Trail tab's button: the frame belongs to that tab, so it opens.
+    // Like the trail settings' button: the frame belongs to them, so the
+    // selection is let go to show them.
     if (editingPreview()) stopEditingPreview();
     else {
-      setTab("trail");
+      editor.selection = null;
+      syncInspector();
       startEditingPreview();
     }
     return;
