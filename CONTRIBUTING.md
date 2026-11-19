@@ -4,7 +4,7 @@ Notes for working on the game: setting up, testing, the code layout, conventions
 
 ## Setup
 
-Development needs Node.js 24 (the version CI uses) and npm. The game itself has no build step; npm packages are only used by the scripts and the Netlify functions. Run `npm ci`, then `npm run dev` to play and edit trails locally (see [Running locally](README.md#running-locally)).
+Development needs Node.js 26 (the version CI uses) and npm. The game itself has no build step; npm packages are only used by the scripts and the Netlify functions. Run `npm ci`, then `npm run dev` to play and edit trails locally (see [Running locally](README.md#running-locally)).
 
 ## Project structure
 

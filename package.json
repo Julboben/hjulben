@@ -25,7 +25,7 @@
     "overview:check": "node scripts/generate-trails-overview.mjs --check",
     "check": "node scripts/check-syntax.mjs",
     "tokens:check": "node scripts/check-tokens.mjs",
-    "typecheck": "npx -y -p typescript@5 tsc -p jsconfig.json",
+    "typecheck": "npx -y -p typescript@6 tsc -p jsconfig.json",
     "test": "node scripts/run-tests.mjs",
     "test:slow": "node scripts/run-tests.mjs --slow",
     "test:all": "node scripts/run-tests.mjs --all",

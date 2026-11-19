@@ -16,20 +16,6 @@ export const DISCORD_LINK_LENGTH = 1900;
 // packing refuses a trail whose JSON is bigger, as its link could never open.
 export const MAX_JSON_BYTES = 1 << 20;
 
-/** @param {Uint8Array} bytes */
-function toBase64Url(bytes) {
-  let binary = '';
-  for (let index = 0; index < bytes.length; index += 0x8000)
-    binary += String.fromCharCode(...bytes.subarray(index, index + 0x8000));
-  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-}
-
-/** @param {string} text */
-function fromBase64Url(text) {
-  if (!/^[A-Za-z0-9_-]*$/.test(text)) throw new Error('the link is damaged');
-  const binary = atob(text.replace(/-/g, '+').replace(/_/g, '/'));
-  return Uint8Array.from(binary, char => char.charCodeAt(0));
-}
 
 /** @param {BlobPart} bytes */
 async function deflate(bytes) {
@@ -60,7 +46,7 @@ export async function encodeTrailLink(trail) {
   const json = new TextEncoder().encode(JSON.stringify(trail));
   if (json.length > MAX_JSON_BYTES) throw new Error('the trail is too big for a link');
   const bytes = await deflate(json);
-  return `${FORMAT}.${toBase64Url(bytes)}`;
+  return `${FORMAT}.${bytes.toBase64({ alphabet: 'base64url', omitPadding: true })}`;
 }
 
 /** The trail JSON packed by encodeTrailLink, not yet normalized or validated. */
@@ -69,7 +55,7 @@ export async function decodeTrailLink(packed) {
   if (format !== FORMAT || !data) throw new Error('the link is from a newer version of the game, or damaged');
   let json;
   try {
-    json = await inflate(fromBase64Url(data));
+    json = await inflate(Uint8Array.fromBase64(data, { alphabet: 'base64url' }));
   } catch (error) {
     throw error.message === 'the trail is too big' ? error : new Error('the link is damaged');
   }

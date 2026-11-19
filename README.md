@@ -67,7 +67,7 @@ The world board doesn't trust times sent by the browser: the server replays ever
 npm run dev
 ```
 
-This serves the game at `http://127.0.0.1:8080` (set `PORT` to change it) and lets the editor save trail files. A server is needed because browsers block JavaScript modules and trail files on `file://`; any static server works for just playing. Development needs Node.js 24 and npm; see [`CONTRIBUTING.md`](./CONTRIBUTING.md) for setup, testing, the code layout and releasing.
+This serves the game at `http://127.0.0.1:8080` (set `PORT` to change it) and lets the editor save trail files. A server is needed because browsers block JavaScript modules and trail files on `file://`; any static server works for just playing. Development needs Node.js 26 and npm; see [`CONTRIBUTING.md`](./CONTRIBUTING.md) for setup, testing, the code layout and releasing.
 
 ## Browser support
 
