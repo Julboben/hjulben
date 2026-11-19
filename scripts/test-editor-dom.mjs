@@ -303,6 +303,7 @@ const reported = (report, label) => {
   check('flipping carries a prop across and turns it round', json(report.mirrored) === json([0, true]), `(${json(report.mirrored)})`);
   check('X flips it too', report.keyMirrored === 0, `(${report.keyMirrored})`);
   check('a prop alone has no block flip', report.propMirrorHidden);
+  check('a lone ladder shows its facing arrows, Right lit, and Delete names it', JSON.stringify(report.loneProp) === JSON.stringify([true, true, 'DELETE LADDER']), `(${JSON.stringify(report.loneProp)})`);
   check('and Shift+X leaves it alone', report.shiftXOnProp);
   check('a prop can be brought to the front or sent to the back', report.orderShown);
   check('To front draws it last, and the selection follows it', json(report.toFront) === json([true, true]), `(${json(report.toFront)})`);

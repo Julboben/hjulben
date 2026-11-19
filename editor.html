@@ -744,14 +744,6 @@
                                     <option value="front">In front of rider</option>
                                 </select></label
                             >
-                            <label id="selection-flip-row" hidden
-                                >Flip
-                                <select id="selection-flip">
-                                    <option value="" hidden>Mixed</option>
-                                    <option value="false">Normal</option>
-                                    <option value="true">Flipped</option>
-                                </select></label
-                            >
                             <label id="selection-rotation-row" hidden
                                 >Rotation (°, clockwise)
                                 <input
@@ -771,6 +763,10 @@
                                     <span class="arrange-group" id="arrange-mirror">
                                         <button type="button" id="mirror-horizontal" title="Flip left to right (X)"><span data-icon="flip-horizontal" aria-hidden="true"></span></button>
                                         <button type="button" id="mirror-vertical" title="Flip upside down (Shift+X)"><span data-icon="flip-vertical" aria-hidden="true"></span></button>
+                                    </span>
+                                    <span class="arrange-group" id="arrange-facing">
+                                        <button type="button" id="face-left" title="Face left (X)"><span data-icon="arrow-left" aria-hidden="true"></span></button>
+                                        <button type="button" id="face-right" title="Face right (X)"><span data-icon="arrow-right" aria-hidden="true"></span></button>
                                     </span>
                                     <span class="arrange-group" id="arrange-order">
                                         <button type="button" id="order-back" title="Send behind the others of its kind (⌘⇧[)"><span data-icon="order-back" aria-hidden="true"></span></button>

@@ -189,7 +189,9 @@ function deleteLabel(selection) {
   if (kind === "blockHandle") return "STRAIGHTEN THIS SIDE";
   if (kind === "blockBoundary") return selection.boundaryIndex > 0 ? "FILL IN CAVE" : "DELETE BLOCK";
   if (kind === "block") return "DELETE BLOCK";
-  return "DELETE SELECTION";
+  // A lone thing is named, as its title is: DELETE RABBIT.
+  const name = kind === "items" ? null : objectName(kind, selection?.index);
+  return name ? `DELETE ${name.toUpperCase()}` : "DELETE SELECTION";
 }
 
 /**
@@ -342,13 +344,10 @@ export function syncInspector({ live = false } = {}) {
   const flippable = flippableProps();
   $("selection-prop-type-row").hidden = !props.length;
   $("selection-layer-row").hidden = !props.length;
-  $("selection-flip-row").hidden = !flippable.length;
   if (props.length) {
     $("selection-prop-type").value = shared(props.map((prop) => prop.type));
     $("selection-layer").value = shared(props.map(propLayer));
   }
-  if (flippable.length)
-    $("selection-flip").value = shared(flippable.map((prop) => String(Boolean(prop.flip))));
   $("selection-prop-text-row").hidden =
     editor.selection?.kind !== "prop" || !TEXT_PROPS.has(editor.trail.props[editor.selection.index]?.type);
   const selectedProp = editor.selection?.kind === "prop" ? editor.trail.props[editor.selection.index] : null;
@@ -359,8 +358,16 @@ export function syncInspector({ live = false } = {}) {
   // field; blocks and groups turn by a quarter.
   $("arrange-rotate").hidden = Boolean(selectedProp) || !canRotateSelection();
   $("arrange-mirror").hidden = !canMirrorSelection();
+  // Props that face a way face left or right, lit for the way they all face.
+  // With blocks, flipping turns them round instead.
+  $("arrange-facing").hidden = !flippable.length || canMirrorSelection();
+  for (const [id, left] of [["face-left", true], ["face-right", false]]) {
+    const on = flippable.length > 0 && flippable.every((prop) => Boolean(prop.flip) === left);
+    $(id).classList.toggle("active", on);
+    $(id).setAttribute("aria-pressed", String(on));
+  }
   $("arrange-order").hidden = !canOrderSelection();
-  $("selection-arrange-row").hidden = ["rotate", "mirror", "order"].every((group) => $(`arrange-${group}`).hidden);
+  $("selection-arrange-row").hidden = ["rotate", "mirror", "facing", "order"].every((group) => $(`arrange-${group}`).hidden);
   const spikes = selectedOf("spike").map((index) => editor.trail.spikes[index]);
   for (const key of ["radius", "spin"]) {
     $(`selection-${key}-row`).hidden = !spikes.length;
@@ -984,20 +991,22 @@ export function bindInspector() {
     render();
   });
 
-  $("selection-flip").addEventListener("change", (event) => {
-    const flip = event.target.value === "true";
-    const chosen = flippableProps().filter((prop) => Boolean(prop.flip) !== flip);
-    if (chosen.length) {
-      pushHistory();
-      for (const prop of chosen) {
-        if (flip) prop.flip = true;
-        else delete prop.flip;
+  for (const [id, flip] of [["face-left", true], ["face-right", false]])
+    $(id).addEventListener("click", () => {
+      const chosen = flippableProps().filter((prop) => Boolean(prop.flip) !== flip);
+      if (chosen.length) {
+        pushHistory();
+        for (const prop of chosen) {
+          if (flip) prop.flip = true;
+          else delete prop.flip;
+        }
+        rememberToolSetting("prop", "flip", flip);
       }
-      rememberToolSetting("prop", "flip", flip);
-    }
-    syncInspector();
-    render();
-  });
+      syncInspector();
+      render();
+      // Hand focus back so the canvas shortcuts keep working.
+      canvas.focus({ preventScroll: true });
+    });
 
   $("selection-rotation").addEventListener("change", (event) => {
     if (editor.selection?.kind !== "prop") return;

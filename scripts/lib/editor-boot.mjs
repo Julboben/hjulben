@@ -496,11 +496,12 @@ if (kind === 'group') {
     field(id).dispatch('change');
   };
   select();
-  out.rowsShown = ['prop-type', 'layer', 'flip', 'radius', 'spin']
-    .every(name => field(`selection-${name}-row`).hidden === false);
+  out.rowsShown = ['prop-type', 'layer', 'radius', 'spin']
+    .every(name => field(`selection-${name}-row`).hidden === false) && field('arrange-facing').hidden === false;
   out.mixed = ['prop-type', 'layer', 'radius', 'spin'].map(name => field(`selection-${name}`).value);
-  // The sign can't flip, so only the ladder and the wheelbarrow count: one of each.
-  out.flipMixed = field('selection-flip').value;
+  // The sign can't flip, so only the ladder and the wheelbarrow count: one
+  // faces each way, so neither arrow is lit.
+  out.flipMixed = ['face-left', 'face-right'].some(id => field(id).classList.contains('active')) ? 'lit' : '';
 
   set('selection-layer', 'front');
   out.layers = current().props.map(prop => prop.layer);
@@ -508,7 +509,7 @@ if (kind === 'group') {
   undo.click();
   out.layersUndone = current().props.map(prop => prop.layer);
 
-  set('selection-flip', 'true');
+  field('face-left').click();
   out.flips = current().props.map(prop => Boolean(prop.flip));
   undo.click();
 
@@ -649,6 +650,8 @@ if (kind === 'group') {
   editor.selection = { kind: 'prop', index: 0 };
   syncInspector();
   out.propMirrorHidden = field('arrange-mirror').hidden === true;
+  // A lone prop that faces a way shows its arrows, and Delete names it.
+  out.loneProp = [field('arrange-facing').hidden === false, field('face-right').classList.contains('active'), field('delete-selection').textContent];
   const propsBefore = JSON.stringify(current().props);
   key('X', { code: 'KeyX', shiftKey: true });
   out.shiftXOnProp = JSON.stringify(current().props) === propsBefore;
