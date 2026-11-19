@@ -171,6 +171,7 @@ const reported = (report, label) => {
   check('a second click on the lock above the groups frees everything', report.unlockedAll);
   check('L locks the selection', report.keyLocked);
   check('/ opens the Objects filter', report.filterKey);
+  check('a new prop stays locked through undo and redo', report.placedLock === true);
   check('undo frees a lock and selects again, redo locks again, and undo shows what was hidden',
     JSON.stringify(report.lockUndo) === '["false",true,true,true,"false"]', `(${JSON.stringify(report.lockUndo)})`);
   check('⌘\' hides the grid and its snapping, and again shows both',

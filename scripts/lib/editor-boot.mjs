@@ -990,6 +990,20 @@ if (kind === 'locks') {
   document.getElementById('undo').click();
   out.lockUndo.push(everything('hide'));
 
+  // A prop is known by its content. Placed, it has no optional fields; undo
+  // brings the trail back normalized, with them undefined. Its lock must
+  // survive that: lock, undo, redo and it is locked again.
+  const { isItemLocked } = await import('../../js/editor/locks.js');
+  toolButton('prop').click();
+  drag([700, 300], [700, 300]);
+  const placed = current().props.length - 1;
+  key('l', { code: 'KeyL' });
+  document.getElementById('undo').click();
+  document.getElementById('redo').click();
+  out.placedLock = isItemLocked('prop', placed);
+  letGo('lock');
+  toolButton('select').click();
+
   // / goes to the Objects filter, and ⌘\ hides both side panels and brings them back.
   key('/', { code: 'Slash' });
   out.filterKey = document.activeElement === document.getElementById('objects-filter');

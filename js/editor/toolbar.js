@@ -125,7 +125,7 @@ function markerMenu() {
 }
 
 /** A select of every option, for the picker to read and set. */
-function optionsSelect(options, value, onChange) {
+function optionsSelect(options, value) {
   const select = document.createElement("select");
   for (const [optionValue, text] of options) {
     const option = document.createElement("option");
@@ -134,19 +134,19 @@ function optionsSelect(options, value, onChange) {
     select.append(option);
   }
   select.value = value;
-  select.addEventListener("change", () => onChange(select.value));
   return select;
 }
+
+// The pickers below are told every choice, the one already set included, so
+// choosing always takes the tool up; closing them leaves the tool as it is.
 
 function chooseMaterial() {
   closeToolMenu();
   const options = Object.keys(terrainMaterials).map((name) => [name, materialLabel(name)]);
-  openPicker(
-    optionsSelect(options, toolSettings.block.material, (material) =>
-      choose("block", "material", material),
-    ),
-    { title: "Material" },
-  );
+  openPicker(optionsSelect(options, toolSettings.block.material), {
+    title: "Material",
+    onChoose: (material) => choose("block", "material", material),
+  });
 }
 
 /** The prop picker, for the Prop tool's next prop. */
@@ -156,8 +156,11 @@ export function chooseProp() {
   // A copy of the inspector's list, groups and all.
   select.append(...[...$("selection-prop-type").children].map((node) => node.cloneNode(true)));
   select.value = toolSettings.prop.type;
-  select.addEventListener("change", () => choose("prop", "type", select.value));
-  openPicker(select, { title: "Prop", thumbnail: propThumbnail });
+  openPicker(select, {
+    title: "Prop",
+    thumbnail: propThumbnail,
+    onChoose: (type) => choose("prop", "type", type),
+  });
 }
 
 function openToolMenu(name, { focus = false } = {}) {

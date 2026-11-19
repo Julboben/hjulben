@@ -555,6 +555,22 @@ export function renderObjects() {
   $("open-all").disabled = !toggles.some(
     (toggle) => toggle.getAttribute("aria-expanded") === "false" && !toggle.disabled,
   );
-  if (reveal)
-    $("objects-panel").querySelector(`[data-key="${reveal}"]`)?.scrollIntoView({ block: "nearest" });
+  if (reveal) revealRow($("objects-panel").querySelector(`[data-key="${reveal}"]`));
+}
+
+/**
+ * Scroll the Objects panel to show `row`. Only the panel scrolls, never the
+ * page: on a narrow screen the panels are part of the page, which doesn't
+ * scroll on its own, and following a selection there would pull the canvas
+ * out of view.
+ */
+function revealRow(row) {
+  const panel = document.querySelector(".toolbox");
+  if (!row || !(panel.scrollHeight > panel.clientHeight)) return;
+  const area = panel.getBoundingClientRect();
+  const at = row.getBoundingClientRect();
+  // The zoom footer sticks over the bottom of the panel.
+  const bottom = area.bottom - parseFloat(getComputedStyle(panel).scrollPaddingBottom || "0");
+  if (at.top < area.top) panel.scrollTop -= area.top - at.top;
+  else if (at.bottom > bottom) panel.scrollTop += at.bottom - bottom;
 }
