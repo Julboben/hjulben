@@ -11,99 +11,39 @@ export const RELEASES = [
       },
       {
         "type": "heads-up",
-        "text": "In the editor, flipping a tree, rock, building or other scenery no longer does anything, and trails drop it when they load."
+        "text": "Only props that face a way, such as animals, people, vehicles and arrow signs, can be flipped now. Trees, rocks, buildings and other scenery stay lit from the right like the terrain, and trails drop their flip when they load."
       },
       {
         "type": "new",
-        "text": "Sunlight falls in beams through gaps into caves and other shade, with dust drifting in them. The beams are stronger when a hill or cloud cuts across the sun, in light haze, and in the morning and evening."
+        "text": "Sunlight falls in beams through gaps into caves and shade, with dust drifting in them, strongest when a hill or cloud cuts across the sun, in haze, and in the morning and evening. Trail authors: a narrow gap on the sun's side lets a sunbeam into a dark space."
       },
       {
         "type": "new",
-        "text": "Trail authors: a narrow gap on the sun's side into a dark space lets a sunbeam in."
+        "text": "Riding through water soaks your clothes: wading wets your boots and legs, a dunk soaks you through, and rain wets you from the top down unless something overhead keeps it off. Wet clothes drip and dry off over a few seconds."
       },
       {
         "type": "new",
-        "text": "Riding through water soaks your clothes, part by part: wading wets your boots and legs, a dunk soaks you through. Rain wets you slowly from the top down, unless something overhead keeps it off. Wet clothes drip and dry off over a few seconds, and helmets keep a few beads of water."
+        "text": "The sun casts a faint lens flare, water glitters in it, windows catch it as you pass, and it dazzles for a moment as it comes out from behind a hill or you ride out of a cave."
       },
       {
         "type": "new",
-        "text": "A bright sun casts a faint lens flare across the view."
-      },
-      {
-        "type": "new",
-        "text": "Water glitters in the sunshine."
-      },
-      {
-        "type": "new",
-        "text": "The sun dazzles for a moment as it comes out from behind a hill or as you ride out of a cave."
-      },
-      {
-        "type": "new",
-        "text": "Windows catch the sun as you ride past them."
-      },
-      {
-        "type": "new",
-        "text": "In the editor, ⌘' or the More menu hides the grid, and while it is hidden things snap only to each other."
-      },
-      {
-        "type": "new",
-        "text": "In the editor, groups and single things can be hidden from the Objects tab or the inspector, to work on what is behind them; the trail itself is unchanged."
+        "text": "In the editor, things can be hidden from the Objects tab or the inspector to work on what is behind them, and ⌘' hides the grid."
       },
       {
         "type": "improved",
-        "text": "In strong sunshine the sun is brighter, and its rays no longer cross it."
+        "text": "When a cloud passes over the sun, its glare fades and shadows soften. In strong sunshine the sun is brighter, and its rays no longer cross it."
       },
       {
         "type": "improved",
-        "text": "When a cloud passes over the sun, its glare fades and shadows soften until it comes out again."
+        "text": "In the editor, the tools float over the canvas, Objects has the left side to itself, the inspector or the trail's settings show on the right, and ⌘\\ hides both side panels."
       },
       {
         "type": "improved",
-        "text": "Only props that face a way, such as animals, people, vehicles and arrow signs, can be flipped; trees, rocks and the rest stay lit from the right, like the terrain."
+        "text": "In the editor, the Objects tab comes first (1, 2 and 3 switch tabs) and has a filter (/), buttons to open, collapse, show and unlock everything, and rows that outline their thing on the canvas when you point at them."
       },
       {
         "type": "improved",
-        "text": "In the editor, the tools float over the canvas with a ▾ menu for their options, Objects has the left side to itself, the trail's settings show on the right while nothing is selected, and ⌘\\ hides both side panels."
-      },
-      {
-        "type": "improved",
-        "text": "In the editor, the Objects tab comes before Trail, the keys 1, 2 and 3 open the Tools, Objects and Trail tabs, and / jumps to the Objects filter."
-      },
-      {
-        "type": "improved",
-        "text": "In the editor, a filter box in the Objects tab narrows the list to the names that match."
-      },
-      {
-        "type": "improved",
-        "text": "In the editor, the Objects tab can open, collapse, show and unlock everything at once, and a group's eye and lock are half lit when only some of it is hidden or locked."
-      },
-      {
-        "type": "improved",
-        "text": "In the editor, a group in Objects shows the selection bar when anything in it is selected, and opens to show what was selected on the canvas."
-      },
-      {
-        "type": "improved",
-        "text": "In the editor, pointing at a row in Objects outlines that thing on the canvas."
-      },
-      {
-        "type": "improved",
-        "text": "In the editor, the inspector titles a thing by its name in Objects, and a mixed selection by what it holds."
-      },
-      {
-        "type": "improved",
-        "text": "In the editor, the inspector has a lock button, and L locks what is selected."
-      },
-      {
-        "type": "improved",
-        "text": "In the editor, the inspector's rotate, flip and order buttons are one Arrange row of icons."
-      },
-      {
-        "type": "improved",
-        "text": "In the editor, a prop's facing is two arrows in the Arrange row, and Delete names the prop it deletes."
-      },
-      {
-        "type": "improved",
-        "text": "In the editor, the start's facing is the same two arrows as a prop's, and X turns the start round."
+        "text": "In the editor, the inspector has a lock button (L), and rotating, flipping, ordering and facing props or the start are one Arrange row of icons (X turns the start round)."
       },
       {
         "type": "improved",
@@ -111,43 +51,19 @@ export const RELEASES = [
       },
       {
         "type": "improved",
-        "text": "In the editor, Start and Finish share a toolbar button, and the start has a helmet icon so it no longer looks like Play test."
-      },
-      {
-        "type": "improved",
-        "text": "In the editor, the wind direction, preview, draft and publish buttons use the same pixel icons as the rest of the editor, and Start and Finish share the flag button."
-      },
-      {
-        "type": "improved",
-        "text": "In the editor, the grid lines that stay when you zoom out are drawn stronger."
-      },
-      {
-        "type": "improved",
-        "text": "In the editor, back walls are outlined like terrain and behind it, so they no longer show a dotted edge running under the ground."
-      },
-      {
-        "type": "improved",
-        "text": "In the editor, the Independent point type is now called Curved corner."
+        "text": "In the editor, back walls are outlined like terrain, the grid lines that stay when you zoom out are stronger, and the Independent point type is now called Curved corner."
       },
       {
         "type": "fixed",
-        "text": "A prop standing under a low ledge no longer tips over, as though it were on a steep slope."
+        "text": "A prop under a low ledge no longer tips over as though it were on a steep slope."
       },
       {
         "type": "fixed",
-        "text": "In the editor, what lines up with the grid zoomed out still lines up with it zoomed in."
+        "text": "In the editor, what lines up with the grid zoomed out still lines up with it zoomed in, and dragging one curve handle of a smooth point turns the other with it."
       },
       {
         "type": "fixed",
-        "text": "In the editor, dragging either curve handle of a smooth point turns the other with it."
-      },
-      {
-        "type": "fixed",
-        "text": "In the editor, the arrow on dropdowns shows in the light theme."
-      },
-      {
-        "type": "fixed",
-        "text": "In the editor, the magnifier on the trail and prop pickers shows in the light theme, and Quick pick's icon in the menu matches the others."
+        "text": "In the editor, dropdown arrows and the magnifier on the trail and prop pickers show in the light theme."
       }
     ]
   },
