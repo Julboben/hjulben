@@ -1,5 +1,5 @@
 // Selecting, moving, nudging, duplicating and deleting things.
-import { canFlip } from "../drawing.js";
+import { canFlip } from "../trail-schema.js";
 import {
   flattenBoundary,
   moveBlock,
@@ -31,7 +31,7 @@ import { editor, waters } from "./state.js";
 import { refuseEdit, showStatus } from "./status.js";
 import {
   propTypeOptions,
-  renderToolSettings,
+  rememberToolSetting,
   saveToolSettings,
   setTool,
   toolSettings,
@@ -142,7 +142,6 @@ export function cyclePropType(direction) {
   if (editor.tool === "prop") {
     toolSettings.prop.type = next(toolSettings.prop.type);
     saveToolSettings();
-    renderToolSettings();
   } else if (selectedOf("prop").length) {
     const props = selectedOf("prop").map((index) => editor.trail.props[index]);
     const type = next(props[0].type);
@@ -156,16 +155,29 @@ export function cyclePropType(direction) {
   render();
 }
 
+/** Turn the start to face `facing` (1 right, -1 left), as the next one will. */
+export function faceStart(facing) {
+  if (refuseEdit() || editor.trail.start.facing === facing) return;
+  pushHistory();
+  editor.trail.start.facing = facing;
+  rememberToolSetting("start", "facing", String(facing));
+  syncInspector();
+  render();
+}
+
 /**
- * Flip the Prop tool's next prop, or else the selected props. A group flips
- * together: back to normal if every one is flipped, otherwise all flipped.
+ * Flip the Prop tool's next prop, or else the selected start or props. A
+ * group flips together: back to normal if every one is flipped, otherwise
+ * all flipped.
  */
 export function toggleFlip() {
   if (refuseEdit()) return;
   if (editor.tool === "prop") {
     toolSettings.prop.flip = !toolSettings.prop.flip;
     saveToolSettings();
-    renderToolSettings();
+  } else if (editor.selection?.kind === "start") {
+    faceStart(-editor.trail.start.facing);
+    return;
   } else if (flippableProps().length) {
     const props = flippableProps();
     const flip = !props.every((prop) => prop.flip);

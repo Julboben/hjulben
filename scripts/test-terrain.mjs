@@ -166,6 +166,17 @@ assert.ok(
 );
 assert.equal(floatingTree(8), 0, "a floating prop keeps a trail base");
 
+// Crates on a cave floor under a low ledge stand level: the ledge's top is
+// a surface within reach of one end, but the floor is the one they stand on.
+const ledgeTrail = trailOf(
+  [
+    polygonBlock([[0, 250], [800, 250], [800, 400], [0, 400]], "stone", "floor"),
+    polygonBlock([[420, 138], [485, 157], [550, 160], [750, 160], [750, 190], [430, 190]], "stone", "ledge"),
+  ],
+  { finish: { x: 700, y: null }, start: { x: 20, y: null, facing: 1 } },
+);
+assert.equal(propAlignmentSlope(ledgeTrail, { x: 525, y: 250, type: "crates" }), 0, "a ledge over a prop doesn't tip it");
+
 // A rotated prop is posed by hand: its rotation replaces the slope, and its
 // trunks and posts no longer reach for the ground.
 const tiltedFence = { ...fence, rotation: 30 };
@@ -180,8 +191,8 @@ for (const type of ["stalactites", "beams", "minecart", "lily", "fish", "squirre
 for (const type of ["tree", "crates", "sign", "lamp", "rock", "vines", "roots", "graffiti"]) assert.ok(canRotate(type), `${type} can rotate`);
 const turnedLamp = propPoint({ x: 100, type: "lamp", rotation: 90 }, 200, 22, -114);
 assert.ok(Math.abs(turnedLamp.x - 214) < 1e-9 && Math.abs(turnedLamp.y - 222) < 1e-9, "a quarter turn clockwise swings the lamp head to the right");
-const flippedLamp = propPoint({ x: 100, type: "lamp", flip: true }, 200, 22, -114);
-assert.ok(Math.abs(flippedLamp.x - 78) < 1e-9 && flippedLamp.y === 86, "a flipped lamp mirrors its head");
+const flippedLadder = propPoint({ x: 100, type: "ladder", flip: true }, 200, 22, -114);
+assert.ok(Math.abs(flippedLadder.x - 78) < 1e-9 && flippedLadder.y === 86, "a flipped ladder mirrors its point");
 
 const crest = trailOf(
   [

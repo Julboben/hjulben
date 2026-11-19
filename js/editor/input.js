@@ -57,7 +57,7 @@ import {
   selectionItems,
   toggleFlip,
 } from "./selection.js";
-import { gridSpacing, lockDirection, snapToAngleAndGrid } from "./snap.js";
+import { lockDirection, snapToAngleAndGrid } from "./snap.js";
 import { setSnapping, snapLines, snapMove, snappingOn } from "./magnet.js";
 import { mirrorSelection, orderSelection } from "./arrange.js";
 import { toggleMinimap } from "./minimap.js";
@@ -71,9 +71,10 @@ import {
   ungroupSelection,
   withWholeGroups,
 } from "./groups.js";
-import { clampZoom, editor } from "./state.js";
+import { clampZoom, editor, snapGridSpacing } from "./state.js";
 import { NOTICE_TIME, refuseEdit, refuseReadOnly, showStatus, statusShowing } from "./status.js";
-import { PLACING_TOOLS, TOOL_KEYS, setTab, setTool, toolSettings } from "./tools.js";
+import { closeToolMenu, toolMenuOpen } from "./toolbar.js";
+import { PLACING_TOOLS, TOOL_KEYS, setTool, toolSettings } from "./tools.js";
 import { groupLabel, isGroupHidden, isGroupLocked, toolGroup } from "./locks.js";
 import { commitWater } from "./water.js";
 import {
@@ -91,6 +92,8 @@ import {
   focusOnStart,
   pointerWorld,
   toggleGameArt,
+  toggleGrid,
+  toggleSidePanels,
   updateZoom,
   zoomAtCenter,
 } from "./view.js";
@@ -183,8 +186,12 @@ let lastEscape = -Infinity;
 let leaveAsked = -Infinity;
 const LEAVE_QUESTION = "Press Esc again to leave the editor.";
 
-/** Back out one step: an unfinished shape, then the group, then the selection, then the tool. */
+/** Back out one step: a tool's menu, an unfinished shape, then the group, then the selection, then the tool. */
 function backOut() {
+  if (toolMenuOpen()) {
+    closeToolMenu();
+    return true;
+  }
   if (cancelPendingShape()) return true;
   if (editor.tool !== "select") setTool("select");
   else if (leaveGroup()) syncInspector();
@@ -419,7 +426,8 @@ function dragSelectionTo(pointer, shift) {
     const snapped = snapToAngleAndGrid(
       { x: origin[0] + point.x - dragOrigin.pointer.x, y: origin[1] + point.y - dragOrigin.pointer.y },
       anchors,
-      gridSpacing(editor.zoom),
+      // With the grid hidden, the angle steps still hold, on whole units.
+      snapGridSpacing() || 1,
     );
     x = snapped.x;
     y = snapped.y;
@@ -627,12 +635,9 @@ const shortcuts = /** @type {HTMLDialogElement} */ ($("shortcuts"));
 /**
  * Whether the canvas shortcuts should answer a key. Besides the canvas itself,
  * that is after a click on one of the editor's buttons, such as a tool or a
- * tab, which keeps focus and would otherwise swallow V, C and the rest. Text
- * fields, selects and open dialogs and menus keep their keys.
+ * group's lock, which keeps focus and would otherwise swallow V, C and the
+ * rest. Text fields, selects and open dialogs and menus keep their keys.
  */
-// The side panel's tabs, numbered in the order they are shown.
-const TAB_KEYS = { Digit1: "tools", Digit2: "objects", Digit3: "trail" };
-
 function shortcutsReach() {
   const active = document.activeElement;
   if (!active || active === canvas || active === document.body) return true;
@@ -731,7 +736,7 @@ export function bindInput() {
     const group = toolGroup(editor.tool, toolSettings);
     if (!editor.readOnly && group && (isGroupLocked(group) || isGroupHidden(group))) {
       const [state, undo] = isGroupLocked(group) ? ["locked", "Unlock"] : ["hidden", "Show"];
-      showStatus("warning", `The ${groupLabel(group).toLowerCase()} group is ${state}. ${undo} it in the Objects tab.`);
+      showStatus("warning", `The ${groupLabel(group).toLowerCase()} group is ${state}. ${undo} it in OBJECTS.`);
       return;
     }
     if (editor.tool === "block" || editor.tool === "cut" || editor.tool === "water") {
@@ -1197,6 +1202,21 @@ export function bindInput() {
       return;
     }
 
+    // As in Figma, ⌘\ hides both side panels for room to draw, and brings them back.
+    if ((event.metaKey || event.ctrlKey) && event.code === "Backslash") {
+      event.preventDefault();
+      toggleSidePanels();
+      return;
+    }
+
+    // ⌘', as in Photoshop and Illustrator, shows or hides the grid.
+    if ((event.metaKey || event.ctrlKey) && event.code === "Quote") {
+      event.preventDefault();
+      toggleGrid();
+      showStatus("info", editor.grid ? "Grid shown" : "Grid hidden: things snap only to each other");
+      return;
+    }
+
     if ((event.metaKey || event.ctrlKey) && event.code === "KeyG" && shortcutsReach()) {
       event.preventDefault();
       if (event.shiftKey ? ungroupSelection() : groupSelection()) {
@@ -1245,14 +1265,9 @@ export function bindInput() {
       render();
       return;
     }
-    if (TAB_KEYS[event.code] && !event.shiftKey) {
-      setTab(TAB_KEYS[event.code]);
-      return;
-    }
     // Like search on many sites: / goes straight to the Objects filter.
     if (event.key === "/") {
       event.preventDefault();
-      setTab("objects");
       $("objects-filter").focus();
       $("objects-filter").select();
       return;

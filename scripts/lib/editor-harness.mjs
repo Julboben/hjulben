@@ -40,6 +40,7 @@ class Element {
     this.clientHeight = 800;
   }
   get firstChild() { return this.children[0] || null; }
+  get firstElementChild() { return this.children[0] || null; }
   append(...nodes) { for (const node of nodes) { this.children.push(node); if (node.id) byId.set(node.id, node); } }
   replaceChildren(...nodes) { this.children = []; for (const node of nodes) { this.children.push(node); if (node.id) byId.set(node.id, node); } }
   append(...nodes) { for (const node of nodes) { this.children.push(node); if (node.id) byId.set(node.id, node); } }
@@ -100,7 +101,13 @@ export function buildDom(html) {
     const id = /id="([^"]+)"/.exec(attributes)?.[1] || '';
     const element = new Element(name, id);
     const tool = /data-tool="([^"]+)"/.exec(attributes)?.[1];
-    if (tool) element.dataset.tool = tool;
+    // A tool button is found by querySelectorAll('[data-tool]'), and holds
+    // the icon the editor sets.
+    if (tool) {
+      element.dataset.tool = tool;
+      element.append(new Element('span'));
+      byId.set(`tool:${tool}`, element);
+    }
     const type = /type="([^"]+)"/.exec(attributes)?.[1];
     if (type) element.type = type;
     if (/\bhidden\b/.test(attributes)) element.hidden = true;
@@ -113,12 +120,6 @@ export function buildDom(html) {
       if (!byClass.has(name)) byClass.set(name, []);
       byClass.get(name).push(element);
     }
-  }
-  // Every tool button, so querySelectorAll('[data-tool]') resolves.
-  for (const match of html.matchAll(/data-tool="([^"]+)"/g)) {
-    const button = new Element('button');
-    button.dataset.tool = match[1];
-    byId.set(`tool:${match[1]}`, button);
   }
   return dom;
 }

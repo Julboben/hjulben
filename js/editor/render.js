@@ -33,7 +33,7 @@ import { scaleFrame, scaling } from "./scale.js";
 import { itemPosition, selectionBox } from "./selection.js";
 import { rotateHandle, rotationAngle } from "./rotate.js";
 import { anyHidden, hiddenSignature, isHidden } from "./locks.js";
-import { gridSpacing } from "./snap.js";
+import { GRID_STEPS, gridSpacing } from "./snap.js";
 import { editor, waters } from "./state.js";
 import { PLACING_TOOLS, placingNisse, toolSettings } from "./tools.js";
 import { waterHandle } from "./water.js";
@@ -450,22 +450,33 @@ function drawTerrain() {
 
 function drawGrid(width, height) {
   const spacing = gridSpacing(editor.zoom);
+  // The lines of the next coarser grid are drawn stronger, so it shows which
+  // lines stay when zooming out. Zoomed right out there is none.
+  const major = GRID_STEPS[GRID_STEPS.findIndex((step) => step.spacing === spacing) - 1]?.spacing;
+  const isMajor = (value) => major !== undefined && value % major === 0;
   const left = Math.floor(editor.cameraX / spacing) * spacing;
   const top = Math.floor(editor.cameraY / spacing) * spacing;
   const right = editor.cameraX + width / editor.zoom;
   const bottom = editor.cameraY + height / editor.zoom;
-  ctx.beginPath();
-  for (let x = left; x <= right; x += spacing) {
-    ctx.moveTo(x, top);
-    ctx.lineTo(x, bottom);
+  for (const [strong, colour] of [
+    [false, "#263b3d2c"],
+    [true, "#263b3d55"],
+  ]) {
+    ctx.beginPath();
+    for (let x = left; x <= right; x += spacing) {
+      if (isMajor(x) !== strong) continue;
+      ctx.moveTo(x, top);
+      ctx.lineTo(x, bottom);
+    }
+    for (let y = top; y <= bottom; y += spacing) {
+      if (isMajor(y) !== strong) continue;
+      ctx.moveTo(left, y);
+      ctx.lineTo(right, y);
+    }
+    ctx.strokeStyle = colour;
+    ctx.lineWidth = 1 / editor.zoom;
+    ctx.stroke();
   }
-  for (let y = top; y <= bottom; y += spacing) {
-    ctx.moveTo(left, y);
-    ctx.lineTo(right, y);
-  }
-  ctx.strokeStyle = "#263b3d2c";
-  ctx.lineWidth = 1 / editor.zoom;
-  ctx.stroke();
 }
 
 export function objectY(object, offset = 0) {
@@ -766,13 +777,6 @@ export function render() {
     cancelAnimationFrame(viewFrame);
     viewFrame = null;
   }
-  // The inspector only has something to show for a selection.
-  const inspector = $("inspector");
-  const open = Boolean(editor.selection);
-  if (inspector && inspector.classList.contains("open") !== open) {
-    inspector.classList.toggle("open", open);
-    inspector.inert = !open;
-  }
   const { width, height } = viewportSize();
   if (!width || !height) return;
   syncTerrain();
@@ -788,7 +792,7 @@ export function render() {
   ctx.save();
   ctx.translate(-editor.cameraX * editor.zoom, -editor.cameraY * editor.zoom);
   ctx.scale(editor.zoom, editor.zoom);
-  drawGrid(width, height);
+  if (editor.grid) drawGrid(width, height);
   drawBackWalls();
   drawProps("back");
   drawTerrain();
@@ -855,7 +859,7 @@ function drawOutlineHoverRing() {
 }
 
 /**
- * Outline the thing whose row the pointer is over in the Objects tab: a block
+ * Outline the thing whose row the pointer is over in the Objects panel: a block
  * by its rings, water by its rectangle, and anything else by a ring round
  * where it stands, wide enough to see at any zoom.
  */

@@ -529,6 +529,54 @@ export default {
     #.......#
     #########
   `,
+  // The inspector's Arrange buttons: flip across a dotted line, and send a
+  // thing behind or bring it in front of what it overlaps.
+  'flip-horizontal': `
+    ....#....
+    #.......#
+    ##..#..##
+    ###...#.#
+    ####.#..#
+    ###...#.#
+    ##..#..##
+    #.......#
+    ....#....
+  `,
+  'flip-vertical': { rotate: 'flip-horizontal', turns: 1 },
+  'order-back': `
+    ######...
+    #....#...
+    #....#...
+    #....####
+    #....####
+    #########
+    ...######
+    ...######
+    ...######
+  `,
+  'order-front': `
+    ######...
+    #....#...
+    #....#...
+    #..######
+    #..######
+    #########
+    ...######
+    ...######
+    ...######
+  `,
+  // The editor's grid, shown or hidden from the More menu.
+  grid: `
+    .#..#..#.
+    #########
+    .#..#..#.
+    .#..#..#.
+    #########
+    .#..#..#.
+    .#..#..#.
+    #########
+    .#..#..#.
+  `,
   trash: `
     ...###...
     #########
@@ -603,7 +651,7 @@ export default {
     ####.####
     #########
   `,
-  // An open padlock, for what the editor's Objects tab has left unlocked.
+  // An open padlock, for what the editor's Objects panel has left unlocked.
   unlock: `
     ..#####..
     .##...##.
@@ -638,7 +686,7 @@ export default {
     .........
     .........
   `,
-  // The Objects tab's groups, closed and open.
+  // The Objects panel's groups, closed and open.
   'caret-right': `
     #..
     ##.
@@ -647,7 +695,7 @@ export default {
     #..
   `,
   'caret-down': { rotate: 'caret-right', turns: 1 },
-  // The Objects tab's Open all and Collapse all: arrows pointing away from a
+  // The Objects panel's Open all and Collapse all: arrows pointing away from a
   // line, and towards it.
   unfold: `
     ....#....

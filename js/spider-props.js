@@ -147,7 +147,7 @@ export function cobwebSwing(time, wind, phase) {
 
 /**
  * A dusty sheet of cobweb sagging from the roof, with tatters hanging off it
- * that stir in the wind. `downwind` is -1 (left) or 1, for flipped props.
+ * that stir in the wind. `downwind` is -1 (left) or 1 (right).
  */
 export function drawCobweb(tools, room, noise, time = 0, wind = 0, downwind = -1) {
   const { pixelPath, pixelRect } = tools;

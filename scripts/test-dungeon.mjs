@@ -5,7 +5,8 @@
 import assert from 'node:assert/strict';
 import { normalizeTrail, validateTrail } from '../js/trail-schema.js';
 import { rectangle } from './lib/terrain-fixtures.mjs';
-import { CEILING_PROPS, canFlip, canRotate, propSpan, propWallFit } from '../js/drawing.js';
+import { CEILING_PROPS, canRotate, propSpan, propWallFit } from '../js/drawing.js';
+import { canFlip } from '../js/trail-schema.js';
 import {
   BAR_XS, BARS, CHATTER, JOLT, PORTCULLIS, TORCH_TONGUES, barLayout, hangingSwing, portcullisDrop, skeletonJaw,
 } from '../js/dungeon-props.js';
@@ -33,7 +34,7 @@ const trail = normalizeTrail({
     assert.ok(rise >= 200 && hang >= 0, `${type} is culled with its roof in view`);
   }
   assert.ok(!canFlip('dungeon-bars') && !canRotate('dungeon-bars'), 'the bars fit themselves to the rock');
-  assert.ok(canFlip('torch') && canFlip('skeleton'));
+  assert.ok(!canFlip('torch') && canFlip('skeleton'), 'the skeleton faces a way, the torch is lit from the right');
 }
 
 // The bars find the roof over each of them, and stand on their own with spear

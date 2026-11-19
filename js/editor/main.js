@@ -29,7 +29,8 @@ import { refuse, refuseEdit, showStatus } from "./status.js";
 import { propThumbnail } from "./thumbnails.js";
 import { segmentSelects } from "./segmented.js";
 import { editingPreview, resetPreview, startEditingPreview, stopEditingPreview } from "./preview.js";
-import { TOOL_KEY_LABELS, materialLabel, renderToolSettings, resolveToolKeyLabels, setTab, setTool } from "./tools.js";
+import { bindToolbar } from "./toolbar.js";
+import { labelToolButtons, materialLabel, resolveToolKeyLabels, setTool } from "./tools.js";
 import {
   announceVersion,
   bindVersions,
@@ -45,10 +46,13 @@ import {
   updateTrailControls,
 } from "./trails.js";
 import {
+  GRID_KEY,
   focusOnStart,
   resize,
   toggleGameArt,
+  toggleGrid,
   updateGameArtButton,
+  updateGridButton,
   updateZoom,
   zoomAtCenter,
 } from "./view.js";
@@ -65,6 +69,14 @@ editor.gameArt = (() => {
     return store().getItem(GAME_ART_KEY) === "1";
   } catch (_) {
     return false;
+  }
+})();
+
+editor.grid = (() => {
+  try {
+    return store().getItem(GRID_KEY) !== "1";
+  } catch (_) {
+    return true;
   }
 })();
 
@@ -101,26 +113,11 @@ document
     button.addEventListener("click", () => setTool(button.dataset.tool)),
   );
 
-// Hover tooltips naming each tool's shortcut.
-function labelToolButtons() {
-  document.querySelectorAll("[data-tool]").forEach((button) => {
-    const key = TOOL_KEY_LABELS[button.dataset.tool];
-    if (key) button.title = `${button.textContent.trim()} (${key})`;
-  });
-}
 labelToolButtons();
 // On a non-QWERTY keyboard the labels follow what is printed on the keys.
 resolveToolKeyLabels().then((changed) => {
-  if (!changed) return;
-  labelToolButtons();
-  renderToolSettings();
+  if (changed) labelToolButtons();
 });
-
-document
-  .querySelectorAll("[data-tab]")
-  .forEach((button) =>
-    button.addEventListener("click", () => setTab(button.dataset.tab)),
-  );
 
 $("trail-picker").addEventListener("change", (event) =>
   selectEntry(Number(event.target.value)),
@@ -183,10 +180,12 @@ bindInspector();
 bindMenu();
 
 bindObjects();
+bindToolbar();
 
 bindVersions();
 
 updateGameArtButton();
+updateGridButton();
 
 $("edit-preview").addEventListener("click", () => {
   if (editingPreview()) stopEditingPreview();
@@ -199,6 +198,8 @@ $("reset-preview").addEventListener("click", () => {
   resetPreview();
   canvas.focus({ preventScroll: true });
 });
+
+$("toggle-grid").addEventListener("click", toggleGrid);
 
 $("game-art").addEventListener("click", () => {
   toggleGameArt();

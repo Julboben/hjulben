@@ -298,7 +298,7 @@ Dress nature generously and set pieces sparingly. Trees, bushes, grass, flowers 
 
 A `sign` prop carries an optional `text` string that is drawn on its board with the game's pixel font. Use signs sparingly, if at all: the player should work out what to do from the trail itself. Text wraps onto up to 4 lines of 10 characters; supported characters are `A`–`Z`, `0`–`9`, space, and `→` `←` `↑` `↓` `/` `.` `!` `+` `-` `:` `×` `'`. Lowercase is drawn as uppercase, anything else draws as `#`, and text that doesn't fit is cut off. In the editor's text field, typing `>`, `<` or `^` enters `→`, `←` or `↑`.
 
-A `banner` and a `pit-board` take `text` too. A blank banner shows one of the made-up sponsors (Knobbly Tyres, Äpple Oil or Hjulben Racing), picked by its position; typing a sponsor's name shows that sponsor's banner, and any other text (up to 16 characters) is printed on a plain blue banner. A pit board shows its text (up to 4 characters) or, when blank, a position from `P1` to `P9`. Neither can be flipped, nor can the `halfway-flag`, so their text always reads the right way round. A `stall` takes `text` for its hand-painted sign, up to 2 lines of 9 characters with the banner's characters; blank, it reads `KARTOFLER 20 KR`. A stall can be flipped, and its sign still reads the right way round.
+A `banner` and a `pit-board` take `text` too. A blank banner shows one of the made-up sponsors (Knobbly Tyres, Äpple Oil or Hjulben Racing), picked by its position; typing a sponsor's name shows that sponsor's banner, and any other text (up to 16 characters) is printed on a plain blue banner. A pit board shows its text (up to 4 characters) or, when blank, a position from `P1` to `P9`. Neither can be flipped, nor can the `halfway-flag`, so their text always reads the right way round. A `stall` takes `text` for its hand-painted sign, up to 2 lines of 9 characters with the banner's characters; blank, it reads `KARTOFLER 20 KR`.
 
 Some event props react to the ride. `spectators` turn their heads to follow the rider, each from where they stand, and look up at a rider jumping over them; they cheer while the rider is close, duck when the rider crashes nearby and then wince until the restart. The marshals watch the rider the same way and wave their flag while the rider is close: `marshal-start` a green flag, `marshal-finish` the checkered one. The `camera-tower`'s camera and its operator turn to follow the rider, tipping down at a rider below, and its red tally light blinks. A crash nearby makes the marshals drop their flag and the camera operator duck, then wince like the spectators, while the camera keeps rolling. The `course-tape` flutters in the wind, its loose end blowing downwind. A `halfway-flag` is pale until the rider rides past it, when its beacon lights up and its timing board shows the ride time it was passed at, in the same format as the timer. `arrow-sign` points right; flip it to point left or rotate it to point up or down. The tutorial drawings are painted onto the rock like `graffiti`. All of this is decoration and never changes the ride.
 
@@ -375,7 +375,7 @@ weather: {
 - `snow`: how much snow falls. Low values are a few drifting flakes; from about `0.6` it builds to a blizzard at `1`. Flakes are light, so the wind drives them flatter than rain: a breeze tilts them a little, `wind: 0.5` about 50°, and a gale drives them nearly sideways (about 77°). Flakes sway as they fall, are nearer or further away, and settle briefly on the first terrain they reach; on water they melt. Caves and overhangs stay clear. Pair it with `clouds` for a grey winter sky, and with `wind` for a whiteout. Rain and snow can fall together for sleet, both blown by the same wind.
 - `lightning`: strike frequency, flash strength, and thunder strength. Thunder follows the flash after a delay that grows with distance and comes from its side of the view: a close strike tears and bangs before rolling, a distant one is a long, muffled rumble.
 - `wind`: how hard the wind blows, from still air at `0` to a gale at `1`. It sets the slant of rain and snow and moves every prop that stirs in the wind: flags (the `flagpole` and the `halfway-flag` droop in still air and stream straight out in a gale), the `course-tape`, chimney and fire smoke, the fire's flames and sparks, `grass`, `flowers`, `reeds`, `ivy`, `vines`, the `ski-lift` chair, a `banner`'s cloth, the load on a `crane`'s cable, the `scarecrow`'s straw, a `tent`'s loose door flaps, how fast a `windmill` turns and a `tumbleweed` rolls, and, more gently, cobwebs, cocoons, spiderwebs, hanging chains and a `lantern` on its chain. Trees bend in it: the crowns of the `tree`, `sapling`, `pine`, `pine-small` and `snow-pine` lean and sway downwind, with gusts passing through a stand one tree after another, and a `bush` stirs half as much. In a light breeze only the treetops tip now and then; in a gale they lean and sway by up to two art pixels. Above about `0.25` the gusts also show as pale swirls of air blowing through the trail, more and faster as the wind rises. Most skim the ground and follow it over hills; the rest fly high. They only blow through open air, never through the terrain, a cave or the space under an overhang, the same places rain and snow can't reach. They are fewer and fainter in rain, which already shows the wind, and broken into whirling flakes in snow. With reduced motion the trees hold still and there are no swirls. It also sets the wind's sound. A light breeze (up to about `0.2`) is near silent; a strong wind roars, and whistles as it nears a gale.
-- `windDirection`: which way the wind blows, `'left'` or `'right'`. Everything blows the same way, flipped props included: flipping a flag, a tumbleweed or a tuft of grass only mirrors its art.
+- `windDirection`: which way the wind blows, `'left'` or `'right'`. Everything blows the same way, flipped props included: flipping a crane or a ski lift only mirrors its art.
 
 The defaults, which a new trail starts with, are a sunny day with some glare, a few clouds and a light breeze blowing left: `sun: 0.65`, `clouds: 0.2`, `wind: 0.25`, `windDirection: 'left'` and everything else `0`. Any setting may be omitted and takes its default, but trails should spell out all of them, as the editor does. Unknown settings are dropped. Weather is decoration only: it never changes the ride, and it is not part of the trail hash.
 
@@ -413,7 +413,7 @@ The theme sets the shapes and the time of day sets the colours, so all combinati
 
 Props sit under `props`, alongside the `terrainBlocks` terrain.
 
-Every prop may carry `flip: true`, which mirrors it left to right. It is omitted when the prop is not flipped. Signs cannot be flipped, because their text would come out mirrored.
+A prop that faces a way may carry `flip: true`, which mirrors it left to right, so it faces left. It is omitted when the prop is not flipped. Those props are the animals (`fish`, `duck`, `frog`, `dragonfly`, `squirrel`, `corgi`, `rabbit`, `bird` and `vulture`), the figures (`scarecrow`, `snowman`, `skeleton`, `spectators`, `marshal-start`, `marshal-finish` and `camera-tower`), the vehicles (`boat`, `wheelbarrow`, `car-wreck`, `christiania-bike` and `crane`), the `ski-lift`, the `ladder` and the `arrow-sign`. Every other prop is lit from the right like the terrain, so mirrored it would be lit from the left; `flip` on one of them is dropped when the trail is loaded.
 
 A prop may also carry `rotation`, in degrees clockwise about its anchor, from -180 to 180 (other values wrap into that range, and it is rounded to 0.1°). It is omitted when the prop is not rotated. Unrotated props tilt with the slope they stand on and sink a little into it; a rotated prop does neither, so its `rotation` is its whole angle. It turns after any `flip`. Wall props (`vines`, `roots` and `moss`) still find their wall and then turn about their anchor, and `graffiti` turns about its anchor before it is clipped to the rock. Props that move about, hang from a ceiling or sit in water ignore it: `tumbleweed`, `heat-haze`, `vulture`, `ski-lift`, `squirrel`, `corgi`, `bird`, `hanging-roots`, `stalactites`, `drip`, `icicles`, `lantern`, `bats`, `minecart`, `beams`, `lily`, `reeds`, `seaweed`, `fish` and `duck`. Rotation is decoration only and does not change the trail's hash.
 
@@ -460,7 +460,7 @@ Sign text wraps at word boundaries onto up to 4 lines of 10 characters, and the 
 - `description`: design notes for the trail, up to 2000 characters; anything longer is cut off when the trail loads. It is not shown during gameplay; the editor lists it as **Notes**.
 - `lesson`, `alsoNew` and `world`: optional notes for the career's overview, `TRAILS.md`, which is generated from them: what the trail teaches (one or two sentences, such as "Braking. A downhill run to a fence, with a `SLOW` sign before a drop."), what is new to look at in it, and the world it belongs to, one of those in `trails/worlds.json`. Up to 400 characters each, not shown in the game and not part of the trail's hash, so changing them keeps its leaderboard.
 - `author`: optional credit for whoever made the trail, up to 40 characters on one line. The trail menu, the Hall of Fame and the results screen show it as "BY …" / "TRAIL BY …". It does not change the trail's hash, so adding or editing credit keeps its times. The editor remembers the last author you typed and fills it in on new trails.
-- `preview`: optional `{ x, y }`, the middle of the trail's thumbnail in the trail list, in whole world units. The thumbnail shows 576 × 192 world units around it, at the same zoom on every trail. The editor sets it with **Edit preview** in the Trail tab. Without it the game picks the trail's most eventful stretch between the start and the finish. Like `author`, it does not change the trail's hash, so framing the thumbnail keeps its times.
+- `preview`: optional `{ x, y }`, the middle of the trail's thumbnail in the trail list, in whole world units. The thumbnail shows 576 × 192 world units around it, at the same zoom on every trail. The editor sets it with **Edit preview** in the trail settings, shown in the right-hand panel when nothing is selected. Without it the game picks the trail's most eventful stretch between the start and the finish. Like `author`, it does not change the trail's hash, so framing the thumbnail keeps its times.
 
 ## Medals
 
@@ -794,6 +794,40 @@ function groundHeight(trail, x) {
 }
 
 export const SPIKE_RADIUS = { min: 8, max: 64, default: 18 };
+
+// The props that face a way, and so can be flipped to face the other: animals
+// and people, vehicles, and things that point or lean. Every prop is drawn lit
+// from the right, where the sun is, so a mirrored rock or tree would be lit
+// from the left; these face a way that matters more than their light, and the
+// animals turn round as they move anyway.
+export const FACING_PROPS = new Set([
+  "fish",
+  "duck",
+  "frog",
+  "dragonfly",
+  "boat",
+  "squirrel",
+  "corgi",
+  "rabbit",
+  "bird",
+  "vulture",
+  "scarecrow",
+  "snowman",
+  "skeleton",
+  "spectators",
+  "marshal-start",
+  "marshal-finish",
+  "camera-tower",
+  "wheelbarrow",
+  "car-wreck",
+  "christiania-bike",
+  "crane",
+  "ski-lift",
+  "ladder",
+  "arrow-sign",
+]);
+
+export const canFlip = (type) => FACING_PROPS.has(type);
 /**
  * Normalize a spike. `groundY` is the surface height at the spike's x, used
  * when the spike has no y of its own.
@@ -929,7 +963,7 @@ export function normalizeTrail(input) {
           TEXT_PROPS.has(prop.type) && typeof prop.text === "string"
             ? prop.text
             : undefined,
-        flip: prop.flip === true ? true : undefined,
+        flip: prop.flip === true && canFlip(prop.type) ? true : undefined,
         rotation: normalizeRotation(prop.rotation),
         group: normalizeGroupName(prop.group) ?? undefined,
       }))

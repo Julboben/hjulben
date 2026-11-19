@@ -215,12 +215,14 @@ function onSearchKey(event) {
 }
 
 function pick(value) {
-  const { select } = session;
+  const { select, onChoose } = session;
   /** @type {HTMLDialogElement} */ ($("picker")).close();
   if (selectValue.get.call(select) !== value) {
     select.value = value;
     select.dispatchEvent(new Event("change", { bubbles: true }));
   }
+  // Choosing what was already set changes nothing, but is still a choice.
+  onChoose?.(value);
   // Hand focus back so the canvas shortcuts keep working.
   canvas.focus({ preventScroll: true });
 }
@@ -262,6 +264,7 @@ function open(
     heading = `CHOOSE ${title.toUpperCase()}`,
     filters = true,
     toggle = false,
+    onChoose = null,
   },
 ) {
   if (!selectValue) return;
@@ -274,6 +277,7 @@ function open(
     grid,
     filters,
     toggle,
+    onChoose,
     items: itemsOf(select),
     current,
     active: current,
@@ -295,7 +299,8 @@ function open(
  * Open the picker on `select` straight away, with no trigger button; choosing
  * an option sets it and fires its change event. Besides pickerSelect's
  * options, `grid` lays the options out as tiles, `heading` replaces the
- * "CHOOSE ..." title, `filters: false` hides the group buttons, and `toggle` lets Cmd/Ctrl+P close it again.
+ * "CHOOSE ..." title, `filters: false` hides the group buttons, `toggle` lets Cmd/Ctrl+P close it again,
+ * and `onChoose` is told every choice, even of the value already set.
  */
 export const openPicker = open;
 

@@ -36,7 +36,7 @@ import {
   updateVersionChip,
 } from "./drafts.js";
 import { pushHistory } from "./history.js";
-import { moveLocks } from "./locks.js";
+import { flagsSnapshot, moveLocks } from "./locks.js";
 import { syncInspector } from "./inspector.js";
 import { render } from "./render.js";
 import { editor } from "./state.js";
@@ -119,7 +119,7 @@ export function loadTrailData(index) {
     const restored = normalizeTrail(autosave.trail);
     if (JSON.stringify(restored, null, 2) === editor.version.base) return trail;
     editor.version.restoredAt = autosave.at;
-    editor.history.push({ trail: JSON.stringify(trail), selection: null });
+    editor.history.push({ trail: JSON.stringify(trail), selection: null, flags: flagsSnapshot() });
     return restored;
   } catch (_) {
     return trail;
@@ -247,7 +247,10 @@ function versionRow({ title, detail, current, onOpen, onDelete, openLabel }) {
   if (onDelete) {
     const remove = document.createElement("button");
     remove.className = "danger-inline";
-    remove.textContent = "×";
+    const icon = document.createElement("span");
+    icon.dataset.icon = "trash";
+    icon.setAttribute("aria-hidden", "true");
+    remove.append(icon);
     remove.title = "Delete this draft";
     remove.setAttribute("aria-label", `Delete draft from ${title}`);
     remove.addEventListener("click", onDelete);
@@ -402,6 +405,7 @@ export function updateTrailControls() {
   for (const id of ["rename-trail", "save-draft", "versions-save-draft"]) $(id).hidden = readOnly;
   for (const tool of document.querySelectorAll("[data-tool]"))
     tool.disabled = readOnly && !NAVIGATION_TOOLS.has(tool.dataset.tool);
+  for (const toggle of document.querySelectorAll(".tool-menu-toggle")) toggle.disabled = readOnly;
   // A disabled fieldset disables every control inside it, including the
   // segmented and picker buttons built from its selects.
   for (const id of ["selection-fieldset", "trail-fields"]) $(id).disabled = readOnly;

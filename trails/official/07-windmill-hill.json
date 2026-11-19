@@ -772,8 +772,7 @@
       "x": -307.9717724173769,
       "y": 197.1301475888963,
       "type": "fence",
-      "layer": "back",
-      "flip": true
+      "layer": "back"
     },
     {
       "x": -409.89486357862467,
@@ -785,15 +784,13 @@
       "x": -160.8514798547671,
       "y": 334.6438964439532,
       "type": "flowers",
-      "layer": "back",
-      "flip": true
+      "layer": "back"
     },
     {
       "x": 2636.3337328241214,
       "y": 108.993959796501,
       "type": "flowers",
-      "layer": "back",
-      "flip": true
+      "layer": "back"
     },
     {
       "x": 3109.232167225916,
@@ -805,71 +802,61 @@
       "x": 2864.0708051456245,
       "y": 117.15533460694323,
       "type": "bush",
-      "layer": "front",
-      "flip": true
+      "layer": "front"
     },
     {
       "x": 3190.630800516787,
       "y": -80.37615143852639,
       "type": "crates",
-      "layer": "back",
-      "flip": true
+      "layer": "back"
     },
     {
       "x": 3166.083588820324,
       "y": -106.45115324512659,
       "type": "apple",
-      "layer": "back",
-      "flip": true
+      "layer": "back"
     },
     {
       "x": 3155.78552137976,
       "y": -104.96418650545189,
       "type": "apple",
-      "layer": "back",
-      "flip": true
+      "layer": "back"
     },
     {
       "x": 3087.4448890504855,
       "y": -213.14326073037734,
       "type": "apple",
-      "layer": "back",
-      "flip": true
+      "layer": "back"
     },
     {
       "x": 3128.744866665112,
       "y": -179.87350188695146,
       "type": "apple",
-      "layer": "back",
-      "flip": true
+      "layer": "back"
     },
     {
       "x": 794.7183012711246,
       "y": -0.6676931875607011,
       "type": "apple",
-      "layer": "back",
-      "flip": true
+      "layer": "back"
     },
     {
       "x": 763.5083202064352,
       "y": -28.726815061951584,
       "type": "apple",
-      "layer": "back",
-      "flip": true
+      "layer": "back"
     },
     {
       "x": 465.3196558539634,
       "y": 156.95077711406412,
       "type": "apple",
-      "layer": "back",
-      "flip": true
+      "layer": "back"
     },
     {
       "x": 409.92562919576227,
       "y": 177.92218196452626,
       "type": "apple",
-      "layer": "back",
-      "flip": true
+      "layer": "back"
     },
     {
       "x": 1715.0901716614562,

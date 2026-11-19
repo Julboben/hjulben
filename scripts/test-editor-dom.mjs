@@ -46,13 +46,17 @@ const reported = (report, label) => {
 // ---------------------------------------------------------------------------
 {
   const report = await boot('nisse');
-  check('the Apple tool can be set to place the nisse', report.placeField);
+  check('the Apple tool\'s menu offers the nisse', report.menuShown);
+  check('choosing it takes up the Apple tool, set to the nisse, and closes the menu', JSON.stringify(report.menuChose) === '["nisse","apple",true]', `(${JSON.stringify(report.menuChose)})`);
   check('it places the nisse, not an apple', report.placed && report.apples === 0);
   check('placing it again moves the one nisse',
     report.moved && Math.round(report.moved.x - report.placed.x) === 300);
   check('a selected nisse is titled and explained', report.title === 'NISSE' && report.hintShown);
   check('deleting it removes the field', report.deleted);
   check('and undo brings it back', report.restored && report.restored.x === report.moved.x);
+  check('a spike\'s radius set in the inspector carries over to the next spike', JSON.stringify(report.nextSpike?.slice(-2)) === '[30,30]', `(${JSON.stringify(report.nextSpike)})`);
+  check('Start and Finish share a flag button that takes up the one used last, and its menu sets the start\'s facing',
+    JSON.stringify(report.markerButton) === JSON.stringify([['start', 'flag'], ['finish', 'flag', 'finish', 'finish'], ['start', 'flag', 'start'], '-1']), `(${JSON.stringify(report.markerButton)})`);
 }
 
 // ---------------------------------------------------------------------------
@@ -142,20 +146,19 @@ const reported = (report, label) => {
 }
 
 // ---------------------------------------------------------------------------
-// Locks in the Objects tab.
+// Locks in the Objects panel.
 // ---------------------------------------------------------------------------
 {
   const report = await boot('locks');
   reported(report, 'locks');
   check('unlocked, a press on a back wall takes it', /BACK WALL/.test(report.unlockedTakesWall || ''), `("${report.unlockedTakesWall}")`);
-  check('the Objects tab opens and lists every group', report.panelShown && report.groupCount === 7);
+  check('the Objects panel lists every group', report.groupCount === 7);
   check('a group lock is kept for this trail only', JSON.stringify(report.groupLockKeys) === '["hjulben-editor-locked-groups-t1"]', `(${JSON.stringify(report.groupLockKeys)})`);
-  check('the tab shows a lock while anything is locked', report.badge === 'lock' && report.badgeGone === null);
   check('with back walls locked, a press on one draws a box that takes the apple', report.boxOverWall === 'apple', `(${report.boxOverWall})`);
   check('select all leaves a locked back wall out', JSON.stringify(report.selectAllBlocks) === '[0]', `(${report.selectAllBlocks})`);
   check('the Block tool will not draw onto a locked group', report.blockRefused);
   check('a group holding the selection is marked and opens to show it', report.appleGroupMarked && report.appleRevealed);
-  check('the inspector titles a thing as the Objects tab names it', report.appleTitle === 'APPLE', `("${report.appleTitle}")`);
+  check('the inspector titles a thing as the Objects panel names it', report.appleTitle === 'APPLE', `("${report.appleTitle}")`);
   check('an item is listed by name', report.appleName === 'Apple', `("${report.appleName}")`);
   check('a locked item is left out of a selection box', report.lockedAppleBoxed === null, `(${report.lockedAppleBoxed})`);
   check('locks are not saved in the trail', report.notInFile);
@@ -167,15 +170,22 @@ const reported = (report, label) => {
   check('the half-lit lock above the groups locks every group, then unlocks everything', JSON.stringify(report.lockEverything) === JSON.stringify(['mixed', 'true', true, 'false']));
   check('a second click on the lock above the groups frees everything', report.unlockedAll);
   check('L locks the selection', report.keyLocked);
-  check('1, 2 and 3 open the Tools, Objects and Trail tabs', report.tabKeys.every(Boolean));
   check('/ opens the Objects filter', report.filterKey);
+  check('a new prop stays locked through undo and redo', report.placedLock === true);
+  check('undo frees a lock and selects again, redo locks again, and undo shows what was hidden',
+    JSON.stringify(report.lockUndo) === '["false",true,true,true,"false"]', `(${JSON.stringify(report.lockUndo)})`);
+  check('⌘\' hides the grid and its snapping, and again shows both',
+    JSON.stringify(report.gridKey) === JSON.stringify([[false, 'Show grid', false], [true, 'Hide grid', true]]), `(${JSON.stringify(report.gridKey)})`);
+  check('⌘\\ hides the side panels, and again shows them', JSON.stringify(report.panelsKey) === '[true,false]', `(${JSON.stringify(report.panelsKey)})`);
+  check('with nothing selected the inspector shows the trail settings, and a selection replaces them',
+    JSON.stringify(report.trailSettings) === JSON.stringify([true, 'TRAIL', true, true, 'INSPECTOR']), `(${JSON.stringify(report.trailSettings)})`);
   check('the filter keeps only matching groups, open', JSON.stringify(report.filtered) === '[1,2]', `(${JSON.stringify(report.filtered)})`);
   check('a filter that matches nothing says so', report.noMatch);
   check('Collapse all closes every group', report.collapseShown && report.collapsed);
   check('Open all opens every group with something in it', report.openedAll);
   check('a group\'s lock is half lit when something in it is locked', report.markBefore === false && report.markAfter === true);
   check('a group button locks all of the group, then frees all of it', JSON.stringify(report.groupToggle) === JSON.stringify(['true', 'false']));
-  check('a hidden group marks the tab and a selection box leaves it out', report.hiddenBadge === 'eye-closed' && report.hiddenBoxed === false, `(${report.hiddenBadge}, ${report.hiddenBoxed})`);
+  check('a selection box leaves a hidden group out', report.hiddenBoxed === false, `(${report.hiddenBoxed})`);
   check('the eye above the groups brings hidden things back', report.shownAgain);
   check('a group\'s eye is half lit when something in it is hidden', report.hideMark);
   check('the inspector eye button hides the selection', report.hideButtonShown && report.buttonHid);
@@ -294,6 +304,8 @@ const reported = (report, label) => {
   check('flipping carries a prop across and turns it round', json(report.mirrored) === json([0, true]), `(${json(report.mirrored)})`);
   check('X flips it too', report.keyMirrored === 0, `(${report.keyMirrored})`);
   check('a prop alone has no block flip', report.propMirrorHidden);
+  check('the start faces left with the arrows, and X turns it back', JSON.stringify(report.startFacing) === JSON.stringify([true, -1, true, 1]), `(${JSON.stringify(report.startFacing)})`);
+  check('a lone ladder shows its facing arrows, Right lit, and Delete names it', JSON.stringify(report.loneProp) === JSON.stringify([true, true, 'DELETE LADDER']), `(${JSON.stringify(report.loneProp)})`);
   check('and Shift+X leaves it alone', report.shiftXOnProp);
   check('a prop can be brought to the front or sent to the back', report.orderShown);
   check('To front draws it last, and the selection follows it', json(report.toFront) === json([true, true]), `(${json(report.toFront)})`);

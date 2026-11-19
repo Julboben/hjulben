@@ -115,6 +115,10 @@
                                 <button id="open-data" role="menuitem">
                                     <span data-icon="download" aria-hidden="true"></span><span>Import / export</span>
                                 </button>
+                                <button id="toggle-grid" role="menuitem">
+                                    <span data-icon="grid" aria-hidden="true"></span><span id="toggle-grid-label">Hide grid</span
+                                    ><kbd>⌘'</kbd>
+                                </button>
                                 <button id="open-quick-pick" role="menuitem">
                                     <span data-icon="search" aria-hidden="true"></span><span>Quick pick</span
                                     ><kbd>⌘P</kbd>
@@ -154,121 +158,117 @@
 
             <section class="workspace">
                 <aside class="toolbox">
-                    <div class="side-tabs" role="tablist">
-                        <button
-                            class="side-tab active"
-                            role="tab"
-                            id="tab-tools"
-                            aria-selected="true"
-                            aria-controls="panel-tools"
-                            data-tab="tools"
-                            title="Tools (1)"
-                        >
-                            TOOLS
-                        </button>
-                        <button
-                            class="side-tab"
-                            role="tab"
-                            id="tab-objects"
-                            aria-selected="false"
-                            aria-controls="panel-objects"
-                            data-tab="objects"
-                            title="Objects (2)"
-                        >
-                            OBJECTS
-                        </button>
-                        <button
-                            class="side-tab"
-                            role="tab"
-                            id="tab-trail"
-                            aria-selected="false"
-                            aria-controls="panel-trail"
-                            data-tab="trail"
-                            title="Trail (3)"
-                        >
-                            TRAIL
-                        </button>
+                    <h2 class="objects-head">OBJECTS</h2>
+                    <div class="side-panel" id="objects-panel">
+                        <input
+                            class="objects-filter"
+                            id="objects-filter"
+                            type="search"
+                            placeholder="Filter by name"
+                            aria-label="Filter by name"
+                            autocomplete="off"
+                        />
+                        <div class="objects-actions">
+                            <button class="icon-button" id="open-all" type="button" title="Open all groups" aria-label="Open all groups">
+                                <span data-icon="unfold" aria-hidden="true"></span>
+                            </button>
+                            <button class="icon-button" id="collapse-all" type="button" title="Collapse all groups" aria-label="Collapse all groups">
+                                <span data-icon="fold" aria-hidden="true"></span>
+                            </button>
+                            <span class="objects-actions-label" aria-hidden="true">ALL</span>
+                            <span class="objects-flag-everything" id="flag-everything"></span>
+                        </div>
+                        <p class="objects-hint" id="objects-no-match" hidden>
+                            Nothing here is named like that.
+                        </p>
+                        <section class="tool-group" id="named-groups-section" hidden>
+                            <h3>GROUPS</h3>
+                            <ul class="object-groups" id="named-groups"></ul>
+                        </section>
+                        <ul class="object-groups" id="object-groups"></ul>
                     </div>
 
-                    <div
-                        class="side-panel"
-                        id="panel-tools"
-                        role="tabpanel"
-                        aria-labelledby="tab-tools"
-                    >
-                        <section class="tool-group">
-                            <h3>NAVIGATE</h3>
-                            <div class="tool-grid">
-                                <button
-                                    class="tool active"
-                                    data-tool="select"
-                                    title="Select (V)"
-                                >
-                                    <span data-icon="cursor" aria-hidden="true"></span><span>Select</span>
-                                </button>
-                                <button
-                                    class="tool"
-                                    data-tool="pan"
-                                    title="Pan (H)"
-                                >
-                                    <span data-icon="pan" aria-hidden="true"></span><span>Pan</span>
-                                </button>
-                            </div>
-                        </section>
-                        <section class="tool-group">
-                            <h3>TERRAIN</h3>
-                            <div class="tool-grid">
-                                <button class="tool" data-tool="block">
-                                    <span data-icon="block" aria-hidden="true"></span><span>Block</span>
-                                </button>
-                                <button class="tool" data-tool="cut">
-                                    <span data-icon="scissors" aria-hidden="true"></span><span>Cut</span>
-                                </button>
-                            </div>
-                        </section>
-                        <section class="tool-group">
-                            <h3>OBJECTS</h3>
-                            <div class="tool-grid">
-                                <button class="tool" data-tool="apple">
-                                    <span data-icon="apple" aria-hidden="true"></span><span>Apple</span>
-                                </button>
-                                <button class="tool" data-tool="spike">
-                                    <span data-icon="spike" aria-hidden="true"></span><span>Spike</span>
-                                </button>
-                                <button class="tool" data-tool="prop">
-                                    <span data-icon="tree" aria-hidden="true"></span><span>Prop</span>
-                                </button>
-                                <button class="tool" data-tool="water">
-                                    <span data-icon="water" aria-hidden="true"></span><span>Water</span>
-                                </button>
-                            </div>
-                        </section>
-                        <section class="tool-group">
-                            <h3>COURSE</h3>
-                            <div class="tool-grid">
-                                <button class="tool" data-tool="start">
-                                    <span data-icon="play" aria-hidden="true"></span><span>Start</span>
-                                </button>
-                                <button class="tool" data-tool="finish">
-                                    <span data-icon="flag" aria-hidden="true"></span><span>Finish</span>
-                                </button>
-                            </div>
-                        </section>
-
-                        <fieldset class="tool-settings">
-                            <legend id="tool-settings-title">SELECT</legend>
-                            <p class="tool-hint" id="tool-hint"></p>
-                            <div id="tool-settings-fields"></div>
-                        </fieldset>
+                    <div class="toolbox-footer">
+                        <div class="zoom-controls">
+                            <button id="game-art" aria-pressed="false" aria-label="Show game art"><span data-icon="picture" aria-hidden="true"></span></button
+                            ><button id="zoom-out" aria-label="Zoom out"><span data-icon="minus" aria-hidden="true"></span></button
+                            ><span id="zoom-label">100%</span
+                            ><button id="zoom-in" aria-label="Zoom in"><span data-icon="plus" aria-hidden="true"></span></button>
+                        </div>
                     </div>
+                </aside>
 
-                    <div
-                        class="side-panel"
-                        id="panel-trail"
-                        role="tabpanel"
-                        aria-labelledby="tab-trail"
+                <div class="canvas-wrap" id="canvas-wrap">
+                    <canvas
+                        id="editor-canvas"
+                        tabindex="0"
+                        aria-label="Editable trail canvas"
+                    ></canvas>
+                    <canvas
+                        class="minimap"
+                        id="minimap"
+                        role="img"
+                        aria-label="The whole trail, with the part on screen framed: click or drag to go there"
+                        title="Click or drag to go there. M hides it."
                         hidden
-                    >
+                    ></canvas>
+                    <div class="toolbar" id="toolbar" role="toolbar" aria-label="Tools">
+                        <button class="tool active" data-tool="select"><span aria-hidden="true"></span></button>
+                        <button class="tool" data-tool="pan"><span aria-hidden="true"></span></button>
+                        <span class="toolbar-divider" aria-hidden="true"></span>
+                        <button class="tool" data-tool="block"><span aria-hidden="true"></span></button>
+                        <button class="tool-menu-toggle" id="tool-menu-block" type="button" aria-haspopup="menu" aria-expanded="false" aria-label="Block options" title="Block options"><span data-icon="caret-down" aria-hidden="true"></span></button>
+                        <button class="tool" data-tool="cut"><span aria-hidden="true"></span></button>
+                        <button class="tool-menu-toggle" id="tool-menu-cut" type="button" aria-haspopup="menu" aria-expanded="false" aria-label="Cut options" title="Cut options"><span data-icon="caret-down" aria-hidden="true"></span></button>
+                        <span class="toolbar-divider" aria-hidden="true"></span>
+                        <button class="tool" data-tool="apple"><span aria-hidden="true"></span></button>
+                        <button class="tool-menu-toggle" id="tool-menu-apple" type="button" aria-haspopup="menu" aria-expanded="false" aria-label="Apple options" title="Apple options"><span data-icon="caret-down" aria-hidden="true"></span></button>
+                        <button class="tool" data-tool="spike"><span aria-hidden="true"></span></button>
+                        <button class="tool" data-tool="prop"><span aria-hidden="true"></span></button>
+                        <button class="tool-menu-toggle" id="tool-menu-prop" type="button" aria-haspopup="dialog" aria-label="Choose a prop" title="Choose a prop"><span data-icon="caret-down" aria-hidden="true"></span></button>
+                        <button class="tool" data-tool="water"><span aria-hidden="true"></span></button>
+                        <span class="toolbar-divider" aria-hidden="true"></span>
+                        <button class="tool" id="tool-marker" data-tool="start"><span aria-hidden="true"></span></button>
+                        <button class="tool-menu-toggle" id="tool-menu-marker" type="button" aria-haspopup="menu" aria-expanded="false" aria-label="Start and finish" title="Start and finish"><span data-icon="caret-down" aria-hidden="true"></span></button>
+                    </div>
+                    <div class="tool-menu more-items" id="tool-menu" role="menu" hidden></div>
+                    <div
+                        class="editor-toast"
+                        id="editor-toast"
+                        role="status"
+                        aria-live="polite"
+                        hidden
+                    ></div>
+                </div>
+
+                <aside class="inspector" id="inspector">
+                    <div class="panel-head">
+                        <span id="inspector-kind">INSPECTOR</span>
+                        <div class="selection-head">
+                            <strong id="selection-title">NOTHING SELECTED</strong>
+                            <button
+                                class="icon-button"
+                                id="hide-selection"
+                                type="button"
+                                aria-label="Hide the selection"
+                                title="Hide the selection in the editor, to work on what is behind it. Show it again in OBJECTS."
+                                hidden
+                            >
+                                <span data-icon="eye" aria-hidden="true"></span>
+                            </button>
+                            <button
+                                class="icon-button"
+                                id="lock-selection"
+                                type="button"
+                                aria-label="Lock the selection"
+                                title="Lock the selection, so it can't be picked or changed (L). Unlock it in OBJECTS."
+                                hidden
+                            >
+                                <span data-icon="unlock" aria-hidden="true"></span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="side-panel" id="trail-settings">
                         <fieldset class="field-group" id="trail-fields">
                             <label
                                 >Name <input id="trail-name" type="text"
@@ -299,7 +299,7 @@
                                 ></canvas>
                                 <p class="tool-hint" id="preview-note"></p>
                                 <div class="preview-actions">
-                                    <button type="button" id="edit-preview">EDIT PREVIEW</button>
+                                    <button type="button" id="edit-preview" data-icon-before="camera">EDIT PREVIEW</button>
                                     <button type="button" id="reset-preview">RESET TO AUTOMATIC</button>
                                 </div>
                             </fieldset>
@@ -452,8 +452,8 @@
                                 <div class="field-row wind-row">
                                     <span>Blowing</span>
                                     <span class="segmented" role="group" aria-label="Wind direction">
-                                        <button type="button" id="wind-left" aria-label="Wind blowing left">← Left</button>
-                                        <button type="button" id="wind-right" aria-label="Wind blowing right">Right →</button>
+                                        <button type="button" id="wind-left" aria-label="Wind blowing left" data-icon-before="arrow-left">Left</button>
+                                        <button type="button" id="wind-right" aria-label="Wind blowing right" data-icon-after="arrow-right">Right</button>
                                     </span>
                                     <canvas
                                         id="windsock"
@@ -483,120 +483,6 @@
                         </fieldset>
                     </div>
 
-                    <div
-                        class="side-panel"
-                        id="panel-objects"
-                        role="tabpanel"
-                        aria-labelledby="tab-objects"
-                        hidden
-                    >
-                        <p class="objects-hint">
-                            Click a name to select it and bring it into view,
-                            or a group to open or close it. Cmd/Ctrl-click adds
-                            a row to the selection or takes it out, and
-                            Shift-click adds every row from the last one
-                            clicked. Locked things are still drawn, but can't
-                            be selected or changed. Hidden things aren't drawn
-                            or selected in the editor, but stay in the trail
-                            and in play tests.
-                        </p>
-                        <input
-                            class="objects-filter"
-                            id="objects-filter"
-                            type="search"
-                            placeholder="Filter by name"
-                            aria-label="Filter by name"
-                            autocomplete="off"
-                        />
-                        <div class="objects-actions">
-                            <button class="icon-button" id="open-all" type="button" title="Open all groups" aria-label="Open all groups">
-                                <span data-icon="unfold" aria-hidden="true"></span>
-                            </button>
-                            <button class="icon-button" id="collapse-all" type="button" title="Collapse all groups" aria-label="Collapse all groups">
-                                <span data-icon="fold" aria-hidden="true"></span>
-                            </button>
-                            <span class="objects-actions-label" aria-hidden="true">ALL</span>
-                            <span class="objects-flag-everything" id="flag-everything"></span>
-                        </div>
-                        <p class="objects-hint" id="objects-no-match" hidden>
-                            Nothing here is named like that.
-                        </p>
-                        <section class="tool-group" id="named-groups-section" hidden>
-                            <h3>GROUPS</h3>
-                            <ul class="object-groups" id="named-groups"></ul>
-                        </section>
-                        <ul class="object-groups" id="object-groups"></ul>
-                    </div>
-
-                    <div class="toolbox-footer">
-                        <div class="zoom-controls">
-                            <button id="game-art" aria-pressed="false" aria-label="Show game art"><span data-icon="picture" aria-hidden="true"></span></button
-                            ><button id="zoom-out" aria-label="Zoom out"><span data-icon="minus" aria-hidden="true"></span></button
-                            ><span id="zoom-label">100%</span
-                            ><button id="zoom-in" aria-label="Zoom in"><span data-icon="plus" aria-hidden="true"></span></button>
-                        </div>
-                    </div>
-                </aside>
-
-                <div class="canvas-wrap" id="canvas-wrap">
-                    <canvas
-                        id="editor-canvas"
-                        tabindex="0"
-                        aria-label="Editable trail canvas"
-                    ></canvas>
-                    <canvas
-                        class="minimap"
-                        id="minimap"
-                        role="img"
-                        aria-label="The whole trail, with the part on screen framed: click or drag to go there"
-                        title="Click or drag to go there. M hides it."
-                        hidden
-                    ></canvas>
-                    <div class="canvas-help">
-                        DRAG BLOCKS OR POINTS · DOUBLE-CLICK A BLOCK EDGE TO ADD
-                        A POINT · TWO-FINGER PAN · PINCH TO ZOOM · ? FOR ALL
-                        SHORTCUTS
-                    </div>
-                    <div
-                        class="editor-toast"
-                        id="editor-toast"
-                        role="status"
-                        aria-live="polite"
-                        hidden
-                    ></div>
-                </div>
-
-                <aside class="inspector" id="inspector">
-                    <div class="panel-head">
-                        <span>INSPECTOR</span>
-                        <div class="selection-head">
-                            <strong id="selection-title">NOTHING SELECTED</strong>
-                            <button
-                                class="icon-button"
-                                id="hide-selection"
-                                type="button"
-                                aria-label="Hide the selection"
-                                title="Hide the selection in the editor, to work on what is behind it. Show it again in OBJECTS."
-                                hidden
-                            >
-                                <span data-icon="eye" aria-hidden="true"></span>
-                            </button>
-                            <button
-                                class="icon-button"
-                                id="lock-selection"
-                                type="button"
-                                aria-label="Lock the selection"
-                                title="Lock the selection, so it can't be picked or changed (L). Unlock it in OBJECTS."
-                                hidden
-                            >
-                                <span data-icon="unlock" aria-hidden="true"></span>
-                            </button>
-                        </div>
-                    </div>
-                    <p class="tool-hint" id="selection-empty">
-                        Select something to edit it. Trail settings are in
-                        TRAIL.
-                    </p>
                     <ul
                         class="selection-issues"
                         id="selection-issues"
@@ -680,13 +566,6 @@
                             <button class="wide-action" id="split-edge" hidden>
                                 SPLIT EDGE
                             </button>
-                            <label id="selection-facing-row" hidden
-                                >Facing
-                                <select id="selection-facing">
-                                    <option value="1">Right</option>
-                                    <option value="-1">Left</option>
-                                </select></label
-                            >
                             <label id="selection-prop-type-row" hidden
                                 >Prop
                                 <select id="selection-prop-type">
@@ -858,14 +737,6 @@
                                     <option value="front">In front of rider</option>
                                 </select></label
                             >
-                            <label id="selection-flip-row" hidden
-                                >Flip
-                                <select id="selection-flip">
-                                    <option value="" hidden>Mixed</option>
-                                    <option value="false">Normal</option>
-                                    <option value="true">Flipped</option>
-                                </select></label
-                            >
                             <label id="selection-rotation-row" hidden
                                 >Rotation (°, clockwise)
                                 <input
@@ -875,25 +746,25 @@
                                     max="180"
                                     step="1"
                             /></label>
-                            <div class="field-row" id="selection-rotate-row" hidden>
-                                Rotate
-                                <span class="segmented">
-                                    <button type="button" id="rotate-ccw">↺ 90°</button>
-                                    <button type="button" id="rotate-cw">↻ 90°</button>
-                                </span>
-                            </div>
-                            <div class="field-row" id="selection-mirror-row" hidden>
-                                Flip
-                                <span class="segmented">
-                                    <button type="button" id="mirror-horizontal" title="Flip left to right (X)">⇆ Horizontal</button>
-                                    <button type="button" id="mirror-vertical" title="Flip upside down (Shift+X)">⇅ Vertical</button>
-                                </span>
-                            </div>
-                            <div class="field-row" id="selection-order-row" hidden>
-                                Order
-                                <span class="segmented">
-                                    <button type="button" id="order-back" title="Send behind the others of its kind (⌘⇧[)">To back</button>
-                                    <button type="button" id="order-front" title="Bring in front of the others of its kind (⌘⇧])">To front</button>
+                            <div class="field-row" id="selection-arrange-row" hidden>
+                                Arrange
+                                <span class="segmented arrange">
+                                    <span class="arrange-group" id="arrange-rotate">
+                                        <button type="button" id="rotate-ccw" title="Turn 90° to the left"><span data-icon="rotate-left" aria-hidden="true"></span></button>
+                                        <button type="button" id="rotate-cw" title="Turn 90° to the right"><span data-icon="rotate-right" aria-hidden="true"></span></button>
+                                    </span>
+                                    <span class="arrange-group" id="arrange-mirror">
+                                        <button type="button" id="mirror-horizontal" title="Flip left to right (X)"><span data-icon="flip-horizontal" aria-hidden="true"></span></button>
+                                        <button type="button" id="mirror-vertical" title="Flip upside down (Shift+X)"><span data-icon="flip-vertical" aria-hidden="true"></span></button>
+                                    </span>
+                                    <span class="arrange-group" id="arrange-facing">
+                                        <button type="button" id="face-left" title="Face left (X)"><span data-icon="arrow-left" aria-hidden="true"></span></button>
+                                        <button type="button" id="face-right" title="Face right (X)"><span data-icon="arrow-right" aria-hidden="true"></span></button>
+                                    </span>
+                                    <span class="arrange-group" id="arrange-order">
+                                        <button type="button" id="order-back" title="Send behind the others of its kind (⌘⇧[)"><span data-icon="order-back" aria-hidden="true"></span></button>
+                                        <button type="button" id="order-front" title="Bring in front of the others of its kind (⌘⇧])"><span data-icon="order-front" aria-hidden="true"></span></button>
+                                    </span>
                                 </span>
                             </div>
                             <label id="selection-radius-row" hidden
@@ -906,7 +777,7 @@
                                     step="1"
                             /></label>
                             <label id="selection-spin-row" hidden
-                                >Spin (turns/s, − for ↺)
+                                >Spin (turns/s, − is anticlockwise)
                                 <input
                                     id="selection-spin"
                                     type="number"
@@ -942,7 +813,7 @@
                             >
                                 Optional. Hide it off the main line.
                             </p>
-                            <button class="danger" id="delete-selection">
+                            <button class="danger" id="delete-selection" data-icon-before="trash">
                                 DELETE SELECTION
                             </button>
                         </fieldset>
@@ -1011,7 +882,7 @@
             <ul class="versions-list" id="versions-list"></ul>
             <p class="versions-note" id="versions-empty">No drafts yet.</p>
             <div class="data-actions versions-actions">
-                <button id="versions-save-draft">SAVE CURRENT AS DRAFT</button>
+                <button id="versions-save-draft" data-icon-before="save">SAVE CURRENT AS DRAFT</button>
             </div>
         </dialog>
         <dialog class="shortcuts confirm-dialog" id="publish-confirm" aria-labelledby="publish-confirm-title">
@@ -1029,7 +900,7 @@
             </p>
             <form method="dialog" class="data-actions confirm-actions">
                 <button value="cancel" autofocus>CANCEL</button>
-                <button value="overwrite" class="danger-solid">OVERWRITE FILE</button>
+                <button value="overwrite" class="danger-solid" data-icon-before="publish">OVERWRITE FILE</button>
             </form>
         </dialog>
         <dialog class="shortcuts confirm-dialog" id="rename-dialog" aria-labelledby="rename-title">
@@ -1137,7 +1008,8 @@
                         <div><dt><kbd>Y</kbd></dt><dd>Show or hide the game art</dd></div>
                         <div><dt><kbd>M</kbd></dt><dd>Show or hide the mini map</dd></div>
                         <div><dt><kbd>N</kbd></dt><dd>Snapping on or off</dd></div>
-                        <div><dt><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd></dt><dd>Tools, Objects, Trail tab</dd></div>
+                        <div><dt><kbd data-mod>⌘</kbd> <kbd>'</kbd></dt><dd>Show or hide the grid; things snap to it only while it shows</dd></div>
+                        <div><dt><kbd data-mod>⌘</kbd> <kbd>\</kbd></dt><dd>Hide or show the side panels</dd></div>
                         <div><dt><kbd>/</kbd></dt><dd>Filter Objects by name</dd></div>
                         <div><dt><kbd>Home</kbd></dt><dd>Go to the start (Shift: whole trail)</dd></div>
                     </dl>

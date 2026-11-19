@@ -112,6 +112,7 @@ Write functions as `export function drawThing({ pixelRect, pixelPath }, …)` an
 
 ## Flipping and rotation
 
+- Only props that face a way can be flipped: animals and people, vehicles, and things that point or lean, listed in `FACING_PROPS` in `trail-schema.js`. Every prop is lit from the right, so a flipped one is lit from the left; that is worth it only where which way it faces matters more. Add a new prop to the list only if it faces a way.
 - A flipped prop is drawn mirrored around its anchor, so art that faces right will face left.
 - **Text and numbers would show mirrored.** Leave them out of the sprite and export their position, e.g. `PYLON_NUMBER`, so `drawing.js` can draw them the right way round.
 - Anything world-directional (wind, smoke, sloped cables) needs a `downwind` or `dir` argument rather than a hard-coded direction.
@@ -161,7 +162,9 @@ For each new prop type, follow the desert commit (`9dd7708`) and the mountain pr
   - imports
   - a `drawProp` branch
   - `CANOPY_SPRITES` and `PROP_EXTENTS`
-  - `CEILING_PROPS`, `UNROTATABLE_PROPS` or `canFlip` if needed
+  - `CEILING_PROPS` or `UNROTATABLE_PROPS` if needed
+- `trail-schema.js`
+  - `FACING_PROPS`, if it faces a way
   - `propSpan` for props that move or hang
   - `drawPropGlow` for lights
 - `render.js`

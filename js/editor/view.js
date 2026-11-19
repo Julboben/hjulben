@@ -1,4 +1,4 @@
-// Camera, zoom, the game art toggle and screen-to-world conversion.
+// Camera, zoom, the game art and grid toggles and screen-to-world conversion.
 import { store } from "../local-store.js";
 import { $, canvas, ctx } from "./dom.js";
 import {
@@ -130,6 +130,25 @@ export function setGameArt(on) {
 
 export const toggleGameArt = () => setGameArt(!editor.gameArt);
 
+export const GRID_KEY = "hjulben-editor-grid-hidden";
+
+/** Show or hide the grid, which things only snap to while it shows, and remember it. */
+export function setGrid(on) {
+  editor.grid = on;
+  try {
+    if (on) store().removeItem(GRID_KEY);
+    else store().setItem(GRID_KEY, "1");
+  } catch (_) {}
+  updateGridButton();
+  render();
+}
+
+export const toggleGrid = () => setGrid(!editor.grid);
+
+export function updateGridButton() {
+  $("toggle-grid-label").textContent = editor.grid ? "Hide grid" : "Show grid";
+}
+
 // Below GAME_ART_MIN_ZOOM the art is not drawn even when it is on, so the
 // button dims and says why rather than looking broken.
 export function updateGameArtButton() {
@@ -142,4 +161,12 @@ export function updateGameArtButton() {
     : zoomedOut
       ? `Game art shows from ${Math.round(GAME_ART_MIN_ZOOM * 100)}% zoom (Y to hide)`
       : "Hide game art (Y)";
+}
+
+/** Hide or show both side panels, leaving the canvas the whole width. */
+export function toggleSidePanels() {
+  const workspace = document.querySelector(".workspace");
+  const hidden = !workspace.classList.contains("panels-hidden");
+  workspace.classList.toggle("panels-hidden", hidden);
+  for (const panel of document.querySelectorAll(".toolbox, .inspector")) panel.inert = hidden;
 }

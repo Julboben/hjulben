@@ -70,14 +70,15 @@ import {
   sameItem,
   selectedOf,
   selectionBox,
+  faceStart,
   flippableProps,
   selectionItems,
 } from "./selection.js";
 import { editor, waters } from "./state.js";
-import { saveToolSettings, toolSettings } from "./tools.js";
+import { rememberToolSetting } from "./tools.js";
 import { moveWaterTo, waterDepthHint, waterHandle, waterSize } from "./water.js";
 import { NISSE_GROUND_LIFT } from "../nisse.js";
-import { syncPreviewControls } from "./preview.js";
+import { stopEditingPreview, syncPreviewControls } from "./preview.js";
 import { setMinimapIssues } from "./minimap.js";
 
 export function selectedPosition() {
@@ -189,7 +190,9 @@ function deleteLabel(selection) {
   if (kind === "blockHandle") return "STRAIGHTEN THIS SIDE";
   if (kind === "blockBoundary") return selection.boundaryIndex > 0 ? "FILL IN CAVE" : "DELETE BLOCK";
   if (kind === "block") return "DELETE BLOCK";
-  return "DELETE SELECTION";
+  // A lone thing is named, as its title is: DELETE RABBIT.
+  const name = kind === "items" ? null : objectName(kind, selection?.index);
+  return name ? `DELETE ${name.toUpperCase()}` : "DELETE SELECTION";
 }
 
 /**
@@ -214,6 +217,7 @@ function lockTargets() {
 function flagSelection(setFlag, message) {
   const targets = lockTargets();
   if (!targets.length) return;
+  pushHistory();
   for (const item of targets) setFlag(item.type, item.index, true);
   showStatus("info", message);
   syncInspector();
@@ -272,6 +276,11 @@ function resizeBlocks(axis, size) {
 export function syncInspector({ live = false } = {}) {
   releaseLocked();
   syncTerrain();
+  // With nothing selected the panel holds the trail's own settings, as Figma
+  // shows the page's. The preview frame belongs to them, so selecting ends it.
+  if (editor.selection) stopEditingPreview();
+  $("trail-settings").hidden = Boolean(editor.selection);
+  $("inspector-kind").textContent = editor.selection ? "INSPECTOR" : "TRAIL";
   $("trail-name").value = editor.trail.name;
   $("trail-author").value = editor.trail.author || "";
   syncPreviewControls();
@@ -286,7 +295,7 @@ export function syncInspector({ live = false } = {}) {
   syncGroupFields(group);
   $("selection-fields").hidden = !editor.selection;
   $("selection-title").textContent = !editor.selection
-    ? "NOTHING SELECTED"
+    ? (editor.trail.name || "Untitled").toUpperCase()
     : group && !insideGroup(group)
       ? `${group.toUpperCase()} · GROUP`
       : editor.selection.kind === "items"
@@ -294,7 +303,6 @@ export function syncInspector({ live = false } = {}) {
         : BLOCK_KINDS.includes(editor.selection.kind)
           ? blockTitle(editor.selection)
           : (objectName(editor.selection.kind, editor.selection.index) || editor.selection.kind).toUpperCase();
-  $("selection-empty").hidden = Boolean(editor.selection);
   $("lock-selection").hidden = $("hide-selection").hidden = !lockTargets().length;
   if (position) {
     $("selection-x").value = Math.round(position[0]);
@@ -330,30 +338,39 @@ export function syncInspector({ live = false } = {}) {
   $("selection-node-row").hidden = editor.selection?.kind !== "blockPoint";
   $("selection-edge-row").hidden = editor.selection?.kind !== "blockEdge";
   $("split-edge").hidden = editor.selection?.kind !== "blockEdge";
-  $("selection-facing-row").hidden = editor.selection?.kind !== "start";
   // A group's props and spikes share their type, layer, flip, radius and spin
   // fields. Where they differ the field shows Mixed, and a new value sets them all.
   const props = selectedOf("prop").map((index) => editor.trail.props[index]);
   const flippable = flippableProps();
   $("selection-prop-type-row").hidden = !props.length;
   $("selection-layer-row").hidden = !props.length;
-  $("selection-flip-row").hidden = !flippable.length;
   if (props.length) {
     $("selection-prop-type").value = shared(props.map((prop) => prop.type));
     $("selection-layer").value = shared(props.map(propLayer));
   }
-  if (flippable.length)
-    $("selection-flip").value = shared(flippable.map((prop) => String(Boolean(prop.flip))));
   $("selection-prop-text-row").hidden =
     editor.selection?.kind !== "prop" || !TEXT_PROPS.has(editor.trail.props[editor.selection.index]?.type);
   const selectedProp = editor.selection?.kind === "prop" ? editor.trail.props[editor.selection.index] : null;
   $("selection-rotation-row").hidden = !selectedProp || !canRotate(selectedProp.type);
   if (selectedProp && document.activeElement !== $("selection-rotation"))
     $("selection-rotation").value = selectedProp.rotation || 0;
-  // A lone prop has its own Rotation field; blocks and groups turn by a quarter.
-  $("selection-rotate-row").hidden = Boolean(selectedProp) || !canRotateSelection();
-  $("selection-mirror-row").hidden = !canMirrorSelection();
-  $("selection-order-row").hidden = !canOrderSelection();
+  // Arrange shows the buttons that apply. A lone prop has its own Rotation
+  // field; blocks and groups turn by a quarter.
+  $("arrange-rotate").hidden = Boolean(selectedProp) || !canRotateSelection();
+  $("arrange-mirror").hidden = !canMirrorSelection();
+  // The start, and props that face a way, face left or right, lit for the
+  // way they all face. With blocks, flipping turns props round instead.
+  const start = editor.selection?.kind === "start";
+  $("arrange-facing").hidden = !start && (!flippable.length || canMirrorSelection());
+  for (const [id, left] of [["face-left", true], ["face-right", false]]) {
+    const on = start
+      ? editor.trail.start.facing < 0 === left
+      : flippable.length > 0 && flippable.every((prop) => Boolean(prop.flip) === left);
+    $(id).classList.toggle("active", on);
+    $(id).setAttribute("aria-pressed", String(on));
+  }
+  $("arrange-order").hidden = !canOrderSelection();
+  $("selection-arrange-row").hidden = ["rotate", "mirror", "facing", "order"].every((group) => $(`arrange-${group}`).hidden);
   const spikes = selectedOf("spike").map((index) => editor.trail.spikes[index]);
   for (const key of ["radius", "spin"]) {
     $(`selection-${key}-row`).hidden = !spikes.length;
@@ -394,8 +411,6 @@ export function syncInspector({ live = false } = {}) {
       $("selection-node").value = node.mode;
     }
   }
-  if (editor.selection?.kind === "start")
-    $("selection-facing").value = String(editor.trail.start.facing);
   if (editor.selection?.kind === "prop") {
     $("selection-prop-text").value = editor.trail.props[editor.selection.index].text || "";
   }
@@ -871,9 +886,7 @@ export function bindInspector() {
       pushHistory();
       for (const index of chosen)
         replaceBlock(index, { ...blocks()[index], material });
-      // The next block drawn uses the material last chosen.
-      toolSettings.block.material = material;
-      saveToolSettings();
+      rememberToolSetting("block", "material", material);
     }
     syncInspector();
     render();
@@ -892,8 +905,7 @@ export function bindInspector() {
         const { layer, ...block } = blocks()[index];
         replaceBlock(index, back ? { ...block, layer: "back" } : block);
       }
-      toolSettings.block.layer = back ? "back" : "terrain";
-      saveToolSettings();
+      rememberToolSetting("block", "layer", back ? "back" : "terrain");
     }
     syncInspector();
     render();
@@ -971,27 +983,23 @@ export function bindInspector() {
     render();
   });
 
-  $("selection-facing").addEventListener("change", (event) => {
-    if (editor.selection?.kind !== "start") return;
-    pushHistory();
-    editor.trail.start.facing = Number(event.target.value) < 0 ? -1 : 1;
-    syncInspector();
-    render();
-  });
-
-  $("selection-flip").addEventListener("change", (event) => {
-    const flip = event.target.value === "true";
-    const chosen = flippableProps().filter((prop) => Boolean(prop.flip) !== flip);
-    if (chosen.length) {
-      pushHistory();
-      for (const prop of chosen) {
-        if (flip) prop.flip = true;
-        else delete prop.flip;
+  for (const [id, flip] of [["face-left", true], ["face-right", false]])
+    $(id).addEventListener("click", () => {
+      const chosen = flippableProps().filter((prop) => Boolean(prop.flip) !== flip);
+      if (editor.selection?.kind === "start") faceStart(flip ? -1 : 1);
+      else if (chosen.length) {
+        pushHistory();
+        for (const prop of chosen) {
+          if (flip) prop.flip = true;
+          else delete prop.flip;
+        }
+        rememberToolSetting("prop", "flip", flip);
       }
-    }
-    syncInspector();
-    render();
-  });
+      syncInspector();
+      render();
+      // Hand focus back so the canvas shortcuts keep working.
+      canvas.focus({ preventScroll: true });
+    });
 
   $("selection-rotation").addEventListener("change", (event) => {
     if (editor.selection?.kind !== "prop") return;
@@ -1002,6 +1010,7 @@ export function bindInspector() {
       pushHistory();
       if (rotation === undefined) delete prop.rotation;
       else prop.rotation = rotation;
+      rememberToolSetting("prop", "rotation", rotation ?? 0);
     }
     syncInspector();
     render();
@@ -1029,6 +1038,7 @@ export function bindInspector() {
         prop.type = type;
         if (prop.type === "sign" && typeof prop.text !== "string") prop.text = "";
       }
+      rememberToolSetting("prop", "type", type);
     }
     syncInspector();
     render();
@@ -1042,6 +1052,7 @@ export function bindInspector() {
     if (chosen.length) {
       pushHistory();
       for (const prop of chosen) prop.layer = layer;
+      rememberToolSetting("prop", "layer", layer);
     }
     syncInspector();
     render();
@@ -1081,6 +1092,7 @@ export function bindInspector() {
         Math.min(SPIKE_RADIUS.max, Number(event.target.value) || SPIKE_RADIUS.default),
       );
       for (const spike of spikes) spike.radius = radius;
+      rememberToolSetting("spike", "radius", radius);
     }
     syncInspector();
     render();
@@ -1090,8 +1102,9 @@ export function bindInspector() {
     const spikes = selectedOf("spike").map((index) => editor.trail.spikes[index]);
     if (spikes.length && event.target.value !== "") {
       pushHistory();
-      const spin = Number(event.target.value);
-      for (const spike of spikes) spike.spin = Number.isFinite(spin) ? spin : 0;
+      const spin = Number.isFinite(Number(event.target.value)) ? Number(event.target.value) : 0;
+      for (const spike of spikes) spike.spin = spin;
+      rememberToolSetting("spike", "spin", spin);
     }
     syncInspector();
     render();

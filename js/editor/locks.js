@@ -12,7 +12,7 @@ import { isBackWall } from "../trail-schema.js";
 import { editor, waters } from "./state.js";
 import { currentEntry } from "./trails.js";
 
-/** The groups the Objects tab lists, in the order it lists them. */
+/** The groups the Objects panel lists, in the order it lists them. */
 export const LOCK_GROUPS = [
   { key: "terrain", label: "Terrain" },
   { key: "back", label: "Back walls" },
@@ -109,11 +109,16 @@ export function groupOf(type, object) {
   return { water: "water", spike: "spikes", apple: "apples", nisse: "apples" }[type] || null;
 }
 
-/** JSON with sorted keys, so the same content always reads the same. */
+/**
+ * JSON with sorted keys, so the same content always reads the same. A field
+ * set to undefined is left out, as JSON leaves it out: undo brings a trail
+ * back normalized, with undefined optional fields a new prop never had.
+ */
 function canonical(value) {
   if (Array.isArray(value)) return `[${value.map(canonical).join(",")}]`;
   if (value && typeof value === "object")
     return `{${Object.keys(value)
+      .filter((key) => value[key] !== undefined)
       .sort()
       .map((key) => `${JSON.stringify(key)}:${canonical(value[key])}`)
       .join(",")}}`;
@@ -226,6 +231,22 @@ export function hiddenSignature() {
 
 // ---- Changing --------------------------------------------------------------
 
+/** The current trail's locks and hides, for an undo step. */
+export function flagsSnapshot() {
+  const copy = ({ groups, items }) => ({ groups: [...groups], items: [...items] });
+  const { lock, hide } = current();
+  return { lock: copy(lock), hide: copy(hide) };
+}
+
+/** Put back the locks and hides of an undo step, and save them. */
+export function restoreFlags(saved) {
+  current();
+  for (const kind of ["lock", "hide"]) {
+    flags[kind] = { groups: new Set(saved[kind].groups), items: new Set(saved[kind].items) };
+    save(kind);
+  }
+}
+
 /**
  * Flag a whole group or let it go. Either way what was flagged on its own in
  * it is forgotten, so letting the group go frees all of it rather than
@@ -278,8 +299,8 @@ export const allHidden = () => LOCK_GROUPS.every(({ key }) => isGroupHidden(key)
 
 /**
  * Forget item locks and hides that match nothing on the trail any more, such
- * as after an undo past the moment something was locked, so a lookalike added
- * later isn't locked by surprise. Saves what is left.
+ * as after another version of it is opened, so a lookalike added later isn't
+ * locked by surprise. Saves what is left.
  */
 export function pruneItemFlags() {
   current();

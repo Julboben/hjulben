@@ -19,6 +19,7 @@ import {
   riderSeatedPose,
 } from "./bike-lamps.js";
 import { FINISH_FLOWER_LIFT } from "./finish.js";
+import { canFlip } from "./trail-schema.js";
 import { APPLE_SPRITE } from "./apple.js";
 import { SPIKE_CORE, SPIKE_TIP, spikePoints } from "./spike.js";
 import { WHEELBASE } from "./config.js";
@@ -485,12 +486,37 @@ const PLANTED_TOLERANCE = 24;
  */
 const PROP_SLOPE_WINDOW = 90;
 
-function propSlope(trail, prop, reference) {
+/**
+ * The ground under one end of a prop standing at `standing`. Where the rock
+ * there is solid at the prop's own height, it is that rock's top, uphill of
+ * the prop, but no further than PROP_SLOPE_WINDOW above it; where it is open,
+ * the first top below, as far down. A ledge over the prop's floor is passed
+ * over, because there is air between it and the prop: one end finding the
+ * ledge while the other found the floor would tip the prop steeply. Null
+ * when neither is in reach.
+ */
+function propEndGround(trail, x, standing) {
+  // Overlapping blocks each cross in and out, so the rock is solid wherever
+  // the count of blocks entered is above 0.
+  let depth = 0;
+  let top = null;
+  for (const surface of terrainSurfacesAt(trail, x)) {
+    if (surface.entering) {
+      if (depth++ === 0) top = surface.y;
+      if (top > standing) return top <= standing + PROP_SLOPE_WINDOW ? top : null;
+    } else if (--depth === 0 && surface.y >= standing) {
+      return top >= standing - PROP_SLOPE_WINDOW ? top : null;
+    }
+  }
+  return null;
+}
+
+function propSlope(trail, prop, standing) {
   let [left, right] = GROUND_ALIGNED_PROP_SPANS[prop.type];
   // A mirrored prop stands on the mirror image of its footprint.
   if (prop.flip) [left, right] = [-right, -left];
-  const a = surfaceAt(trail, prop.x + left, reference);
-  const b = surfaceAt(trail, prop.x + right, reference);
+  const a = propEndGround(trail, prop.x + left, standing);
+  const b = propEndGround(trail, prop.x + right, standing);
   if (a === null || b === null) return null;
   return (b - a) / (right - left);
 }
@@ -501,7 +527,7 @@ export function propAlignmentSlope(trail, prop) {
   const standing = propGroundHeight(trail, prop);
   if (standing === null) return 0;
   if (!isPlanted(trail, prop)) return 0;
-  const slope = propSlope(trail, prop, standing - PROP_SLOPE_WINDOW);
+  const slope = propSlope(trail, prop, standing);
   return slope === null ? 0 : slope;
 }
 
@@ -1441,8 +1467,6 @@ const PAINTED_ART = {
 export const paintedBounds = (type) => (PAINTED_ART[type] ?? PAINTED_ART.graffiti).bounds;
 // Props whose `text` the author sets: signs, banners and pit boards.
 export const TEXT_PROPS = new Set(["sign", "banner", "pit-board", "stall"]);
-// Props that print text or numbers, which would read backwards mirrored.
-const LETTERED_PROPS = new Set(["banner", "pit-board", "halfway-flag", "wanted-poster"]);
 // Props that hang from a cave ceiling. Each looks up from its anchor for the
 // nearest roof; see propWallFit.
 export const CEILING_PROPS = new Set([
@@ -1464,17 +1488,6 @@ export const CEILING_PROPS = new Set([
 // dungeon bars reach up to the roof, and a mine cart's rails run along the
 // floor to the walls.
 const CAVE_FITTED_PROPS = new Set([...CEILING_PROPS, "beams", "dungeon-bars", "minecart"]);
-// Signs, banners, pit boards, the halfway flag and wanted posters would mirror their text,
-// as would graffiti; wall props already turn to face
-// the wall, and ceiling props and beams are symmetric or lit from the right.
-export const canFlip = (type) =>
-  type !== "sign" &&
-  !LETTERED_PROPS.has(type) &&
-  type !== "beams" &&
-  type !== "dungeon-bars" &&
-  !WALL_PROPS.has(type) &&
-  !PAINTED_PROPS.has(type) &&
-  !CEILING_PROPS.has(type);
 // Props that fit themselves to the world or move through it keep their own
 // angle: ceiling, cave-fitted and water props, and the animals and effects
 // that wander, fly or shimmer, and the ski lift, whose chair hangs plumb, and
@@ -4347,7 +4360,7 @@ const NO_SCENE = { time: 0, riderX: null, riderY: null, weather: resolveWeather(
  * prop's own frame (`downwind`, -1 or 1), so a mirrored prop still blows the
  * same way as the rest of the world.
  */
-function propWind(scene, mirrored) {
+function propWind(scene, mirrored = false) {
   const weather = scene.weather ?? NO_SCENE.weather;
   return { wind: weather.wind, downwind: windSign(weather) * (mirrored ? -1 : 1) };
 }
@@ -5578,8 +5591,8 @@ export function createGameArt(ctx) {
 
   // Where a watchtower at (x, y) points its searchlight, in its own frame:
   // locked on to the rider at (riderX, riderY) once close, sweeping otherwise.
-  function searchlightAimAt(time, x, y, riderX, riderY, mirrored) {
-    const dx = Number.isFinite(riderX) ? (riderX - x) * (mirrored ? -1 : 1) - SEARCHLIGHT.x : null;
+  function searchlightAimAt(time, x, y, riderX, riderY) {
+    const dx = Number.isFinite(riderX) ? riderX - x - SEARCHLIGHT.x : null;
     const dy = Number.isFinite(riderY) ? riderY - (y + SEARCHLIGHT.y) : null;
     return searchlightAim(time, propNoise(x, 22), dx, dy);
   }
@@ -5890,8 +5903,8 @@ export function createGameArt(ctx) {
   }
 
   /** How far a tent's door flaps at x blow, for drawTentFlaps (see tentFlapSway). */
-  function tentFlaps(scene, x, mirrored) {
-    const { wind, downwind } = propWind(scene, mirrored);
+  function tentFlaps(scene, x) {
+    const { wind, downwind } = propWind(scene);
     const phase = propNoise(x, 57);
     return (side) => tentFlapSway(scene.time || 0, wind, downwind, phase, side);
   }
@@ -5900,9 +5913,9 @@ export function createGameArt(ctx) {
    * How far the wind bends the top of a tree or bush at x (see treeSway),
    * scaled by `scale`: bushes stir half as much as trees.
    */
-  function windSwayOf(scene, x, mirrored, scale = 1) {
-    const { wind, downwind } = propWind(scene, mirrored);
-    return scale * treeSway(scene.time || 0, wind, downwind, x, propNoise(x, 50), mirrored ? -downwind : downwind);
+  function windSwayOf(scene, x, scale = 1) {
+    const { wind, downwind } = propWind(scene);
+    return scale * treeSway(scene.time || 0, wind, downwind, x, propNoise(x, 50));
   }
 
   /**
@@ -6059,7 +6072,7 @@ export function createGameArt(ctx) {
       // and 180 units tall, centered over the ground anchor.
       // The trunk stays upright; its base follows the terrain. The crown
       // bends in the wind over it.
-      drawSwayingCanopy(type, windSwayOf(scene, x, mirrored));
+      drawSwayingCanopy(type, windSwayOf(scene, x));
 
       // Main trunk with a shaded side and a narrow sunlit edge.
       const trunkTop = TREE_CANOPY_BOTTOM;
@@ -6083,9 +6096,9 @@ export function createGameArt(ctx) {
       // Leaves let go as gusts pass and flutter down to the ground, where
       // they rest a moment before fading. None in snow.
       if (!(scene.weather?.snow > 0.2)) {
-        const { wind, downwind } = propWind(scene, mirrored);
+        const { wind, downwind } = propWind(scene);
         const base = ctx.globalAlpha;
-        for (const leaf of fallingLeaves(scene.time || 0, wind, downwind, x, TREE_LEAF_CROWN, groundOffset, mirrored ? -downwind : downwind)) {
+        for (const leaf of fallingLeaves(scene.time || 0, wind, downwind, x, TREE_LEAF_CROWN, groundOffset)) {
           ctx.globalAlpha = base * leaf.alpha;
           // Drawn a little larger than life, so it reads as a leaf: flat, a
           // small lens with a bump; edge on, a short upright sliver.
@@ -6101,7 +6114,7 @@ export function createGameArt(ctx) {
       // Overall size: 92 units wide, 182 units tall.
       // Keep the tree upright; only its base follows the terrain. Its boughs
       // bend in the wind, tier by tier.
-      drawSwayingCanopy(type, windSwayOf(scene, x, mirrored));
+      drawSwayingCanopy(type, windSwayOf(scene, x));
 
       // Trunk: centered, with shaded bark and a narrow lit edge.
       const trunkTop = PINE_CANOPY_BOTTOM;
@@ -6115,7 +6128,7 @@ export function createGameArt(ctx) {
     } else if (type === "sapling" || type === "pine-small") {
       // Young trees: cached crown bent by the wind, thin trunk whose base
       // follows the slope.
-      drawSwayingCanopy(type, windSwayOf(scene, x, mirrored));
+      drawSwayingCanopy(type, windSwayOf(scene, x));
       const trunkTop =
         type === "sapling"
           ? SAPLING_CANOPY_BOTTOM
@@ -6158,7 +6171,7 @@ export function createGameArt(ctx) {
     } else if (type === "bush") {
       // The cached shrub, its clumps stirring in the wind, half as much as a
       // tree's. drawProp() already applies the ground-alignment rotation.
-      drawSwayingCanopy("bush", windSwayOf(scene, x, mirrored, 0.5));
+      drawSwayingCanopy("bush", windSwayOf(scene, x, 0.5));
     } else if (type === "fence") {
       // A post-and-rail fence, 80 wide and 36 tall (about 1.3 m).
       // Rails sit behind the posts; existing slope rotation is preserved.
@@ -6246,15 +6259,14 @@ export function createGameArt(ctx) {
     } else if (type === "flowers") {
       // Swaying like the grass, if stiffer, and pushed aside as the rider
       // brushes through.
-      const side = mirrored ? -1 : 1;
       const known = Number.isFinite(scene.riderX) && Number.isFinite(scene.riderY);
       const phase = propNoise(x, 56);
-      const { wind, downwind } = propWind(scene, mirrored);
+      const { wind, downwind } = propWind(scene);
       drawFlowers({ pixelRect }, groundOffset, (stem) => {
         const ground = groundOffset(stem.x + 1);
         return FLOWER_STIFFNESS * grassLean(
           scene.time || 0, wind, downwind, phase, stem.x,
-          known ? (scene.riderX - x) * side - stem.x : null,
+          known ? scene.riderX - x - stem.x : null,
           known ? scene.riderY - (y + ground) : null,
         );
       });
@@ -6570,7 +6582,7 @@ export function createGameArt(ctx) {
       const shake = pineShake(scene.landing, x, y, scene.time || 0);
       ctx.save();
       if (shake) ctx.translate(pineSway(shake), 0);
-      drawSwayingCanopy(type, windSwayOf(scene, x, mirrored));
+      drawSwayingCanopy(type, windSwayOf(scene, x));
       ctx.restore();
       const trunkTop = PINE_CANOPY_BOTTOM;
       rectDownTo(-6, trunkTop, 8, "#66543f", 2, groundOffset);
@@ -6719,7 +6731,7 @@ export function createGameArt(ctx) {
       // The guard at the window leans to watch the rider. The searchlight
       // sweeps, and swings round to the rider once close.
       drawWatchtowerGuard({ pixelRect }, riderGaze(scene, x, y, mirrored, WATCHTOWER_EYES));
-      const angle = searchlightAimAt(scene.time || 0, x, y, scene.riderX, scene.riderY, mirrored);
+      const angle = searchlightAimAt(scene.time || 0, x, y, scene.riderX, scene.riderY);
       drawSearchlight({ pixelRect, pixelPath, drawPixelDisc }, angle, false);
     } else if (type === "jail-cell") {
       // The prisoner lounges on the bunk, and comes to rattle the bars when
@@ -6756,7 +6768,7 @@ export function createGameArt(ctx) {
         // Once wary, they eye the rider up or down too.
         const wary = peek.rise < 1 && Number.isFinite(scene.riderX);
         const up = wary ? riderGaze(scene, x, y, mirrored, TUNNEL_EYES).y : 0;
-        drawPrisonerBust({ pixelRect }, skin, { x: mirrored ? -peek.look : peek.look, y: up });
+        drawPrisonerBust({ pixelRect }, skin, { x: peek.look, y: up });
         ctx.restore();
       }
       drawTunnelLip({ pixelRect });
@@ -6870,7 +6882,7 @@ export function createGameArt(ctx) {
     } else if (type === "tent") {
       drawCanopy(type);
       drawTentRopes({ pixelRect, pixelPath }, groundOffset);
-      drawTentFlaps({ pixelRect }, tentFlaps(scene, x, mirrored));
+      drawTentFlaps({ pixelRect }, tentFlaps(scene, x));
     } else if (type === "fireplace") {
       // The stones and logs; the flames are drawn with the glowing parts.
       // Smoke rises off the fire and blows downwind, like the hut's.
@@ -6901,19 +6913,14 @@ export function createGameArt(ctx) {
     } else if (type === "stall") {
       drawCanopy(type);
       drawStallLegs({ pixelRect }, groundOffset);
-      // The sign is centred on the anchor, so it is painted the right way
-      // round on a flipped stall by turning it back.
-      if (mirrored) ctx.scale(-1, 1);
       const lines = stallSignLines(text);
       const { top, height } = STALL.sign;
       lines.forEach((line, index) => drawPixelText(line, 0, top + (height - lines.length * 12 + 2) / 2 + index * 12, "#a8322a"));
-      if (mirrored) ctx.scale(-1, 1);
       // A coin dropping into the honesty box after the rider pays.
       const coin = scene.paid && scene.time ? stallCoin(scene.time - scene.paid.time) : null;
       if (coin) drawStallCoin({ pixelRect }, coin);
     } else if (type === "wind-turbine") {
-      // Far off on the horizon, its blades turning slowly clockwise, however
-      // it is flipped.
+      // Far off on the horizon, its blades turning slowly clockwise.
       drawCanopy(type);
       drawTurbineFoot({ pixelRect }, groundOffset);
       const { wind } = propWind(scene, mirrored);
@@ -8116,8 +8123,7 @@ export function createGameArt(ctx) {
     ctx.translate(Math.round(x / 2) * 2, Math.round(y / 2) * 2);
     if (rotation && canRotate(type)) ctx.rotate(rotation);
     if (type === "mushrooms") {
-      ctx.scale(dir, 1);
-      const caps = mushroomCaps((local) => groundOffset(local * dir));
+      const caps = mushroomCaps(groundOffset);
       const pulse = mushroomPulse(x, time);
       ctx.globalCompositeOperation = "screen";
       if (!emissive) for (const cap of caps) {
@@ -8137,7 +8143,7 @@ export function createGameArt(ctx) {
       }
       ctx.globalCompositeOperation = "source-over";
       ctx.globalAlpha = 1;
-      drawMushroomSpots({ pixelRect }, (local) => groundOffset(local * dir));
+      drawMushroomSpots({ pixelRect }, groundOffset);
     } else if (type === "camera-tower") {
       // The tally light, blinking while the camera rolls.
       if (cameraTallyOn(time)) {
@@ -8169,10 +8175,8 @@ export function createGameArt(ctx) {
       // The searchlight's beam, and the spot it throws where it meets the
       // ground. It moves, so it is drawn here rather than baked into the
       // lighting.
-      ctx.scale(dir, 1);
-      const local = (lx) => groundOffset(lx * dir);
-      const angle = searchlightAimAt(time, x, y, rider?.x, rider?.y, flip);
-      const { cells, hit } = searchlightBeam(angle, local);
+      const angle = searchlightAimAt(time, x, y, rider?.x, rider?.y);
+      const { cells, hit } = searchlightBeam(angle, groundOffset);
       ctx.globalCompositeOperation = "screen";
       for (const cell of cells) {
         ctx.globalAlpha = cell.alpha;
@@ -8183,7 +8187,7 @@ export function createGameArt(ctx) {
         for (let dx = -half; dx < half; dx += 2) {
           const reach = Math.abs(dx + 1) / half;
           ctx.globalAlpha = reach < 0.5 ? 0.4 : 0.22;
-          const gy = Math.round(local(hit.x + dx) / 2) * 2;
+          const gy = Math.round(groundOffset(hit.x + dx) / 2) * 2;
           pixelRect(hit.x + dx, gy - 6, 2, 8, SEARCHLIGHT_LIGHT.beam, 2);
         }
       }
@@ -8195,7 +8199,6 @@ export function createGameArt(ctx) {
       // ground in front of it.
       const flicker = lanternFlicker(x, time);
       const [cx, cy] = TENT_DOOR_CENTRE;
-      ctx.scale(dir, 1);
       if (!emissive) {
         ctx.globalCompositeOperation = "screen";
         ctx.globalAlpha = 0.2 * flicker;
@@ -8207,7 +8210,7 @@ export function createGameArt(ctx) {
       ctx.globalAlpha = 1;
       drawTentDoorGlow({ pixelRect }, flicker);
       // The flaps again, over the light, for when one blows across the door.
-      drawTentFlaps({ pixelRect }, tentFlaps(scene, x, flip));
+      drawTentFlaps({ pixelRect }, tentFlaps(scene, x));
     } else if (type === "hut") {
       // Firelight in the window, flickering like a lantern, and the light it
       // throws on the snow below.
@@ -8215,7 +8218,6 @@ export function createGameArt(ctx) {
       const { left, top, width, height } = HUT_WINDOW;
       const cx = left + width / 2,
         cy = top + height / 2;
-      ctx.scale(dir, 1);
       if (!emissive) {
         ctx.globalCompositeOperation = "screen";
         ctx.globalAlpha = 0.2 * flicker;
@@ -8225,8 +8227,7 @@ export function createGameArt(ctx) {
         for (let dx = -18; dx < 18; dx += 2) {
           const reach = Math.abs(dx + 1);
           ctx.globalAlpha = (reach < 8 ? 0.3 : reach < 14 ? 0.18 : 0.1) * flicker;
-          // Ground lookups take world-facing positions.
-          const ground = Math.round(groundOffset((cx + dx) * dir) / 2) * 2;
+          const ground = Math.round(groundOffset(cx + dx) / 2) * 2;
           pixelRect(cx + dx, ground - 4, 2, 6, HUT_LIGHT.glass, 2);
         }
         ctx.globalCompositeOperation = "source-over";
@@ -8235,7 +8236,6 @@ export function createGameArt(ctx) {
       drawHutWindowGlass({ pixelRect }, flicker);
     } else if (type === "farmhouse") {
       // Lamplight in most of the windows, each lamp flickering on its own.
-      ctx.scale(dir, 1);
       for (const [index, lit] of farmhouseLitWindows(x).entries()) {
         if (!lit) continue;
         const flicker = lanternFlicker(x + index * 37, time);
@@ -8253,7 +8253,7 @@ export function createGameArt(ctx) {
       }
     } else if (type === "lamp") {
       // Glass centre and the ground below it, relative to the anchor.
-      const headX = dir * LAMP_HEAD.x;
+      const headX = LAMP_HEAD.x;
       const ground = Math.min(
         Math.round(groundOffset(headX) / 2) * 2,
         LAMP_HEAD.y + 200,
@@ -8285,13 +8285,12 @@ export function createGameArt(ctx) {
         ctx.globalCompositeOperation = "source-over";
       }
       ctx.globalAlpha = 1;
-      ctx.scale(dir, 1);
       drawLampGlass({ pixelRect });
     } else if (type === "wind-turbine") {
       // The red warning light on the nacelle. A wind farm's lights blink
       // together, so every turbine blinks in step.
       if (craneLightOn(0, time)) {
-        const cx = dir * TURBINE.light.x,
+        const cx = TURBINE.light.x,
           ly = TURBINE.light.y;
         if (!emissive) {
           ctx.globalCompositeOperation = "screen";

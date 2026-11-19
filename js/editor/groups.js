@@ -4,7 +4,7 @@
 // last member does, and survives reordering and undo.
 //
 // A click selects a member's whole group; a double-click, or a member's row
-// in the Objects tab, goes into the group to select that member alone, and
+// in the Objects panel, goes into the group to select that member alone, and
 // Escape comes back out to the whole group.
 import { normalizeGroupName } from "../terrain-geometry.js";
 import { blocks } from "./blocks.js";

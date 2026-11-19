@@ -2,12 +2,20 @@
 import { normalizeTrail } from "../trail-schema.js";
 import { $ } from "./dom.js";
 import { syncInspector } from "./inspector.js";
+import { flagsSnapshot, restoreFlags } from "./locks.js";
 import { render } from "./render.js";
 import { editor } from "./state.js";
 
-/** The trail and what was selected with it, so undo brings both back. */
+/**
+ * The trail, what was selected with it and what was locked and hidden, so undo
+ * brings all three back.
+ */
 export function snapshot() {
-  return { trail: JSON.stringify(editor.trail), selection: structuredClone(editor.selection) };
+  return {
+    trail: JSON.stringify(editor.trail),
+    selection: structuredClone(editor.selection),
+    flags: flagsSnapshot(),
+  };
 }
 
 export function pushHistory(state = snapshot()) {
@@ -18,12 +26,13 @@ export function pushHistory(state = snapshot()) {
 }
 
 /**
- * Put the trail and selection back as they were in `state`, without an undo
- * step. `live` is for a drag in progress: see syncInspector.
+ * Put the trail, selection and flags back as they were in `state`, without an
+ * undo step. `live` is for a drag in progress: see syncInspector.
  */
 export function restore(state, { live = false } = {}) {
   editor.trail = normalizeTrail(JSON.parse(state.trail));
   editor.selection = state.selection;
+  restoreFlags(state.flags);
   syncInspector({ live });
   render();
 }

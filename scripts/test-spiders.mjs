@@ -4,7 +4,8 @@
 import assert from 'node:assert/strict';
 import { normalizeTrail, validateTrail } from '../js/trail-schema.js';
 import { rectangle } from './lib/terrain-fixtures.mjs';
-import { CEILING_PROPS, canFlip, canRotate, propSpan } from '../js/drawing.js';
+import { CEILING_PROPS, canRotate, propSpan } from '../js/drawing.js';
+import { canFlip } from '../js/trail-schema.js';
 import {
   SPIDER_DROP, SPIDER_NOTICE, WEB, WEB_NOTICE, cobwebSwing, cocoonMotion, danglingSpider, spiderDare,
   webSize, webState,

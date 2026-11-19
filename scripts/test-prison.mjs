@@ -4,7 +4,8 @@
 import assert from 'node:assert/strict';
 import { normalizeTrail, validateTrail } from '../js/trail-schema.js';
 import { rectangle } from './lib/terrain-fixtures.mjs';
-import { PAINTED_PROPS, canFlip } from '../js/drawing.js';
+import { PAINTED_PROPS } from '../js/drawing.js';
+import { canFlip } from '../js/trail-schema.js';
 import {
   CELL_REACH, SEARCHLIGHT, SEARCHLIGHT_BEAM, SEARCHLIGHT_REACH, TUNNEL_SINK,
   cellPrisoner, searchlightAim, searchlightBeam, tunnelPeek,
@@ -24,7 +25,7 @@ const trail = (props) => normalizeTrail({
     .filter((m) => m.type === 'warning').map((m) => m.text);
   assert.ok(!warnings.some((text) => /unknown type/.test(text)), warnings.join('\n'));
   assert.ok(!canFlip('wanted-poster'));
-  assert.ok(canFlip('watchtower') && canFlip('jail-cell') && canFlip('escape-tunnel'));
+  assert.ok(!canFlip('watchtower') && !canFlip('jail-cell') && !canFlip('escape-tunnel'));
   assert.ok(PAINTED_PROPS.has('tally-marks'), 'tally marks are scratched into the rock');
 }
 

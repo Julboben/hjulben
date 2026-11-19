@@ -58,8 +58,8 @@ export function loadTrailShape(kind) {
   }
   if (kind === 'group') {
     trail.props = [
-      { x: 200, y: null, type: 'tree', layer: 'back' },
-      { x: 400, y: null, type: 'rock', layer: 'front', flip: true },
+      { x: 200, y: null, type: 'ladder', layer: 'back' },
+      { x: 400, y: null, type: 'wheelbarrow', layer: 'front', flip: true },
       { x: 600, y: null, type: 'sign', layer: 'back', text: 'GO' },
     ];
     trail.spikes = [{ x: 300, y: 200, radius: 20, spin: 0 }, { x: 500, y: 200, radius: 30, spin: 1 }];

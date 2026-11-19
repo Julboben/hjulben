@@ -1,4 +1,4 @@
-// The Objects tab: everything on the trail, grouped, where groups and single
+// The Objects panel on the left: everything on the trail, grouped, where groups and single
 // items are hidden and shown, locked and unlocked, and where a click finds and
 // selects a thing.
 // Cmd/Ctrl-click adds a thing to the selection or takes it out, and
@@ -35,6 +35,7 @@ import {
   setItemHidden,
   setItemLocked,
 } from "./locks.js";
+import { pushHistory } from "./history.js";
 import { syncInspector } from "./inspector.js";
 import { render, renderView } from "./render.js";
 import {
@@ -110,7 +111,7 @@ function names() {
   return list;
 }
 
-/** The name the Objects tab lists a block or object under, such as "Tree 3". */
+/** The name the Objects panel lists a block or object under, such as "Tree 3". */
 export function objectName(type, index) {
   return names().find((entry) => entry.type === type && entry.index === index)?.name || null;
 }
@@ -142,9 +143,11 @@ function selectedKeys() {
 }
 
 // The words and icons of the hide and lock buttons, off and on.
+// What each flag's button says and shows. Hiding is the editor's alone: the
+// trail and its play tests are unchanged, so its tooltip says so.
 const FLAGS = {
-  hide: { off: ["Hide", "eye"], on: ["Show", "eye-closed"], group: "hidden" },
-  lock: { off: ["Lock", "unlock"], on: ["Unlock", "lock"], group: "locked" },
+  hide: { off: ["Hide", "eye"], on: ["Show", "eye-closed"], group: "hidden", note: " in the editor only" },
+  lock: { off: ["Lock", "unlock"], on: ["Unlock", "lock"], group: "locked", note: "" },
 };
 
 /**
@@ -164,13 +167,16 @@ function flagButton(kind, state, label, onClick, disabled = false) {
   button.title = disabled
     ? `The whole group is ${FLAGS[kind].group}`
     : mixed
-      ? `Some of these are ${FLAGS[kind].group}: ${verb.toLowerCase()} ${label}`
-      : `${verb} ${label}`;
+      ? `Some of these are ${FLAGS[kind].group}: ${verb.toLowerCase()} ${label}${FLAGS[kind].note}`
+      : `${verb} ${label}${state === true ? "" : FLAGS[kind].note}`;
   const icon = document.createElement("span");
   icon.dataset.icon = FLAGS[kind][state === false ? "off" : "on"][1];
   icon.setAttribute("aria-hidden", "true");
   button.append(icon);
-  button.addEventListener("click", onClick);
+  button.addEventListener("click", () => {
+    pushHistory();
+    onClick();
+  });
   return button;
 }
 
@@ -378,15 +384,10 @@ const objectOf = (entry) =>
   entry.type === "block" ? blocks()[entry.index] : editor.trail.props[entry.index];
 
 /**
- * The tab's badge, a lock while anything is locked or else a closed eye while
- * anything is hidden, and the buttons that hide and lock everything, half lit
- * while only some of it is. Like a group's, a half-lit one flags everything.
+ * The buttons that hide and lock everything, half lit while only some of it
+ * is. Like a group's, a half-lit one flags everything.
  */
 function syncLockedState() {
-  const tab = $("tab-objects");
-  const badge = anyLocked() ? "lock" : anyHidden() ? "eye-closed" : null;
-  if (badge) tab.setAttribute("data-icon-after", badge);
-  else tab.removeAttribute("data-icon-after");
   const hidden = groupState(allHidden(), anyHidden());
   const locked = groupState(allLocked(), anyLocked());
   $("flag-everything").replaceChildren(
@@ -417,13 +418,9 @@ export function bindObjects() {
   });
 }
 
-/** Redraw the list, if the tab is open and anything in it changed. */
+/** Redraw the list, if anything in it changed. */
 export function renderObjects() {
   syncLockedState();
-  if ($("panel-objects").hidden) {
-    shown = null;
-    return;
-  }
   const list = entries();
   const selected = selectedKeys();
   const reveal = revealNew(list, selected);
@@ -558,6 +555,22 @@ export function renderObjects() {
   $("open-all").disabled = !toggles.some(
     (toggle) => toggle.getAttribute("aria-expanded") === "false" && !toggle.disabled,
   );
-  if (reveal)
-    $("panel-objects").querySelector(`[data-key="${reveal}"]`)?.scrollIntoView({ block: "nearest" });
+  if (reveal) revealRow($("objects-panel").querySelector(`[data-key="${reveal}"]`));
+}
+
+/**
+ * Scroll the Objects panel to show `row`. Only the panel scrolls, never the
+ * page: on a narrow screen the panels are part of the page, which doesn't
+ * scroll on its own, and following a selection there would pull the canvas
+ * out of view.
+ */
+function revealRow(row) {
+  const panel = document.querySelector(".toolbox");
+  if (!row || !(panel.scrollHeight > panel.clientHeight)) return;
+  const area = panel.getBoundingClientRect();
+  const at = row.getBoundingClientRect();
+  // The zoom footer sticks over the bottom of the panel.
+  const bottom = area.bottom - parseFloat(getComputedStyle(panel).scrollPaddingBottom || "0");
+  if (at.top < area.top) panel.scrollTop -= area.top - at.top;
+  else if (at.bottom > bottom) panel.scrollTop += at.bottom - bottom;
 }

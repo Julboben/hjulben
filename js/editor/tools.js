@@ -1,15 +1,10 @@
-// Tool definitions, keyboard letters, and the per-tool settings panel.
+// Tool definitions, keyboard letters, and what each tool places next.
 import { store } from "../local-store.js";
 import { SPIKE_RADIUS } from "../trail-schema.js";
 import { terrainMaterials } from "../trails.js";
 import { $, canvas } from "./dom.js";
-import { renderObjects } from "./objects.js";
-import { pickerSelect } from "./picker.js";
-import { schedulePreviewThumbnail, stopEditingPreview } from "./preview.js";
-import { segmentSelects } from "./segmented.js";
 import { editor } from "./state.js";
 import { refuseEdit } from "./status.js";
-import { propThumbnail } from "./thumbnails.js";
 
 /** The tools that only look around, so they work on a read-only trail too. */
 export const NAVIGATION_TOOLS = new Set(["select", "pan"]);
@@ -24,158 +19,98 @@ export const propTypeOptions = () =>
 
 export const materialLabel = (name) => name[0].toUpperCase() + name.slice(1);
 
-const materialOptions = () =>
-  Object.keys(terrainMaterials).map((name) => [name, materialLabel(name)]);
-
 export const BLOCK_LAYERS = [
   ["terrain", "Terrain"],
   ["back", "Back wall"],
 ];
 
-const LAYER_FIELD = {
-  key: "layer",
-  label: "Layer",
-  type: "select",
-  options: () => BLOCK_LAYERS,
-};
+const LAYER_MENU = { key: "layer", options: BLOCK_LAYERS };
 
+// Each tool's name, icon and what it does, shown in its button's tooltip. A
+// tool with a menu (the ▾ beside it) offers the choice made before placing;
+// the rest of what it places is changed afterwards in the inspector, and the
+// next one copies the last change (see rememberToolSetting).
 export const TOOL_INFO = {
   select: {
+    icon: "cursor",
     title: "Select",
     hint: "Click to select, drag to move. Press ? for all shortcuts.",
   },
   pan: {
+    icon: "pan",
     title: "Pan",
     hint: "Drag to move the view.",
   },
   block: {
+    icon: "block",
     title: "Block",
     hint: "Drag an outline to draw a block.",
-    fields: [
-      {
-        key: "material",
-        label: "Material",
-        type: "select",
-        options: materialOptions,
-        // A list of content that may grow, so never a row of buttons.
-        dropdown: true,
-      },
-      LAYER_FIELD,
-    ],
+    menu: LAYER_MENU,
   },
   cut: {
+    icon: "scissors",
     title: "Cut",
     hint: "Drag an outline over a block to cut a cave or a hole.",
-    fields: [LAYER_FIELD],
+    menu: LAYER_MENU,
   },
   apple: {
+    icon: "apple",
     title: "Apple",
     hint: "Click to place. Riders must collect every apple to finish. The nisse is optional.",
-    fields: [
-      {
-        key: "kind",
-        label: "Place",
-        type: "select",
-        options: () => [
-          ["apple", "Apple"],
-          ["nisse", "Nisse"],
-        ],
-      },
-    ],
+    menu: {
+      key: "kind",
+      options: [
+        ["apple", "Apple"],
+        ["nisse", "Nisse"],
+      ],
+    },
   },
   spike: {
+    icon: "spike",
     title: "Spike",
     hint: "Click to place a spike. Touching it kills the rider.",
-    fields: [
-      {
-        key: "radius",
-        label: "Radius",
-        type: "number",
-        min: SPIKE_RADIUS.min,
-        max: SPIKE_RADIUS.max,
-        step: 1,
-      },
-      {
-        key: "spin",
-        label: "Spin (turns/s, − for ↺)",
-        type: "number",
-        step: 0.1,
-      },
-    ],
   },
   water: {
+    icon: "water",
     title: "Water",
     hint: "Drag a rectangle to add water.",
   },
   prop: {
+    icon: "tree",
     title: "Prop",
     hint: "Click to place scenery. Props don't collide.",
-    fields: [
-      {
-        key: "type",
-        label: "Prop",
-        type: "select",
-        optionsFrom: "selection-prop-type",
-        picker: { title: "Prop", thumbnail: propThumbnail },
-      },
-      {
-        key: "layer",
-        label: "Position",
-        type: "select",
-        options: () => [
-          ["back", "Behind terrain"],
-          ["front", "In front of rider"],
-        ],
-      },
-      {
-        key: "flip",
-        label: "Flip",
-        type: "toggle",
-        options: () => [
-          ["false", "Normal"],
-          ["true", "Flipped"],
-        ],
-      },
-      {
-        key: "rotation",
-        label: "Rotation (°, clockwise)",
-        type: "number",
-        min: -180,
-        max: 180,
-        step: 1,
-      },
-    ],
   },
   start: {
+    icon: "flag",
     title: "Start",
     hint: "Click to move the start.",
-    fields: [
-      {
-        key: "facing",
-        label: "Facing",
-        type: "select",
-        options: () => [
-          ["1", "Right"],
-          ["-1", "Left"],
-        ],
-      },
-    ],
   },
   finish: {
+    icon: "flag",
     title: "Finish",
     hint: "Click to place the finish, then drag it up or down.",
   },
 };
 
 const DEFAULT_TOOL_SETTINGS = {
-  // The last material chosen is kept for the next block.
   block: { material: "grass", layer: "terrain" },
   cut: { layer: "terrain" },
   apple: { kind: "apple" },
   spike: { radius: SPIKE_RADIUS.default, spin: 1 },
   prop: { type: "tree", layer: "back", flip: false, rotation: 0 },
   start: { facing: "1" },
+  // Which of the two the Start and Finish tools' shared button shows.
+  marker: { tool: "start" },
 };
+
+/** The tools that share one button, which shows the one used last. */
+export const MARKER_TOOLS = ["start", "finish"];
+
+/** Which way the start can face, as the shared button's menu offers it: left first, as the inspector's arrows are. */
+export const FACING_OPTIONS = [
+  ["-1", "Left", "arrow-left"],
+  ["1", "Right", "arrow-right"],
+];
 
 // Single-key tool shortcuts, used while the canvas has focus.
 export const TOOL_KEYS = {
@@ -263,106 +198,52 @@ export function toolMaterial(name) {
   return terrainMaterials[material] ? material : "grass";
 }
 
-function clampSetting(field, value) {
-  const number = Number(value);
-  if (!Number.isFinite(number)) return field.min ?? 0;
-  return Math.max(
-    field.min ?? -Infinity,
-    Math.min(field.max ?? Infinity, number),
-  );
+/**
+ * Keep a change made to the selection in the inspector for the next thing
+ * the tool places, as Figma does: set a prop's rotation once, and the props
+ * that follow come turned the same way.
+ */
+export function rememberToolSetting(tool, key, value) {
+  toolSettings[tool][key] = value;
+  saveToolSettings();
 }
 
-export function renderToolSettings() {
-  const info = TOOL_INFO[editor.tool];
-  const key = TOOL_KEY_LABELS[editor.tool];
-  $("tool-settings-title").textContent =
-    info.title.toUpperCase() + (key ? ` · ${key}` : "");
-  $("tool-hint").textContent = info.hint;
-  $("tool-settings-fields").replaceChildren(
-    ...(info.fields || []).map((field) => {
-      const settings = toolSettings[editor.tool] || {};
-      const label = document.createElement("label");
-      label.className = field.type === "checkbox" ? "checkbox-row" : "";
-      let input;
-      if (field.type === "select" || field.type === "toggle") {
-        input = document.createElement("select");
-        if (field.dropdown) input.dataset.dropdown = "";
-        // Copies another select's options, groups included.
-        if (field.optionsFrom)
-          input.append(
-            ...[...$(field.optionsFrom).children].map((node) =>
-              node.cloneNode(true),
-            ),
-          );
-        else
-          for (const [value, text] of field.options()) {
-            const option = document.createElement("option");
-            option.value = value;
-            option.textContent = text;
-            input.append(option);
-          }
-        input.value = String(
-          field.type === "toggle"
-            ? Boolean(settings[field.key])
-            : settings[field.key],
-        );
-      } else {
-        input = document.createElement("input");
-        input.type = field.type;
-        if (field.type === "checkbox")
-          input.checked = Boolean(settings[field.key]);
-        else {
-          for (const attribute of ["min", "max", "step"])
-            if (field[attribute] !== undefined)
-              input[attribute] = field[attribute];
-          input.value = settings[field.key];
-        }
-      }
-      input.addEventListener("change", () => {
-        settings[field.key] =
-          field.type === "toggle"
-            ? input.value === "true"
-            : field.type === "checkbox"
-              ? input.checked
-              : field.type === "number"
-                ? clampSetting(field, input.value)
-                : input.value;
-        if (field.type === "number") input.value = settings[field.key];
-        saveToolSettings();
-      });
-      label.append(field.label, " ", input);
-      if (field.picker) pickerSelect(input, field.picker);
-      return label;
-    }),
-  );
-  segmentSelects($("tool-settings-fields"));
+/** A tool button's tooltip: its name, its key and what it does. */
+export function toolTitle(name) {
+  const info = TOOL_INFO[name];
+  const key = TOOL_KEY_LABELS[name];
+  return `${info.title}${key ? ` (${key})` : ""}: ${info.hint}`;
+}
+
+/**
+ * Give each tool button its icon and labels. The buttons are icons alone: the
+ * tooltip names the tool, its key and what it does, and screen readers get
+ * the name. The Start and Finish tools' shared button becomes the one used last.
+ */
+export function labelToolButtons() {
+  $("tool-marker").dataset.tool = toolSettings.marker.tool;
+  document.querySelectorAll("[data-tool]").forEach((button) => {
+    const name = button.dataset.tool;
+    button.firstElementChild.dataset.icon = TOOL_INFO[name].icon;
+    button.title = toolTitle(name);
+    button.setAttribute("aria-label", toolTitle(name).split(":")[0]);
+  });
 }
 
 export function setTool(next) {
   if (!NAVIGATION_TOOLS.has(next) && refuseEdit()) next = "select";
+  if (MARKER_TOOLS.includes(next) && toolSettings.marker.tool !== next) {
+    toolSettings.marker.tool = next;
+    saveToolSettings();
+    labelToolButtons();
+  }
   editor.hoverPoint = null;
   editor.tool = next;
-  document
-    .querySelectorAll("[data-tool]")
-    .forEach((button) =>
-      button.classList.toggle("active", button.dataset.tool === editor.tool),
-    );
+  document.querySelectorAll("[data-tool]").forEach((button) => {
+    const active = button.dataset.tool === editor.tool;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-pressed", String(active));
+  });
   canvas.style.cursor =
     editor.tool === "pan" ? "grab" : editor.tool === "select" ? "default" : "crosshair";
-  renderToolSettings();
-}
-
-export function setTab(name) {
-  document.querySelectorAll("[data-tab]").forEach((button) => {
-    const active = button.dataset.tab === name;
-    button.classList.toggle("active", active);
-    button.setAttribute("aria-selected", String(active));
-  });
-  $("panel-tools").hidden = name !== "tools";
-  $("panel-trail").hidden = name !== "trail";
-  $("panel-objects").hidden = name !== "objects";
-  // The preview frame belongs to the Trail tab; its thumbnail is drawn when shown.
-  if (name !== "trail") stopEditingPreview();
-  else schedulePreviewThumbnail();
-  renderObjects();
 }
