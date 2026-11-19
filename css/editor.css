@@ -24,12 +24,20 @@ select, input { min-height: 34px; padding: 6px 9px; }
 @media (hover: none) and (pointer: coarse) {
   input:not([type="checkbox"]):not([type="range"]), select, textarea { font-size: var(--text-input); }
 }
-/* Safari ignores height and colours on a native select, so draw the arrow ourselves. */
+/* Safari ignores height and colours on a native select, so draw the arrow ourselves.
+   A select can't hold a masked pseudo-element in the text colour, as the
+   picker's magnifier is, and an image can't take the text colour, so each
+   theme has its own arrow, in its muted text colour. */
+:root { --select-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 7 5' shape-rendering='crispEdges'%3E%3Cpath fill='%2391a7a8' d='M0 0h1v1H0zM6 0h1v1H6zM0 1h2v1H0zM5 1h2v1H5zM1 2h2v1H1zM4 2h2v1H4zM2 3h3v1H2zM3 4h1v1H3z'/%3E%3C/svg%3E"); }
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) { --select-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 7 5' shape-rendering='crispEdges'%3E%3Cpath fill='%235b6966' d='M0 0h1v1H0zM6 0h1v1H6zM0 1h2v1H0zM5 1h2v1H5zM1 2h2v1H1zM4 2h2v1H4zM2 3h3v1H2zM3 4h1v1H3z'/%3E%3C/svg%3E"); }
+}
+:root[data-theme="light"] { --select-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 7 5' shape-rendering='crispEdges'%3E%3Cpath fill='%235b6966' d='M0 0h1v1H0zM6 0h1v1H6zM0 1h2v1H0zM5 1h2v1H5zM1 2h2v1H1zM4 2h2v1H4zM2 3h3v1H2zM3 4h1v1H3z'/%3E%3C/svg%3E"); }
 select {
   -webkit-appearance: none;
   appearance: none;
   padding-right: 28px;
-  background-image: var(--icon-chevron-down);
+  background-image: var(--select-arrow);
   background-repeat: no-repeat;
   background-position: right 10px center;
   background-size: 14px 10px;
