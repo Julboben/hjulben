@@ -4,8 +4,9 @@
 import assert from 'node:assert/strict';
 import { rectangle, blockTrail } from './lib/terrain-fixtures.mjs';
 
-const { bakeLightField, lightFieldAt, lightReach } = await import('../js/light-field.js');
-const { glareStrength, sunVisible } = await import('../js/lighting.js');
+const { bakeLightField, bakeSunShafts, lightFieldAt, lightReach } = await import('../js/light-field.js');
+const { adaptToGlare, sunVisible } = await import('../js/lighting.js');
+const { glareStrength, sunRays } = await import('../js/drawing.js');
 
 let failures = 0;
 const backWall = (left, top, right, bottom) => ({ ...rectangle(left, top, right, bottom, 'concrete', `back-${left}`), layer: 'back' });
@@ -87,11 +88,24 @@ check('back walls never block lights', lightReach(closedRing, 700, 50, 1, 0, 150
 
 const sky = (timeOfDay, weather) => glareStrength({ timeOfDay, weather });
 check('a bright clear noon sun glares', sky(12, { sun: 1, clouds: 0.15 }) > 0.9);
-check('a cloudy or weak sun does not glare', sky(12, { sun: 0.7, clouds: 0.35 }) === 0 && sky(12, { sun: 1, clouds: 1 }) === 0);
+check('a weak sun does not glare', sky(12, { sun: 0.6, clouds: 0 }) === 0);
+check('clouds alone do not dim the sun, only one passing in front', sky(12, { sun: 1, clouds: 1 }) === sky(12, { sun: 1, clouds: 0 }));
 check('rain puts the glare out', sky(12, { sun: 1, clouds: 0.15, rain: 1 }) === 0);
 check('the moon never glares', [21, 22, 0, 3, 4].every((hour) => sky(hour, { sun: 1, clouds: 0 }) === 0));
 const clear = (hour) => sky(hour, { sun: 1, clouds: 0 });
 check('the glare fades in after dawn and out by dusk', clear(5) === 0 && clear(6) < clear(7) && clear(7) <= clear(12) && clear(19) < clear(12) && clear(20) === 0);
+
+// Sunbeams show best with a low sun and in light haze, and thick fog, storms
+// and the moon put them out.
+{
+  const rays = (timeOfDay, weather) => sunRays({ timeOfDay, weather: { sun: 1, clouds: 0, ...weather } });
+  const noon = rays(12), evening = rays(19), haze = rays(12, { fog: 0.25 });
+  check('a clear noon has full rays', noon.strength === 1 && noon.longer === 1 && noon.warmth === 0);
+  check('a low sun keeps its rays longer and warmer than its glare', evening.strength > clear(19) && evening.longer > 1 && evening.warmth > 0, JSON.stringify(evening));
+  check('light haze shows the rays best', haze.strength > noon.strength && haze.longer > noon.longer, JSON.stringify(haze));
+  check('thick fog hides them', rays(12, { fog: 0.8 }).strength === 0 && rays(12, { fog: 0.55 }).strength < haze.strength);
+  check('rain and the moon put them out', rays(12, { rain: 1 }).strength === 0 && rays(0).strength === 0);
+}
 
 // The sky and its sun are drawn behind everything, so terrain or a back wall
 // in front of the sun hides it, and its glare fades with how much is hidden.
@@ -103,12 +117,76 @@ check('the glare fades in after dawn and out by dusk', clear(5) === 0 && clear(6
     backWall(600, -200, 900, 300),
     { ...rectangle(1200, -200, 1500, 300, 'glass', 'window'), layer: 'back' },
   ]);
-  check('a sun in open sky is seen whole', sunVisible(city, 1800, 0) === 1);
-  check('a sun behind terrain is hidden', sunVisible(city, 150, 0) === 0);
-  check('and behind a back wall', sunVisible(city, 750, 0) === 0);
-  const edge = sunVisible(city, 300, 0);
+  check('a sun in open sky is seen whole', sunVisible(city, 1800, 0, 36) === 1);
+  check('a sun behind terrain is hidden', sunVisible(city, 150, 0, 36) === 0);
+  check('and behind a back wall', sunVisible(city, 750, 0, 36) === 0);
+  const edge = sunVisible(city, 300, 0, 36);
   check('a sun half behind a wall is partly seen', edge > 0.3 && edge < 0.7, edge);
-  check('a sun behind glass is seen', sunVisible(city, 1350, 0) === 1);
+  check('a sun behind glass is seen', sunVisible(city, 1350, 0, 36) === 1);
+  const low = sunVisible(city, 340, 0, 45);
+  check('a bigger, lower sun is still partly hidden where a smaller one is clear', sunVisible(city, 340, 0, 36) === 1 && low < 1, low);
+}
+
+// The eyes get used to the sun's glare: a sun that comes out dazzles for about
+// a second, one that rises slowly hardly does, and one that ducks behind a
+// pillar for a moment dazzles a little when it comes back.
+{
+  const watch = (glareAt, seconds, adapted = 0) => {
+    let peak = 0;
+    for (let time = 0; time < seconds; time += 1 / 60) {
+      adapted = adaptToGlare(adapted, glareAt(time), 1 / 60);
+      peak = Math.max(peak, glareAt(time) - adapted);
+    }
+    return { adapted, peak };
+  };
+  check('a steady sun never dazzles', watch(() => 1, 3, 1).peak === 0);
+  const out = watch(() => 1, 3);
+  check('a sun coming out dazzles', out.peak > 0.9, out.peak);
+  check('and the dazzle settles within about a second', 1 - watch(() => 1, 1).adapted < 0.05 && out.adapted > 0.999);
+  const slow = watch((time) => Math.min(1, time / 4), 5);
+  check('a slowly rising glare hardly dazzles', slow.peak < 0.1, slow.peak);
+  const blink = watch((time) => (time < 0.2 ? 0 : 1), 1, 1);
+  check('a sun hidden for a moment dazzles a little', blink.peak > 0.1 && blink.peak < 0.35, blink.peak);
+}
+
+// Sunbeams: the sun shines down its slant through a gap in a cave's roof in
+// a beam that stops at the floor. A gap too narrow for the roof's thickness
+// lets none through, a wide opening lights the cave too much for a strong
+// beam, and open ground has none.
+{
+  const cave = (roof) => blockTrail([
+    rectangle(-400, 300, 600, 1000, 'grass', 'left'), ...roof, rectangle(1700, 300, 2400, 1000, 'grass', 'right'),
+    rectangle(600, 600, 1700, 1000, 'stone', 'floor'), backWall(600, 380, 1700, 600),
+  ]);
+  const beams = (trail) => {
+    const field = bakeLightField(trail, NOON);
+    const values = bakeSunShafts(field, 0.5);
+    return (x, y) => {
+      const c = Math.floor((x - field.x) / field.unit),
+        r = Math.floor((y - field.y) / field.unit);
+      return values && c >= 0 && r >= 0 && c < field.width && r < field.height ? values[r * field.width + c] : 0;
+    };
+  };
+  const strongest = (beam) => {
+    let most = 0;
+    for (let x = 600; x < 1700; x += 4) for (let y = 384; y < 600; y += 4) most = Math.max(most, beam(x, y));
+    return most;
+  };
+  // Holes 30 and 60 wide in a roof 80 thick; a beam through the second
+  // slants down to the left, half as far across as it falls. Its edges are
+  // soft, so faint light (under FAINT) spills a little beside it.
+  const FAINT = 0.05;
+  const holes = beams(cave([rectangle(600, 300, 1000, 380, 'stone', 'a'), rectangle(1030, 300, 1300, 380, 'stone', 'b'), rectangle(1360, 300, 1700, 380, 'stone', 'c')]));
+  check('the sun shines through a hole in a cave roof', holes(1250, 500) > 0.15, holes(1250, 500));
+  check('in a slanting beam, and nowhere else', holes(1330, 500) < FAINT && holes(900, 500) < FAINT && holes(1200, 592) > 0.15);
+  check('not through a hole too narrow for the roof', strongest((x, y) => (x < 1100 ? holes(x, y) : 0)) < FAINT);
+  check('nor inside the rock', holes(1100, 340) === 0 && holes(1250, 640) === 0);
+  const wide = beams(cave([rectangle(600, 300, 1000, 380, 'stone', 'a')]));
+  check('a wide opening gives only a faint beam', strongest(wide) < strongest(holes) / 2, `${strongest(wide)} ${strongest(holes)}`);
+  const open = beams(blockTrail([rectangle(0, 300, 2000, 900, 'grass', 'ground')]));
+  let most = 0;
+  for (let x = 0; x < 2000; x += 8) for (let y = 0; y < 300; y += 8) most = Math.max(most, open(x, y));
+  check('open ground has no beams', most === 0, most);
 }
 
 // Lights stop at the terrain: a ray into the ground goes only skin deep,

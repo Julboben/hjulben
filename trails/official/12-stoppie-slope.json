@@ -5,9 +5,6 @@
     "y": 465
   },
   "description": "Every drop-in is steeper than the last: 40°, 45°, 50° and a long 55° chute. Roll in slowly, lean back (hold the brake and lean away from the slope) so the rear wheel stays planted and you don't go over the bars, then ride it out at the bottom. Speed is the enemy here; the apples at the foot of each slope wait for a rider who arrives in one piece.",
-  "lesson": "Steep descents of 45° or more, leaning back so you don't go over the bars.",
-  "alsoNew": "Vines over cliffs.",
-  "world": "The Woods",
   "start": {
     "x": 90,
     "y": null,
@@ -576,15 +573,18 @@
   "water": [],
   "weather": {
     "sun": 0.6,
-    "clouds": 0.35,
+    "clouds": 0.45,
     "fog": 0.15,
-    "rain": 0,
+    "rain": 0.3,
     "snow": 0,
     "lightning": 0,
     "wind": 0.25,
     "windDirection": "left"
   },
   "timeOfDay": 7,
+  "lesson": "Steep descents of 45° or more, leaning back so you don't go over the bars.",
+  "alsoNew": "Vines over cliffs.",
+  "world": "The Woods",
   "backdrop": "forest",
   "medals": {
     "gold": 9,

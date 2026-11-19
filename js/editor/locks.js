@@ -1,11 +1,12 @@
-// Locking: a locked group, or a single locked item, is still drawn but can't
-// be picked, box-selected, cut or drawn onto. Locks are the author's way of
-// working, not part of the trail, so they live in local storage and never in
-// the trail file.
+// Locking and hiding. A locked group, or a single locked item, is still drawn
+// but can't be picked, box-selected, cut or drawn onto. A hidden one isn't
+// drawn in the editor either, so what is behind it can be worked on; the trail
+// and the game are unchanged. Both are the author's way of working, not part
+// of the trail, so they live in local storage and never in the trail file.
 //
-// Both kinds of lock belong to one trail: locking the props on one trail leaves
-// them free on the next. A locked item is known by its block's id, or else by
-// its content, which can't change while it is locked.
+// Both belong to one trail: locking the props on one trail leaves them free on
+// the next. An item is known by its block's id, or else by its content, which
+// can't change while it is locked or hidden.
 import { store } from "../local-store.js";
 import { isBackWall } from "../trail-schema.js";
 import { editor, waters } from "./state.js";
@@ -24,11 +25,16 @@ export const LOCK_GROUPS = [
 
 // Group locks used to apply to every trail, under this one key.
 const OLD_GROUPS_KEY = "hjulben-editor-locked-groups";
-const GROUPS_PREFIX = "hjulben-editor-locked-groups-";
-const ITEMS_PREFIX = "hjulben-editor-locked-items-";
+// Where each kind of flag is stored, with the trail's id after it.
+const PREFIXES = {
+  lock: { groups: "hjulben-editor-locked-groups-", items: "hjulben-editor-locked-items-" },
+  hide: { groups: "hjulben-editor-hidden-groups-", items: "hjulben-editor-hidden-items-" },
+};
 
-// The locks of the trail they were read for; read again when another opens.
-let locks = { id: undefined, groups: new Set(), items: new Set() };
+const empty = () => ({ groups: new Set(), items: new Set() });
+
+// The flags of the trail they were read for; read again when another opens.
+let flags = { id: undefined, lock: empty(), hide: empty() };
 
 function read(key) {
   try {
@@ -44,40 +50,46 @@ function write(key, set) {
     if (set.size) store().setItem(key, JSON.stringify([...set]));
     else store().removeItem(key);
   } catch (_) {
-    // Full or blocked storage: the lock still holds until the page reloads.
+    // Full or blocked storage: the flag still holds until the page reloads.
   }
 }
 
-/** The current trail's locks. A trail with no id yet keeps them until reload. */
+/** The current trail's flags. A trail with no id yet keeps them until reload. */
 function current() {
   const id = currentEntry()?.id ?? null;
-  if (locks.id !== id) {
-    locks =
+  if (flags.id !== id) {
+    const load = (kind) =>
       id === null
-        ? { id, groups: new Set(), items: new Set() }
-        : { id, groups: read(GROUPS_PREFIX + id), items: read(ITEMS_PREFIX + id) };
+        ? empty()
+        : { groups: read(PREFIXES[kind].groups + id), items: read(PREFIXES[kind].items + id) };
+    flags = { id, lock: load("lock"), hide: load("hide") };
     try {
       store().removeItem(OLD_GROUPS_KEY);
     } catch (_) {}
   }
-  return locks;
+  return flags;
 }
 
-const groups = () => current().groups;
-const items = () => current().items;
+/** Save one kind of flag for the current trail. */
+function save(kind) {
+  if (flags.id === null) return;
+  write(PREFIXES[kind].groups + flags.id, flags[kind].groups);
+  write(PREFIXES[kind].items + flags.id, flags[kind].items);
+}
 
-/** Keep a trail's locks when it moves to a new id, as a rename does. */
+/** Keep a trail's locks and hides when it moves to a new id, as a rename does. */
 export function moveLocks(from, to) {
   if (from === to) return;
   try {
-    for (const prefix of [GROUPS_PREFIX, ITEMS_PREFIX]) {
-      const value = store().getItem(prefix + from);
-      if (value !== null) store().setItem(prefix + to, value);
-      store().removeItem(prefix + from);
-    }
+    for (const kind of Object.values(PREFIXES))
+      for (const prefix of Object.values(kind)) {
+        const value = store().getItem(prefix + from);
+        if (value !== null) store().setItem(prefix + to, value);
+        store().removeItem(prefix + from);
+      }
   } catch (_) {}
-  // Storage always holds the latest locks, so they are simply read again.
-  locks = { id: undefined, groups: new Set(), items: new Set() };
+  // Storage always holds the latest flags, so they are simply read again.
+  flags = { id: undefined, lock: empty(), hide: empty() };
 }
 
 // ---- What an object is -----------------------------------------------------
@@ -133,17 +145,16 @@ function objectAt(type, index) {
 
 // ---- Asking ----------------------------------------------------------------
 
-export function isGroupLocked(key) {
-  return groups().has(key);
-}
+export const isGroupLocked = (key) => current().lock.groups.has(key);
+export const isGroupHidden = (key) => current().hide.groups.has(key);
 
 /**
- * Is this one item locked on its own, apart from its group? This runs for
- * every object on every hover, so the full key, which counts lookalikes, is
- * only worked out when the content alone already matches a lock.
+ * Is this one item flagged on its own, apart from its group? This runs for
+ * every object on every hover and redraw, so the full key, which counts
+ * lookalikes, is only worked out when the content alone already matches.
  */
-export function isItemLocked(type, index) {
-  const keys = items();
+function itemFlagged(kind, type, index) {
+  const keys = current()[kind].items;
   if (!keys.size) return false;
   if (type === "block") {
     const block = editor.trail.terrainBlocks?.[index];
@@ -156,11 +167,27 @@ export function isItemLocked(type, index) {
   return false;
 }
 
-/** Can't be picked or changed: its group is locked, or it is. */
+export const isItemLocked = (type, index) => itemFlagged("lock", type, index);
+export const isItemHidden = (type, index) => itemFlagged("hide", type, index);
+
+/** Isn't drawn in the editor: its group is hidden, or it is. */
+export function isHidden(type, index) {
+  const object = objectAt(type, index);
+  if (!object) return false;
+  return isGroupHidden(groupOf(type, object)) || isItemHidden(type, index);
+}
+
+/** Can't be picked or changed: it is locked or hidden, on its own or by its group. */
 export function isLocked(type, index) {
   const object = objectAt(type, index);
   if (!object) return false;
-  return isGroupLocked(groupOf(type, object)) || isItemLocked(type, index);
+  const group = groupOf(type, object);
+  return (
+    isGroupLocked(group) ||
+    isGroupHidden(group) ||
+    isItemLocked(type, index) ||
+    isItemHidden(type, index)
+  );
 }
 
 export const isBlockLocked = (blockIndex) => isLocked("block", blockIndex);
@@ -184,35 +211,79 @@ export function isHitLocked(hit) {
 }
 
 /** Is anything locked at all, in any group or on this trail? */
-export function anyLocked() {
-  return groups().size > 0 || items().size > 0;
+export const anyLocked = () => current().lock.groups.size > 0 || current().lock.items.size > 0;
+/** Is anything hidden at all? */
+export const anyHidden = () => current().hide.groups.size > 0 || current().hide.items.size > 0;
+
+/**
+ * What is hidden, as a string that changes whenever it does, so a drawing
+ * made without the hidden things can be kept until then.
+ */
+export function hiddenSignature() {
+  const { id, hide } = current();
+  return `${id}|${[...hide.groups]}|${[...hide.items]}`;
 }
 
 // ---- Changing --------------------------------------------------------------
 
-export function setGroupLocked(key, locked) {
-  if (locked) groups().add(key);
-  else groups().delete(key);
-  if (locks.id !== null) write(GROUPS_PREFIX + locks.id, groups());
+/**
+ * Flag a whole group or let it go. Either way what was flagged on its own in
+ * it is forgotten, so letting the group go frees all of it rather than
+ * bringing back the single items.
+ */
+function setGroupFlag(kind, key, on) {
+  const { groups, items } = current()[kind];
+  if (on) groups.add(key);
+  else groups.delete(key);
+  const all = [["block", editor.trail.terrainBlocks || []], ...Object.entries(LISTS())];
+  for (const [type, list] of all)
+    list.forEach((object, index) => {
+      if (groupOf(type, object) === key) items.delete(itemKey(type, index));
+    });
+  save(kind);
 }
 
-export function setItemLocked(type, index, locked) {
+function setItemFlag(kind, type, index, on) {
   const key = itemKey(type, index);
   if (!key) return;
-  const keys = items();
-  if (locked) keys.add(key);
+  const keys = current()[kind].items;
+  if (on) keys.add(key);
   else keys.delete(key);
-  pruneItemLocks();
+  pruneItemFlags();
 }
 
+export const setGroupLocked = (key, locked) => setGroupFlag("lock", key, locked);
+export const setGroupHidden = (key, hidden) => setGroupFlag("hide", key, hidden);
+export const setItemLocked = (type, index, locked) => setItemFlag("lock", type, index, locked);
+export const setItemHidden = (type, index, hidden) => setItemFlag("hide", type, index, hidden);
+
 /**
- * Forget item locks that match nothing on the trail any more, such as after an
- * undo past the moment something was locked, so a lookalike added later isn't
- * locked by surprise. Saves what is left.
+ * Flag every group on this trail, or with `on` false, let go of every group
+ * and every single item alike.
  */
-export function pruneItemLocks() {
-  const keys = items();
-  if (locks.id === null) return;
+function flagEverything(kind, on) {
+  const { groups, items } = current()[kind];
+  if (on) for (const { key } of LOCK_GROUPS) groups.add(key);
+  else {
+    groups.clear();
+    items.clear();
+  }
+  save(kind);
+}
+
+export const setAllLocked = (locked) => flagEverything("lock", locked);
+export const setAllHidden = (hidden) => flagEverything("hide", hidden);
+export const allLocked = () => LOCK_GROUPS.every(({ key }) => isGroupLocked(key));
+export const allHidden = () => LOCK_GROUPS.every(({ key }) => isGroupHidden(key));
+
+/**
+ * Forget item locks and hides that match nothing on the trail any more, such
+ * as after an undo past the moment something was locked, so a lookalike added
+ * later isn't locked by surprise. Saves what is left.
+ */
+export function pruneItemFlags() {
+  current();
+  if (flags.id === null) return;
   const present = new Set();
   const all = [
     ["block", editor.trail.terrainBlocks || []],
@@ -220,8 +291,11 @@ export function pruneItemLocks() {
   ];
   for (const [type, list] of all)
     list.forEach((_, index) => present.add(itemKey(type, index)));
-  for (const key of keys) if (!present.has(key)) keys.delete(key);
-  write(ITEMS_PREFIX + locks.id, keys);
+  for (const kind of ["lock", "hide"]) {
+    const keys = flags[kind].items;
+    for (const key of keys) if (!present.has(key)) keys.delete(key);
+    write(PREFIXES[kind].items + flags.id, keys);
+  }
 }
 
 /** The group a drawing tool adds to, or null when it adds nothing lockable. */

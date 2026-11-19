@@ -33,6 +33,7 @@ import {
 } from "./rotate.js";
 import {
   flushInspector,
+  lockSelection,
   selectedPosition,
   syncInspector,
   updateSelectedPosition,
@@ -72,8 +73,8 @@ import {
 } from "./groups.js";
 import { clampZoom, editor } from "./state.js";
 import { NOTICE_TIME, refuseEdit, refuseReadOnly, showStatus, statusShowing } from "./status.js";
-import { PLACING_TOOLS, TOOL_KEYS, setTool, toolSettings } from "./tools.js";
-import { groupLabel, isGroupLocked, toolGroup } from "./locks.js";
+import { PLACING_TOOLS, TOOL_KEYS, setTab, setTool, toolSettings } from "./tools.js";
+import { groupLabel, isGroupHidden, isGroupLocked, toolGroup } from "./locks.js";
 import { commitWater } from "./water.js";
 import {
   beginPreviewDrag,
@@ -629,6 +630,9 @@ const shortcuts = /** @type {HTMLDialogElement} */ ($("shortcuts"));
  * tab, which keeps focus and would otherwise swallow V, C and the rest. Text
  * fields, selects and open dialogs and menus keep their keys.
  */
+// The side panel's tabs, numbered in the order they are shown.
+const TAB_KEYS = { Digit1: "tools", Digit2: "objects", Digit3: "trail" };
+
 function shortcutsReach() {
   const active = document.activeElement;
   if (!active || active === canvas || active === document.body) return true;
@@ -722,10 +726,12 @@ export function bindInput() {
       canvas.setPointerCapture(event.pointerId);
       return;
     }
-    // A tool that adds to, or cuts, a locked group does nothing until it is unlocked.
+    // A tool that adds to, or cuts, a locked or hidden group does nothing until
+    // it is unlocked or shown: what it drew couldn't be seen or changed.
     const group = toolGroup(editor.tool, toolSettings);
-    if (!editor.readOnly && group && isGroupLocked(group)) {
-      showStatus("warning", `The ${groupLabel(group).toLowerCase()} group is locked. Unlock it in the Objects tab.`);
+    if (!editor.readOnly && group && (isGroupLocked(group) || isGroupHidden(group))) {
+      const [state, undo] = isGroupLocked(group) ? ["locked", "Unlock"] : ["hidden", "Show"];
+      showStatus("warning", `The ${groupLabel(group).toLowerCase()} group is ${state}. ${undo} it in the Objects tab.`);
       return;
     }
     if (editor.tool === "block" || editor.tool === "cut" || editor.tool === "water") {
@@ -1239,6 +1245,18 @@ export function bindInput() {
       render();
       return;
     }
+    if (TAB_KEYS[event.code] && !event.shiftKey) {
+      setTab(TAB_KEYS[event.code]);
+      return;
+    }
+    // Like search on many sites: / goes straight to the Objects filter.
+    if (event.key === "/") {
+      event.preventDefault();
+      setTab("objects");
+      $("objects-filter").focus();
+      $("objects-filter").select();
+      return;
+    }
     if (event.key.startsWith("Arrow")) {
       event.preventDefault();
       nudgeSelection(event.key, event.shiftKey);
@@ -1256,6 +1274,10 @@ export function bindInput() {
     }
     if (event.code === "KeyY") {
       toggleGameArt();
+      return;
+    }
+    if (event.code === "KeyL") {
+      lockSelection();
       return;
     }
     if (event.code === "KeyM") {

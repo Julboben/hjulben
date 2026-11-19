@@ -62,8 +62,9 @@ class Element {
   }
   setPointerCapture() {}
   releasePointerCapture() {}
-  focus() {}
+  focus() { document.activeElement = this; }
   blur() {}
+  select() {}
   click() { this.dispatch('click'); }
   getContext(kind) { return contexts.get(this) || createContextStub(); }
   getBoundingClientRect() { return { left: 0, top: 0, width: 1200, height: 800 }; }

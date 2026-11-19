@@ -5,9 +5,11 @@ import {
   terrainSurfacesAt,
 } from "./terrain.js";
 import { terrainMaterials } from "./materials.js";
-import { lookParts } from "./cosmetics.js";
+import { lookParts, wetLookParts } from "./cosmetics.js";
 import {
   BIKE_LAMPS,
+  RIDER_HAND,
+  RIDER_HEAD,
   RIDER_PEG,
   bodyPose,
   lampColors,
@@ -376,7 +378,7 @@ import {
   stallSignLines,
   turbineAngle,
 } from "./countryside-props.js";
-import { resolveWeather, windSign } from "./weather.js";
+import { WEATHER_DEFAULTS, resolveWeather, windSign } from "./weather.js";
 import { dayBlend, normalizeHour } from "./time-of-day.js";
 import {
   CORGI_BOUNDS,
@@ -534,9 +536,10 @@ const cloudLayers = new Map();
  * small cumulus that grow into big banks, then from 30% a deck that fills in from the top of the sky on
  * a lumpy underside, with banks and thin streaks below it, lowering until,
  * at full cover, it fills the sky. The sun shows as a pale glow through cloud.
- * Returns the canvas and how far left and up of the view to draw it.
+ * Returns the canvas, how far left and up of the view to draw it, and how
+ * much of the sun's disc (`sunRadius` across) the cloud covers, 0…1.
  */
-function cloudLayer({ width, height, scrollX, cloudShift, cloudiness, color, glow, glowSize = 1, sunX, sunY }) {
+function cloudLayer({ width, height, scrollX, cloudShift, cloudiness, color, glow, glowSize = 1, sunX, sunY, sunRadius }) {
   const cell = CLOUD_CELL;
   const gx0 = Math.floor(scrollX / cell),
     gy0 = Math.floor(-cloudShift / cell);
@@ -547,22 +550,42 @@ function cloudLayer({ width, height, scrollX, cloudShift, cloudiness, color, glo
   // The sun in cloud space.
   const sunU = sunX + scrollX,
     sunV = sunY - cloudShift;
-  const key = [gx0, gy0, cols, rows, cloudiness, color, glow, glowSize, Math.round(sunU / cell), Math.round(sunV / cell)].join("|");
-  if (cloudLayers.has(key)) return { canvas: cloudLayers.get(key), offsetX, offsetY };
+  const key = [gx0, gy0, cols, rows, cloudiness, color, glow, glowSize, Math.round(sunU / cell), Math.round(sunV / cell), Math.round(sunRadius)].join("|");
+  const cached = cloudLayers.get(key);
+  if (cached) return { ...cached, offsetX, offsetY };
 
   const canvas = createCanvas(cols, rows);
   const g = canvas.getContext("2d");
   g.fillStyle = color;
   const uLeft = gx0 * cell,
-    uRight = (gx0 + cols) * cell,
     vTop = gy0 * cell,
     vBottom = (gy0 + rows) * cell;
   const rowOf = (v) => Math.round(v / cell) - gy0;
+  // The sun's disc in the layer's cells, and which of them the cloud covers.
+  const sc = Math.round(sunU / cell) - gx0,
+    sr = Math.round(sunV / cell) - gy0,
+    reach = Math.ceil(sunRadius / cell),
+    side = reach * 2 + 1;
+  const covered = new Uint8Array(side * side);
+  // The clouds are shaped over the view and the sun's disc both, so the sun
+  // is covered as much off screen as on it; the canvas keeps only the view.
+  const iFrom = Math.min(0, sc - reach),
+    iTo = Math.max(cols, sc + reach + 1),
+    uFrom = uLeft + iFrom * cell,
+    uTo = uLeft + iTo * cell,
+    vFrom = Math.min(vTop, (gy0 + sr - reach) * cell),
+    vTo = Math.max(vBottom, (gy0 + sr + reach + 1) * cell);
+  const fill = (i, r, w, h) => {
+    g.fillRect(i, r, w, h);
+    for (let y = Math.max(r, sr - reach); y < Math.min(r + h, sr + reach + 1); y++)
+      for (let x = Math.max(i, sc - reach); x < Math.min(i + w, sc + reach + 1); x++)
+        covered[(y - sr + reach) * side + x - sc + reach] = 1;
+  };
   // Fills column i of the layer from v0 down to v1.
   const span = (i, v0, v1) => {
-    const r0 = Math.max(0, rowOf(v0)),
-      r1 = Math.min(rows, rowOf(v1));
-    if (r1 > r0) g.fillRect(i, r0, 1, r1 - r0);
+    const r0 = rowOf(v0),
+      r1 = rowOf(v1);
+    if (r1 > r0) fill(i, r0, 1, r1 - r0);
   };
 
   // The deck: from 30% it hangs in from the top on a lumpy underside of
@@ -580,20 +603,20 @@ function cloudLayer({ width, height, scrollX, cloudShift, cloudiness, color, glo
     }
     return bottom;
   };
-  if (deck === Infinity) g.fillRect(0, 0, cols, rows);
+  if (deck === Infinity) fill(iFrom, rowOf(vFrom), iTo - iFrom, rowOf(vTo) - rowOf(vFrom));
   else if (deck > 0)
-    for (let i = 0; i < cols; i++) span(i, vTop, deckBottom(uLeft + i * cell));
+    for (let i = iFrom; i < iTo; i++) span(i, vFrom, deckBottom(uLeft + i * cell));
 
   if (deck !== Infinity) {
-    const firstRow = Math.max(0, Math.ceil((64 - vBottom - 120) / CLOUD_ROW_SPACING));
-    const lastRow = Math.max(0, Math.floor((64 - vTop + 120) / CLOUD_ROW_SPACING));
+    const firstRow = Math.max(0, Math.ceil((64 - vTo - 120) / CLOUD_ROW_SPACING));
+    const lastRow = Math.max(0, Math.floor((64 - vFrom + 120) / CLOUD_ROW_SPACING));
     // Thin high streaks come in with broken cloud and go once it is overcast.
     const streaks = cloudiness > 0.35 && cloudiness < 0.9 ? Math.sin((Math.PI * (cloudiness - 0.35)) / 0.55) : 0;
     for (let row = firstRow; row <= lastRow; row++) {
       // Higher rows are inside the deck once there is one.
       if (deck > 0 && row > 0) break;
       const rowV = 64 - row * CLOUD_ROW_SPACING;
-      for (let k = Math.floor(uLeft / CLOUD_SLOT) - 1; k <= Math.ceil(uRight / CLOUD_SLOT); k++) {
+      for (let k = Math.floor(uFrom / CLOUD_SLOT) - 1; k <= Math.ceil(uTo / CLOUD_SLOT); k++) {
         const n = (j) => backdropNoise(k * 7 + row * 131 + j * 17);
         // A bank: rounded puffs on one flat base. Up to 40% cover they grow
         // from small puffs into big banks; the deck does the rest.
@@ -616,7 +639,7 @@ function cloudLayer({ width, height, scrollX, cloudShift, cloudiness, color, glo
           }
           const first = puffs[0].c,
             last = puffs[puffs.length - 1].c;
-          for (let i = 0; i < cols; i++) {
+          for (let i = iFrom; i < iTo; i++) {
             const u = uLeft + i * cell;
             if (u < left - 4 || u > left + w + 4) continue;
             let top = u >= first && u <= last ? 8 : 0;
@@ -633,8 +656,8 @@ function cloudLayer({ width, height, scrollX, cloudShift, cloudiness, color, glo
           const v = rowV - 4 - n(8) * 16;
           const r = rowOf(v),
             c0 = Math.round(u0 / cell) - gx0;
-          g.fillRect(c0, r, Math.round(length / cell), 1);
-          g.fillRect(c0 + 3, r + 1, Math.round((length * 0.6) / cell), 1);
+          fill(c0, r, Math.round(length / cell), 1);
+          fill(c0 + 3, r + 1, Math.round((length * 0.6) / cell), 1);
         }
       }
     }
@@ -644,8 +667,6 @@ function cloudLayer({ width, height, scrollX, cloudShift, cloudiness, color, glo
   // only over cloud. There is none when it is turned off.
   if (glow) {
     g.globalCompositeOperation = "source-atop";
-    const sc = Math.round(sunU / cell) - gx0,
-      sr = Math.round(sunV / cell) - gy0;
     for (const [size, amount] of [[13, 0.45], [9, 1]]) {
       const radius = Math.round(size * glowSize);
       g.fillStyle = mixHex(color, glow, amount);
@@ -656,9 +677,18 @@ function cloudLayer({ width, height, scrollX, cloudShift, cloudiness, color, glo
     }
   }
 
-  cloudLayers.set(key, canvas);
+  let inside = 0,
+    hidden = 0;
+  for (let dy = -reach; dy <= reach; dy++)
+    for (let dx = -reach; dx <= reach; dx++) {
+      if (dx * dx + dy * dy > reach * reach) continue;
+      inside++;
+      hidden += covered[(dy + reach) * side + dx + reach];
+    }
+  const layer = { canvas, sunCover: hidden / inside };
+  cloudLayers.set(key, layer);
   if (cloudLayers.size > 4) cloudLayers.delete(cloudLayers.keys().next().value);
-  return { canvas, offsetX, offsetY };
+  return { ...layer, offsetX, offsetY };
 }
 
 // The colour set every look of the day starts from and overrides.
@@ -1274,6 +1304,82 @@ function backdropLayers(theme, c) {
   ];
 }
 
+// Strong sun: above this strength (see sunLight) the sun glares and casts
+// rays, growing to full at SUN_GLARE + SUN_GLARE_RANGE.
+const SUN_GLARE = 0.6,
+  SUN_GLARE_RANGE = 0.3;
+// How far toward white a sun at full glare is drawn.
+const SUN_LIGHTEN = 0.25;
+// Sunbeams show best with a low sun and in light haze. A sun this far down
+// (see sunDrop) is fully low; a low sun's rays are this much stronger than its
+// glare, this much longer and this far toward RAY_WARM. Light haze, up to
+// HAZE_BEST fog, makes them up to this much stronger and longer, and they
+// fade out again by HAZE_GONE.
+const LOW_SUN_DROP = 70,
+  LOW_RAYS = 0.6,
+  LOW_RAY_LENGTH = 0.3,
+  LOW_RAY_WARMTH = 0.25,
+  HAZE_BEST = 0.25,
+  HAZE_GONE = 0.8,
+  HAZE_RAYS = 0.4,
+  HAZE_RAY_LENGTH = 0.15;
+// How far across sunlight falls per unit down, from the sun up to the right:
+// steep at noon, and flatter by LOW_SLANT more with a low sun.
+const NOON_SLANT = 0.5,
+  LOW_SLANT = 0.8;
+export const RAY_WARM = "#ff9a52";
+
+// A sun's glare before fog dims it, 0 and up, how much fog there is and how
+// low the sun is, 0…1; null when the moon is up.
+function sunShine(trail) {
+  const { weather = {} } = trail;
+  const { moon, sunDrop } = timeOfDayPalette(trail);
+  if (moon >= 0.5) return null;
+  const { strength } = sunLight({ width: 0, weather, timeOfDay: trail.timeOfDay });
+  const storm = Math.max(
+    Number(weather.rain) || 0,
+    Number(weather.snow) || 0,
+    Number(weather.lightning) || 0,
+  );
+  return {
+    glare: Math.max(0, ((strength - SUN_GLARE) / SUN_GLARE_RANGE) * (1 - Math.min(1, storm)) * (1 - moon)),
+    fog: Math.max(0, Math.min(1, Number(weather.fog) || 0)),
+    low: Math.max(0, Math.min(1, sunDrop / LOW_SUN_DROP)),
+  };
+}
+
+/**
+ * How strongly the sun glares on a trail, 0…1: only a bright, mostly clear
+ * daytime sun does, and rain, storms, fog or the moon put it out.
+ */
+export function glareStrength(trail) {
+  const shine = sunShine(trail);
+  return shine ? Math.min(1, shine.glare * (1 - shine.fog)) : 0;
+}
+
+/**
+ * How a trail's sunbeams show, apart from the glow round the sun: their
+ * `strength` (0 and up; 1 is a clear noon's), how much `longer` they reach,
+ * how far their colour turns toward RAY_WARM (`warmth`) and how far across
+ * the light falls per unit down (`slant`). A low sun keeps its rays longer
+ * and warmer as its glare fades, and falls flatter; light haze shows them
+ * best, where thick fog hides them.
+ */
+export function sunRays(trail) {
+  const shine = sunShine(trail);
+  if (!shine) return { strength: 0, longer: 1, warmth: 0, slant: NOON_SLANT };
+  const { glare, fog, low } = shine;
+  // How hazy, 0…1: rising to the best haze, then thinning out as fog thickens.
+  const haze = fog <= HAZE_BEST ? fog / HAZE_BEST : Math.max(0, 1 - (fog - HAZE_BEST) / (HAZE_GONE - HAZE_BEST));
+  const hazy = fog <= HAZE_BEST ? 1 + HAZE_RAYS * haze : (1 + HAZE_RAYS) * haze;
+  return {
+    strength: Math.min(1, Math.min(1, glare) * (1 + LOW_RAYS * low)) * hazy,
+    longer: 1 + LOW_RAY_LENGTH * low + HAZE_RAY_LENGTH * haze,
+    warmth: LOW_RAY_WARMTH * low,
+    slant: NOON_SLANT + LOW_SLANT * low,
+  };
+}
+
 export function sunLight({
   width,
   cameraX = 0,
@@ -1282,13 +1388,18 @@ export function sunLight({
   timeOfDay,
 } = {}) {
   const time = hourPalette(timeOfDay);
-  const sunshine = Math.max(0, Math.min(1, weather.sun ?? 1));
-  const cloudiness = Math.max(0, Math.min(1, weather.clouds ?? 0.35));
+  const sunshine = Math.max(0, Math.min(1, weather.sun ?? WEATHER_DEFAULTS.sun));
   return {
     x: width * 0.77 - cameraX * 0.015,
     y: 85 + time.sunDrop - Math.max(cameraY, -SUN_CLIMB_LIMIT) * 0.08,
     sunshine,
-    strength: sunshine * (1 - cloudiness * 0.55) * time.light,
+    // Clouds only dim the sun when one passes in front of it (`clouded`).
+    strength: sunshine * time.light,
+    // The sun's disc grows with its shine, and low in the sky.
+    radius: (28 + sunshine * 8) * time.sunScale,
+    // How much of it a passing cloud hides, 0…1: known only once the sky is
+    // drawn (see drawBackground).
+    clouded: 0,
   };
 }
 
@@ -2287,8 +2398,10 @@ function drawRiderHead(rect, parts, colors, { bare = !parts.helmet, loose = fals
   if (bare) {
     drawBareHead(rect, colors, parts.hair, parts.face);
     drawFaceWear(rect, parts.faceWear);
-  } else if (shape === "mx") drawMxHelmet(rect, colors);
-  else if (isHeadwear(shape)) {
+  } else if (shape === "mx") {
+    drawMxHelmet(rect, colors);
+    drawHelmetBeads(rect, parts.wet?.head);
+  } else if (isHeadwear(shape)) {
     if (!loose) {
       const { extra } = parts.hair;
       const hair = extra && !HAIR_UNDER_HEADWEAR.has(extra) ? { ...parts.hair, extra: null } : parts.hair;
@@ -2296,7 +2409,26 @@ function drawRiderHead(rect, parts, colors, { bare = !parts.helmet, loose = fals
       drawFaceWear(rect, parts.faceWear);
     }
     drawHeadwear(rect, shape, colors);
-  } else drawHelmetShell(rect, colors);
+  } else {
+    drawHelmetShell(rect, colors);
+    drawHelmetBeads(rect, parts.wet?.head);
+  }
+}
+
+// Beads of water left on a helmet shell, more the wetter the head, each a
+// glint over a drop: on the crown, the side and the chin, where the motocross
+// helmet and the full-face shell are both painted.
+const HELMET_BEADS = [
+  { x: -3, y: -2, from: 0.4 },
+  { x: -1, y: -6, from: 0.7 },
+  { x: 1, y: 0, from: 1 },
+];
+function drawHelmetBeads(rect, wet = 0) {
+  for (const bead of HELMET_BEADS) {
+    if (wet < bead.from) continue;
+    rect(bead.x, bead.y, 2, 2, WATER_COLORS.splash[0]);
+    rect(bead.x, bead.y + 2, 2, 2, WATER_COLORS.splash[1]);
+  }
 }
 
 // The full-face helmet facing right: a shell with a stripe over the crown, a
@@ -2494,12 +2626,6 @@ export function drawBareHead(rect, colors, hair, face = null) {
     });
 }
 
-// The riding pose, in bike body coordinates before lean: where the helmet's
-// centre sits at rest, over the collar, and the hand on the handlebar every
-// bike model shares. riderSeatedPose in bike-lamps.js moves the joints with
-// lean and landing flex, and the root of the hair's tail follows the head.
-const RIDER_HEAD = [-1, -44];
-const RIDER_HAND = [16, -28];
 // Kick-starting, the foot goes up from RIDER_PEG onto the kick lever and
 // stamps it down through its swing.
 const RIDER_KICK_TOP = [-8, -10];
@@ -5214,6 +5340,7 @@ export function createGameArt(ctx) {
   /**
    * `smooth` is for contexts that map world units to many device pixels: shapes
    * keep their pixel grid but are placed at their exact scroll position.
+   * Returns how much of the sun the clouds hide, 0…1.
    */
   function drawBackground({
     width,
@@ -5256,6 +5383,7 @@ export function createGameArt(ctx) {
     });
     const storminess = Math.max(rain, lightning);
     const fog = fogAmount(weather);
+    let sunCover = 0;
     // Fog washes over everything drawn so far, so each layer further back
     // ends up behind more of it.
     const fogWash = (amount) => {
@@ -5317,15 +5445,9 @@ export function createGameArt(ctx) {
         });
       } else {
         ctx.globalAlpha = light.strength * (1 - time.moon);
-        placed(light.x, light.y, 4, (x, y) =>
-          drawPixelDisc(
-            x,
-            y,
-            (28 + light.sunshine * 8) * time.sunScale,
-            time.sun,
-            4,
-          ),
-        );
+        // A sun strong enough to glare is a step lighter.
+        const color = mixHex(time.sun, "#ffffff", SUN_LIGHTEN * glareStrength(palette));
+        placed(light.x, light.y, 4, (x, y) => drawPixelDisc(x, y, light.radius, color, 4));
       }
       ctx.restore();
     }
@@ -5355,9 +5477,12 @@ export function createGameArt(ctx) {
         glowSize: 1 - time.moon * 0.3,
         sunX: light.x,
         sunY: light.y,
+        sunRadius: light.radius,
       });
+      const alpha = 0.7 + cloudiness * 0.3;
+      sunCover = layer.sunCover * alpha;
       ctx.save();
-      ctx.globalAlpha = 0.7 + cloudiness * 0.3;
+      ctx.globalAlpha = alpha;
       ctx.drawImage(
         layer.canvas,
         snap(-layer.offsetX),
@@ -5402,6 +5527,7 @@ export function createGameArt(ctx) {
       ctx.fillStyle = `rgba(38, 55, 62, ${storminess * 0.2})`;
       ctx.fillRect(0, 0, width, height);
     }
+    return sunCover;
   }
 
   /**
@@ -7231,8 +7357,9 @@ export function createGameArt(ctx) {
     dirt = null,
     squish = null,
     foot = null,
+    wet = null,
   }) {
-    const parts = lookParts(look);
+    const parts = wetLookParts(lookParts(look), wet);
     const modelId = bikeModel(look, bike);
     const model = BIKES[modelId];
     tyre = squish?.rear.level ? squish.rear : null;
@@ -7576,7 +7703,9 @@ export function createGameArt(ctx) {
   // One tiny cached head as worn, one bare head, and one loose helmet, per
   // look. Rotating the sprite with nearest-neighbour sampling keeps it sharp.
   function ragdollHeadSprite(parts, mode) {
-    const key = parts.key + "|" + mode;
+    // Only the head's own wetness shows on it, so the rest of a wet rider's
+    // drying doesn't fill the cache with copies.
+    const key = `${lookParts(parts.look).key}|${parts.wet?.head ?? 0}|${mode}`;
     if (headSprites.has(key)) return headSprites.get(key);
 
     const canvas = createCanvas(32 / ART_PIXEL, 38 / ART_PIXEL);
@@ -7612,10 +7741,10 @@ export function createGameArt(ctx) {
     ctx.restore();
   }
 
-  /** Draws the thrown rider, and the helmet if it has been knocked off. */
-  function drawRagdoll(ragdoll, look) {
+  /** Draws the thrown rider, `wet` as riderWetness says, and the helmet if it has been knocked off. */
+  function drawRagdoll(ragdoll, look, wet = null) {
     const p = ragdoll.points;
-    const parts = lookParts(look);
+    const parts = wetLookParts(lookParts(look), wet);
     const colors = parts.palette;
     const outline = "#263b36";
     const facing = p.head.drawFacing ?? 1;

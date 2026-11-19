@@ -14,14 +14,18 @@ import {
   propPoint,
   propRotation,
   propWallFit,
+  glareStrength,
+  RAY_WARM,
   sunLight,
+  sunRays,
   timeOfDayPalette,
 } from "./drawing.js";
-import { bakeLightField, lightFieldAt, lightReach } from "./light-field.js";
+import { bakeLightField, bakeSunShafts, lightFieldAt, lightReach } from "./light-field.js";
 import { dayBlend, normalizeHour } from "./time-of-day.js";
 import { backWallGeometry, terrainAt, terrainGeometry } from "./terrain.js";
 import { terrainSolidAt } from "./terrain-runtime.js";
 import { isSeeThrough } from "./materials.js";
+import { surfaceWave, waterColumns } from "./water.js";
 import { LANTERN_CENTRE } from "./cave-props.js";
 import { CRANE_LIGHTS, LAMP_HEAD } from "./city-props.js";
 import { HUT_WINDOW_CENTRE } from "./mountain-props.js";
@@ -84,39 +88,44 @@ const HEADLIGHT_FLARE = [2, 0.7, 0],
 // How dark the garage is with its lights off: what's left is the bike's lights.
 const DARK_ROOM = "rgb(64,72,98)";
 
-// Strong sun: above this strength (see sunLight) the sun glares and casts
-// rays, growing to full at SUN_GLARE + SUN_GLARE_RANGE.
-const SUN_GLARE = 0.6,
-  SUN_GLARE_RANGE = 0.3;
-// The sun's disc is about this wide (see drawBackground), and this many points
-// across it are checked for terrain in front of it: one in the middle and two
-// rings, so the glare fades smoothly as the sun slides behind a roof.
-const SUN_DISC_RADIUS = 36;
+// The points across the sun's disc, as fractions of its radius, that are
+// checked for terrain in front of it: one in the middle and two rings, so the
+// glare fades smoothly as the sun slides behind a roof.
 const SUN_SAMPLES = [[0, 0]];
 for (const [ring, count] of [[0.5, 8], [1, 12]])
   for (let index = 0; index < count; index++) {
     const angle = (index / count) * Math.PI * 2;
-    SUN_SAMPLES.push([Math.cos(angle) * ring * SUN_DISC_RADIUS, Math.sin(angle) * ring * SUN_DISC_RADIUS]);
+    SUN_SAMPLES.push([Math.cos(angle) * ring, Math.sin(angle) * ring]);
   }
 // Glass lets the sun through, so a sun seen through a window still glares.
 const opaque = (body) => !isSeeThrough(body.material);
+const tracePath = (ctx, rings) => {
+  for (const ring of rings) {
+    ring.forEach(([x, y], index) => (index ? ctx.lineTo(x, y) : ctx.moveTo(x, y)));
+    ctx.closePath();
+  }
+};
 
 /**
- * How much of the sun's disc, at (x, y) in the world, no terrain or back wall
- * hides: the sky and its sun are drawn behind everything, so a building in
- * front of the sun hides it, and its glare with it.
+ * How much of the sun's disc, at (x, y) in the world and `radius` across (see
+ * sunLight), no terrain or back wall hides: the sky and its sun are drawn
+ * behind everything, so a building in front of the sun hides it, and its
+ * glare with it.
  */
-export function sunVisible(trail, x, y) {
+export function sunVisible(trail, x, y, radius) {
   const layers = [terrainGeometry(trail), backWallGeometry(trail)].filter(Boolean);
   if (!layers.length) return 1;
   let open = 0;
   for (const [dx, dy] of SUN_SAMPLES)
-    if (!layers.some((compiled) => terrainSolidAt(compiled, x + dx, y + dy, opaque))) open++;
+    if (!layers.some((compiled) => terrainSolidAt(compiled, x + dx * radius, y + dy * radius, opaque))) open++;
   return open / SUN_SAMPLES.length;
 }
 
 // Sun rays: [angle offset from straight at the view's centre, beam half-width,
 // length as a fraction of the view's diagonal, brightness].
+// Sunbeams show sharpest while something cuts across the sun: with half of it
+// hidden, its rays are this much stronger again.
+const EDGE_RAYS = 0.8;
 const SUN_RAYS = [
   [-0.42, 0.05, 1.1, 0.8],
   [-0.2, 0.09, 1.25, 1],
@@ -125,7 +134,105 @@ const SUN_RAYS = [
   [0.45, 0.05, 0.9, 0.6],
 ];
 
+// The eyes getting used to the sun's glare: how fast, per second, they adjust
+// to more of it and to less. Less is slower, so a sun that ducks behind a
+// pillar for a moment still dazzles a little when it comes back.
+const ADAPT_LIGHT = 3.2,
+  ADAPT_DARK = 1.2;
+// How bright the dazzle of a sun coming out is at the sun, at its strongest,
+// and how far its glow reaches, as a fraction of the view's diagonal.
+const DAZZLE = 0.75,
+  DAZZLE_REACH = 0.65;
+// Glitter on water is thickest within about this many world units of the
+// sun's x, and thin elsewhere; the path of light under the sun is this bright.
+const GLITTER_SPREAD = 120,
+  GLITTER_PATH = 0.35;
+// The sun's reflection in glass: a band slanting down and to the left from
+// under the sun on screen, this many world units of x across per unit down,
+// bright this far either side of its middle and soft out to the second.
+const REFLECTION_SLANT = 0.55,
+  REFLECTION_CORE = 8,
+  REFLECTION_EDGE = 14;
+// How bright a pane's sheen is on its sunny upper right, and where the sheen
+// starts, as a fraction across the pane at its top.
+const SHEEN = 0.2,
+  SHEEN_START = 0.15;
+// The glint where the reflection crosses a pane's top right corner: a pixel
+// cross, as for lamps (see drawFlare).
+const PANE_FLARE = [2, 1, 0];
+// Sunbeams through gaps into shade (see bakeSunShafts): how bright they are
+// at full strength, and the dust in them, one mote now and then in each patch
+// of the world this many units across.
+const SHAFT_BRIGHTNESS = 0.6,
+  MOTE = "#fff3d6",
+  MOTE_PATCH = 48;
+// Lens flare: ghosts of the sun on the line from it through the middle of the
+// view, as [how far along (1 is the middle), radius in world units, ring width
+// (0 for a solid disc), colour, brightness at full glare].
+const LENS_GHOSTS = [
+  [0.35, 4, 0, "#ffe0a8", 0.35],
+  [0.62, 12, 0, "#cfeec8", 0.12],
+  [0.9, 6, 0, "#ffd2a0", 0.22],
+  [1.25, 22, 4, "#d8c8ff", 0.16],
+  [1.5, 8, 0, "#bfe8f0", 0.18],
+  [1.9, 30, 0, "#ffe6c0", 0.07],
+];
+
 const rgb = ([r, g, b]) => `rgb(${r},${g},${b})`;
+const towardWhite = (color, amount) => color.map((value) => Math.round(value + (255 - value) * amount));
+
+// The glass panes of one layer's compiled geometry, each with the opaque
+// blocks of its layer drawn over it. Whatever is in front of the layer is
+// drawn after its glints. Kept per compiled geometry, so a frame doesn't look
+// through every body for them.
+const paneCache = new WeakMap();
+function glassPanes(compiled) {
+  let panes = paneCache.get(compiled);
+  if (panes) return panes;
+  const overlaps = (a, b) =>
+    a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+  panes = compiled.bodies
+    .filter((body) => body.material === "glass")
+    .map((body) => ({
+      body,
+      occluders: compiled.bodies.filter(
+        (other) => other !== body && opaque(other) && other.blockIndex > body.blockIndex && overlaps(body.bounds, other.bounds),
+      ),
+    }));
+  paneCache.set(compiled, panes);
+  return panes;
+}
+
+/**
+ * How used to the sun's glare the eyes are after `dt` seconds of seeing
+ * `glare` (0…1), coming from `adapted`. Glare above that dazzles.
+ */
+export function adaptToGlare(adapted, glare, dt) {
+  const rate = glare > adapted ? ADAPT_LIGHT : ADAPT_DARK;
+  return adapted + (glare - adapted) * (1 - Math.exp(-rate * dt));
+}
+
+// Two whole numbers hashed to 0…1, so the glitter looks random but needs no
+// state and looks the same whenever the scene is drawn again.
+function hash(a, b) {
+  let h = Math.imul(a, 374761393) + Math.imul(b, 668265263);
+  h = Math.imul(h ^ (h >>> 13), 1274126177);
+  return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
+}
+
+/**
+ * The twinkle on one art-pixel column of water at `time`, or null: each
+ * column flashes briefly now and then, more often the nearer it is to under
+ * the sun (`near`, 0…1). `depth` is in art pixels below the surface.
+ */
+function glitterTwinkle(column, time, near) {
+  const period = 0.6 + 0.8 * hash(column, -1);
+  const turn = time / period + hash(column, -2);
+  const cycle = Math.floor(turn);
+  if (hash(column, cycle * 2) > 0.03 + 0.3 * near) return null;
+  const roll = hash(column, cycle * 2 + 1);
+  return { brightness: Math.sin(Math.PI * (turn - cycle)) ** 2, depth: roll < 0.7 ? 0 : roll < 0.85 ? 1 : 2 };
+}
 
 // Each hour's ambient light, blended once.
 const hourAmbients = new Map();
@@ -163,26 +270,12 @@ export function ambientFor(trail) {
   };
 }
 
-/**
- * How strongly the sun glares on a trail, 0…1: only a bright, mostly clear
- * daytime sun does, and rain, storms, fog or the moon put it out.
- */
-export function glareStrength(trail) {
-  const { weather = {} } = trail;
-  const { moon } = timeOfDayPalette(trail);
-  if (moon >= 0.5) return 0;
-  const { strength } = sunLight({ width: 0, weather, timeOfDay: trail.timeOfDay });
-  const storm = Math.max(
-    Number(weather.rain) || 0,
-    Number(weather.snow) || 0,
-    Number(weather.lightning) || 0,
-  );
-  const fog = Math.max(0, Math.min(1, Number(weather.fog) || 0));
-  const glare = ((strength - SUN_GLARE) / SUN_GLARE_RANGE) * (1 - Math.min(1, storm)) * (1 - fog) * (1 - moon);
-  return Math.max(0, Math.min(1, glare));
-}
-
 const hexRgb = (hex) => [1, 3, 5].map((at) => parseInt(hex.slice(at, at + 2), 16));
+// The sun's colour turned `warmth` of the way toward a low sun's (see sunRays).
+const warmed = (color, warmth) => {
+  const warm = hexRgb(RAY_WARM);
+  return color.map((value, index) => Math.round(value + (warm[index] - value) * warmth));
+};
 
 export function createLighting() {
   let canvas = null,
@@ -201,7 +294,18 @@ export function createLighting() {
     raysContext = null,
     raysKey = "",
     glareEntry = null,
+    glintCanvas = null,
+    glintContext = null,
+    shaftCanvas = null,
+    shaftContext = null,
+    shaftKey = "",
+    shaftEntry = null,
     headlights = true;
+  // How used to the sun's glare the eyes are, for the ride and scene time
+  // they last saw it (see drawDazzle).
+  let adapted = 0,
+    adaptedRide = null,
+    adaptedTime = 0;
   const bakes = new WeakMap();
   const sprites = new Map();
   // The rays' gradients, drawn from the origin, by colour (see rayGradients).
@@ -215,8 +319,8 @@ export function createLighting() {
     context = canvas.getContext("2d");
     lightCanvas = createCanvas(cols, rows);
     lightContext = lightCanvas.getContext("2d");
-    glareCanvas = raysCanvas = null;
-    glareKey = raysKey = "";
+    glareCanvas = raysCanvas = glintCanvas = shaftCanvas = null;
+    glareKey = raysKey = shaftKey = "";
     gradients.clear();
   }
 
@@ -234,7 +338,7 @@ export function createLighting() {
     const geometry = terrainGeometry(trail);
     const backWalls = backWallGeometry(trail);
     const { weather = {} } = trail;
-    const key = `${trail.timeOfDay}|${weather.rain || 0}|${weather.lightning || 0}|${weather.sun ?? 1}|${weather.clouds ?? 0.35}`;
+    const key = `${trail.timeOfDay}|${weather.rain || 0}|${weather.snow || 0}|${weather.fog || 0}|${weather.lightning || 0}|${weather.sun}`;
     let entry = bakes.get(trail);
     if (!entry || entry.geometry !== geometry || entry.backWalls !== backWalls || entry.key !== key) {
       entry = bake(trail, ambientFor(trail));
@@ -252,6 +356,7 @@ export function createLighting() {
       ambient,
       field,
       glare: glareStrength(trail),
+      rays: sunRays(trail),
       shade: null,
       sky: rgb(ambient.sky),
       alwaysOn: ambient.sky.some((value) => value < 255),
@@ -301,9 +406,33 @@ export function createLighting() {
       entry.shade = shadeImage && toCanvas(shadeImage);
       entry.tiles = tiles;
       entry.tileCols = tileCols;
+      entry.shafts = entry.rays.strength > 0 ? bakeShafts(trail, field, entry.rays) : null;
     }
     entry.props = propLights(trail, entry);
     return entry;
+  }
+
+  // The sun's beams through gaps into shade (see bakeSunShafts): how bright
+  // each texel is, an image of them in their colour, and which tiles of the
+  // field have any, for skipping views with none.
+  function bakeShafts(trail, field, rays) {
+    const values = bakeSunShafts(field, rays.slant);
+    if (!values) return null;
+    const [r, g, b] = towardWhite(warmed(hexRgb(timeOfDayPalette(trail).sun || "#fff2c8"), rays.warmth), 0.5);
+    const { width, height } = field;
+    const image = new ImageData(width, height);
+    const tileCols = Math.ceil(width / TILE);
+    const tiles = new Uint8Array(tileCols * Math.ceil(height / TILE));
+    for (let i = 0, at = 0; i < values.length; i++, at += 4) {
+      if (!values[i]) continue;
+      image.data[at] = r;
+      image.data[at + 1] = g;
+      image.data[at + 2] = b;
+      image.data[at + 3] = values[i] * 255;
+      const c = i % width;
+      tiles[Math.floor((i - c) / width / TILE) * tileCols + Math.floor(c / TILE)] = 1;
+    }
+    return { values, image: toCanvas(image), tiles, tileCols };
   }
 
   function toCanvas(image) {
@@ -554,8 +683,11 @@ export function createLighting() {
 
   // Whether any of the view isn't in full daylight.
   function viewIsLit(entry, left, top) {
-    const { field, tiles, tileCols } = entry;
-    if (!field) return false;
+    return Boolean(entry.field) && tilesInView(entry.field, entry.tiles, entry.tileCols, left, top);
+  }
+
+  /** Whether any of a field's marked tiles is in the view at (left, top). */
+  function tilesInView(field, tiles, tileCols, left, top) {
     const span = field.unit * TILE;
     const c0 = Math.max(0, Math.floor((left - field.x) / span)),
       c1 = Math.min(tileCols - 1, Math.floor((left + cols * ART_PIXEL - field.x) / span));
@@ -568,11 +700,12 @@ export function createLighting() {
 
   /**
    * Multiplies everything already drawn by the light map, then adds a pixel
-   * glint on each light's source, and the glare of a strong sun. Draws in
-   * world space; `width` and `height` are the view's size in world units.
-   * Returns false when the view is in full daylight and the scene needed no
-   * shading. `sun` is the sun's place and strength for this view (see
-   * sunLight), when the caller has it already.
+   * glint on each light's source, and a strong sun's glare, its glitter on
+   * the ride's water and its dazzle as it comes out. Draws in world space;
+   * `width` and `height` are the view's size in world units. Returns false
+   * when the view is in full daylight and the scene needed no shading. `sun`
+   * is the sun's place and strength for this view (see sunLight), when the
+   * caller has it already; `still` is for reduced motion.
    */
   function draw(ctx, options) {
     const { trail, cameraX, cameraY, width, height } = options;
@@ -581,8 +714,52 @@ export function createLighting() {
       top = Math.floor(cameraY / ART_PIXEL) * ART_PIXEL;
     ensure(Math.ceil(width / ART_PIXEL) + 2, Math.ceil(height / ART_PIXEL) + 2);
     const lit = (entry.alwaysOn || viewIsLit(entry, left, top)) && shadeScene(ctx, entry, options, left, top);
-    if (entry.glare > 0) drawGlare(ctx, entry, options, left, top);
+    if (entry.glare > 0) {
+      const sun =
+        options.sun ?? sunLight({ width, cameraX, cameraY, weather: trail.weather, timeOfDay: trail.timeOfDay });
+      const color = hexRgb(timeOfDayPalette(trail).sun || "#fff2c8");
+      // A cloud over the sun dims all its shine, and lets it dazzle as it comes out.
+      const clear = 1 - sun.clouded;
+      const open = sunOpen(entry, trail, sun, cameraX + sun.x, cameraY + sun.y) * clear;
+      const glare = entry.glare * open;
+      if (entry.shafts) drawShafts(ctx, entry, options, sun, left, top);
+      if (glare > 0.01) {
+        const rays = entry.rays.strength * open * (1 + EDGE_RAYS * 4 * open * (1 - open));
+        drawGlare(ctx, entry, options, sun, color, glare, rays, left, top);
+        drawGhosts(ctx, options, sun, glare);
+      }
+      drawGlitter(ctx, entry, options, sun, color, shineOf(entry, sun));
+      drawDazzle(ctx, options, sun, color, glare);
+    }
     return lit;
+  }
+
+  /**
+   * The sun caught in the glass of one `layer`, "back" walls or "terrain",
+   * drawn just after that layer, so whatever stands in front of a window
+   * hides its glint. Draws in world space, as `draw` does, with its options.
+   */
+  function drawGlass(ctx, options, layer) {
+    const { trail, ride, cameraX, cameraY, width, height } = options;
+    const entry = prepare(trail);
+    if (entry.glare <= 0) return;
+    // Broken panes are gone from the ride's own terrain, so they don't glint.
+    const terrain = ride?.trail ?? trail;
+    const compiled = layer === "back" ? backWallGeometry(terrain) : terrainGeometry(terrain);
+    if (!compiled) return;
+    const left = Math.floor(cameraX / ART_PIXEL) * ART_PIXEL,
+      top = Math.floor(cameraY / ART_PIXEL) * ART_PIXEL;
+    ensure(Math.ceil(width / ART_PIXEL) + 2, Math.ceil(height / ART_PIXEL) + 2);
+    const sun = options.sun ?? sunLight({ width, cameraX, cameraY, weather: trail.weather, timeOfDay: trail.timeOfDay });
+    const color = hexRgb(timeOfDayPalette(trail).sun || "#fff2c8");
+    drawGlints(ctx, entry, options, sun, color, shineOf(entry, sun), left, top, compiled);
+  }
+
+  // A low sun shines on water and glass well after its glare has faded: in
+  // full from half the glare, and fading out with it more slowly. A cloud
+  // over the sun dims it.
+  function shineOf(entry, sun) {
+    return Math.min(1, Math.sqrt(entry.glare * 2)) * (1 - sun.clouded);
   }
 
   function shadeScene(ctx, entry, { ride, look = null, flash = 0, time = 0, flip = 1, lights: extra = [] }, left, top) {
@@ -683,14 +860,14 @@ export function createLighting() {
     }
   }
 
-  // The rays' gradients for a colour, drawn from the origin (translated to the
+  // The rays' gradients for a colour and length (see sunRays), drawn from the origin (translated to the
   // sun as they are used) and kept, as a radial gradient is dear to build.
-  function rayGradients(color) {
-    const key = color.join(",");
+  function rayGradients(color, longer) {
+    const key = `${color.join(",")}|${longer}`;
     let list = gradients.get(key);
     if (list) return list;
     const [cr, cg, cb] = color;
-    const diagonal = Math.hypot(cols, rows);
+    const diagonal = Math.hypot(cols, rows) * longer;
     list = SUN_RAYS.map(([, , length, level]) => {
       const gradient = raysContext.createRadialGradient(0, 0, 0, 0, 0, length * diagonal);
       let from = 0;
@@ -707,36 +884,94 @@ export function createLighting() {
     return list;
   }
 
-  // The glare of a strong sun: a halo round it and slow rays fanning down
-  // across the view, kept out of caves and rock by the baked shade. It fades
-  // when the sun's place in the world is dark, as when the view is deep in a
-  // cave, and as terrain or a back wall in front of the sun hides it.
-  // Screened on top so it only ever brightens. The rays are only drawn
-  // again when the sun has moved a pixel on screen or their sway has moved
-  // on (about every third frame), and the shade is only cut out again when
-  // the view has moved; otherwise the kept canvas is laid over the scene.
-  function drawGlare(ctx, entry, { trail, cameraX, cameraY, width, height, time = 0, sun = null }, left, top) {
-    sun ??= sunLight({ width, cameraX, cameraY, weather: trail.weather, timeOfDay: trail.timeOfDay });
+  // Sunbeams through gaps into shade (see bakeSunShafts), as strong as the
+  // sun's rays, so a passing cloud dims them too, and screened on like the
+  // glare. They are only cut to the view again when it has moved. Dust drifts
+  // in them, a mote now and then in each patch of the world, showing only
+  // where it is in a beam; with reduced motion there is none.
+  function drawShafts(ctx, entry, { time = 0, still = false }, sun, left, top) {
+    const { field, shafts } = entry;
+    const strength = entry.rays.strength * (1 - sun.clouded);
+    if (strength <= 0.01 || !tilesInView(field, shafts.tiles, shafts.tileCols, left, top)) return;
+    if (!shaftCanvas) {
+      shaftCanvas = createCanvas(cols, rows);
+      shaftContext = shaftCanvas.getContext("2d");
+    }
+    const key = `${left}|${top}`;
+    if (key !== shaftKey || entry !== shaftEntry) {
+      shaftKey = key;
+      shaftEntry = entry;
+      shaftContext.clearRect(0, 0, cols, rows);
+      shaftContext.imageSmoothingEnabled = true;
+      drawField(shaftContext, shafts.image, field, left, top);
+    }
+    ctx.save();
+    ctx.imageSmoothingEnabled = false;
+    ctx.globalCompositeOperation = "screen";
+    ctx.globalAlpha = SHAFT_BRIGHTNESS * strength;
+    ctx.drawImage(shaftCanvas, left, top, cols * ART_PIXEL, rows * ART_PIXEL);
+    if (!still) {
+      ctx.fillStyle = MOTE;
+      const right = left + cols * ART_PIXEL,
+        bottom = top + rows * ART_PIXEL;
+      for (let cy = Math.floor(top / MOTE_PATCH); cy * MOTE_PATCH < bottom; cy++)
+        for (let cx = Math.floor(left / MOTE_PATCH); cx * MOTE_PATCH < right; cx++) {
+          const patch = cx * 7919 + cy;
+          const life = 6 + 6 * hash(patch, -1),
+            turn = time / life + hash(patch, -2),
+            round = Math.floor(turn),
+            age = (turn - round) * life;
+          const x = (cx + hash(patch, round * 2)) * MOTE_PATCH + Math.sin(age * 0.7 + patch) * 6,
+            y = (cy + hash(patch, round * 2 + 1)) * MOTE_PATCH + age * 1.6;
+          const c = Math.floor((x - field.x) / field.unit),
+            r = Math.floor((y - field.y) / field.unit);
+          if (c < 0 || r < 0 || c >= field.width || r >= field.height) continue;
+          const beam = shafts.values[r * field.width + c];
+          if (beam < 0.15) continue;
+          ctx.globalAlpha = Math.sin((Math.PI * age) / life) * Math.min(1, beam * 2) * strength * 0.8;
+          ctx.fillRect(Math.round(x / ART_PIXEL) * ART_PIXEL, Math.round(y / ART_PIXEL) * ART_PIXEL, ART_PIXEL, ART_PIXEL);
+        }
+    }
+    ctx.restore();
+  }
+
+  // How much of the sun shows from its place (sx, sy) in the world, 0…1: less
+  // when that place is dark, as when the view is deep in a cave, and as
+  // terrain or a back wall in front of the sun hides it.
+  function sunOpen(entry, trail, sun, sx, sy) {
+    const seen = entry.field ? Math.max(0, lightFieldAt(entry.field, sx, sy) * 2 - 1) : 1;
+    return seen * (seen > 0 ? sunVisible(trail, sx, sy, sun.radius) : 0);
+  }
+
+  // The glare of a strong sun: a halo round it as strong as `glare`, and slow
+  // rays fanning down across the view as strong as `rays` (see sunRays),
+  // kept out of caves and rock by the baked shade. Screened on top so it only
+  // ever brightens. The rays are only drawn again when the sun has moved a
+  // pixel on screen, their sway has moved on (about every third frame) or
+  // their strength has changed a step, and the shade is only cut out again
+  // when the view has moved; otherwise the kept canvas is laid over the scene.
+  function drawGlare(ctx, entry, { cameraX, cameraY, width, height, time = 0 }, sun, color, glare, rays, left, top) {
     const sx = cameraX + sun.x,
       sy = cameraY + sun.y;
-    const seen = entry.field ? Math.max(0, lightFieldAt(entry.field, sx, sy) * 2 - 1) : 1;
-    const glare = entry.glare * seen * (seen > 0 ? sunVisible(trail, sx, sy) : 0);
-    if (glare <= 0.01) return;
     if (!raysCanvas) {
       raysCanvas = createCanvas(cols, rows);
       raysContext = raysCanvas.getContext("2d");
     }
-    const color = hexRgb(timeOfDayPalette(trail).sun || "#fff2c8");
     const ox = Math.round((sx - left) / ART_PIXEL),
       oy = Math.round((sy - top) / ART_PIXEL);
     const toward = Math.atan2(height * 0.6 - sun.y, width * 0.5 - sun.x);
     const sway = Math.floor(time * 20);
-    const key = `${ox}|${oy}|${Math.round(toward * 100)}|${sway}|${color}`;
+    // The whole glare is laid on as strong as the halo, so the rays are drawn
+    // as strong as they are beside it, over again where that is more than once.
+    const beside = Math.round((rays / glare) * 20) / 20;
+    const { longer, warmth } = entry.rays;
+    const rayColor = warmed(color, warmth);
+    const key = `${ox}|${oy}|${Math.round(toward * 100)}|${sway}|${color}|${sun.radius}|${beside}`;
     if (key !== raysKey) {
       raysKey = key;
       const g = raysContext;
-      const diagonal = Math.hypot(cols, rows);
-      const rays = rayGradients(color);
+      const diagonal = Math.hypot(cols, rows) * longer;
+      const beams = rayGradients(rayColor, longer);
       g.setTransform(1, 0, 0, 1, 0, 0);
       g.globalCompositeOperation = "source-over";
       g.globalAlpha = 1;
@@ -745,21 +980,32 @@ export function createLighting() {
       g.imageSmoothingEnabled = false;
       g.translate(ox, oy);
       const swayTime = sway / 20;
-      SUN_RAYS.forEach(([offset, spread, length], index) => {
-        const angle = toward + offset + Math.sin(swayTime * 0.21 + index * 2.3) * 0.025;
-        const pulse = 0.7 + 0.3 * Math.sin(swayTime * 0.55 + index * 1.7);
-        const reach = length * diagonal;
-        g.globalAlpha = pulse;
-        g.fillStyle = rays[index];
-        g.beginPath();
-        g.moveTo(0, 0);
-        g.arc(0, 0, reach, angle - spread, angle + spread);
-        g.closePath();
-        g.fill();
-      });
+      for (let remaining = beside; remaining > 0; remaining--)
+        SUN_RAYS.forEach(([offset, spread, length], index) => {
+          const angle = toward + offset + Math.sin(swayTime * 0.21 + index * 2.3) * 0.025;
+          const pulse = 0.7 + 0.3 * Math.sin(swayTime * 0.55 + index * 1.7);
+          const reach = length * diagonal;
+          g.globalAlpha = pulse * Math.min(1, remaining);
+          g.fillStyle = beams[index];
+          g.beginPath();
+          g.moveTo(0, 0);
+          g.arc(0, 0, reach, angle - spread, angle + spread);
+          g.closePath();
+          g.fill();
+        });
       g.globalAlpha = 1;
       const halo = sprite(150, color);
       g.drawImage(halo.image, -halo.r, -halo.r);
+      // The rays and halo start at the sun's edge rather than cross its disc:
+      // the disc's cells (see drawPixelDisc), on its 4-unit grid, are cut out.
+      g.globalCompositeOperation = "destination-out";
+      g.globalAlpha = 1;
+      const cell = 4 / ART_PIXEL,
+        cells = Math.ceil(sun.radius / 4);
+      for (let row = -cells; row <= cells; row++) {
+        const span = Math.floor(Math.sqrt(cells * cells - row * row));
+        g.fillRect(-span * cell, row * cell, (span * 2 + 1) * cell, cell);
+      }
       g.setTransform(1, 0, 0, 1, 0, 0);
       g.globalCompositeOperation = "source-over";
     }
@@ -794,5 +1040,187 @@ export function createLighting() {
     ctx.restore();
   }
 
-  return { prepare, isDark, draw, drawDark, setHeadlights };
+  // Glitter on water in a clear sun: a faint path of light along the surface
+  // under the sun, and twinkles on it, thick there and thin elsewhere. Only
+  // water in daylight glitters, and with reduced motion only the path shows.
+  function drawGlitter(ctx, entry, { trail, ride, cameraX, cameraY, width, height, time = 0, still = false }, sun, color, shine) {
+    if (!ride?.water?.length) return;
+    const compiled = terrainGeometry(trail);
+    const sx = cameraX + sun.x;
+    const path = rgb(towardWhite(color, 0.4)),
+      spark = rgb(towardWhite(color, 0.65));
+    ctx.save();
+    ctx.globalCompositeOperation = "screen";
+    for (const body of ride.water) {
+      if (body.x > cameraX + width || body.x + body.width < cameraX || body.y > cameraY + height || body.y < cameraY)
+        continue;
+      const surface = Math.round(body.y / ART_PIXEL) * ART_PIXEL;
+      for (const { x, segments } of waterColumns(compiled, body, ART_PIXEL)) {
+        if (x < cameraX - ART_PIXEL || x > cameraX + width || Math.abs(segments[0][0] - body.y) >= 0.5) continue;
+        const y = surface + surfaceWave(x, time);
+        const lit = Math.max(0, Math.min(1, (lightFieldAt(entry.field, x, y - ART_PIXEL) - 0.6) / 0.4));
+        const strength = shine * lit;
+        if (strength <= 0) continue;
+        const near = Math.exp(-(((x - sx) / GLITTER_SPREAD) ** 2));
+        ctx.fillStyle = path;
+        ctx.globalAlpha = GLITTER_PATH * near * strength;
+        ctx.fillRect(x, y, ART_PIXEL, ART_PIXEL);
+        if (still) continue;
+        const twinkle = glitterTwinkle(x / ART_PIXEL, time, near);
+        if (!twinkle) continue;
+        const alpha = twinkle.brightness * strength,
+          top = y + twinkle.depth * ART_PIXEL;
+        ctx.fillStyle = spark;
+        ctx.globalAlpha = alpha;
+        ctx.fillRect(x, top, ART_PIXEL, ART_PIXEL);
+        // The brightest, right under the sun, catch it as a little cross.
+        if (twinkle.depth || near < 0.55 || twinkle.brightness < 0.6) continue;
+        ctx.globalAlpha = alpha * 0.6;
+        ctx.fillRect(x - ART_PIXEL, top, ART_PIXEL, ART_PIXEL);
+        ctx.fillRect(x + ART_PIXEL, top, ART_PIXEL, ART_PIXEL);
+        ctx.fillRect(x, top - ART_PIXEL, ART_PIXEL, ART_PIXEL);
+      }
+    }
+    ctx.restore();
+  }
+
+  // Lens flare: faint ghosts of the sun strung along the line from it through
+  // the middle of the view, so they swing about as the camera moves. Pixel
+  // discs and a ring on the art grid, as bright as the glare, so they fade as
+  // terrain or a cloud covers the sun.
+  function drawGhosts(ctx, { cameraX, cameraY, width, height }, sun, glare) {
+    const sx = cameraX + sun.x,
+      sy = cameraY + sun.y;
+    const dx = cameraX + width / 2 - sx,
+      dy = cameraY + height / 2 - sy;
+    ctx.save();
+    ctx.globalCompositeOperation = "screen";
+    for (const [along, radius, ring, color, brightness] of LENS_GHOSTS) {
+      const cx = Math.round((sx + dx * along) / ART_PIXEL) * ART_PIXEL,
+        cy = Math.round((sy + dy * along) / ART_PIXEL) * ART_PIXEL;
+      const cells = radius / ART_PIXEL,
+        hole = ring ? (radius - ring) / ART_PIXEL : 0;
+      ctx.fillStyle = color;
+      ctx.globalAlpha = brightness * glare;
+      for (let row = -cells; row <= cells; row++) {
+        const reach = Math.floor(Math.sqrt(cells * cells - row * row));
+        const inner = Math.abs(row) < hole ? Math.ceil(Math.sqrt(hole * hole - row * row)) : 0;
+        const y = cy + row * ART_PIXEL;
+        if (!inner) ctx.fillRect(cx - reach * ART_PIXEL, y, (reach * 2 + 1) * ART_PIXEL, ART_PIXEL);
+        else {
+          ctx.fillRect(cx - reach * ART_PIXEL, y, (reach - inner + 1) * ART_PIXEL, ART_PIXEL);
+          ctx.fillRect(cx + inner * ART_PIXEL, y, (reach - inner + 1) * ART_PIXEL, ART_PIXEL);
+        }
+      }
+    }
+    ctx.restore();
+  }
+
+  // The sun caught in the glass of one layer's geometry (`compiled`): each
+  // pane in daylight gets a faint sheen on its sunny upper right, and the
+  // sun's reflection lies across the panes in a slanted band under the sun on
+  // screen, so it crosses each window as the view rides past and glints at
+  // the pane's top right corner as it goes.
+  function drawGlints(ctx, entry, { cameraX, cameraY, width, height }, sun, color, shine, left, top, compiled) {
+    const panes = glassPanes(compiled);
+    if (!panes.length) return;
+    const sx = cameraX + sun.x,
+      sy = cameraY + sun.y;
+    // Where the middle of the reflection is at height y.
+    const reflection = (y) => sx - (y - sy) * REFLECTION_SLANT;
+    if (!glintCanvas) {
+      glintCanvas = createCanvas(cols, rows);
+      glintContext = glintCanvas.getContext("2d");
+    }
+    const g = glintContext;
+    g.setTransform(1, 0, 0, 1, 0, 0);
+    g.globalCompositeOperation = "source-over";
+    g.globalAlpha = 1;
+    g.clearRect(0, 0, cols, rows);
+    // Drawn in world units, one texel per art pixel.
+    g.setTransform(1 / ART_PIXEL, 0, 0, 1 / ART_PIXEL, -left / ART_PIXEL, -top / ART_PIXEL);
+    g.fillStyle = rgb(towardWhite(color, 0.8));
+    const flare = towardWhite(color, 0.9);
+    let drawn = false;
+    for (const { body, occluders } of panes) {
+      const { left: x0, right: x1, top: y0, bottom: y1 } = body.bounds;
+      if (x1 < cameraX || x0 > cameraX + width || y1 < cameraY || y0 > cameraY + height) continue;
+      const lit = Math.max(0, Math.min(1, (lightFieldAt(entry.field, (x0 + x1) / 2, (y0 + y1) / 2) - 0.6) / 0.4));
+      const strength = shine * lit;
+      if (strength <= 0) continue;
+      drawn = true;
+      g.save();
+      g.beginPath();
+      tracePath(g, body.rings);
+      g.clip("evenodd");
+      const across = x1 - x0,
+        tall = y1 - y0;
+      for (let y = Math.floor(y0 / ART_PIXEL) * ART_PIXEL; y < y1; y += ART_PIXEL) {
+        // The sheen, right of a line running down from near the top left to the right side.
+        const from = Math.round((x0 + across * (SHEEN_START + (1 - SHEEN_START) * ((y - y0) / tall))) / ART_PIXEL) * ART_PIXEL;
+        g.globalAlpha = SHEEN * strength;
+        g.fillRect(from, y, x1 - from, ART_PIXEL);
+        const middle = Math.round(reflection(y) / ART_PIXEL) * ART_PIXEL;
+        if (middle + REFLECTION_EDGE < x0 || middle - REFLECTION_EDGE > x1) continue;
+        g.globalAlpha = 0.25 * strength;
+        g.fillRect(middle - REFLECTION_EDGE, y, REFLECTION_EDGE * 2, ART_PIXEL);
+        g.globalAlpha = 0.3 * strength;
+        g.fillRect(middle - REFLECTION_CORE, y, REFLECTION_CORE * 2, ART_PIXEL);
+      }
+      g.restore();
+      const miss = Math.abs(x1 - reflection(y0));
+      if (miss < REFLECTION_CORE * 1.5)
+        drawFlare(g, { x: x1 - ART_PIXEL, y: y0 + ART_PIXEL, color: flare, flare: PANE_FLARE }, strength * (1 - miss / (REFLECTION_CORE * 1.5)));
+      // Whatever is drawn over the pane hides its glints.
+      if (occluders.length) {
+        g.save();
+        g.globalCompositeOperation = "destination-out";
+        g.globalAlpha = 1;
+        // One at a time, so each keeps its holes, such as its own windows.
+        for (const other of occluders) {
+          g.beginPath();
+          tracePath(g, other.rings);
+          g.fill("evenodd");
+        }
+        g.restore();
+      }
+    }
+    if (!drawn) return;
+    ctx.save();
+    ctx.imageSmoothingEnabled = false;
+    ctx.globalCompositeOperation = "screen";
+    ctx.drawImage(glintCanvas, left, top, cols * ART_PIXEL, rows * ART_PIXEL);
+    ctx.restore();
+  }
+
+  // The eyes adjusting as the sun comes out from behind a hill or the view
+  // leaves a cave: a glow from the sun across the view, as strong as the glare
+  // has outgrown what the eyes are used to, settling over about a second. A
+  // new ride starts used to its sun, and with reduced motion there is none.
+  function drawDazzle(ctx, { ride, cameraX, cameraY, width, height, time = 0, still = false }, sun, color, glare) {
+    if (ride !== adaptedRide || still) {
+      adaptedRide = ride;
+      adapted = glare;
+      adaptedTime = time;
+      return;
+    }
+    adapted = adaptToGlare(adapted, glare, Math.max(0, Math.min(0.25, time - adaptedTime)));
+    adaptedTime = time;
+    const dazzle = (glare - adapted) * DAZZLE;
+    if (dazzle <= 0.01) return;
+    const [r, g, b] = towardWhite(color, 0.5);
+    const x = cameraX + sun.x,
+      y = cameraY + sun.y;
+    const gradient = ctx.createRadialGradient(x, y, 0, x, y, Math.hypot(width, height) * DAZZLE_REACH);
+    gradient.addColorStop(0, `rgba(${r},${g},${b},${dazzle})`);
+    gradient.addColorStop(0.35, `rgba(${r},${g},${b},${dazzle * 0.43})`);
+    gradient.addColorStop(1, `rgba(${r},${g},${b},${dazzle * 0.16})`);
+    ctx.save();
+    ctx.globalCompositeOperation = "screen";
+    ctx.fillStyle = gradient;
+    ctx.fillRect(cameraX, cameraY, width, height);
+    ctx.restore();
+  }
+
+  return { prepare, isDark, draw, drawGlass, drawDark, setHeadlights };
 }

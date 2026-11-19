@@ -98,7 +98,9 @@ const helmetColor = (id, name, [helmet, helmetLight, helmetShade], stripe, visor
 // fills or overrides the outfit colour's keys, `match` copies one key from
 // another once they are merged (trousers the colour of the jacket, say) or
 // from the rider's skin, and `accessory` adds a piece that trails behind
-// the rider (a cape) in the outfit colour's panel.
+// the rider (a cape) in the outfit colour's panel. `rubber` lists the keys
+// that are rubber, which a soaking leaves shiny rather than dark (see
+// wetLookParts).
 const outfit = (id, name, shape, blurb, colors, extra = {}) =>
   ({ id, slot: 'outfit', name, shape, blurb, colors, ...extra });
 
@@ -217,14 +219,16 @@ export const LOOK_ITEMS = /** @type {LookItem[]} */ ([
     { match: { trousers: 'jacket', trousersLight: 'jacketLight' } }),
   outfit('dungarees', 'Dungarees', 'dungarees', 'Denim bib over a work shirt, and wellies.',
     { trousers: '#4a6f9a', trousersLight: '#6f93bd', denim: '#4a6f9a', denimLight: '#6f93bd', denimShade: '#344f70',
-      gloves: '#304a42', boots: '#3f6b3a', sole: '#2c4a29' }),
+      gloves: '#304a42', boots: '#3f6b3a', sole: '#2c4a29' },
+    { rubber: ['boots', 'bootsLight', 'sole'] }),
   outfit('flannel', 'Flannel', 'flannel', 'Checked shirt, cargo shorts, long socks.',
     { trousers: '#8a7a52', trousersLight: '#a8976a', socks: '#e8e5d9', gloves: '#6b4a32', boots: '#6b4a32', sole: '#3a2a1e' }),
   outfit('western', 'Western', 'western', 'Fringed jacket, leather chaps, heeled boots.',
     { trousers: '#7a5034', trousersLight: '#9a6a48', gloves: '#7a5034', boots: '#6b4128', sole: '#3a2418' }),
   outfit('wetsuit', 'Wetsuit', 'wetsuit', 'Zipped at the back. Ready for the jetty.',
     { rubber: '#2c3133', rubberLight: '#4a5154', trousers: '#2c3133', trousersLight: '#4a5154',
-      gloves: '#2c3133', boots: '#2c3133', sole: '#1b1f20' }),
+      gloves: '#2c3133', boots: '#2c3133', sole: '#1b1f20' },
+    { rubber: ['rubber', 'rubberLight', 'trousers', 'trousersLight', 'gloves', 'glovesLight', 'boots', 'bootsLight', 'sole'] }),
   outfit('coveralls', 'Coveralls', 'coveralls', 'One piece, reflective bands, steel toes.',
     { reflect: '#dfe6e0', gloves: '#c9a24a', boots: '#3a2e26', sole: '#1f1915' },
     { match: { trousers: 'jacket', trousersLight: 'jacketLight' } }),
@@ -522,8 +526,16 @@ export function randomLook(identity = DEFAULT_LOOK, { random = Math.random, owns
  *   helmet: boolean,
  *   bareHead: boolean,
  *   bike: string,
- *   bikeColors: Record<string, string>
+ *   bikeColors: Record<string, string>,
+ *   cloth: { boots: string[], legs: string[], body: string[], rubber: string[] },
+ *   wet: Wetness | null
  * }} LookParts
+ */
+
+/**
+ * How wet each part of the rider is, 0 (dry) to 1 (soaked): see riderWetness
+ * in effects.js.
+ * @typedef {{ boots: number, legs: number, body: number, head: number }} Wetness
  */
 
 const FIXED_COLORS = { eye: '#263b36' };
@@ -542,6 +554,11 @@ function mix(hex, other, amount) {
 
 const PARTS_CACHE_SIZE = 32;
 const partsCache = new Map();
+
+// The outfit keys each part of the rider wears; whatever else the outfit
+// colours is on the body.
+const BOOT_KEYS = ['boots', 'bootsLight', 'sole'];
+const LEG_KEYS = ['trousers', 'trousersLight', 'socks'];
 
 /**
  * Everything the renderer needs for a look. `roles` and `shapes` describe it
@@ -572,6 +589,11 @@ export function lookParts(look) {
   for (const [key, from] of Object.entries(outfitItem.match ?? {})) outfitColors[key] = matchable[from];
   outfitColors.glovesLight = mix(outfitColors.gloves, '#fff8e7', 0.22);
   outfitColors.bootsLight = mix(outfitColors.boots, '#fff8e7', 0.22);
+  // Outfit parts in the rider's skin colour are bare skin, as are the lit
+  // edges made from them, and bare skin doesn't soak like cloth.
+  const bareSkin = Object.entries(outfitItem.match ?? {}).filter(([, from]) => from in skinColors).map(([key]) => key);
+  for (const key of ['gloves', 'boots']) if (bareSkin.includes(key)) bareSkin.push(`${key}Light`);
+  const cloth = Object.keys(outfitColors).filter(key => !bareSkin.includes(key));
   const beardShape = hasBeard(valid) ? item('beard').shape : null;
   // What trails behind the rider: the outfit's own piece in its panel
   // colour, or else the look's trail in its colour.
@@ -626,8 +648,79 @@ export function lookParts(look) {
     bareHead: bare || Boolean(helmetItem.showsHead),
     bike: item('bike').model,
     bikeColors: Object.freeze({ ...bikeColors }),
+    cloth: Object.freeze({
+      boots: BOOT_KEYS.filter(key => cloth.includes(key)),
+      legs: LEG_KEYS.filter(key => cloth.includes(key)),
+      body: cloth.filter(key => !BOOT_KEYS.includes(key) && !LEG_KEYS.includes(key)),
+      rubber: outfitItem.rubber ?? [],
+    }),
+    wet: null,
   });
   partsCache.set(key, parts);
   if (partsCache.size > PARTS_CACHE_SIZE) partsCache.delete(partsCache.keys().next().value);
   return parts;
+}
+
+// Wet cloth darkens towards a deep, cool shade, as the art's own shades do,
+// and its lit edges darken less, so it reads a little glossy. Rubber doesn't
+// soak: it keeps its colour and its lit edges catch a wet shine.
+const WET_SHADE = '#1e3c48', WET_SHINE = '#e4f7f4';
+const WET_DARKEN = 0.34, WET_DARKEN_LIT = 0.2, WET_GLOSS = 0.35;
+// Wetness is drawn in steps, so a rider drying off reuses a few palettes.
+const WET_STEPS = 5;
+const HAIR_KEYS = ['hair', 'hairLight', 'hairShade', 'hairDark'];
+const wetCache = new Map();
+
+/** `color`, a palette key's colour, `wet` (0 to 1) of the way to soaked. */
+function wetColor(color, wet, { lit = false, rubber = false } = {}) {
+  if (rubber) return lit ? mix(color, WET_SHINE, WET_GLOSS * wet) : color;
+  return mix(color, WET_SHADE, (lit ? WET_DARKEN_LIT : WET_DARKEN) * wet);
+}
+
+/**
+ * `parts` (lookParts) as worn wet: the cloth of each part of the rider, its
+ * hair and what trails behind it darkened as `wet` says (see Wetness), and
+ * `wet` kept for the drawing's own touches. Cached like lookParts, so the
+ * same wetness gives the same object.
+ * @param {LookParts} parts
+ * @param {Wetness | null} wet
+ * @returns {LookParts}
+ */
+export function wetLookParts(parts, wet) {
+  if (!wet) return parts;
+  const step = value => Math.round(Math.max(0, Math.min(1, value)) * WET_STEPS) / WET_STEPS;
+  const levels = { boots: step(wet.boots), legs: step(wet.legs), body: step(wet.body), head: step(wet.head) };
+  if (!levels.boots && !levels.legs && !levels.body && !levels.head) return parts;
+  const key = `${parts.key}|wet:${levels.boots},${levels.legs},${levels.body},${levels.head}`;
+  let wetParts = wetCache.get(key);
+  if (wetParts) return wetParts;
+  const palette = { ...parts.palette };
+  const soak = (keys, level) => {
+    for (const name of keys)
+      palette[name] = wetColor(palette[name], level, { lit: name.endsWith('Light'), rubber: parts.cloth.rubber.includes(name) });
+  };
+  soak(parts.cloth.boots, levels.boots);
+  soak(parts.cloth.legs, levels.legs);
+  soak(parts.cloth.body, levels.body);
+  soak(HAIR_KEYS, levels.head);
+  const hair = {
+    ...parts.hair,
+    strands: parts.hair.strands.map(color => wetColor(color, levels.head)),
+    outline: wetColor(parts.hair.outline, levels.head),
+    shine: wetColor(parts.hair.shine, levels.head, { lit: true }),
+  };
+  // A balloon floats above it all and stays dry.
+  const accessory = parts.accessory && parts.accessory.shape !== 'balloon' ? {
+    ...parts.accessory,
+    fill: wetColor(parts.accessory.fill, levels.body),
+    light: wetColor(parts.accessory.light, levels.body, { lit: true }),
+    shade: wetColor(parts.accessory.shade, levels.body),
+  } : parts.accessory;
+  wetParts = Object.freeze({
+    ...parts, key, palette: Object.freeze(palette), hair: Object.freeze(hair),
+    accessory: accessory && Object.freeze(accessory), wet: Object.freeze(levels),
+  });
+  wetCache.set(key, wetParts);
+  if (wetCache.size > PARTS_CACHE_SIZE) wetCache.delete(wetCache.keys().next().value);
+  return wetParts;
 }

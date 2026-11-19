@@ -5,9 +5,6 @@
     "y": 196.54878537336776
   },
   "description": "Momentum is your friend. Carry speed through valleys, ease over crests, and lean forward when the front wheel gets light.",
-  "lesson": "Steeper rollers and sharper crests. Ease off over the top, and lean forward when the front wheel gets light.",
-  "alsoNew": "Dirt, the forest backdrop, pines, cut stumps, roots and moss.",
-  "world": "The Woods",
   "start": {
     "x": 43.90625,
     "y": null,
@@ -1487,7 +1484,7 @@
   "spikes": [],
   "water": [],
   "weather": {
-    "sun": 0.75,
+    "sun": 0.6,
     "clouds": 0.4,
     "fog": 0,
     "rain": 0,
@@ -1497,6 +1494,9 @@
     "windDirection": "left"
   },
   "timeOfDay": 12,
+  "lesson": "Steeper rollers and sharper crests. Ease off over the top, and lean forward when the front wheel gets light.",
+  "alsoNew": "Dirt, the forest backdrop, pines, cut stumps, roots and moss.",
+  "world": "The Woods",
   "medals": {
     "gold": 16.5,
     "silver": 21,

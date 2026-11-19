@@ -5,9 +5,6 @@
     "y": 226
   },
   "description": "Steep faces kick the front wheel up. Lean forward to keep it down, or ease off and let it rise into a wheelie and ride it up. The faces get steeper as the evening draws in: 47°, then 52°, a two-step at 50° and 58°, and the last at 60°. If you stall, roll back, take a longer run-up and try again.",
-  "lesson": "Wheelies. Steep faces lift the front wheel, and leaning controls it.",
-  "alsoNew": "Evening light.",
-  "world": "The Woods",
   "start": {
     "x": 90,
     "y": null,
@@ -600,7 +597,7 @@
   "spikes": [],
   "water": [],
   "weather": {
-    "sun": 0.55,
+    "sun": 0.7,
     "clouds": 0.3,
     "fog": 0,
     "rain": 0,
@@ -610,6 +607,9 @@
     "windDirection": "left"
   },
   "timeOfDay": 19,
+  "lesson": "Wheelies. Steep faces lift the front wheel, and leaning controls it.",
+  "alsoNew": "Evening light.",
+  "world": "The Woods",
   "backdrop": "forest",
   "medals": {
     "gold": 15,

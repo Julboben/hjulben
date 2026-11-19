@@ -82,7 +82,7 @@ const reported = (report, label) => {
   check('a block in view is drawn', report.blockFillsInView > 0);
   check('a block out of view is not', report.blockFillsOutOfView === 0, `(${report.blockFillsOutOfView})`);
   check('a clear sun says it glares', report.sunClear === '100% · full glare', `(${report.sunClear})`);
-  check('and the same sun behind clouds does not', report.sunCloudy === '100% · no glare', `(${report.sunCloudy})`);
+  check('and the same sun in the rain does not', report.sunRainy === '100% · no glare', `(${report.sunRainy})`);
   check('the JSON box is filled as its dialog opens', report.jsonFilled);
   check('and follows edits while it is open', report.jsonFollowsOpen);
   check('but is left alone while it is closed', report.jsonLeftClosed);
@@ -154,11 +154,31 @@ const reported = (report, label) => {
   check('with back walls locked, a press on one draws a box that takes the apple', report.boxOverWall === 'apple', `(${report.boxOverWall})`);
   check('select all leaves a locked back wall out', JSON.stringify(report.selectAllBlocks) === '[0]', `(${report.selectAllBlocks})`);
   check('the Block tool will not draw onto a locked group', report.blockRefused);
+  check('a group holding the selection is marked and opens to show it', report.appleGroupMarked && report.appleRevealed);
+  check('the inspector titles a thing as the Objects tab names it', report.appleTitle === 'APPLE', `("${report.appleTitle}")`);
   check('an item is listed by name', report.appleName === 'Apple', `("${report.appleName}")`);
   check('a locked item is left out of a selection box', report.lockedAppleBoxed === null, `(${report.lockedAppleBoxed})`);
   check('locks are not saved in the trail', report.notInFile);
   check('a cut leaves a locked group alone', report.cutRefused);
+  check('a named group can be hidden on its own', report.namedHideFree);
+  check('but not shown while its category is hidden', report.namedHideHeld);
   check('locking what is selected lets go of it', report.slabSelected === 'block' && report.releasedOnLock === null, `(${report.slabSelected}, ${JSON.stringify(report.releasedOnLock)})`);
+  check('the inspector lock button locks the selection', report.lockButtonShown && report.buttonLocked);
+  check('the half-lit lock above the groups locks every group, then unlocks everything', JSON.stringify(report.lockEverything) === JSON.stringify(['mixed', 'true', true, 'false']));
+  check('a second click on the lock above the groups frees everything', report.unlockedAll);
+  check('L locks the selection', report.keyLocked);
+  check('1, 2 and 3 open the Tools, Objects and Trail tabs', report.tabKeys.every(Boolean));
+  check('/ opens the Objects filter', report.filterKey);
+  check('the filter keeps only matching groups, open', JSON.stringify(report.filtered) === '[1,2]', `(${JSON.stringify(report.filtered)})`);
+  check('a filter that matches nothing says so', report.noMatch);
+  check('Collapse all closes every group', report.collapseShown && report.collapsed);
+  check('Open all opens every group with something in it', report.openedAll);
+  check('a group\'s lock is half lit when something in it is locked', report.markBefore === false && report.markAfter === true);
+  check('a group button locks all of the group, then frees all of it', JSON.stringify(report.groupToggle) === JSON.stringify(['true', 'false']));
+  check('a hidden group marks the tab and a selection box leaves it out', report.hiddenBadge === 'eye-closed' && report.hiddenBoxed === false, `(${report.hiddenBadge}, ${report.hiddenBoxed})`);
+  check('the eye above the groups brings hidden things back', report.shownAgain);
+  check('a group\'s eye is half lit when something in it is hidden', report.hideMark);
+  check('the inspector eye button hides the selection', report.hideButtonShown && report.buttonHid);
 }
 
 // ---------------------------------------------------------------------------
@@ -187,7 +207,7 @@ const reported = (report, label) => {
   check('dragging the handle a quarter turn turns the block about its centre', json(report.blockTurned) === json([250, 50, 550, 850]), `(${json(report.blockTurned)})`);
   check('one rotate drag is one undo step', report.oneUndo === true);
   check('the quarter-turn button turns the block', json(report.buttonTurned) === json([250, 50, 550, 850]), `(${json(report.buttonTurned)})`);
-  check('a lone prop shows its Rotation field instead of the buttons', /PROP/i.test(report.propTitle || '') && report.propFieldShown === true && report.propButtonsHidden === true, `("${report.propTitle}")`);
+  check('a lone prop is titled by its name and shows its Rotation field instead of the buttons', report.propTitle === 'ROCK' && report.propFieldShown === true && report.propButtonsHidden === true, `("${report.propTitle}")`);
   check('Shift snaps a prop to 15 degrees', report.snapped === 15, `(${report.snapped})`);
   check('without Shift a prop turns freely', Math.abs(report.free - 20) < 0.2, `(${report.free})`);
   check('undo restores an unrotated prop', report.undone === undefined, `(${report.undone})`);
@@ -259,6 +279,7 @@ const reported = (report, label) => {
   check('a typed width stretches the block from its left edge', json(report.resized) === json([0, 400, 300]), `(${json(report.resized)})`);
   check('and undo puts its width back', report.resizeUndone === 800, `(${report.resizeUndone})`);
   check('a block cannot be made thinner than the handles allow', report.heightFloor === 8, `(${report.heightFloor})`);
+  check('either handle of a smooth point turns the other', JSON.stringify(report.smoothTurns) === '[true,true]', `(${JSON.stringify(report.smoothTurns)})`);
   check('a point is titled by its number and block', report.pointTitle === 'POINT 2 · BLOCK 1', `("${report.pointTitle}")`);
   check('a point shows its kind but not an edge\'s shape', json(report.pointRows) === json([false, true, true]), `(${json(report.pointRows)})`);
   check('and its delete button says it deletes the point', report.pointDelete === 'DELETE POINT', `("${report.pointDelete}")`);

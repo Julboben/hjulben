@@ -140,6 +140,12 @@ export function posedBodyPoint([x, y], { drop, pitch }) {
 const RIDER_REST_HIP = [-11, -26];
 const RIDER_REST_KNEE = [2, -16];
 export const RIDER_PEG = [-2, -3];
+// The riding pose, in bike body coordinates before lean: where the helmet's
+// centre sits at rest, over the collar, and the hand on the handlebar every
+// bike model shares. riderSeatedPose moves the joints with lean and landing
+// flex, and the root of the hair's tail follows the head.
+export const RIDER_HEAD = [-1, -44];
+export const RIDER_HAND = [16, -28];
 export const RIDER_THIGH = hypot(
   RIDER_REST_KNEE[0] - RIDER_REST_HIP[0],
   RIDER_REST_KNEE[1] - RIDER_REST_HIP[1],

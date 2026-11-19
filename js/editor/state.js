@@ -49,6 +49,9 @@ export const editor = {
   hoverPoint: null,
   // The point, curve handle or edge a press would grab, highlighted.
   hoverOutline: null,
+  // The thing whose row the pointer is over in the Objects tab, outlined on
+  // the canvas so a row can be told apart from its lookalikes.
+  listHover: null,
   // The group the author has gone into to work on its members one at a time.
   openGroup: null,
   // The editor opens on the start, placed a little below the middle so the

@@ -5,8 +5,8 @@ import assert from 'node:assert/strict';
 import {
   LOOK_SLOTS, IDENTITY_SLOTS, LOOK_PARTS, SLOT_LABELS, LOOK_ITEMS, DEFAULT_LOOK, STARTER_LOOKS, lookItem, itemsForSlot,
   isDefaultItem, starterLook, legacyLook, legacyRider, normalizeLook, keepIdentity, lookOf, isCompleteLook, lookKey,
-  sameLook, isColorless, partName, randomLook, lookParts, ownsWith, ownedLook, shownItemsForSlot, newlyUnlockedItems, gearCard,
-  extraHiddenBy
+  sameLook, isColorless, partName, randomLook, lookParts, wetLookParts, ownsWith, ownedLook, shownItemsForSlot, newlyUnlockedItems,
+  gearCard, extraHiddenBy
 } from '../js/cosmetics.js';
 import { hasHairTail, hasTrailArt, hairRoot } from '../js/rider-hair.js';
 import { lookUnlock } from '../js/unlocks.js';
@@ -384,6 +384,40 @@ const random = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
   }
 }
 
+// --- Wet clothes -----------------------------------------------------------------
+
+{
+  const look = { ...STARTER_LOOKS.female, helmet: 'none', outfit: 'dungarees', trail: 'scarf' };
+  const dry = lookParts(look);
+  assert.equal(wetLookParts(dry, null), dry, 'no wetness is the dry look');
+  assert.equal(wetLookParts(dry, { boots: 0, legs: 0, body: 0.01, head: 0 }), dry, 'a trace of water rounds to dry');
+  const legs = wetLookParts(dry, { boots: 0, legs: 1, body: 0, head: 0 });
+  assert.notEqual(legs.palette.trousers, dry.palette.trousers, 'wet trousers darken');
+  for (const key of ['jacket', 'hair', 'skin', 'boots'])
+    assert.equal(legs.palette[key], dry.palette[key], `wet legs leave the ${key} as it was`);
+  assert.equal(wetLookParts(dry, { boots: 0, legs: 1, body: 0, head: 0 }), legs, 'the same wetness is the same object');
+  const brightness = color => [1, 3, 5].reduce((sum, index) => sum + parseInt(color.slice(index, index + 2), 16), 0);
+  const soaked = wetLookParts(dry, { boots: 1, legs: 1, body: 1, head: 1 });
+  for (const key of ['jacket', 'denim', 'trousers', 'hair'])
+    assert.ok(brightness(soaked.palette[key]) < brightness(dry.palette[key]), `soaked ${key} is darker`);
+  assert.ok(brightness(soaked.hair.strands[2]) < brightness(dry.hair.strands[2]), 'and so is the hair tail');
+  assert.ok(brightness(soaked.accessory.fill) < brightness(dry.accessory.fill), 'and what trails behind');
+  assert.equal(soaked.palette.skin, dry.palette.skin, 'skin stays as it is');
+  // The wellies are rubber: they keep their colour, and only their lit edge shines.
+  assert.equal(soaked.palette.boots, dry.palette.boots);
+  assert.ok(brightness(soaked.palette.bootsLight) > brightness(dry.palette.bootsLight));
+  assert.deepEqual(soaked.wet, { boots: 1, legs: 1, body: 1, head: 1 });
+  const balloon = lookParts({ ...STARTER_LOOKS.male, trail: 'balloon' });
+  assert.equal(wetLookParts(balloon, { boots: 1, legs: 1, body: 1, head: 1 }).accessory, balloon.accessory, 'a balloon stays dry');
+  // In underwear the torso, hands and feet are bare skin, which stays as it
+  // is like the face; only the briefs soak.
+  const bare = lookParts({ ...STARTER_LOOKS.male, outfit: 'underwear' });
+  const bareSoaked = wetLookParts(bare, { boots: 1, legs: 1, body: 1, head: 1 });
+  for (const key of ['jacket', 'jacketLight', 'jacketShade', 'gloves', 'glovesLight', 'boots', 'bootsLight', 'sole'])
+    assert.equal(bareSoaked.palette[key], bare.palette[key], `bare skin (${key}) stays as it is in underwear`);
+  assert.ok(brightness(bareSoaked.palette.trousers) < brightness(bare.palette.trousers), 'soaked briefs are darker');
+}
+
 // --- Seated pose, ragdoll alignment, ponytail root and drawing ------------------
 
 {
@@ -442,7 +476,8 @@ const random = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
   assert.notEqual(nisse.glovesLight, nisse.jacketLight, 'dark gloves do not take a bright jacket highlight');
 
   // Every outfit, helmet (bare, headwear, full-shell and secret) and bike model
-  // draws on the bike across lean and landing states, and thrown as a ragdoll.
+  // draws on the bike across lean and landing states, dry and soaked, and
+  // thrown as a ragdoll.
   const styleKeys = new Set(['fillStyle', 'strokeStyle', 'globalAlpha', 'lineWidth', 'globalCompositeOperation', 'imageSmoothingEnabled']);
   const anyContext = () => new Proxy({ getTransform: () => ({ a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 }) }, {
     get: (target, key) => (key in target ? target[key] : typeof key === 'string' && !styleKeys.has(key) ? () => {} : target[key]),
@@ -467,12 +502,13 @@ const random = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
     const beard = beards[index % beards.length];
     const gender = index % 2 === 0 ? 'male' : 'female';
     const look = { ...STARTER_LOOKS[gender], hair: hair.id, beard: beard.id, helmet: helmet.id, outfit: outfit.id, bike: bike.id };
+    const soaked = { boots: 1, legs: 1, body: 1, head: 1 };
     for (const leanVisual of [-1, 0, 1]) {
       art.drawBike({
         rear: { x: 100, y: 200, spin: 0.4, compression: leanVisual === 0 ? 14 : 2 },
         front: { x: 150, y: 200, spin: 0.4, compression: leanVisual === 0 ? 14 : 2 },
         mx: 125, my: 200, angle: 0, length: 50, facing: 1, flipVisual: 1,
-        leanVisual, look, state: 'running', foot: { crank: 0.8, kick: null, tap: null },
+        leanVisual, look, state: 'running', foot: { crank: 0.8, kick: null, tap: null }, wet: leanVisual ? null : soaked,
       });
     }
     const ragdoll = createRagdoll(
@@ -483,6 +519,7 @@ const random = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
       { helmet: !helmet.bare },
     );
     art.drawRagdoll(ragdoll, look);
+    art.drawRagdoll(ragdoll, look, soaked);
     if (!helmet.bare) {
       ragdoll.helmet = { x: 120, y: 190, spin: 0.5, facing: 1 };
       art.drawRagdoll(ragdoll, look);

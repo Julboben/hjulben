@@ -67,6 +67,17 @@ button:hover, .back-game:hover { background: var(--color-surface-hover); }
    the label stays centred and on one line, as it is without the badge. */
 .side-tab { display: flex; align-items: center; justify-content: center; white-space: nowrap; }
 .side-tab[data-icon-after]::after { --px: 1px; --gap: 6px; margin: 0 calc(-1 * (var(--icon-w) * var(--px) + var(--gap))) 0 var(--gap); }
+/* Outside a label, the field would take the browser's own text size. */
+.objects-filter { margin-bottom: 10px; font-size: var(--text-xs); font-weight: var(--weight-heavy); letter-spacing: .5px; }
+/* Laid out like a group row, so the buttons that hide and lock everything sit
+   above the eye and lock columns. Open all and Collapse all are greyed out
+   while they would do nothing, rather than hidden, so nothing below moves. */
+.objects-actions { margin-bottom: 10px; display: flex; gap: 4px; }
+.objects-actions button { width: 30px; min-height: 28px; border: 0; border-radius: 0; background: var(--color-row); box-shadow: none; color: var(--color-text-muted); }
+.objects-actions button:hover:not(:disabled) { background: var(--color-row-hover); }
+.objects-actions button:disabled:hover { background: var(--color-row); }
+.objects-flag-everything { display: flex; gap: 4px; }
+.objects-actions-label { margin: 0 auto 0 6px; align-self: center; color: var(--color-text-muted); font-size: var(--text-xs); font-weight: var(--weight-heavy); letter-spacing: 1.5px; }
 .objects-hint { margin: 0 0 10px; color: var(--color-text-muted); font-size: var(--text-xs); line-height: 1.4; }
 .object-groups, .object-items { margin: 0; padding: 0; list-style: none; }
 .object-groups { display: grid; gap: 4px; }
@@ -80,6 +91,8 @@ button:hover, .back-game:hover { background: var(--color-surface-hover); }
 .object-count { margin-left: auto; color: var(--color-text-muted); }
 .object-lock { width: 30px; padding: 0; color: var(--color-text-faint); }
 .object-lock[aria-pressed="true"] { color: var(--color-accent-text); }
+/* Only some of a group is hidden or locked: its button's icon is lit on the left half. */
+.object-lock[aria-pressed="mixed"] [data-icon] { background: linear-gradient(to right, var(--color-accent-text) 50%, currentColor 50%); }
 .object-row.locked .object-name { color: var(--color-text-muted); }
 .object-row.selected .object-name { box-shadow: inset 3px 0 0 var(--color-accent); color: var(--color-text); }
 .tool-group h3 { margin: 0 0 6px; color: var(--color-text-muted); font-size: var(--text-xs); letter-spacing: 1.5px; }
@@ -119,6 +132,8 @@ fieldset:disabled :is(input, select, textarea, button) { opacity: .55; cursor: n
 .wind-row .segmented button { padding: 4px 8px; white-space: nowrap; }
 .windsock { grid-area: sock; width: 64px; height: 40px; image-rendering: pixelated; }
 /* The zoom bar stays in view at the foot of the sidebar while the panel above it scrolls; it spans the sidebar's padding so nothing shows past its edges. */
+/* A row scrolled into view stops above the footer that sticks over the list. */
+.toolbox { scroll-padding-bottom: 64px; }
 .toolbox-footer { position: sticky; z-index: 2; bottom: -14px; margin: 12px -14px -14px; padding: 10px 14px 14px; border-top: 1px solid var(--color-border); background: var(--color-shell); }
 .zoom-controls { display: grid; grid-template-columns: 40px 34px 1fr 34px; align-items: center; gap: 5px; text-align: center; font-size: var(--text-sm); }
 .zoom-controls button { width: 34px; height: 32px; padding: 0; display: flex; align-items: center; justify-content: center; }
@@ -160,6 +175,9 @@ fieldset:disabled :is(input, select, textarea, button) { opacity: .55; cursor: n
 .panel-head { margin-bottom: 14px; display: flex; flex-direction: column; gap: 4px; }
 .panel-head span, .inspector legend { color: var(--color-text-muted); font-size: var(--text-xs); font-weight: var(--weight-heavy); letter-spacing: 1.5px; }
 .panel-head strong { font-size: 18px; }
+.selection-head { display: flex; gap: 8px; align-items: center; }
+.selection-head strong { min-width: 0; margin-right: auto; overflow-wrap: anywhere; }
+.selection-head .icon-button { flex: none; width: 30px; min-height: 30px; color: var(--color-text-muted); }
 .inspector > label, .inspector fieldset label, .inspector fieldset .field-row { margin-bottom: 10px; display: grid; gap: 5px; color: var(--color-text-muted); font-size: var(--text-xs); font-weight: var(--weight-heavy); letter-spacing: .5px; }
 .inspector input, .inspector select { width: 100%; }
 /* Two short fields that belong together, such as X and Y, share a line. */
@@ -184,7 +202,8 @@ button:disabled:hover { background: var(--color-surface); }
 .more-items { padding: 6px; display: grid; gap: 2px; }
 .more-items button { width: 100%; min-height: 34px; padding: 0 10px; display: flex; align-items: center; gap: 10px; border-color: transparent; background: none; box-shadow: none; color: var(--color-text); font-size: var(--text-sm); font-weight: var(--weight-heavy); letter-spacing: 1px; text-align: left; text-transform: uppercase; }
 .more-items button:hover, .more-items button:focus-visible { border-color: var(--color-border); background: var(--color-surface); outline: none; }
-.more-items [data-icon] { color: var(--color-text-muted); }
+/* Narrower icons are centred in the width of the usual 9 pixels, so every label starts in line. */
+.more-items [data-icon] { margin-inline: calc((9 - var(--icon-w)) * var(--px, 2px) / 2); color: var(--color-text-muted); }
 .more-items span:not([data-icon]) { flex: 1; }
 .more-items kbd { padding: 1px 5px; border: 1px solid var(--color-border); color: var(--color-text-muted); font: inherit; font-size: var(--text-xs); }
 .more-items .danger-item, .more-items .danger-item [data-icon] { color: var(--color-danger-text); }
@@ -316,8 +335,9 @@ html[data-sandbox] body::after {
 .primary-action:disabled, .primary-action:disabled:hover { border-color: var(--color-border); background: var(--color-surface); color: var(--color-text-muted); opacity: .6; }
 .more-items button:disabled:hover { border-color: transparent; background: none; }
 .picker-trigger { min-height: 34px; padding: 4px 28px 4px 9px; display: flex; align-items: center; gap: 8px; border-color: var(--color-border); background-color: var(--color-input); box-shadow: none; color: var(--color-text); font-weight: var(--weight-regular); text-align: left; }
-/* button:hover resets the whole background, so the icon is restated for both states. */
-.picker-trigger, .picker-trigger:hover { background-image: var(--icon-search); background-repeat: no-repeat; background-position: right 10px center; background-size: 14px 14px; }
+.picker-trigger { position: relative; }
+/* The magnifier, drawn in the text colour so it shows in either theme. */
+.picker-trigger::after { content: ""; position: absolute; top: 50%; right: 10px; width: 14px; height: 14px; margin-top: -7px; background: var(--color-text-muted); -webkit-mask: var(--icon-search) center / 100% 100% no-repeat; mask: var(--icon-search) center / 100% 100% no-repeat; }
 .picker-trigger:hover { background-color: var(--color-input-hover); }
 .side-panel .picker-trigger { width: 100%; }
 .editor-header .picker-trigger { min-width: 180px; max-width: 280px; }

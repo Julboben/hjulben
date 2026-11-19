@@ -20,6 +20,7 @@ import { pushHistory, redo, undo, updateHistoryButtons } from "./history.js";
 import { bindInput } from "./input.js";
 import { bindInspector, rememberedAuthor, renameTrail, syncInspector } from "./inspector.js";
 import { bindMenu } from "./menu.js";
+import { bindObjects } from "./objects.js";
 import { pickerSelect } from "./picker.js";
 import { bindPlaytest, playtestOpen } from "./playtest.js";
 import { GAME_ART_KEY, render } from "./render.js";
@@ -180,6 +181,8 @@ bindMinimap();
 bindInspector();
 
 bindMenu();
+
+bindObjects();
 
 bindVersions();
 
