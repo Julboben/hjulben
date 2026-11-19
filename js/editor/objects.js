@@ -143,9 +143,11 @@ function selectedKeys() {
 }
 
 // The words and icons of the hide and lock buttons, off and on.
+// What each flag's button says and shows. Hiding is the editor's alone: the
+// trail and its play tests are unchanged, so its tooltip says so.
 const FLAGS = {
-  hide: { off: ["Hide", "eye"], on: ["Show", "eye-closed"], group: "hidden" },
-  lock: { off: ["Lock", "unlock"], on: ["Unlock", "lock"], group: "locked" },
+  hide: { off: ["Hide", "eye"], on: ["Show", "eye-closed"], group: "hidden", note: " in the editor only" },
+  lock: { off: ["Lock", "unlock"], on: ["Unlock", "lock"], group: "locked", note: "" },
 };
 
 /**
@@ -165,8 +167,8 @@ function flagButton(kind, state, label, onClick, disabled = false) {
   button.title = disabled
     ? `The whole group is ${FLAGS[kind].group}`
     : mixed
-      ? `Some of these are ${FLAGS[kind].group}: ${verb.toLowerCase()} ${label}`
-      : `${verb} ${label}`;
+      ? `Some of these are ${FLAGS[kind].group}: ${verb.toLowerCase()} ${label}${FLAGS[kind].note}`
+      : `${verb} ${label}${state === true ? "" : FLAGS[kind].note}`;
   const icon = document.createElement("span");
   icon.dataset.icon = FLAGS[kind][state === false ? "off" : "on"][1];
   icon.setAttribute("aria-hidden", "true");
@@ -401,12 +403,6 @@ function syncLockedState() {
 }
 
 export function bindObjects() {
-  // How the list works, kept out of the way once it is known.
-  $("objects-help").addEventListener("click", () => {
-    const hint = $("objects-hint");
-    hint.hidden = !hint.hidden;
-    $("objects-help").setAttribute("aria-expanded", String(!hint.hidden));
-  });
   $("collapse-all").addEventListener("click", () => {
     expanded.clear();
     renderObjects();
