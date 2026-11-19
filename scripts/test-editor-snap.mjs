@@ -1,4 +1,4 @@
-import { gridSpacing, lockDirection, snapAxis, snapToAngleAndGrid } from '../js/editor/snap.js';
+import { GRID_STEPS, gridSpacing, lockDirection, snapAxis, snapToAngleAndGrid } from '../js/editor/snap.js';
 
 let failures = 0;
 const check = (name, ok, detail = '') => {
@@ -10,7 +10,10 @@ const onGrid = (value, spacing) => near(value / spacing, Math.round(value / spac
 const degrees = (from, to) => Math.atan2(to.y - from.y, to.x - from.x) * 180 / Math.PI;
 
 check('the grid matches the one the editor draws', gridSpacing(1) === 50 && gridSpacing(.5) === 100);
-check('the grid gets finer when zoomed right in', gridSpacing(2) === 25 && gridSpacing(6) === 10);
+check('the grid gets finer when zoomed right in', gridSpacing(2) === 25 && gridSpacing(6) === 5);
+check('the grid is coarsest zoomed right out', gridSpacing(.1) === 400);
+check('every grid spacing divides the coarser one, so lines kept zoomed out stay on the finer grids',
+  GRID_STEPS.every((step, index) => index === 0 || GRID_STEPS[index - 1].spacing % step.spacing === 0));
 
 // Without an anchor a point snaps to the nearest grid intersection.
 {

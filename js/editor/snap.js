@@ -4,15 +4,23 @@
 
 export const SNAP_ANGLE_STEP = 15;
 
+// The grid's spacings, coarsest first, and the zoom from which each is used.
+// Each divides the one before, so a line on a coarser grid is on every finer
+// one too, and what lines up zoomed out still lines up zoomed in. Lines stay
+// at least ~35px apart on screen, except the finest, which only comes in
+// right at the end of the zoom range.
+export const GRID_STEPS = [
+  { spacing: 400, from: 0 },
+  { spacing: 200, from: .18 },
+  { spacing: 100, from: .35 },
+  { spacing: 50, from: .65 },
+  { spacing: 25, from: 2 },
+  { spacing: 5, from: 5 },
+];
+
 /** The spacing of the grid lines the editor draws, so what you see is what snaps. */
 export function gridSpacing(zoom) {
-  // Coarser when zoomed out, so lines stay at least ~35px apart on screen.
-  if (zoom < .18) return 500;
-  if (zoom < .35) return 200;
-  if (zoom < .65) return 100;
-  // Finer when zoomed right in, for placing things precisely.
-  if (zoom >= 4) return 10;
-  return zoom >= 2 ? 25 : 50;
+  return GRID_STEPS.findLast((step) => zoom >= step.from).spacing;
 }
 
 /**
