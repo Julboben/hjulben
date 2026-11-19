@@ -180,8 +180,8 @@ for (const type of ["stalactites", "beams", "minecart", "lily", "fish", "squirre
 for (const type of ["tree", "crates", "sign", "lamp", "rock", "vines", "roots", "graffiti"]) assert.ok(canRotate(type), `${type} can rotate`);
 const turnedLamp = propPoint({ x: 100, type: "lamp", rotation: 90 }, 200, 22, -114);
 assert.ok(Math.abs(turnedLamp.x - 214) < 1e-9 && Math.abs(turnedLamp.y - 222) < 1e-9, "a quarter turn clockwise swings the lamp head to the right");
-const flippedLamp = propPoint({ x: 100, type: "lamp", flip: true }, 200, 22, -114);
-assert.ok(Math.abs(flippedLamp.x - 78) < 1e-9 && flippedLamp.y === 86, "a flipped lamp mirrors its head");
+const flippedLadder = propPoint({ x: 100, type: "ladder", flip: true }, 200, 22, -114);
+assert.ok(Math.abs(flippedLadder.x - 78) < 1e-9 && flippedLadder.y === 86, "a flipped ladder mirrors its point");
 
 const crest = trailOf(
   [

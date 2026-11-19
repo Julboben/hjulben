@@ -1,6 +1,6 @@
 // Terrain block geometry: boundaries, points, drawn shapes and cuts.
-import { canFlip, canRotate } from "../drawing.js";
-import { isBackWall, normalizeRotation } from "../trail-schema.js";
+import { canRotate } from "../drawing.js";
+import { canFlip, isBackWall, normalizeRotation } from "../trail-schema.js";
 import {
   cutBlock,
   edgeCurve,

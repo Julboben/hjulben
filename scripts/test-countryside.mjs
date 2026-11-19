@@ -5,7 +5,8 @@
 import assert from 'node:assert/strict';
 import { normalizeTrail, validateTrail } from '../js/trail-schema.js';
 import { rectangle } from './lib/terrain-fixtures.mjs';
-import { PAINTED_PROPS, WALL_PROPS, canFlip, canRotate, mossSurface, paintedBounds, propWallFit } from '../js/drawing.js';
+import { canFlip } from '../js/trail-schema.js';
+import { PAINTED_PROPS, WALL_PROPS, canRotate, mossSurface, paintedBounds, propWallFit } from '../js/drawing.js';
 import { FARMHOUSE, FARMHOUSE_BOUNDS, FARMHOUSE_WINDOWS, FLAGPOLE, MILL, STALL, STALL_COIN_DROP, STALL_SIGN_LINE, STALL_SIGN_LINES, STALL_TEXT, TURBINE, farmhouseLitWindows, flagDroop, flagRipple, mailboxFlagLift, millAngle, stallCoin, stallSignLines, turbineAngle } from '../js/countryside-props.js';
 import { FIRE_TONGUES, GRASS_BRUSH, IVY, tentFlapSway, LEAF_REST, LEAVES_AIRBORNE, TREE_SWAY_MAX, fallingLeaves, grassLean, ivyLayout, ivyRustle, mossCushions, mossPlacement, treeSway } from '../js/forest-props.js';
 import { fireFrame, fireTongues } from '../js/fire.js';
@@ -24,7 +25,8 @@ const COUNTRYSIDE_PROPS = ['tent', 'grass', 'flagpole', 'christiania-bike', 'ben
   assert.ok(!warnings.some((text) => /unknown type/.test(text)), warnings.join('\n'));
   assert.ok(PAINTED_PROPS.has('tutorial-lean-forward') && canRotate('tutorial-lean-forward'));
   assert.ok(paintedBounds('tutorial-lean-forward')[3] > 0, 'it reaches below its anchor');
-  for (const type of ['tent', 'grass', 'flagpole', 'christiania-bike', 'bench', 'fireplace', 'farmhouse', 'mailbox', 'stall', 'wind-turbine']) assert.ok(canFlip(type), `${type} can flip`);
+  for (const type of ['tent', 'grass', 'flagpole', 'bench', 'fireplace', 'farmhouse', 'mailbox', 'stall', 'wind-turbine']) assert.ok(!canFlip(type), `${type} is lit from the right, so it can't flip`);
+  assert.ok(canFlip('christiania-bike'), 'the Christiania bike faces a way');
 }
 
 // Grass leans downwind, harder in a strong wind, and holds its lean at time 0.

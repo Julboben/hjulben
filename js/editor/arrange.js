@@ -3,9 +3,8 @@
 // across with the blocks, as a rotation does. Order is the order of the
 // trail's lists: a later block or prop is drawn over an earlier one, so
 // bringing something to the front moves it to the end of its list.
-import { canFlip } from "../drawing.js";
 import { mirrorBlock } from "../terrain-geometry.js";
-import { normalizeRotation } from "../trail-schema.js";
+import { canFlip, normalizeRotation } from "../trail-schema.js";
 import { blocks, replaceBlock, selectedBlocks } from "./blocks.js";
 import { pushHistory } from "./history.js";
 import { syncInspector } from "./inspector.js";

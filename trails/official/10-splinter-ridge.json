@@ -1350,15 +1350,13 @@
       "x": -219.29881088128695,
       "y": 177.25490143346212,
       "type": "boulder",
-      "layer": "back",
-      "flip": true
+      "layer": "back"
     },
     {
       "x": 814.7090776832754,
       "y": 314.896633105899,
       "type": "pine-small",
-      "layer": "back",
-      "flip": true
+      "layer": "back"
     },
     {
       "x": -142.47776907946678,

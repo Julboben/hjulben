@@ -499,7 +499,7 @@ if (kind === 'group') {
   out.rowsShown = ['prop-type', 'layer', 'flip', 'radius', 'spin']
     .every(name => field(`selection-${name}-row`).hidden === false);
   out.mixed = ['prop-type', 'layer', 'radius', 'spin'].map(name => field(`selection-${name}`).value);
-  // The sign can't flip, so only the tree and the rock count: one of each.
+  // The sign can't flip, so only the ladder and the wheelbarrow count: one of each.
   out.flipMixed = field('selection-flip').value;
 
   set('selection-layer', 'front');

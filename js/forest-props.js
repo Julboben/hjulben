@@ -633,21 +633,20 @@ export const TREE_SWAY_MAX = 4;
  * wind at `time`, in world units along x in the tree's own frame (the base
  * of the crown never moves; see drawSwayingCanopy in drawing.js). Three
  * parts, all scaled by the `wind` (0…1) and blown `downwind` (-1 left, 1
- * right, in the tree's frame):
+ * right):
  *   - a steady lean, only worth a pixel in a strong wind;
- *   - gusts that travel through a stand of trees in the wind's direction in
- *     the world (`worldDownwind`, which a flipped tree's `downwind` isn't),
- *     so neighbours lean one after another;
+ *   - gusts that travel through a stand of trees in the wind's direction, so
+ *     neighbours lean one after another;
  *   - a slow sway to and fro, each tree in its own time (`phase`, 0…1).
  * Still at time 0 and in still air, and never past TREE_SWAY_MAX.
  */
-export function treeSway(time, wind, downwind, x, phase = 0, worldDownwind = downwind) {
+export function treeSway(time, wind, downwind, x, phase = 0) {
   const w = clamp(Number(wind) || 0, 0, 1);
   if (!time || !w) return 0;
   const lean = downwind * w * w * 2;
   // A gust is a slow wave rolling downwind across the world, about 600
   // units from crest to crest, every 7 seconds or so.
-  const wave = Math.sin(time * 0.9 - (x * Math.sign(worldDownwind || -1)) / 95);
+  const wave = Math.sin(time * 0.9 - (x * Math.sign(downwind || -1)) / 95);
   // Gusts still reach light air, enough to tip a treetop by a pixel as one passes.
   const gust = downwind * Math.max(0, wave) ** 3 * Math.sqrt(w) * 2.6;
   const sway = Math.sin(time * 1.3 + phase * Math.PI * 2) * w * 1.2;
@@ -691,14 +690,13 @@ export const LEAVES_AIRBORNE = 4;
  * Leaves let go as a gust passes the tree (the same wave that bends its crown
  * in treeSway), a few slots at a time, more in a stronger `wind` (0…1), and
  * now and then one even in still air. They start somewhere in `crown`
- * ({ left, right, top, bottom }), drift `downwind` (-1 or 1, the tree's frame;
- * the gusts themselves cross the world in `worldDownwind`) and land on
+ * ({ left, right, top, bottom }), drift `downwind` (-1 or 1) and land on
  * `groundAt(localX)`, the ground's y. None at time 0.
  */
-export function fallingLeaves(time, wind, downwind, x, crown, groundAt, worldDownwind = downwind) {
+export function fallingLeaves(time, wind, downwind, x, crown, groundAt) {
   if (!time) return [];
   const w = clamp(Number(wind) || 0, 0, 1);
-  const sign = Math.sign(worldDownwind || -1);
+  const sign = Math.sign(downwind || -1);
   const period = (Math.PI * 2) / GUST_RATE;
   // The gust that passed this tree most recently, and the two before it.
   const now = Math.floor((time * GUST_RATE - (x * sign) / GUST_SPACING - Math.PI / 2) / (Math.PI * 2));

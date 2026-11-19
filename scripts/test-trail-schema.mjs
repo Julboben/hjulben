@@ -265,6 +265,17 @@ assert.ok(!isOnlineTrail('custom:caves@0123abcd'), 'custom file trails stay offl
   assert.ok(errors(below).some(text => text.includes('below all the terrain')), 'a start under the terrain is reported');
 }
 
+// Prop flip: only a prop that faces a way keeps it, since every prop is lit
+// from the right and a mirrored rock or tree would be lit from the left.
+{
+  const trail = normalizeTrail({
+    ...createBlankTrail(),
+    props: [{ x: 100, y: null, type: 'rabbit', flip: true }, { x: 200, y: null, type: 'tree', flip: true }],
+  });
+  assert.equal(trail.props[0].flip, true, 'a rabbit can face left');
+  assert.ok(!('flip' in JSON.parse(JSON.stringify(trail.props[1]))), 'a tree is never flipped');
+}
+
 // Prop rotation: degrees clockwise, wrapped to (-180, 180], a tenth of a degree, omitted when 0.
 {
   assert.equal(normalizeRotation(20), 20);

@@ -3,7 +3,8 @@
 import assert from 'node:assert/strict';
 import { normalizeTrail, validateTrail } from '../js/trail-schema.js';
 import { rectangle } from './lib/terrain-fixtures.mjs';
-import { canFlip, canRotate, propSpan, propWallFit } from '../js/drawing.js';
+import { canRotate, propSpan, propWallFit } from '../js/drawing.js';
+import { canFlip } from '../js/trail-schema.js';
 import {
   CORGI_GAP, CORGI_HEART, CORGI_RANGE, CORGI_STAY, CORGI_STEP, CORGI_WANDER, corgiGround, corgiPhase, corgiPose, corgiReach, corgiSit, corgiStart,
   corgiStep,

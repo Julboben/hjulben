@@ -1,5 +1,5 @@
 // Selecting, moving, nudging, duplicating and deleting things.
-import { canFlip } from "../drawing.js";
+import { canFlip } from "../trail-schema.js";
 import {
   flattenBoundary,
   moveBlock,

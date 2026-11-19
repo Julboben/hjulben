@@ -4,7 +4,8 @@
 import assert from 'node:assert/strict';
 import { normalizeTrail, validateTrail } from '../js/trail-schema.js';
 import { rectangle } from './lib/terrain-fixtures.mjs';
-import { PAINTED_PROPS, TEXT_PROPS, canFlip, canRotate, paintedBounds, riderGaze } from '../js/drawing.js';
+import { PAINTED_PROPS, TEXT_PROPS, canRotate, paintedBounds, riderGaze } from '../js/drawing.js';
+import { canFlip } from '../js/trail-schema.js';
 import {
   BANNER_BRANDS, BANNER_MAX, CAMERA_EYE, HALFWAY_FLASH, PERSON_EYES, SPECTATOR_CHEER, CRASH_DUCK, MARSHAL_WAVE,
   bannerLayout, bannerRipple, bannerRuns, bannerStyle, crashMood, halfwayFlash, marshalFlag, pitBoardText, spectatorHop, spectatorMood,

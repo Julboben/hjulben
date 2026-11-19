@@ -3,8 +3,7 @@
 // streaming out downwind and rippling in the wind. Like every prop it sits on
 // the 2-unit art grid, has no outlines and is lit from the right. It is drawn
 // live, its pole running down to the ground; `downwind` is the direction the
-// wind blows in the prop's own frame (-1 left, 1 right), so a flipped flag
-// still flies the right way.
+// wind blows (-1 left, 1 right).
 
 import { STEEL } from "./city-props.js";
 import { HUT_LIGHT } from "./mountain-props.js";
@@ -482,8 +481,7 @@ export function drawMailbox({ pixelRect, pixelPath }, groundOffset, lift = 0) {
  * A self-serve roadside stall: a little wooden stand with a tarred roof, a
  * crate of potatoes and punnets of strawberries on the counter, an honesty
  * box for the money, and a hand-painted sign on the roof. About 2.3 m wide,
- * its counter at table height. The sign's text is drawn by drawing.js, the
- * right way round even when the stall is flipped.
+ * its counter at table height. The sign's text is drawn by drawing.js.
  */
 export const STALL = { bodyBottom: -14, sign: { left: -40, top: -104, width: 80, height: 30 }, slot: { x: 24, y: -44 } };
 export const STALL_BOUNDS = [-42, STALL.sign.top, 42, STALL.bodyBottom];

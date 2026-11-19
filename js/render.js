@@ -662,7 +662,7 @@ export function createRenderer(canvas, { still = false } = {}) {
         const anchor = Number.isFinite(prop.y) ? prop.y : terrainAt(trail, prop.x).y;
         const paid = payments.get(prop);
         const ready = paid === undefined || !propScene.time || propScene.time - paid > STALL_COIN_DROP + 0.4;
-        return { x: prop.x + (prop.flip ? -1 : 1) * STALL.slot.x, y: anchor, hint: -STALL.slot.y + 12, ready };
+        return { x: prop.x + STALL.slot.x, y: anchor, hint: -STALL.slot.y + 12, ready };
       },
       act(prop) {
         payments.set(prop, propScene.time);

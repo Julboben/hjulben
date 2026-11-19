@@ -179,6 +179,40 @@ function groundHeight(trail, x) {
 }
 
 export const SPIKE_RADIUS = { min: 8, max: 64, default: 18 };
+
+// The props that face a way, and so can be flipped to face the other: animals
+// and people, vehicles, and things that point or lean. Every prop is drawn lit
+// from the right, where the sun is, so a mirrored rock or tree would be lit
+// from the left; these face a way that matters more than their light, and the
+// animals turn round as they move anyway.
+export const FACING_PROPS = new Set([
+  "fish",
+  "duck",
+  "frog",
+  "dragonfly",
+  "boat",
+  "squirrel",
+  "corgi",
+  "rabbit",
+  "bird",
+  "vulture",
+  "scarecrow",
+  "snowman",
+  "skeleton",
+  "spectators",
+  "marshal-start",
+  "marshal-finish",
+  "camera-tower",
+  "wheelbarrow",
+  "car-wreck",
+  "christiania-bike",
+  "crane",
+  "ski-lift",
+  "ladder",
+  "arrow-sign",
+]);
+
+export const canFlip = (type) => FACING_PROPS.has(type);
 /**
  * Normalize a spike. `groundY` is the surface height at the spike's x, used
  * when the spike has no y of its own.
@@ -314,7 +348,7 @@ export function normalizeTrail(input) {
           TEXT_PROPS.has(prop.type) && typeof prop.text === "string"
             ? prop.text
             : undefined,
-        flip: prop.flip === true ? true : undefined,
+        flip: prop.flip === true && canFlip(prop.type) ? true : undefined,
         rotation: normalizeRotation(prop.rotation),
         group: normalizeGroupName(prop.group) ?? undefined,
       }))

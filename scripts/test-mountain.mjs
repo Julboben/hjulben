@@ -4,7 +4,8 @@
 import assert from 'node:assert/strict';
 import { normalizeTrail, validateTrail } from '../js/trail-schema.js';
 import { rectangle } from './lib/terrain-fixtures.mjs';
-import { canFlip, canRotate, propSpan, propWallFit, riderGaze } from '../js/drawing.js';
+import { canRotate, propSpan, propWallFit, riderGaze } from '../js/drawing.js';
+import { canFlip } from '../js/trail-schema.js';
 import {
   CABLE_HALF, HUT_CHIMNEY, ICICLE_REACH, SNOW_PINE_REACH, SNOW_PUFF_TIME, chimneySmoke, icicleLengths,
   SNOWMAN_EYE_HEIGHT, liftChair, pineShake, pineSnowFall, pineSway,
@@ -26,7 +27,7 @@ const prop = (type, x, extra = {}) => ({ type, x, y: null, layer: 'back', ...ext
     .filter((m) => m.type === 'warning');
   assert.ok(!warnings.some((m) => /unknown type/.test(m.text)), warnings.map((m) => m.text).join('\n'));
   assert.ok(!canRotate('ski-lift'), 'the chair hangs plumb');
-  assert.ok(canFlip('hut') && canFlip('snowman') && !canFlip('icicles'));
+  assert.ok(!canFlip('hut') && canFlip('snowman') && !canFlip('icicles'));
 }
 
 // The smoke blows downwind, leans further in a stronger wind, and holds still at time 0.
@@ -109,7 +110,7 @@ const prop = (type, x, extra = {}) => ({ type, x, y: null, layer: 'back', ...ext
   });
   const warnings = validateTrail(trail).filter((m) => m.type === 'warning').map((m) => m.text);
   assert.ok(!warnings.some((text) => /unknown type/.test(text)), warnings.join('\n'));
-  assert.ok(!canRotate('smoke') && canFlip('smoke'));
+  assert.ok(!canRotate('smoke') && !canFlip('smoke'));
 }
 
 console.log('Mountain tests passed.');
