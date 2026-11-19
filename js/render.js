@@ -2098,10 +2098,15 @@ export function createRenderer(canvas, { still = false } = {}) {
       fireworks.update(paused ? 0 : dt, { x: cameraX, y: cameraY, width: W, height: H });
       fireworks.draw(ctx);
     }
+    // The sun catches each layer's glass as it is drawn, so whatever stands
+    // in front of a window hides its glint.
+    const glassView = { trail, ride, cameraX, cameraY, width: W, height: H, sun: frameSun };
     backWallRenderer.draw(ctx, trail, cameraX, cameraY, W, H);
+    lighting.drawGlass(ctx, glassView, "back");
     drawProps("back", full);
     terrainRenderer.draw(ctx, ride.trail, cameraX, cameraY, W, H, propScene.time, propScene.weather);
     drawGlassCracks(ride.trail);
+    lighting.drawGlass(ctx, glassView, "terrain");
     drawWallPaint();
     drawTyreTracks(effects.tyreTracks);
     drawSkidMarks(effects.skidMarks);

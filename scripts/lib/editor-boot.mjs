@@ -1036,6 +1036,19 @@ if (kind === 'locks') {
   out.buttonHid = editor.selection === null && everything('hide') !== 'false';
   letGo('hide');
 
+  // A named group hidden only with its category can't be shown on its own:
+  // its eye is held, as its members' are.
+  const { renderObjects } = await import('../../js/editor/objects.js');
+  editor.trail.terrainBlocks[0].group = 'Slab';
+  renderObjects();
+  const namedHide = () => document.getElementById('named-groups').children[0].children[0].children[1];
+  out.namedHideFree = namedHide().disabled === false;
+  groupHide('terrain').click();
+  out.namedHideHeld = namedHide().disabled === true && namedHide().getAttribute('aria-pressed') === 'true';
+  letGo('hide');
+  delete editor.trail.terrainBlocks[0].group;
+  renderObjects();
+
   // A cut skips a locked group: lock the terrain and cut through the slab.
   groupLock('terrain').click();
   const slab = JSON.stringify(current().terrainBlocks[0]);

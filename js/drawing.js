@@ -558,7 +558,6 @@ function cloudLayer({ width, height, scrollX, cloudShift, cloudiness, color, glo
   const g = canvas.getContext("2d");
   g.fillStyle = color;
   const uLeft = gx0 * cell,
-    uRight = (gx0 + cols) * cell,
     vTop = gy0 * cell,
     vBottom = (gy0 + rows) * cell;
   const rowOf = (v) => Math.round(v / cell) - gy0;
@@ -568,6 +567,14 @@ function cloudLayer({ width, height, scrollX, cloudShift, cloudiness, color, glo
     reach = Math.ceil(sunRadius / cell),
     side = reach * 2 + 1;
   const covered = new Uint8Array(side * side);
+  // The clouds are shaped over the view and the sun's disc both, so the sun
+  // is covered as much off screen as on it; the canvas keeps only the view.
+  const iFrom = Math.min(0, sc - reach),
+    iTo = Math.max(cols, sc + reach + 1),
+    uFrom = uLeft + iFrom * cell,
+    uTo = uLeft + iTo * cell,
+    vFrom = Math.min(vTop, (gy0 + sr - reach) * cell),
+    vTo = Math.max(vBottom, (gy0 + sr + reach + 1) * cell);
   const fill = (i, r, w, h) => {
     g.fillRect(i, r, w, h);
     for (let y = Math.max(r, sr - reach); y < Math.min(r + h, sr + reach + 1); y++)
@@ -576,8 +583,8 @@ function cloudLayer({ width, height, scrollX, cloudShift, cloudiness, color, glo
   };
   // Fills column i of the layer from v0 down to v1.
   const span = (i, v0, v1) => {
-    const r0 = Math.max(0, rowOf(v0)),
-      r1 = Math.min(rows, rowOf(v1));
+    const r0 = rowOf(v0),
+      r1 = rowOf(v1);
     if (r1 > r0) fill(i, r0, 1, r1 - r0);
   };
 
@@ -596,20 +603,20 @@ function cloudLayer({ width, height, scrollX, cloudShift, cloudiness, color, glo
     }
     return bottom;
   };
-  if (deck === Infinity) fill(0, 0, cols, rows);
+  if (deck === Infinity) fill(iFrom, rowOf(vFrom), iTo - iFrom, rowOf(vTo) - rowOf(vFrom));
   else if (deck > 0)
-    for (let i = 0; i < cols; i++) span(i, vTop, deckBottom(uLeft + i * cell));
+    for (let i = iFrom; i < iTo; i++) span(i, vFrom, deckBottom(uLeft + i * cell));
 
   if (deck !== Infinity) {
-    const firstRow = Math.max(0, Math.ceil((64 - vBottom - 120) / CLOUD_ROW_SPACING));
-    const lastRow = Math.max(0, Math.floor((64 - vTop + 120) / CLOUD_ROW_SPACING));
+    const firstRow = Math.max(0, Math.ceil((64 - vTo - 120) / CLOUD_ROW_SPACING));
+    const lastRow = Math.max(0, Math.floor((64 - vFrom + 120) / CLOUD_ROW_SPACING));
     // Thin high streaks come in with broken cloud and go once it is overcast.
     const streaks = cloudiness > 0.35 && cloudiness < 0.9 ? Math.sin((Math.PI * (cloudiness - 0.35)) / 0.55) : 0;
     for (let row = firstRow; row <= lastRow; row++) {
       // Higher rows are inside the deck once there is one.
       if (deck > 0 && row > 0) break;
       const rowV = 64 - row * CLOUD_ROW_SPACING;
-      for (let k = Math.floor(uLeft / CLOUD_SLOT) - 1; k <= Math.ceil(uRight / CLOUD_SLOT); k++) {
+      for (let k = Math.floor(uFrom / CLOUD_SLOT) - 1; k <= Math.ceil(uTo / CLOUD_SLOT); k++) {
         const n = (j) => backdropNoise(k * 7 + row * 131 + j * 17);
         // A bank: rounded puffs on one flat base. Up to 40% cover they grow
         // from small puffs into big banks; the deck does the rest.
@@ -632,7 +639,7 @@ function cloudLayer({ width, height, scrollX, cloudShift, cloudiness, color, glo
           }
           const first = puffs[0].c,
             last = puffs[puffs.length - 1].c;
-          for (let i = 0; i < cols; i++) {
+          for (let i = iFrom; i < iTo; i++) {
             const u = uLeft + i * cell;
             if (u < left - 4 || u > left + w + 4) continue;
             let top = u >= first && u <= last ? 8 : 0;

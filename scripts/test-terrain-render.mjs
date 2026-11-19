@@ -385,6 +385,15 @@ const drawCalls = (renderer, trail, x, y, w, h) => {
   });
   check('a clear sky hides none of the sun', cover(0) === 0);
   check('an overcast sky hides all of it', cover(1) === 1);
+  // Far below the sky the sun is above the top of the view, and the clouds
+  // move with it, so it is just as covered as it would be in sight.
+  const seenFrom = (cameraY, clouds) => art.drawBackground({
+    width: 800, height: 400, full: false, cameraY,
+    palette: { timeOfDay: 12, weather: { sun: 1, clouds, wind: 0 } },
+  });
+  check('an overcast sky hides a sun above the view', seenFrom(3000, 1) === 1, seenFrom(3000, 1));
+  for (const clouds of [0.32, 0.6])
+    check(`a sun above the view is as covered as in sight (${clouds} cloud)`, seenFrom(3000, clouds) === seenFrom(0, clouds), `${seenFrom(3000, clouds)} ${seenFrom(0, clouds)}`);
   const passing = Array.from({ length: 120 }, (_, second) => cover(0.32, second));
   check('broken cloud passes over the sun and off it again', passing.includes(0) && Math.max(...passing) > 0.4, Math.max(...passing));
   globalThis.OffscreenCanvas = Offscreen;

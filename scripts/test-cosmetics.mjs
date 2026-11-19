@@ -409,6 +409,13 @@ const random = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
   assert.deepEqual(soaked.wet, { boots: 1, legs: 1, body: 1, head: 1 });
   const balloon = lookParts({ ...STARTER_LOOKS.male, trail: 'balloon' });
   assert.equal(wetLookParts(balloon, { boots: 1, legs: 1, body: 1, head: 1 }).accessory, balloon.accessory, 'a balloon stays dry');
+  // In underwear the torso, hands and feet are bare skin, which stays as it
+  // is like the face; only the briefs soak.
+  const bare = lookParts({ ...STARTER_LOOKS.male, outfit: 'underwear' });
+  const bareSoaked = wetLookParts(bare, { boots: 1, legs: 1, body: 1, head: 1 });
+  for (const key of ['jacket', 'jacketLight', 'jacketShade', 'gloves', 'glovesLight', 'boots', 'bootsLight', 'sole'])
+    assert.equal(bareSoaked.palette[key], bare.palette[key], `bare skin (${key}) stays as it is in underwear`);
+  assert.ok(brightness(bareSoaked.palette.trousers) < brightness(bare.palette.trousers), 'soaked briefs are darker');
 }
 
 // --- Seated pose, ragdoll alignment, ponytail root and drawing ------------------

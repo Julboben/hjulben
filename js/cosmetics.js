@@ -589,6 +589,11 @@ export function lookParts(look) {
   for (const [key, from] of Object.entries(outfitItem.match ?? {})) outfitColors[key] = matchable[from];
   outfitColors.glovesLight = mix(outfitColors.gloves, '#fff8e7', 0.22);
   outfitColors.bootsLight = mix(outfitColors.boots, '#fff8e7', 0.22);
+  // Outfit parts in the rider's skin colour are bare skin, as are the lit
+  // edges made from them, and bare skin doesn't soak like cloth.
+  const bareSkin = Object.entries(outfitItem.match ?? {}).filter(([, from]) => from in skinColors).map(([key]) => key);
+  for (const key of ['gloves', 'boots']) if (bareSkin.includes(key)) bareSkin.push(`${key}Light`);
+  const cloth = Object.keys(outfitColors).filter(key => !bareSkin.includes(key));
   const beardShape = hasBeard(valid) ? item('beard').shape : null;
   // What trails behind the rider: the outfit's own piece in its panel
   // colour, or else the look's trail in its colour.
@@ -644,9 +649,9 @@ export function lookParts(look) {
     bike: item('bike').model,
     bikeColors: Object.freeze({ ...bikeColors }),
     cloth: Object.freeze({
-      boots: BOOT_KEYS.filter(key => key in outfitColors),
-      legs: LEG_KEYS.filter(key => key in outfitColors),
-      body: Object.keys(outfitColors).filter(key => !BOOT_KEYS.includes(key) && !LEG_KEYS.includes(key)),
+      boots: BOOT_KEYS.filter(key => cloth.includes(key)),
+      legs: LEG_KEYS.filter(key => cloth.includes(key)),
+      body: cloth.filter(key => !BOOT_KEYS.includes(key) && !LEG_KEYS.includes(key)),
       rubber: outfitItem.rubber ?? [],
     }),
     wet: null,

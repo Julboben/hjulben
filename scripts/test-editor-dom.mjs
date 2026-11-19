@@ -160,6 +160,8 @@ const reported = (report, label) => {
   check('a locked item is left out of a selection box', report.lockedAppleBoxed === null, `(${report.lockedAppleBoxed})`);
   check('locks are not saved in the trail', report.notInFile);
   check('a cut leaves a locked group alone', report.cutRefused);
+  check('a named group can be hidden on its own', report.namedHideFree);
+  check('but not shown while its category is hidden', report.namedHideHeld);
   check('locking what is selected lets go of it', report.slabSelected === 'block' && report.releasedOnLock === null, `(${report.slabSelected}, ${JSON.stringify(report.releasedOnLock)})`);
   check('the inspector lock button locks the selection', report.lockButtonShown && report.buttonLocked);
   check('the half-lit lock above the groups locks every group, then unlocks everything', JSON.stringify(report.lockEverything) === JSON.stringify(['mixed', 'true', true, 'false']));

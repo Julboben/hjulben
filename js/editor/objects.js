@@ -288,15 +288,16 @@ function namedGroup(name, list, selected) {
   // A group whose own name matches shows all of its members.
   const rows = !query || name.toLowerCase().includes(query) ? members : members.filter(matches);
   if (!rows.length) return null;
+  const byCategory = (kind, entry) => (kind === "lock" ? isGroupLocked : isGroupHidden)(groupOf(entry.type, objectOf(entry)));
   const flagged = (kind) => {
-    const groupFlagged = kind === "lock" ? isGroupLocked : isGroupHidden;
-    const count = members.filter(
-      (entry) => entry[kind === "lock" ? "locked" : "hidden"] || groupFlagged(groupOf(entry.type, objectOf(entry))),
-    ).length;
+    const count = members.filter((entry) => entry[kind === "lock" ? "locked" : "hidden"] || byCategory(kind, entry)).length;
     return groupState(count === members.length, count > 0);
   };
   const lockState = flagged("lock");
   const hideState = flagged("hide");
+  // Members flagged with their whole category can't be let go of here, as
+  // in the category's own list.
+  const inherited = (kind) => members.every((entry) => byCategory(kind, entry));
   const blocked = members.every((entry) => entry.blocked);
   const open = expanded.has(key);
   const item = document.createElement("li");
@@ -324,14 +325,26 @@ function namedGroup(name, list, selected) {
   });
   head.append(
     toggle,
-    flagButton("hide", hideState, name, () => {
-      for (const entry of members) setItemHidden(entry.type, entry.index, hideState !== true);
-      changed();
-    }),
-    flagButton("lock", lockState, name, () => {
-      for (const entry of members) setItemLocked(entry.type, entry.index, lockState !== true);
-      changed();
-    }),
+    flagButton(
+      "hide",
+      hideState,
+      name,
+      () => {
+        for (const entry of members) setItemHidden(entry.type, entry.index, hideState !== true);
+        changed();
+      },
+      inherited("hide"),
+    ),
+    flagButton(
+      "lock",
+      lockState,
+      name,
+      () => {
+        for (const entry of members) setItemLocked(entry.type, entry.index, lockState !== true);
+        changed();
+      },
+      inherited("lock"),
+    ),
   );
   item.append(head);
 

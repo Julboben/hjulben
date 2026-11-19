@@ -181,27 +181,25 @@ const LENS_GHOSTS = [
 const rgb = ([r, g, b]) => `rgb(${r},${g},${b})`;
 const towardWhite = (color, amount) => color.map((value) => Math.round(value + (255 - value) * amount));
 
-// The glass panes of a trail's terrain and back walls, each with the opaque
-// bodies drawn over it: terrain in front of a back wall, and later blocks in
-// its own layer. Kept per compiled geometry, so a frame doesn't look through
-// every body for them.
+// The glass panes of one layer's compiled geometry, each with the opaque
+// blocks of its layer drawn over it. Whatever is in front of the layer is
+// drawn after its glints. Kept per compiled geometry, so a frame doesn't look
+// through every body for them.
 const paneCache = new WeakMap();
-function glassPanes(terrain, backWalls) {
-  const cached = terrain && paneCache.get(terrain);
-  if (cached && cached.backWalls === backWalls) return cached.panes;
+function glassPanes(compiled) {
+  let panes = paneCache.get(compiled);
+  if (panes) return panes;
   const overlaps = (a, b) =>
     a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
-  const front = (terrain?.bodies ?? []).filter(opaque);
-  const panes = [];
-  for (const [layer, inFront] of [[backWalls, front], [terrain, []]]) {
-    for (const body of layer?.bodies ?? []) {
-      if (body.material !== "glass") continue;
-      const over = (other) => other !== body && overlaps(body.bounds, other.bounds);
-      const later = layer.bodies.filter((other) => opaque(other) && other.blockIndex > body.blockIndex && over(other));
-      panes.push({ body, occluders: [...inFront.filter(over), ...later] });
-    }
-  }
-  if (terrain) paneCache.set(terrain, { backWalls, panes });
+  panes = compiled.bodies
+    .filter((body) => body.material === "glass")
+    .map((body) => ({
+      body,
+      occluders: compiled.bodies.filter(
+        (other) => other !== body && opaque(other) && other.blockIndex > body.blockIndex && overlaps(body.bounds, other.bounds),
+      ),
+    }));
+  paneCache.set(compiled, panes);
   return panes;
 }
 
@@ -730,14 +728,38 @@ export function createLighting() {
         drawGlare(ctx, entry, options, sun, color, glare, rays, left, top);
         drawGhosts(ctx, options, sun, glare);
       }
-      // A low sun shines on water and glass well after its glare has faded:
-      // in full from half the glare, and fading out with it more slowly.
-      const shine = Math.min(1, Math.sqrt(entry.glare * 2)) * clear;
-      drawGlitter(ctx, entry, options, sun, color, shine);
-      drawGlints(ctx, entry, options, sun, color, shine, left, top);
+      drawGlitter(ctx, entry, options, sun, color, shineOf(entry, sun));
       drawDazzle(ctx, options, sun, color, glare);
     }
     return lit;
+  }
+
+  /**
+   * The sun caught in the glass of one `layer`, "back" walls or "terrain",
+   * drawn just after that layer, so whatever stands in front of a window
+   * hides its glint. Draws in world space, as `draw` does, with its options.
+   */
+  function drawGlass(ctx, options, layer) {
+    const { trail, ride, cameraX, cameraY, width, height } = options;
+    const entry = prepare(trail);
+    if (entry.glare <= 0) return;
+    // Broken panes are gone from the ride's own terrain, so they don't glint.
+    const terrain = ride?.trail ?? trail;
+    const compiled = layer === "back" ? backWallGeometry(terrain) : terrainGeometry(terrain);
+    if (!compiled) return;
+    const left = Math.floor(cameraX / ART_PIXEL) * ART_PIXEL,
+      top = Math.floor(cameraY / ART_PIXEL) * ART_PIXEL;
+    ensure(Math.ceil(width / ART_PIXEL) + 2, Math.ceil(height / ART_PIXEL) + 2);
+    const sun = options.sun ?? sunLight({ width, cameraX, cameraY, weather: trail.weather, timeOfDay: trail.timeOfDay });
+    const color = hexRgb(timeOfDayPalette(trail).sun || "#fff2c8");
+    drawGlints(ctx, entry, options, sun, color, shineOf(entry, sun), left, top, compiled);
+  }
+
+  // A low sun shines on water and glass well after its glare has faded: in
+  // full from half the glare, and fading out with it more slowly. A cloud
+  // over the sun dims it.
+  function shineOf(entry, sun) {
+    return Math.min(1, Math.sqrt(entry.glare * 2)) * (1 - sun.clouded);
   }
 
   function shadeScene(ctx, entry, { ride, look = null, flash = 0, time = 0, flip = 1, lights: extra = [] }, left, top) {
@@ -1094,14 +1116,13 @@ export function createLighting() {
     ctx.restore();
   }
 
-  // The sun caught in glass: each pane in daylight gets a faint sheen on its
-  // sunny upper right, and the sun's reflection lies across the panes in a
-  // slanted band under the sun on screen, so it crosses each window as the
-  // view rides past and glints at the pane's top right corner as it goes.
-  // Broken panes are gone from the ride's own terrain, so they don't glint.
-  function drawGlints(ctx, entry, { trail, ride, cameraX, cameraY, width, height }, sun, color, shine, left, top) {
-    const terrain = ride?.trail ?? trail;
-    const panes = glassPanes(terrainGeometry(terrain), backWallGeometry(terrain));
+  // The sun caught in the glass of one layer's geometry (`compiled`): each
+  // pane in daylight gets a faint sheen on its sunny upper right, and the
+  // sun's reflection lies across the panes in a slanted band under the sun on
+  // screen, so it crosses each window as the view rides past and glints at
+  // the pane's top right corner as it goes.
+  function drawGlints(ctx, entry, { cameraX, cameraY, width, height }, sun, color, shine, left, top, compiled) {
+    const panes = glassPanes(compiled);
     if (!panes.length) return;
     const sx = cameraX + sun.x,
       sy = cameraY + sun.y;
@@ -1201,5 +1222,5 @@ export function createLighting() {
     ctx.restore();
   }
 
-  return { prepare, isDark, draw, drawDark, setHeadlights };
+  return { prepare, isDark, draw, drawGlass, drawDark, setHeadlights };
 }
