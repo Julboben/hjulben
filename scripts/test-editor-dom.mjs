@@ -10,9 +10,9 @@
 // The child runs per trail shape because trails.js caches the catalog at import
 // time, so two boots in one process would silently share a trail.
 import { spawn } from 'node:child_process';
-import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
 
-const bootPath = fileURLToPath(new URL('./lib/editor-boot.mjs', import.meta.url));
+const bootPath = join(import.meta.dirname, 'lib/editor-boot.mjs');
 
 let failures = 0;
 const check = (label, condition, detail = '') => {

@@ -1,9 +1,9 @@
 import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
+import { pathToFileURL } from 'node:url';
 import { writeTrailsOverview } from './generate-trails-overview.mjs';
 
-const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const projectRoot = path.resolve(import.meta.dirname, '..');
 const trailsRoot = path.join(projectRoot, 'trails');
 const sources = ['official', 'bonus', 'custom'];
 // Custom trails are git-ignored, so they get their own (also ignored) catalog

@@ -132,8 +132,8 @@ function groupMessages(messages) {
   for (const { type, text } of messages) {
     const item = /^(\w+) (\d+)\b/.exec(text);
     const key = `${type}\n${item ? text.replace(item[0], `${item[1]} N`) : text}`;
-    if (!groups.has(key)) groups.set(key, { type, text, kind: item?.[1], numbers: [] });
-    if (item) groups.get(key).numbers.push(item[2]);
+    const group = groups.getOrInsert(key, { type, text, kind: item?.[1], numbers: [] });
+    if (item) group.numbers.push(item[2]);
   }
   return [...groups.values()].map(({ type, text, kind, numbers }) => {
     if (numbers.length < 2) return `${type.toUpperCase()}: ${text}`;

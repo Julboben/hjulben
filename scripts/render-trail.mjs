@@ -199,7 +199,7 @@ if (option('--view')) {
 // --- Drawing ----------------------------------------------------------------
 
 const PAGE = '/__render-trail__.html';
-const server = await startStaticServer({
+await using server = await startStaticServer({
   handle(pathname, response) {
     if (pathname !== PAGE) return false;
     response.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' });
@@ -208,55 +208,50 @@ const server = await startStaticServer({
   },
 });
 const problems = [];
-const chrome = await launchChrome(chromePath, {
+await using chrome = await launchChrome(chromePath, {
   onAttached: (_sessionId, { type }) => (type === 'page' ? ['Runtime.enable'] : []),
 });
 chrome.on(({ method, params }) => {
   if (method === 'Runtime.exceptionThrown') problems.push(params.exceptionDetails.exception?.description ?? params.exceptionDetails.text);
 });
 
-try {
-  const { session, evaluate } = await chrome.openTab();
-  await chrome.send('Page.navigate', { url: `http://127.0.0.1:${server.address().port}${PAGE}` }, session);
-  let ready = false;
-  for (let i = 0; i < 100 && !ready; i++) {
-    await sleep(100);
-    ready = await evaluate('typeof window.hjulbenRender === "function"').catch(() => false);
-  }
-  if (!ready) throw new Error(`the render page did not load${problems.length ? `: ${problems.join('; ')}` : ''}`);
-  await evaluate(`hjulbenSetTrail(${JSON.stringify(trail)})`);
-  // Camera frames show the bike where the run has it, lights and all.
-  if (args.includes('--camera')) await evaluate(`hjulbenSetRun(${JSON.stringify(run.stretches)})`);
-  mkdirSync(outDir, { recursive: true });
-  // Images from an earlier render would be mistaken for this one's.
-  const stale = args.includes('--camera') ? (file => file.startsWith('camera-')) : (file => !file.startsWith('camera-'));
-  if (!option('--view')) for (const file of readdirSync(outDir)) if (file.endsWith('.png') && stale(file)) unlinkSync(outDir + file);
-  console.log(`${trail.name}: ${views.length} image${views.length === 1 ? '' : 's'} in ${outDir.replace(repoRoot, '')}`);
-  if (run) {
-    console.log(`Route from the last playtest (${run.seconds.toFixed(1)} s, ${run.status === 'won' ? 'finished' : run.status === 'crashed' ? 'CRASHED: the trail has changed since; playtest again' : 'not finished'}), ${run.tightSpots.length} tight spots${run.traps.length ? `, ${run.traps.length} trap${run.traps.length === 1 ? '' : 's'}` : ''}.`);
-  } else console.log('No playtest yet: run scripts/playtest.mjs first to draw the route and tight spots.');
-  for (const view of views) {
-    const title = `${view.name} · x ${view.x} to ${view.x + view.width}, y ${Math.round(view.y)} to ${Math.round(view.y + view.height)}`;
-    const job = {
-      view, scale: view.scale, maxWidth: view.name === 'overview' ? OVERVIEW_WIDTH : view.width * SCALE / 2,
-      overlay: view.overlay, props: args.includes('--props') && view.name !== 'overview', run, title, step: view.step,
-      // The overview darkens what the game's camera never shows.
-      unseen: view.name === 'overview',
-    };
-    const url = await evaluate(`hjulbenRender(${JSON.stringify(job)})`);
-    writeFileSync(outDir + view.name + '.png', Buffer.from(url.slice(url.indexOf(',') + 1), 'base64'));
-    const within = point => point.x >= view.x && point.x <= view.x + view.width && point.y >= view.y && point.y <= view.y + view.height;
-    const has = [
-      apples.some(within) && `apples ${apples.map((apple, index) => within(apple) ? index + 1 : null).filter(Boolean).join(', ')}`,
-      within({ x: trail.start.x, y: createRide(trail).rear.y }) && 'start',
-      within(createRide(trail).flower) && 'finish',
-      run?.tightSpots.some(spot => within(spot.from)) && 'tight spots',
-      run?.traps.some(within) && 'TRAPS',
-    ].filter(Boolean);
-    console.log(`  ${view.name}.png: x ${view.x} to ${view.x + view.width}, y ${Math.round(view.y)} to ${Math.round(view.y + view.height)}${has.length ? `; ${has.join(', ')}` : ''}`);
-  }
-  if (problems.length) console.log(`The page reported: ${[...new Set(problems)].join('; ')}`);
-} finally {
-  await chrome.close();
-  server.close();
+const { session, evaluate } = await chrome.openTab();
+await chrome.send('Page.navigate', { url: `http://127.0.0.1:${server.address().port}${PAGE}` }, session);
+let ready = false;
+for (let i = 0; i < 100 && !ready; i++) {
+  await sleep(100);
+  ready = await evaluate('typeof window.hjulbenRender === "function"').catch(() => false);
 }
+if (!ready) throw new Error(`the render page did not load${problems.length ? `: ${problems.join('; ')}` : ''}`);
+await evaluate(`hjulbenSetTrail(${JSON.stringify(trail)})`);
+// Camera frames show the bike where the run has it, lights and all.
+if (args.includes('--camera')) await evaluate(`hjulbenSetRun(${JSON.stringify(run.stretches)})`);
+mkdirSync(outDir, { recursive: true });
+// Images from an earlier render would be mistaken for this one's.
+const stale = args.includes('--camera') ? (file => file.startsWith('camera-')) : (file => !file.startsWith('camera-'));
+if (!option('--view')) for (const file of readdirSync(outDir)) if (file.endsWith('.png') && stale(file)) unlinkSync(outDir + file);
+console.log(`${trail.name}: ${views.length} image${views.length === 1 ? '' : 's'} in ${outDir.replace(repoRoot, '')}`);
+if (run) {
+  console.log(`Route from the last playtest (${run.seconds.toFixed(1)} s, ${run.status === 'won' ? 'finished' : run.status === 'crashed' ? 'CRASHED: the trail has changed since; playtest again' : 'not finished'}), ${run.tightSpots.length} tight spots${run.traps.length ? `, ${run.traps.length} trap${run.traps.length === 1 ? '' : 's'}` : ''}.`);
+} else console.log('No playtest yet: run scripts/playtest.mjs first to draw the route and tight spots.');
+for (const view of views) {
+  const title = `${view.name} · x ${view.x} to ${view.x + view.width}, y ${Math.round(view.y)} to ${Math.round(view.y + view.height)}`;
+  const job = {
+    view, scale: view.scale, maxWidth: view.name === 'overview' ? OVERVIEW_WIDTH : view.width * SCALE / 2,
+    overlay: view.overlay, props: args.includes('--props') && view.name !== 'overview', run, title, step: view.step,
+    // The overview darkens what the game's camera never shows.
+    unseen: view.name === 'overview',
+  };
+  const url = await evaluate(`hjulbenRender(${JSON.stringify(job)})`);
+  writeFileSync(outDir + view.name + '.png', Buffer.from(url.slice(url.indexOf(',') + 1), 'base64'));
+  const within = point => point.x >= view.x && point.x <= view.x + view.width && point.y >= view.y && point.y <= view.y + view.height;
+  const has = [
+    apples.some(within) && `apples ${apples.map((apple, index) => within(apple) ? index + 1 : null).filter(Boolean).join(', ')}`,
+    within({ x: trail.start.x, y: createRide(trail).rear.y }) && 'start',
+    within(createRide(trail).flower) && 'finish',
+    run?.tightSpots.some(spot => within(spot.from)) && 'tight spots',
+    run?.traps.some(within) && 'TRAPS',
+  ].filter(Boolean);
+  console.log(`  ${view.name}.png: x ${view.x} to ${view.x + view.width}, y ${Math.round(view.y)} to ${Math.round(view.y + view.height)}${has.length ? `; ${has.join(', ')}` : ''}`);
+}
+if (problems.length) console.log(`The page reported: ${[...new Set(problems)].join('; ')}`);

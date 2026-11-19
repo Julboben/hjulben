@@ -5,12 +5,11 @@
 //   node scripts/generate-icons.mjs --check  fail if any is out of date (CI)
 import { readFileSync, writeFileSync } from 'node:fs';
 import { deflateSync, inflateSync } from 'node:zlib';
-import { fileURLToPath } from 'node:url';
-import { dirname, join } from 'node:path';
+import { join } from 'node:path';
 import icons from '../icons/pixel-icons.mjs';
 
 const check = process.argv.includes('--check');
-const root = join(dirname(fileURLToPath(import.meta.url)), '..');
+const root = join(import.meta.dirname, '..');
 const cssPath = join(root, 'css', 'icons.css');
 
 function fail(message) {

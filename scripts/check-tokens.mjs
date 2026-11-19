@@ -4,21 +4,15 @@
 //   - a var(--name) has no definition (a typo, or a token renamed or removed)
 //   - a token is defined but nothing uses it
 // One-off values with no token are fine; give them a token once they repeat.
-import { readFileSync, readdirSync, statSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { globSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { repoRoot } from './lib/trails.mjs';
 
 const pages = ['css/game.css', 'css/editor.css'];
 const read = file => readFileSync(join(repoRoot, file), 'utf8');
 
-function collect(path, pattern, out = []) {
-  if (statSync(path).isDirectory()) {
-    for (const name of readdirSync(path)) collect(join(path, name), pattern, out);
-  } else if (pattern.test(path)) out.push(relative(repoRoot, path));
-  return out;
-}
-const css = collect(join(repoRoot, 'css'), /\.css$/);
-const js = collect(join(repoRoot, 'js'), /\.m?js$/);
+const css = globSync('css/**/*.css', { cwd: repoRoot });
+const js = globSync('js/**/*.{js,mjs}', { cwd: repoRoot });
 const sources = [...css, ...js, 'index.html', 'editor.html'].map(file => ({ file, text: read(file) }));
 
 const tokens = new Map();

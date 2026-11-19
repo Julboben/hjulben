@@ -50,8 +50,7 @@ class Element {
   /** A stub element, as document.createElement would return. */
   appendChild(node) { this.children.push(node); return node; }
   addEventListener(type, handler) {
-    if (!this.listeners.has(type)) this.listeners.set(type, []);
-    this.listeners.get(type).push(handler);
+    this.listeners.getOrInsert(type, []).push(handler);
   }
   removeEventListener(type, handler) {
     const list = this.listeners.get(type) || [];
@@ -117,8 +116,7 @@ export function buildDom(html) {
       byId.set(id, element);
     }
     for (const name of (/class="([^"]+)"/.exec(attributes)?.[1] || '').split(/\s+/).filter(Boolean)) {
-      if (!byClass.has(name)) byClass.set(name, []);
-      byClass.get(name).push(element);
+      byClass.getOrInsert(name, []).push(element);
     }
   }
   return dom;
@@ -223,8 +221,7 @@ export function installGlobals() {
     // Recorded so clipboard events can be driven.
     listeners: new Map(),
     addEventListener(type, handler) {
-      if (!this.listeners.has(type)) this.listeners.set(type, []);
-      this.listeners.get(type).push(handler);
+      this.listeners.getOrInsert(type, []).push(handler);
     },
   });
   set('localStorage', {

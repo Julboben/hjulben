@@ -170,5 +170,9 @@ export async function launchChrome(chromePath, { flags = [], onAttached = () => 
       // Leftovers in the temporary directory are no reason to fail.
       rmSync(userDataDir, { recursive: true, force: true, maxRetries: 3 });
     },
+    /** Lets a script hold Chrome with `await using`, so it closes however the script ends. */
+    [Symbol.asyncDispose]() {
+      return this.close();
+    },
   };
 }

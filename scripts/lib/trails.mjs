@@ -1,8 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs';
-import { basename, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { basename, join, resolve } from 'node:path';
 
-const root = fileURLToPath(new URL('../../', import.meta.url));
+const root = join(import.meta.dirname, '../../');
 
 export function readJson(path) {
   return JSON.parse(readFileSync(root + path, 'utf8'));

@@ -7,12 +7,11 @@
 //   node scripts/generate-sw-core.mjs --check  fail if sw.js is out of date (CI)
 import { readFileSync, writeFileSync, readdirSync } from 'node:fs';
 import { createHash } from 'node:crypto';
-import { fileURLToPath } from 'node:url';
-import { dirname, join, relative } from 'node:path';
+import { join, relative } from 'node:path';
 import { readChangelog, plainText } from './lib/changelog.mjs';
 
 const check = process.argv.includes('--check');
-const root = join(dirname(fileURLToPath(import.meta.url)), '..');
+const root = join(import.meta.dirname, '..');
 const swPath = join(root, 'sw.js');
 const sw = readFileSync(swPath, 'utf8');
 

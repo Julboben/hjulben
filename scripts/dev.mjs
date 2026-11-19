@@ -1,7 +1,6 @@
 import http from 'node:http';
 import { mkdir, readFile, stat, unlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { DEV_SERVER_HEADER, DEV_SERVER_READ_ONLY, DEV_SERVER_WRITABLE } from '../js/dev-server.js';
 import { RIDE_VERSION, simulateRun } from '../js/ride.js';
 import { decodeInputs } from '../js/replay-codec.js';
@@ -11,7 +10,7 @@ import { contentType } from './lib/mime-types.mjs';
 import { loadCatalogTrails, replayFile } from './lib/trails.mjs';
 import './watch-trails.mjs';
 
-const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const projectRoot = path.resolve(import.meta.dirname, '..');
 const trailsRoot = path.join(projectRoot, 'trails');
 const humanRunsRoot = path.join(projectRoot, 'tests', 'replays', 'human');
 const host = process.env.HOST || '127.0.0.1';

@@ -35,7 +35,6 @@ import { spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, readdirSync, unlinkSync, writeFileSync } from 'node:fs';
 import { availableParallelism } from 'node:os';
-import { fileURLToPath } from 'node:url';
 import { simulateRun } from '../js/ride.js';
 import { decodeInputs, encodeInputs } from '../js/replay-codec.js';
 import { MAX_STEPS, exploreTrail, recordTrail, repairRun } from './lib/replay-bot.mjs';
@@ -168,7 +167,7 @@ function record(entry, { path, hash, references, reuse }) {
 /** Records a trail in a process of its own; resolves once it's done. */
 function recordElsewhere(entry) {
   const passed = args.filter(arg => arg === '--force' || arg === '--explore');
-  const child = spawn(process.execPath, [fileURLToPath(import.meta.url), `--trail=${entry.id}`, ...passed], { stdio: 'inherit' });
+  const child = spawn(process.execPath, [import.meta.filename, `--trail=${entry.id}`, ...passed], { stdio: 'inherit' });
   return new Promise(resolve => child.on('close', code => {
     if (code) console.log(`${entry.id}: recording failed (exit code ${code})`);
     resolve();

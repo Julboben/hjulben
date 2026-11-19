@@ -1,18 +1,11 @@
 // Runs `node --check` on every script so a syntax error in browser-only code
 // (which the Node tests never import) still fails CI.
 import { execFileSync } from 'node:child_process';
-import { readdirSync, statSync } from 'node:fs';
+import { globSync } from 'node:fs';
 import { join } from 'node:path';
 import { repoRoot } from './lib/trails.mjs';
 
-const roots = ['js', 'scripts', 'sw.js'];
-const files = [];
-function collect(path) {
-  if (statSync(path).isDirectory()) {
-    for (const name of readdirSync(path)) collect(join(path, name));
-  } else if (/\.(m?js)$/.test(path)) files.push(path);
-}
-for (const root of roots) collect(join(repoRoot, root));
+const files = globSync(['js/**/*.{js,mjs}', 'scripts/**/*.{js,mjs}', 'sw.js'], { cwd: repoRoot }).map(file => join(repoRoot, file));
 
 let failed = 0;
 for (const file of files) {

@@ -1,9 +1,8 @@
 import { watch } from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { generateTrailCatalog } from './generate-trail-catalog.mjs';
 
-const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const projectRoot = path.resolve(import.meta.dirname, '..');
 const directories = ['official', 'bonus', 'custom'].map(source => path.join(projectRoot, 'trails', source));
 let timer = null;
 

@@ -30,8 +30,7 @@ globalThis.fetch = async url => (String(url).includes('catalog.json')
 // Window listeners are recorded so keyboard shortcuts can be driven.
 const windowListeners = new Map();
 globalThis.addEventListener = (type, handler) => {
-  if (!windowListeners.has(type)) windowListeners.set(type, []);
-  windowListeners.get(type).push(handler);
+  windowListeners.getOrInsert(type, []).push(handler);
 };
 
 await import('../../js/editor/main.js');

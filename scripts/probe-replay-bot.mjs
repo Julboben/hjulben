@@ -11,7 +11,6 @@
 // more apple, or finish once every apple is taken. No reference is given.
 import { spawn } from 'node:child_process';
 import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import { STEP } from '../js/config.js';
 import { createRide, stepRide } from '../js/ride.js';
 import { decodeInputs } from '../js/replay-codec.js';
@@ -46,7 +45,7 @@ if (segmentArg < 0) {
   // Every stretch at once, one process each.
   console.log(`${entry.id}: ${segments + 1} stretches, ${BUDGET / MILLION} million steps of search each`);
   const runs = Array.from({ length: segments + 1 }, (_, segment) => new Promise(resolve => {
-    const child = spawn(process.execPath, [fileURLToPath(import.meta.url), filter, '--segment', String(segment)], { stdio: ['ignore', 'pipe', 'inherit'] });
+    const child = spawn(process.execPath, [import.meta.filename, filter, '--segment', String(segment)], { stdio: ['ignore', 'pipe', 'inherit'] });
     let out = '';
     child.stdout.on('data', chunk => { out += chunk; });
     child.on('close', () => resolve(out.trimEnd().split('\n').pop()));
