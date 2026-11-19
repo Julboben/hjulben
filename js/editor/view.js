@@ -1,4 +1,4 @@
-// Camera, zoom, the game art toggle and screen-to-world conversion.
+// Camera, zoom, the game art and grid toggles and screen-to-world conversion.
 import { store } from "../local-store.js";
 import { $, canvas, ctx } from "./dom.js";
 import {
@@ -129,6 +129,25 @@ export function setGameArt(on) {
 }
 
 export const toggleGameArt = () => setGameArt(!editor.gameArt);
+
+export const GRID_KEY = "hjulben-editor-grid-hidden";
+
+/** Show or hide the grid, which things only snap to while it shows, and remember it. */
+export function setGrid(on) {
+  editor.grid = on;
+  try {
+    if (on) store().removeItem(GRID_KEY);
+    else store().setItem(GRID_KEY, "1");
+  } catch (_) {}
+  updateGridButton();
+  render();
+}
+
+export const toggleGrid = () => setGrid(!editor.grid);
+
+export function updateGridButton() {
+  $("toggle-grid-label").textContent = editor.grid ? "Hide grid" : "Show grid";
+}
 
 // Below GAME_ART_MIN_ZOOM the art is not drawn even when it is on, so the
 // button dims and says why rather than looking broken.

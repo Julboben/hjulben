@@ -8,8 +8,7 @@ import { flattenBoundary, scaleBlock } from "../terrain-geometry.js";
 import { WATER_SIZE } from "../water.js";
 import { blocks, replaceBlock, selectedBlocks } from "./blocks.js";
 import { guideAlong, scaleTargets, snapSide } from "./magnet.js";
-import { gridSpacing } from "./snap.js";
-import { HIT_REACH, editor, waters } from "./state.js";
+import { HIT_REACH, editor, snapGridSpacing, waters } from "./state.js";
 
 // Screen pixels a scale handle can be grabbed from, and its distance outside
 // the blocks. The box holds every point and edge, so a pointer that can grab
@@ -185,7 +184,8 @@ export function updateScale(point, { alt = false, shift = false, snap = false } 
   let sy = hy && height > 1e-6 ? factor(fromY + point.y - start.y, py, fromY) : 1;
   const lined = { x: null, y: null };
   if (shift || snap) {
-    const spacing = gridSpacing(editor.zoom);
+    // With the grid hidden, Shift scales to whole units.
+    const spacing = snapGridSpacing() || 1;
     if (!shift) active.targets ??= scaleTargets();
     const place = (scale, edge, pivot, targets) => {
       const at = pivot + (edge - pivot) * scale;

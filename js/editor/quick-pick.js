@@ -8,7 +8,7 @@ import { openPicker } from "./picker.js";
 import { editingPreview, startEditingPreview, stopEditingPreview } from "./preview.js";
 import { render } from "./render.js";
 import { syncInspector } from "./inspector.js";
-import { toggleGameArt } from "./view.js";
+import { toggleGameArt, toggleGrid } from "./view.js";
 import { propThumbnail } from "./thumbnails.js";
 import {
   TOOL_INFO,
@@ -69,6 +69,10 @@ function quickPickSelect() {
         marker: "Y",
         icon: "picture",
       }),
+      option("view:toggle-grid", `${editor.grid ? "Hide" : "Show"} grid`, {
+        marker: "⌘'",
+        icon: "grid",
+      }),
     ]),
     // "thumbnail" in the value lets a search for it find the preview too.
     group("Trail", [
@@ -86,7 +90,8 @@ function quickPickSelect() {
 function choose(value) {
   const [kind, name] = value.split(":");
   if (kind === "view") {
-    toggleGameArt();
+    if (name === "toggle-grid") toggleGrid();
+    else toggleGameArt();
     return;
   }
   if (kind === "trail") {

@@ -46,10 +46,13 @@ import {
   updateTrailControls,
 } from "./trails.js";
 import {
+  GRID_KEY,
   focusOnStart,
   resize,
   toggleGameArt,
+  toggleGrid,
   updateGameArtButton,
+  updateGridButton,
   updateZoom,
   zoomAtCenter,
 } from "./view.js";
@@ -66,6 +69,14 @@ editor.gameArt = (() => {
     return store().getItem(GAME_ART_KEY) === "1";
   } catch (_) {
     return false;
+  }
+})();
+
+editor.grid = (() => {
+  try {
+    return store().getItem(GRID_KEY) !== "1";
+  } catch (_) {
+    return true;
   }
 })();
 
@@ -174,6 +185,7 @@ bindToolbar();
 bindVersions();
 
 updateGameArtButton();
+updateGridButton();
 
 $("edit-preview").addEventListener("click", () => {
   if (editingPreview()) stopEditingPreview();
@@ -186,6 +198,8 @@ $("reset-preview").addEventListener("click", () => {
   resetPreview();
   canvas.focus({ preventScroll: true });
 });
+
+$("toggle-grid").addEventListener("click", toggleGrid);
 
 $("game-art").addEventListener("click", () => {
   toggleGameArt();

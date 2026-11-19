@@ -7,8 +7,8 @@ import { flattenBoundary, isCurvedEdge } from "../terrain-geometry.js";
 import { blocks, boundariesOf, boundaryAt, selectedBlocks } from "./blocks.js";
 import { selectedPosition } from "./inspector.js";
 import { OBJECT_LISTS, itemPosition, sameItem, selectionBox, selectionItems } from "./selection.js";
-import { SNAP_DISTANCE, gridSpacing, snapAxis } from "./snap.js";
-import { editor } from "./state.js";
+import { SNAP_DISTANCE, snapAxis } from "./snap.js";
+import { editor, snapGridSpacing } from "./state.js";
 import { viewportSize } from "./view.js";
 
 const OFF_KEY = "hjulben-editor-snapping";
@@ -171,7 +171,7 @@ function targetLines(wholeBlocks, movingNodes, movingItems) {
  */
 export function snapMove(lines, dx, dy, axes = { x: true, y: true }) {
   const threshold = SNAP_DISTANCE / editor.zoom;
-  const spacing = gridSpacing(editor.zoom);
+  const spacing = snapGridSpacing();
   const along = (allowed, delta, moving, targets) =>
     allowed
       ? snapAxis(delta, moving.map((line) => line.at), targets.map((line) => line.at), threshold, spacing)
@@ -202,7 +202,7 @@ export function snapSide(side, targets) {
     [side],
     targets.map((line) => line.at),
     SNAP_DISTANCE / editor.zoom,
-    gridSpacing(editor.zoom),
+    snapGridSpacing(),
   );
   return { side: side + snapped.delta, at: snapped.at, grid: snapped.grid };
 }

@@ -16,8 +16,7 @@ import { isBlockLocked } from "./locks.js";
 import { syncInspector } from "./inspector.js";
 import { floorUnder, groundY, render, startY } from "./render.js";
 import { blocksSelection } from "./selection.js";
-import { gridSpacing } from "./snap.js";
-import { editor } from "./state.js";
+import { editor, snapGridSpacing } from "./state.js";
 import { refuseEdit, showStatus } from "./status.js";
 import { placingNisse, setTool, toolLayer, toolMaterial, toolSettings } from "./tools.js";
 
@@ -302,7 +301,8 @@ function roundCircularCaves(block, circle) {
 }
 
 function snapToGrid([x, y]) {
-  const g = gridSpacing(editor.zoom);
+  // With the grid hidden, Shift draws on whole units.
+  const g = snapGridSpacing() || 1;
   return [Math.round(x / g) * g, Math.round(y / g) * g];
 }
 

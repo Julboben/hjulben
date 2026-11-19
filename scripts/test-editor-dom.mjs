@@ -173,6 +173,8 @@ const reported = (report, label) => {
   check('/ opens the Objects filter', report.filterKey);
   check('undo frees a lock and selects again, redo locks again, and undo shows what was hidden',
     JSON.stringify(report.lockUndo) === '["false",true,true,true,"false"]', `(${JSON.stringify(report.lockUndo)})`);
+  check('⌘\' hides the grid and its snapping, and again shows both',
+    JSON.stringify(report.gridKey) === JSON.stringify([[false, 'Show grid', false], [true, 'Hide grid', true]]), `(${JSON.stringify(report.gridKey)})`);
   check('⌘\\ hides the side panels, and again shows them', JSON.stringify(report.panelsKey) === '[true,false]', `(${JSON.stringify(report.panelsKey)})`);
   check('with nothing selected the inspector shows the trail settings, and a selection replaces them',
     JSON.stringify(report.trailSettings) === JSON.stringify([true, 'TRAIL', true, true, 'INSPECTOR']), `(${JSON.stringify(report.trailSettings)})`);

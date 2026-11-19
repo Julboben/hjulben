@@ -986,6 +986,14 @@ if (kind === 'locks') {
   key('\\', { code: 'Backslash', metaKey: true });
   out.panelsKey.push(workspace.classList.contains('panels-hidden'));
 
+  // ⌘' hides the grid, and with it the snapping to it; again shows both.
+  const { snapGridSpacing } = await import('../../js/editor/state.js');
+  const gridState = () => [editor.grid, document.getElementById('toggle-grid-label').textContent, snapGridSpacing() > 0];
+  key("'", { code: 'Quote', metaKey: true });
+  out.gridKey = [gridState()];
+  key("'", { code: 'Quote', metaKey: true });
+  out.gridKey.push(gridState());
+
   // With nothing selected the inspector holds the trail's own settings, named after it.
   editor.selection = null;
   const { syncInspector } = await import('../../js/editor/inspector.js');

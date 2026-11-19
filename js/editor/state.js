@@ -1,5 +1,7 @@
 // Editor state shared across modules. Everything else lives in the module
 // that owns it.
+import { gridSpacing } from "./snap.js";
+
 // How far the view can zoom out and in.
 export const ZOOM_MIN = 0.1;
 export const ZOOM_MAX = 6;
@@ -41,6 +43,8 @@ export const editor = {
   // The lines a drag has snapped along, drawn between what lined up.
   snapLines: [],
   gameArt: null,
+  // Whether the grid is drawn, and so whether things snap to it (⌘').
+  grid: true,
   // The Block or Cut drag currently in progress, drawn live so the author sees the
   // shape before committing it.
   pendingShape: null,
@@ -65,3 +69,10 @@ export function waters() {
   if (!Array.isArray(editor.trail.water)) editor.trail.water = [];
   return editor.trail.water;
 }
+
+/**
+ * The spacing of the grid that dragged things snap to: the drawn grid's, or 0
+ * while it is hidden, since snapping to lines that can't be seen would only
+ * puzzle. They still snap to each other.
+ */
+export const snapGridSpacing = () => (editor.grid ? gridSpacing(editor.zoom) : 0);

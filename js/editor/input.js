@@ -57,7 +57,7 @@ import {
   selectionItems,
   toggleFlip,
 } from "./selection.js";
-import { gridSpacing, lockDirection, snapToAngleAndGrid } from "./snap.js";
+import { lockDirection, snapToAngleAndGrid } from "./snap.js";
 import { setSnapping, snapLines, snapMove, snappingOn } from "./magnet.js";
 import { mirrorSelection, orderSelection } from "./arrange.js";
 import { toggleMinimap } from "./minimap.js";
@@ -71,7 +71,7 @@ import {
   ungroupSelection,
   withWholeGroups,
 } from "./groups.js";
-import { clampZoom, editor } from "./state.js";
+import { clampZoom, editor, snapGridSpacing } from "./state.js";
 import { NOTICE_TIME, refuseEdit, refuseReadOnly, showStatus, statusShowing } from "./status.js";
 import { closeToolMenu, toolMenuOpen } from "./toolbar.js";
 import { PLACING_TOOLS, TOOL_KEYS, setTool, toolSettings } from "./tools.js";
@@ -92,6 +92,7 @@ import {
   focusOnStart,
   pointerWorld,
   toggleGameArt,
+  toggleGrid,
   toggleSidePanels,
   updateZoom,
   zoomAtCenter,
@@ -425,7 +426,8 @@ function dragSelectionTo(pointer, shift) {
     const snapped = snapToAngleAndGrid(
       { x: origin[0] + point.x - dragOrigin.pointer.x, y: origin[1] + point.y - dragOrigin.pointer.y },
       anchors,
-      gridSpacing(editor.zoom),
+      // With the grid hidden, the angle steps still hold, on whole units.
+      snapGridSpacing() || 1,
     );
     x = snapped.x;
     y = snapped.y;
@@ -1204,6 +1206,14 @@ export function bindInput() {
     if ((event.metaKey || event.ctrlKey) && event.code === "Backslash") {
       event.preventDefault();
       toggleSidePanels();
+      return;
+    }
+
+    // ⌘', as in Photoshop and Illustrator, shows or hides the grid.
+    if ((event.metaKey || event.ctrlKey) && event.code === "Quote") {
+      event.preventDefault();
+      toggleGrid();
+      showStatus("info", editor.grid ? "Grid shown" : "Grid hidden: things snap only to each other");
       return;
     }
 

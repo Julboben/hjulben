@@ -792,7 +792,7 @@ export function render() {
   ctx.save();
   ctx.translate(-editor.cameraX * editor.zoom, -editor.cameraY * editor.zoom);
   ctx.scale(editor.zoom, editor.zoom);
-  drawGrid(width, height);
+  if (editor.grid) drawGrid(width, height);
   drawBackWalls();
   drawProps("back");
   drawTerrain();
