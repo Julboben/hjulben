@@ -4,7 +4,6 @@ A brief for whoever draws new props, human or AI. Send it together with:
 
 - `js/desert-props.js` or `js/mountain-props.js` as a worked example of a prop module
 - `js/cave-props.js` if the props hang from rock or need to fit the terrain
-- the prop ideas from `PROPS_PLAN.md`
 
 **What to deliver:** one new module, `js/<theme>-props.js`, with the art and the logic for the props. Leave the wiring into `drawing.js`, `render.js`, the editor and the schema (see the checklist at the end) to someone with the whole project open. A module can be wired in with almost no changes if it follows this guide.
 
@@ -181,7 +180,6 @@ For each new prop type, follow the desert commit (`9dd7708`) and the mountain pr
   - the list of known prop types
 - Docs
   - `TRAIL_FORMAT.md` (the prop list and a behaviour paragraph)
-  - tick off the items in `PROPS_PLAN.md`
 - Tests
   - `scripts/test-<theme>.mjs`, added to `npm test`
   - `scripts/test-terrain.mjs` if a prop can't rotate
