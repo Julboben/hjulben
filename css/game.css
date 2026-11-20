@@ -3039,9 +3039,11 @@ h2 {
     height: 6px;
     background: var(--color-accent);
 }
-/* Asks before leaving the Garage with an unsaved look; laid out with
-   .overlay above. */
+/* Asks before leaving the Garage with an unsaved look, and for the reload a
+   new release needs; laid out with .overlay above. The update prompt sits
+   outside .game, so it takes the game's dark look here, not the page's. */
 .menu-confirm {
+    color-scheme: dark;
     background: var(--color-dim-menu);
     & .modal-badge {
         color: var(--color-accent);
