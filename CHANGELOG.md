@@ -11,7 +11,7 @@ Player-facing release notes. The game shows them under **What's new**, and each 
 ### New
 - Sunlight falls in beams through gaps into caves and shade, with dust drifting in them, strongest when a hill or cloud cuts across the sun, in haze, and in the morning and evening. Trail authors: a narrow gap on the sun's side lets a sunbeam into a dark space.
 - Riding through water soaks your clothes: wading wets your boots and legs, a dunk soaks you through, and rain wets you from the top down unless something overhead keeps it off. Wet clothes drip and dry off over a few seconds.
-- The sun casts a faint lens flare, water glitters in it, windows catch it as you pass, and it dazzles for a moment as it comes out from behind a hill or you ride out of a cave.
+- Water glitters in the sun, windows catch it as you pass, and it dazzles for a moment as it comes out from behind a hill or you ride out of a cave.
 - In the editor, things can be hidden from the Objects tab or the inspector to work on what is behind them, and ⌘' hides the grid.
 
 ### Improved

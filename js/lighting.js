@@ -62,13 +62,36 @@ const RAY_SPACING = 6,
 // is not worth the pass.
 const TILE = 16,
   DAYLIGHT = 0.9;
-// Radius fraction → brightness; hard steps keep the pixel-art look.
-const BANDS = [
-  [0.3, 1],
-  [0.5, 0.7],
-  [0.72, 0.42],
-  [1, 0.18],
-];
+// A light fades from full at its centre to nothing at its edge as
+// (1 − d²)^LIGHT_FALLOFF, d the fraction of the way out, in LIGHT_STEPS flat
+// steps: steps keep the pixel-art look, and enough of them that they don't
+// draw rings round a lamp.
+const LIGHT_FALLOFF = 1.2,
+  LIGHT_STEPS = 12;
+// A beam spreads as it goes, so rather than a lamp's falloff, which would
+// pile its light into a wide blob at the far end, it fades steadily from the
+// lamp: from BEAM_NEAR times full as (1 − d)^BEAM_FALLOFF, d the fraction of
+// its reach.
+const BEAM_NEAR = 1.3,
+  BEAM_FALLOFF = 1.3;
+// A beam is full along its middle and feathers out to nothing at its edge,
+// over this fraction of its half-width, so it never ends in a hard line. Its
+// light is this much stronger again, and brighter still in a core straight
+// ahead of the lamp: this much brighter, within this fraction of its
+// half-width, fading out by this fraction of its reach.
+const BEAM_FEATHER = 0.75,
+  BEAM_GAIN = 1.15,
+  BEAM_CORE = 0.5,
+  BEAM_CORE_WIDTH = 0.35,
+  BEAM_CORE_REACH = 0.625;
+// The bike's lights glow in full once the light round them has dropped by
+// this much from a white noon; in brighter light they glow less, and in full
+// daylight not at all, their glint alone showing they are on.
+const BIKE_GLOW_DARK = 0.45;
+// The headlight's beam: half its width in radians, and how far it is tipped
+// down toward the road ahead, as a real one is aimed.
+const HEADLIGHT_SPREAD = 0.36,
+  HEADLIGHT_TILT = 0.1;
 const LANTERN = [255, 196, 118],
   GLOW = [90, 210, 196],
   LAMP = [255, 222, 160],
@@ -121,18 +144,44 @@ export function sunVisible(trail, x, y, radius) {
   return open / SUN_SAMPLES.length;
 }
 
-// Sun rays: [angle offset from straight at the view's centre, beam half-width,
-// length as a fraction of the view's diagonal, brightness].
 // Sunbeams show sharpest while something cuts across the sun: with half of it
 // hidden, its rays are this much stronger again.
 const EDGE_RAYS = 0.8;
-const SUN_RAYS = [
-  [-0.42, 0.05, 1.1, 0.8],
-  [-0.2, 0.09, 1.25, 1],
-  [0.02, 0.04, 0.95, 0.7],
-  [0.22, 0.07, 1.2, 0.9],
-  [0.45, 0.05, 0.9, 0.6],
+// Sun rays are a wide fan of hazy light below the sun with thin shadows cut
+// through it, as real ones are mostly the shadows of clouds in bright haze:
+// the dark gaps make the rays, and with no hard edge to the fan it never
+// looks like a spotlight. The fan: half its spread in radians, its reach as a
+// fraction of the view's diagonal, its brightness, and how many ever narrower
+// layers feather its edges.
+const RAY_FAN = { spread: 1.1, reach: 0.8, brightness: 1.6, layers: 6 };
+// The fan's light rises to full this far out (just past the sun's edge), then
+// dies away with this power, in this many flat steps for the pixel-art look.
+const RAY_PEAK = 0.04,
+  RAY_FALLOFF = 1.5,
+  RAY_STEPS = 6;
+// The shadows: [angle offset from the fan's middle, half-width], in radians;
+// how much of the fan they hide near the sun and at their far end; and how
+// many layers feather their edges.
+const RAY_SHADOWS = [
+  [-0.9, 0.014],
+  [-0.72, 0.028],
+  [-0.52, 0.013],
+  [-0.35, 0.023],
+  [-0.17, 0.046],
+  [-0.04, 0.019],
+  [0.24, 0.014],
+  [0.33, 0.028],
+  [0.61, 0.027],
+  [0.72, 0.043],
+  [0.9, 0.031],
 ];
+const RAY_SHADOW_NEAR = 0.85,
+  RAY_SHADOW_FAR = 0.6,
+  RAY_SHADOW_LAYERS = 3;
+// The rays fade out toward the ground, so they hang in the air over the far
+// hills rather than wash over the track and the rider: from full at the sun
+// to nothing this far down the view.
+const RAY_GROUND = 0.8;
 
 // The eyes getting used to the sun's glare: how fast, per second, they adjust
 // to more of it and to less. Less is slower, so a sun that ducks behind a
@@ -166,17 +215,6 @@ const PANE_FLARE = [2, 1, 0];
 const SHAFT_BRIGHTNESS = 0.6,
   MOTE = "#fff3d6",
   MOTE_PATCH = 48;
-// Lens flare: ghosts of the sun on the line from it through the middle of the
-// view, as [how far along (1 is the middle), radius in world units, ring width
-// (0 for a solid disc), colour, brightness at full glare].
-const LENS_GHOSTS = [
-  [0.35, 4, 0, "#ffe0a8", 0.35],
-  [0.62, 12, 0, "#cfeec8", 0.12],
-  [0.9, 6, 0, "#ffd2a0", 0.22],
-  [1.25, 22, 4, "#d8c8ff", 0.16],
-  [1.5, 8, 0, "#bfe8f0", 0.18],
-  [1.9, 30, 0, "#ffe6c0", 0.07],
-];
 
 const rgb = ([r, g, b]) => `rgb(${r},${g},${b})`;
 const towardWhite = (color, amount) => color.map((value) => Math.round(value + (255 - value) * amount));
@@ -548,28 +586,43 @@ export function createLighting() {
     const turn = Math.abs(flip);
     const lamps = bikeLampPoints({ rear, front, facing: ride.facing, look });
     const tail = braking ? 0.75 + 0.5 * brake : 0.7;
+    const tailAt = at(lamps.tail);
     lights.push({
-      ...at(lamps.tail),
+      ...tailAt,
       radius: braking ? 24 + 22 * brake : 22,
       color: TAIL,
       strength: tail * turn,
+      // A hard-held brake still shows a little red by day.
+      glow: Math.max(gloom(entry, tailAt.x, tailAt.y), braking ? 0.5 * brake : 0),
       flare: brake > 0.6 ? BRAKE_FLARE : TAIL_FLARE,
     });
     if (!on) return;
     const head = at(lamps.head);
-    // In full daylight, with the lamp out under a white sky, the beam adds
-    // nothing the light map can show; only its glint is drawn.
-    const glintOnly = Boolean(entry && !entry.alwaysOn && lightFieldAt(entry.field, head.x, head.y) >= 1);
+    // In daylight the beam doesn't show; only its glint is drawn.
+    const glow = gloom(entry, head.x, head.y);
+    const glintOnly = glow <= 0;
     lights.push({
       ...head,
       radius: 230,
       color: HEADLIGHT,
       strength: turn,
-      angle: Math.atan2(sin * facing, cos * facing),
-      spread: 0.3,
+      angle: Math.atan2(sin * facing, cos * facing) + HEADLIGHT_TILT * facing,
+      spread: HEADLIGHT_SPREAD,
       flare: HEADLIGHT_FLARE,
+      glow,
       glintOnly,
     });
+  }
+
+  // How much the bike's lights glow at (x, y), 0…1 (see BIKE_GLOW_DARK): by
+  // how far the ambient light there is below a white noon's. In a dark room
+  // (no `entry`) they glow in full.
+  function gloom(entry, x, y) {
+    if (!entry) return 1;
+    const level = lightFieldAt(entry.field, x, y);
+    const { sky, cave } = entry.ambient;
+    const light = [0.3, 0.59, 0.11].reduce((sum, weight, k) => sum + weight * (cave[k] + (sky[k] - cave[k]) * level), 0) / 255;
+    return Math.max(0, Math.min(1, (1 - light) / BIKE_GLOW_DARK));
   }
 
   function strengthOf(item, time) {
@@ -580,8 +633,9 @@ export function createLighting() {
     return base;
   }
 
-  // A light at full strength, cached by size, colour and beam width. A beam
-  // points along +x from the sprite's centre.
+  // A light at full strength, cached by size, colour and beam width, drawn a
+  // pixel at a time (see LIGHT_FALLOFF and BEAM_FEATHER). A beam points
+  // along +x from the sprite's centre.
   function sprite(radius, color, spread = 0) {
     const r = Math.max(1, Math.round(radius / ART_PIXEL));
     const key = `${r}|${color}|${spread}`;
@@ -589,25 +643,31 @@ export function createLighting() {
     if (cached) return cached;
     const image = createCanvas(r * 2, r * 2);
     const g = image.getContext("2d");
-    if (spread) {
-      g.beginPath();
-      g.moveTo(r, r);
-      g.arc(r, r, r, -spread, spread);
-      g.closePath();
-      g.clip();
-    }
-    const gradient = g.createRadialGradient(r, r, 0, r, r, r);
+    const pixels = g.createImageData(r * 2, r * 2);
     const [cr, cg, cb] = color;
-    let from = 0;
-    for (const [to, level] of BANDS) {
-      const stop = `rgba(${cr},${cg},${cb},${level})`;
-      gradient.addColorStop(from, stop);
-      gradient.addColorStop(to, stop);
-      from = Math.min(1, to + 0.0001);
-    }
-    gradient.addColorStop(1, `rgba(${cr},${cg},${cb},0)`);
-    g.fillStyle = gradient;
-    g.fillRect(0, 0, r * 2, r * 2);
+    for (let y = 0; y < r * 2; y++)
+      for (let x = 0; x < r * 2; x++) {
+        const dx = x + 0.5 - r,
+          dy = y + 0.5 - r;
+        const out = Math.hypot(dx, dy) / r;
+        if (out >= 1) continue;
+        let light = spread ? Math.min(1, BEAM_NEAR * (1 - out) ** BEAM_FALLOFF) : (1 - out * out) ** LIGHT_FALLOFF;
+        if (spread) {
+          const off = Math.abs(Math.atan2(dy, dx));
+          const edge = Math.min(1, Math.max(0, (spread - off) / (spread * BEAM_FEATHER)));
+          const core =
+            BEAM_CORE *
+            Math.max(0, 1 - off / (spread * BEAM_CORE_WIDTH)) *
+            Math.max(0, 1 - out / BEAM_CORE_REACH);
+          light = Math.min(1, (light * BEAM_GAIN + core) * edge * edge * (3 - 2 * edge));
+        }
+        const i = (y * r * 2 + x) * 4;
+        pixels.data[i] = cr;
+        pixels.data[i + 1] = cg;
+        pixels.data[i + 2] = cb;
+        pixels.data[i + 3] = Math.round((Math.round(light * LIGHT_STEPS) / LIGHT_STEPS) * 255);
+      }
+    g.putImageData(pixels, 0, 0);
     cached = { image, r };
     sprites.set(key, cached);
     return cached;
@@ -726,7 +786,6 @@ export function createLighting() {
       if (glare > 0.01) {
         const rays = entry.rays.strength * open * (1 + EDGE_RAYS * 4 * open * (1 - open));
         drawGlare(ctx, entry, options, sun, color, glare, rays, left, top);
-        drawGhosts(ctx, options, sun, glare);
       }
       drawGlitter(ctx, entry, options, sun, color, shineOf(entry, sun));
       drawDazzle(ctx, options, sun, color, glare);
@@ -815,7 +874,7 @@ export function createLighting() {
     let stamped = 0;
     for (const item of lights) {
       const strength = strengthOf(item, time);
-      if (strength <= 0 || !stamp(item, strength, left, top, field)) continue;
+      if (strength <= 0 || !stamp(item, strength * (item.glow ?? 1), left, top, field)) continue;
       if (!item.glintOnly) stamped++;
       if (item.flare) flares.push(item, strength);
     }
@@ -860,28 +919,47 @@ export function createLighting() {
     }
   }
 
-  // The rays' gradients for a colour and length (see sunRays), drawn from the origin (translated to the
-  // sun as they are used) and kept, as a radial gradient is dear to build.
+  // The rays' gradients for a colour and length (see sunRays): the fan's light
+  // and the shadows cut from it, drawn from the origin (translated to the sun
+  // as they are used) and kept, as a radial gradient is dear to build.
   function rayGradients(color, longer) {
     const key = `${color.join(",")}|${longer}`;
-    let list = gradients.get(key);
-    if (list) return list;
+    let kept = gradients.get(key);
+    if (kept) return kept;
     const [cr, cg, cb] = color;
-    const diagonal = Math.hypot(cols, rows) * longer;
-    list = SUN_RAYS.map(([, , length, level]) => {
-      const gradient = raysContext.createRadialGradient(0, 0, 0, 0, 0, length * diagonal);
-      let from = 0;
-      for (const [to, band] of BANDS) {
-        const stop = `rgba(${cr},${cg},${cb},${band * level})`;
-        gradient.addColorStop(from, stop);
-        gradient.addColorStop(to, stop);
-        from = Math.min(1, to + 0.0001);
-      }
-      gradient.addColorStop(1, `rgba(${cr},${cg},${cb},0)`);
-      return gradient;
-    });
-    gradients.set(key, list);
-    return list;
+    const reach = Math.hypot(cols, rows) * longer * RAY_FAN.reach;
+    const fan = raysContext.createRadialGradient(0, 0, 0, 0, 0, reach);
+    // Enough stops that the steps of light fall where the curve puts them.
+    const stops = RAY_STEPS * 4;
+    for (let i = 0; i <= stops; i++) {
+      const at = i / stops;
+      const light = at < RAY_PEAK ? at / RAY_PEAK : (1 - (at - RAY_PEAK) / (1 - RAY_PEAK)) ** RAY_FALLOFF;
+      fan.addColorStop(at, `rgba(${cr},${cg},${cb},${Math.round(light * RAY_STEPS) / RAY_STEPS})`);
+    }
+    // The shadows start just past the sun's edge, so they never cut its glow.
+    const shadow = raysContext.createRadialGradient(0, 0, 0, 0, 0, reach);
+    shadow.addColorStop(0, "rgba(0,0,0,0)");
+    shadow.addColorStop(RAY_PEAK * 2.5, `rgba(0,0,0,${RAY_SHADOW_NEAR})`);
+    shadow.addColorStop(1, `rgba(0,0,0,${RAY_SHADOW_FAR})`);
+    kept = { fan, shadow, reach };
+    gradients.set(key, kept);
+    return kept;
+  }
+
+  // A wedge from the origin `reach` long, `spread` either side of `angle`,
+  // drawn `layers` times, each narrower than the last, so that its edges
+  // feather out rather than end in a hard line.
+  function featheredWedge(g, angle, spread, reach, fill, alpha, layers) {
+    g.fillStyle = fill;
+    g.globalAlpha = alpha / layers;
+    for (let layer = 0; layer < layers; layer++) {
+      const half = spread * (1 - layer / layers);
+      g.beginPath();
+      g.moveTo(0, 0);
+      g.arc(0, 0, reach, angle - half, angle + half);
+      g.closePath();
+      g.fill();
+    }
   }
 
   // Sunbeams through gaps into shade (see bakeSunShafts), as strong as the
@@ -943,8 +1021,9 @@ export function createLighting() {
     return seen * (seen > 0 ? sunVisible(trail, sx, sy, sun.radius) : 0);
   }
 
-  // The glare of a strong sun: a halo round it as strong as `glare`, and slow
-  // rays fanning down across the view as strong as `rays` (see sunRays),
+  // The glare of a strong sun: a halo round it as strong as `glare`, and a
+  // fan of hazy light below it as strong as `rays` (see sunRays), with slowly
+  // swaying shadows through it and fading toward the ground (see RAY_FAN),
   // kept out of caves and rock by the baked shade. Screened on top so it only
   // ever brightens. The rays are only drawn again when the sun has moved a
   // pixel on screen, their sway has moved on (about every third frame) or
@@ -970,8 +1049,7 @@ export function createLighting() {
     if (key !== raysKey) {
       raysKey = key;
       const g = raysContext;
-      const diagonal = Math.hypot(cols, rows) * longer;
-      const beams = rayGradients(rayColor, longer);
+      const { fan, shadow, reach } = rayGradients(rayColor, longer);
       g.setTransform(1, 0, 0, 1, 0, 0);
       g.globalCompositeOperation = "source-over";
       g.globalAlpha = 1;
@@ -979,21 +1057,28 @@ export function createLighting() {
       g.globalCompositeOperation = "lighter";
       g.imageSmoothingEnabled = false;
       g.translate(ox, oy);
-      const swayTime = sway / 20;
       for (let remaining = beside; remaining > 0; remaining--)
-        SUN_RAYS.forEach(([offset, spread, length], index) => {
-          const angle = toward + offset + Math.sin(swayTime * 0.21 + index * 2.3) * 0.025;
-          const pulse = 0.7 + 0.3 * Math.sin(swayTime * 0.55 + index * 1.7);
-          const reach = length * diagonal;
-          g.globalAlpha = pulse * Math.min(1, remaining);
-          g.fillStyle = beams[index];
-          g.beginPath();
-          g.moveTo(0, 0);
-          g.arc(0, 0, reach, angle - spread, angle + spread);
-          g.closePath();
-          g.fill();
-        });
+        featheredWedge(g, toward, RAY_FAN.spread, reach, fan, RAY_FAN.brightness * Math.min(1, remaining), RAY_FAN.layers);
+      // The shadows sway slowly, and deepen and fade a little, each in its own time.
+      g.globalCompositeOperation = "destination-out";
+      const swayTime = sway / 20;
+      RAY_SHADOWS.forEach(([offset, spread], index) => {
+        const angle = toward + offset + Math.sin(swayTime * 0.21 + index * 2.3) * 0.015;
+        const depth = 0.8 + 0.2 * Math.sin(swayTime * 0.55 + index * 1.7);
+        featheredWedge(g, angle, spread, reach, shadow, depth, RAY_SHADOW_LAYERS);
+      });
+      // Then fade them toward the ground (see RAY_GROUND), on the view's grid.
+      g.setTransform(1, 0, 0, 1, 0, 0);
+      g.globalCompositeOperation = "destination-in";
       g.globalAlpha = 1;
+      const fade = g.createLinearGradient(0, oy, 0, Math.max(oy + 1, rows * RAY_GROUND));
+      fade.addColorStop(0, "rgba(0,0,0,1)");
+      fade.addColorStop(0.5, "rgba(0,0,0,0.75)");
+      fade.addColorStop(1, "rgba(0,0,0,0)");
+      g.fillStyle = fade;
+      g.fillRect(0, 0, cols, rows);
+      g.globalCompositeOperation = "lighter";
+      g.translate(ox, oy);
       const halo = sprite(150, color);
       g.drawImage(halo.image, -halo.r, -halo.r);
       // The rays and halo start at the sun's edge rather than cross its disc:
@@ -1079,38 +1164,6 @@ export function createLighting() {
         ctx.fillRect(x - ART_PIXEL, top, ART_PIXEL, ART_PIXEL);
         ctx.fillRect(x + ART_PIXEL, top, ART_PIXEL, ART_PIXEL);
         ctx.fillRect(x, top - ART_PIXEL, ART_PIXEL, ART_PIXEL);
-      }
-    }
-    ctx.restore();
-  }
-
-  // Lens flare: faint ghosts of the sun strung along the line from it through
-  // the middle of the view, so they swing about as the camera moves. Pixel
-  // discs and a ring on the art grid, as bright as the glare, so they fade as
-  // terrain or a cloud covers the sun.
-  function drawGhosts(ctx, { cameraX, cameraY, width, height }, sun, glare) {
-    const sx = cameraX + sun.x,
-      sy = cameraY + sun.y;
-    const dx = cameraX + width / 2 - sx,
-      dy = cameraY + height / 2 - sy;
-    ctx.save();
-    ctx.globalCompositeOperation = "screen";
-    for (const [along, radius, ring, color, brightness] of LENS_GHOSTS) {
-      const cx = Math.round((sx + dx * along) / ART_PIXEL) * ART_PIXEL,
-        cy = Math.round((sy + dy * along) / ART_PIXEL) * ART_PIXEL;
-      const cells = radius / ART_PIXEL,
-        hole = ring ? (radius - ring) / ART_PIXEL : 0;
-      ctx.fillStyle = color;
-      ctx.globalAlpha = brightness * glare;
-      for (let row = -cells; row <= cells; row++) {
-        const reach = Math.floor(Math.sqrt(cells * cells - row * row));
-        const inner = Math.abs(row) < hole ? Math.ceil(Math.sqrt(hole * hole - row * row)) : 0;
-        const y = cy + row * ART_PIXEL;
-        if (!inner) ctx.fillRect(cx - reach * ART_PIXEL, y, (reach * 2 + 1) * ART_PIXEL, ART_PIXEL);
-        else {
-          ctx.fillRect(cx - reach * ART_PIXEL, y, (reach - inner + 1) * ART_PIXEL, ART_PIXEL);
-          ctx.fillRect(cx + inner * ART_PIXEL, y, (reach - inner + 1) * ART_PIXEL, ART_PIXEL);
-        }
       }
     }
     ctx.restore();

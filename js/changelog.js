@@ -23,7 +23,7 @@ export const RELEASES = [
       },
       {
         "type": "new",
-        "text": "The sun casts a faint lens flare, water glitters in it, windows catch it as you pass, and it dazzles for a moment as it comes out from behind a hill or you ride out of a cave."
+        "text": "Water glitters in the sun, windows catch it as you pass, and it dazzles for a moment as it comes out from behind a hill or you ride out of a cave."
       },
       {
         "type": "new",
