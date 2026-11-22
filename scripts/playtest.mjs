@@ -76,6 +76,7 @@ const SKILLS = {
   'lean-back': (ride, input) => input.leanInput * (input.facing || ride.facing) < 0 ? { ...input, leanInput: 0 } : input,
   'lean-forward': (ride, input) => input.leanInput * (input.facing || ride.facing) > 0 ? { ...input, leanInput: 0 } : input,
   brake: (_ride, input) => ({ ...input, braking: false }),
+  'ease-off': (_ride, input) => ({ ...input, accelerating: true, braking: false }),
 };
 const without = (option('--without') || '').split(',').filter(Boolean);
 for (const skill of without) if (!SKILLS[skill]) throw new Error(`unknown skill "${skill}"; use ${Object.keys(SKILLS).join(', ')}`);
