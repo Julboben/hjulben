@@ -480,7 +480,7 @@ The bot takes the apples nearest first. When a trail is meant to be ridden in an
 
 The run is saved in `.playtest/` (git-ignored) and tried first next time, so after an edit only the stretches it broke are searched again; `--fresh` searches from scratch. The saved file's `inputs` can be given to `scripts/record-replays.mjs` as a human run.
 
-**Proving a skill is needed.** `--without SKILL` solves the trail with a skill taken away: `turn` (no turning around), `air-turn` (no turning in the air), `lean-back`, `lean-forward` or `brake`, or several separated by commas. If an apple meant to teach turning around is still reached `--without turn`, the trail has a way round the lesson. Searching for a route that doesn't exist uses up the whole budget, so this takes a while.
+**Proving a skill is needed.** `--without SKILL` solves the trail with a skill taken away: `turn` (no turning around), `air-turn` (no turning in the air), `lean-back`, `lean-forward`, `brake` or `ease-off` (the gas held all the way, never coasting or braking), or several separated by commas. If an apple meant to teach turning around is still reached `--without turn`, the trail has a way round the lesson. Searching for a route that doesn't exist uses up the whole budget, so this takes a while.
 
 **Probing one spot.** `--probe X,Y,FACING,SPEED` places the bike at `X`, at height `Y` (`ground` to stand on the surface), facing `1` (right) or `-1` (left), already moving at `SPEED` units per second. Then either:
 

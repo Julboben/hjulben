@@ -98,10 +98,10 @@
       "name": "Kicker Canyon"
     },
     {
-      "id": "official:sandpit",
+      "id": "official:the-sandpits",
       "source": "official",
-      "file": "official/17-sandpit.json",
-      "name": "Sandpit"
+      "file": "official/17-the-sandpits.json",
+      "name": "The Sandpits"
     },
     {
       "id": "official:mind-the-gap",
