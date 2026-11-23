@@ -1,33 +1,33 @@
 {
   "name": "Dune Hopper",
-  "finish": {
-    "x": 3020,
-    "y": null
-  },
-  "description": "First air. Each dune is taller than the last, and with speed its rounded crest lifts you off the ground. In the air, lean to level the bike: lean back if the nose drops, forward if it rises, and land with both wheels on the far slope. The apples float just past the crests, where the bike flies.",
-  "lesson": "First air off rounded crests, and using lean to level the bike in the air.",
-  "alsoNew": "Sun glare, cacti.",
+  "description": "A dune sea at noon, and the first trail where distance matters: hop from crest to crest. Real dunes have a long, gentle slope on the side the wind comes from, a sharp crest, and a steep slip face beyond, so every crest throws you forward onto a downhill landing. First the edge of the sand: stony flats and two single dunes to ride over, with an apple past the first crest. Then the doubles: two dunes close together. Carry speed from the first crest over the hollow onto the second dune's slip face; too slow and you land in the hollow, which only costs time. The apples float over the hollows, so a clean double takes them. The ripples: small waves of sand to skim or take crest to crest, with an apple low in a hollow. The buried ruin: a stone tower half swallowed by the dunes. Its apple waits deep in the hollow beside the tower, so here the skill is the other way round: ease off and land short, or you fly over it. Last, the great dune: a long climb that needs the speed you bring, with the flower floating over its crest and a rock outcrop beyond. Every miss lands on sand: nothing here ends the run. Intended apple order 1 to 6.",
+  "lesson": "Distance control: hopping from crest to crest. Carry the right speed to land on the next dune, not in the hollow.",
+  "alsoNew": "Sun glare, cacti, a dune sea and a buried ruin.",
   "world": "The Desert",
   "start": {
     "x": 90,
     "y": null,
     "facing": 1
   },
+  "finish": {
+    "x": 4110,
+    "y": 62
+  },
   "terrainBlocks": [
     {
       "id": "ground",
       "material": "sand",
       "outer": {
-        "id": "ground-outer",
+        "id": "ground-boundary",
         "nodes": [
           {
             "id": "ground-0",
-            "x": -1300,
+            "x": -1200,
             "y": 100,
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "straight"
+            "edge": "curve"
           },
           {
             "id": "ground-1",
@@ -35,7 +35,7 @@
             "y": 100,
             "mode": "smooth",
             "in": [
-              -613.3333,
+              -613,
               100
             ],
             "out": [
@@ -54,273 +54,942 @@
               300
             ],
             "out": [
-              -216.6667,
+              -200,
               300
             ],
             "edge": "curve"
           },
           {
             "id": "ground-3",
-            "x": -50,
+            "x": 420,
             "y": 300,
             "mode": "smooth",
             "in": [
-              -133.3333,
+              340,
               300
             ],
             "out": [
-              73.3333,
+              490,
               300
             ],
             "edge": "curve"
           },
           {
             "id": "ground-4",
-            "x": 320,
-            "y": 300,
+            "x": 620,
+            "y": 248,
             "mode": "smooth",
             "in": [
-              196.6667,
-              300
+              550,
+              248
             ],
             "out": [
-              373.3333,
-              300
+              630,
+              248
             ],
             "edge": "curve"
           },
           {
             "id": "ground-5",
-            "x": 480,
-            "y": 268,
+            "x": 705,
+            "y": 300,
             "mode": "smooth",
             "in": [
-              426.6667,
-              268
+              679,
+              300
             ],
             "out": [
-              546.6667,
-              268
+              765,
+              300
             ],
             "edge": "curve"
           },
           {
             "id": "ground-6",
-            "x": 680,
-            "y": 304,
+            "x": 990,
+            "y": 228,
             "mode": "smooth",
             "in": [
-              613.3333,
-              304
+              910,
+              228
             ],
             "out": [
-              740,
-              304
+              1000,
+              228
             ],
             "edge": "curve"
           },
           {
             "id": "ground-7",
-            "x": 860,
-            "y": 256,
+            "x": 1085,
+            "y": 300,
             "mode": "smooth",
             "in": [
-              800,
-              256
+              1057,
+              300
             ],
             "out": [
-              940,
-              256
+              1145,
+              300
             ],
             "edge": "curve"
           },
           {
             "id": "ground-8",
-            "x": 1100,
-            "y": 310,
+            "x": 1400,
+            "y": 206,
             "mode": "smooth",
             "in": [
-              1020,
-              310
+              1310,
+              206
             ],
             "out": [
-              1166.6667,
-              310
+              1410,
+              206
             ],
             "edge": "curve"
           },
           {
             "id": "ground-9",
-            "x": 1300,
-            "y": 240,
+            "x": 1468,
+            "y": 256,
             "mode": "smooth",
             "in": [
-              1233.3333,
-              240
+              1446,
+              256
             ],
             "out": [
-              1393.3333,
-              240
+              1496,
+              256
             ],
             "edge": "curve"
           },
           {
             "id": "ground-10",
-            "x": 1580,
-            "y": 320,
+            "x": 1540,
+            "y": 220,
             "mode": "smooth",
             "in": [
-              1486.6667,
-              320
+              1512,
+              220
             ],
             "out": [
-              1620,
-              320
+              1550,
+              220
             ],
             "edge": "curve"
           },
           {
             "id": "ground-11",
-            "x": 1700,
-            "y": 320,
+            "x": 1670,
+            "y": 306,
             "mode": "smooth",
             "in": [
-              1660,
-              320
+              1630,
+              306
             ],
             "out": [
-              1760,
-              320
+              1730,
+              306
             ],
             "edge": "curve"
           },
           {
             "id": "ground-12",
-            "x": 1880,
-            "y": 232,
+            "x": 2000,
+            "y": 186,
             "mode": "smooth",
             "in": [
-              1820,
-              232
+              1900,
+              186
             ],
             "out": [
-              1986.6667,
-              232
+              2010,
+              186
             ],
             "edge": "curve"
           },
           {
             "id": "ground-13",
-            "x": 2200,
-            "y": 330,
+            "x": 2085,
+            "y": 256,
             "mode": "smooth",
             "in": [
-              2093.3333,
-              330
+              2061,
+              256
             ],
             "out": [
-              2243.3333,
-              330
+              2117,
+              256
             ],
             "edge": "curve"
           },
           {
             "id": "ground-14",
-            "x": 2330,
-            "y": 330,
+            "x": 2180,
+            "y": 200,
             "mode": "smooth",
             "in": [
-              2286.6667,
-              330
+              2146,
+              200
             ],
             "out": [
-              2393.3333,
-              330
+              2190,
+              200
             ],
             "edge": "curve"
           },
           {
             "id": "ground-15",
-            "x": 2520,
-            "y": 220,
+            "x": 2300,
+            "y": 316,
             "mode": "smooth",
             "in": [
-              2456.6667,
-              220
+              2268,
+              316
             ],
             "out": [
-              2640,
-              220
+              2350,
+              316
             ],
             "edge": "curve"
           },
           {
             "id": "ground-16",
-            "x": 2880,
-            "y": 340,
+            "x": 2365,
+            "y": 292,
             "mode": "smooth",
             "in": [
-              2760,
-              340
+              2339,
+              292
             ],
             "out": [
-              2970,
-              340
+              2375,
+              292
             ],
             "edge": "curve"
           },
           {
             "id": "ground-17",
-            "x": 3150,
-            "y": 340,
+            "x": 2430,
+            "y": 318,
             "mode": "smooth",
             "in": [
-              3060,
-              340
+              2412,
+              318
             ],
             "out": [
-              3193.3333,
-              340
+              2454,
+              318
             ],
             "edge": "curve"
           },
           {
             "id": "ground-18",
-            "x": 3280,
-            "y": 120,
+            "x": 2495,
+            "y": 290,
             "mode": "smooth",
             "in": [
-              3236.6667,
-              120
+              2469,
+              290
             ],
             "out": [
-              3386.6667,
-              120
+              2505,
+              290
             ],
             "edge": "curve"
           },
           {
             "id": "ground-19",
-            "x": 3900,
-            "y": 120,
-            "mode": "corner",
-            "in": null,
-            "out": null,
-            "edge": "straight"
+            "x": 2560,
+            "y": 318,
+            "mode": "smooth",
+            "in": [
+              2542,
+              318
+            ],
+            "out": [
+              2584,
+              318
+            ],
+            "edge": "curve"
           },
           {
             "id": "ground-20",
+            "x": 2625,
+            "y": 288,
+            "mode": "smooth",
+            "in": [
+              2599,
+              288
+            ],
+            "out": [
+              2635,
+              288
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-21",
+            "x": 2690,
+            "y": 320,
+            "mode": "smooth",
+            "in": [
+              2672,
+              320
+            ],
+            "out": [
+              2714,
+              320
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-22",
+            "x": 2755,
+            "y": 288,
+            "mode": "smooth",
+            "in": [
+              2729,
+              288
+            ],
+            "out": [
+              2765,
+              288
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-23",
+            "x": 2820,
+            "y": 322,
+            "mode": "smooth",
+            "in": [
+              2802,
+              322
+            ],
+            "out": [
+              2860,
+              322
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-24",
+            "x": 3150,
+            "y": 196,
+            "mode": "smooth",
+            "in": [
+              3040,
+              196
+            ],
+            "out": [
+              3160,
+              196
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-25",
+            "x": 3236,
+            "y": 298,
+            "mode": "smooth",
+            "in": [
+              3214,
+              298
+            ],
+            "out": [
+              3266,
+              298
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-26",
+            "x": 3312,
+            "y": 250,
+            "mode": "smooth",
+            "in": [
+              3282,
+              250
+            ],
+            "out": [
+              3322,
+              250
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-27",
+            "x": 3500,
+            "y": 330,
+            "mode": "smooth",
+            "in": [
+              3466,
+              330
+            ],
+            "out": [
+              3580,
+              330
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-28",
             "x": 3900,
-            "y": 1200,
+            "y": 200,
+            "mode": "smooth",
+            "in": [
+              3780,
+              254
+            ],
+            "out": [
+              3980,
+              164
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-29",
+            "x": 4080,
+            "y": 124,
+            "mode": "smooth",
+            "in": [
+              4020,
+              124
+            ],
+            "out": [
+              4140,
+              124
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-30",
+            "x": 4300,
+            "y": 128,
+            "mode": "smooth",
+            "in": [
+              4240,
+              128
+            ],
+            "out": [
+              4360,
+              128
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-31",
+            "x": 4420,
+            "y": -150,
+            "mode": "smooth",
+            "in": [
+              4380,
+              -150
+            ],
+            "out": [
+              4540,
+              -150
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ground-32",
+            "x": 5000,
+            "y": -150,
             "mode": "corner",
             "in": null,
             "out": null,
             "edge": "straight"
           },
           {
-            "id": "ground-21",
-            "x": -1300,
-            "y": 1200,
+            "id": "ground-33",
+            "x": 5000,
+            "y": 1100,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ground-34",
+            "x": -1200,
+            "y": 1100,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "rock",
+      "material": "dirt",
+      "outer": {
+        "id": "rock-boundary",
+        "nodes": [
+          {
+            "id": "rock-0",
+            "x": -1200,
+            "y": 126,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "curve"
+          },
+          {
+            "id": "rock-1",
+            "x": -420,
+            "y": 126,
+            "mode": "smooth",
+            "in": [
+              -613,
+              126
+            ],
+            "out": [
+              -380,
+              126
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "rock-2",
+            "x": -300,
+            "y": 326,
+            "mode": "smooth",
+            "in": [
+              -340,
+              326
+            ],
+            "out": [
+              -200,
+              326
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "rock-3",
+            "x": 420,
+            "y": 324,
+            "mode": "smooth",
+            "in": [
+              340,
+              324
+            ],
+            "out": [
+              620,
+              324
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "rock-4",
+            "x": 1085,
+            "y": 330,
+            "mode": "smooth",
+            "in": [
+              885,
+              330
+            ],
+            "out": [
+              1285,
+              330
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "rock-5",
+            "x": 1670,
+            "y": 336,
+            "mode": "smooth",
+            "in": [
+              1470,
+              336
+            ],
+            "out": [
+              1870,
+              336
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "rock-6",
+            "x": 2300,
+            "y": 340,
+            "mode": "smooth",
+            "in": [
+              2150,
+              340
+            ],
+            "out": [
+              2450,
+              340
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "rock-7",
+            "x": 2820,
+            "y": 346,
+            "mode": "smooth",
+            "in": [
+              2620,
+              346
+            ],
+            "out": [
+              3020,
+              346
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "rock-8",
+            "x": 3500,
+            "y": 356,
+            "mode": "smooth",
+            "in": [
+              3400,
+              356
+            ],
+            "out": [
+              3600,
+              356
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "rock-9",
+            "x": 4300,
+            "y": 330,
+            "mode": "smooth",
+            "in": [
+              4100,
+              330
+            ],
+            "out": [
+              4360,
+              330
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "rock-10",
+            "x": 4420,
+            "y": -124,
+            "mode": "smooth",
+            "in": [
+              4380,
+              -124
+            ],
+            "out": [
+              4540,
+              -124
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "rock-11",
+            "x": 5000,
+            "y": -124,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "rock-12",
+            "x": 5000,
+            "y": 1100,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "rock-13",
+            "x": -1200,
+            "y": 1100,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "ruin-tower",
+      "material": "stone",
+      "layer": "back",
+      "group": "Ruin",
+      "outer": {
+        "id": "ruin-tower-boundary",
+        "nodes": [
+          {
+            "id": "ruin-tower-0",
+            "x": 3226,
+            "y": 420,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ruin-tower-1",
+            "x": 3226,
+            "y": 150,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ruin-tower-2",
+            "x": 3236,
+            "y": 150,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ruin-tower-3",
+            "x": 3236,
+            "y": 138,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ruin-tower-4",
+            "x": 3248,
+            "y": 138,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ruin-tower-5",
+            "x": 3248,
+            "y": 150,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ruin-tower-6",
+            "x": 3262,
+            "y": 150,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ruin-tower-7",
+            "x": 3262,
+            "y": 132,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ruin-tower-8",
+            "x": 3276,
+            "y": 132,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ruin-tower-9",
+            "x": 3276,
+            "y": 158,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ruin-tower-10",
+            "x": 3290,
+            "y": 158,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ruin-tower-11",
+            "x": 3290,
+            "y": 420,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": [
+        {
+          "id": "ruin-window-1-boundary",
+          "nodes": [
+            {
+              "id": "ruin-window-1-0",
+              "x": 3248,
+              "y": 178,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            },
+            {
+              "id": "ruin-window-1-1",
+              "x": 3264,
+              "y": 178,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            },
+            {
+              "id": "ruin-window-1-2",
+              "x": 3264,
+              "y": 206,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            },
+            {
+              "id": "ruin-window-1-3",
+              "x": 3248,
+              "y": 206,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            }
+          ]
+        },
+        {
+          "id": "ruin-window-2-boundary",
+          "nodes": [
+            {
+              "id": "ruin-window-2-0",
+              "x": 3248,
+              "y": 228,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            },
+            {
+              "id": "ruin-window-2-1",
+              "x": 3264,
+              "y": 228,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            },
+            {
+              "id": "ruin-window-2-2",
+              "x": 3264,
+              "y": 256,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            },
+            {
+              "id": "ruin-window-2-3",
+              "x": 3248,
+              "y": 256,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ruin-wall",
+      "material": "stone",
+      "layer": "back",
+      "group": "Ruin",
+      "outer": {
+        "id": "ruin-wall-boundary",
+        "nodes": [
+          {
+            "id": "ruin-wall-0",
+            "x": 3290,
+            "y": 420,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ruin-wall-1",
+            "x": 3290,
+            "y": 196,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ruin-wall-2",
+            "x": 3312,
+            "y": 204,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ruin-wall-3",
+            "x": 3330,
+            "y": 222,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ruin-wall-4",
+            "x": 3344,
+            "y": 218,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ruin-wall-5",
+            "x": 3366,
+            "y": 246,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ruin-wall-6",
+            "x": 3380,
+            "y": 420,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -333,24 +1002,28 @@
   ],
   "apples": [
     {
-      "x": 520,
-      "y": 197
+      "x": 650,
+      "y": 200
     },
     {
-      "x": 920,
-      "y": 184
+      "x": 1470,
+      "y": 175
     },
     {
-      "x": 1370,
-      "y": 168
-    },
-    {
-      "x": 1960,
-      "y": 157
-    },
-    {
-      "x": 2600,
+      "x": 2085,
       "y": 140
+    },
+    {
+      "x": 2690,
+      "y": 288
+    },
+    {
+      "x": 3236,
+      "y": 278
+    },
+    {
+      "x": 3800,
+      "y": null
     }
   ],
   "props": [
@@ -379,99 +1052,159 @@
       "layer": "back"
     },
     {
-      "x": 260,
+      "x": 30,
       "y": null,
-      "type": "cactus",
-      "layer": "back"
-    },
-    {
-      "x": 600,
-      "y": null,
-      "type": "cactus-small",
-      "layer": "back"
-    },
-    {
-      "x": 760,
-      "y": null,
-      "type": "rock",
+      "type": "pebbles",
       "layer": "front"
     },
     {
-      "x": 1020,
+      "x": 160,
       "y": null,
       "type": "cactus",
       "layer": "back"
     },
     {
-      "x": 1200,
-      "y": null,
-      "type": "cactus-small",
-      "layer": "back"
-    },
-    {
-      "x": 1500,
-      "y": null,
-      "type": "cactus",
-      "layer": "back"
-    },
-    {
-      "x": 1640,
-      "y": null,
-      "type": "tumbleweed",
-      "layer": "back"
-    },
-    {
-      "x": 1790,
-      "y": null,
-      "type": "cactus-small",
-      "layer": "back"
-    },
-    {
-      "x": 2100,
-      "y": null,
-      "type": "cactus",
-      "layer": "back"
-    },
-    {
-      "x": 2260,
-      "y": null,
-      "type": "rock",
-      "layer": "front"
-    },
-    {
-      "x": 2420,
-      "y": null,
-      "type": "cactus-small",
-      "layer": "back"
-    },
-    {
-      "x": 2760,
-      "y": null,
-      "type": "cactus",
-      "layer": "back"
-    },
-    {
-      "x": 2940,
+      "x": 250,
       "y": null,
       "type": "windmill",
       "layer": "back"
     },
     {
-      "x": 3080,
+      "x": 350,
+      "y": null,
+      "type": "rock",
+      "layer": "front"
+    },
+    {
+      "x": 705,
+      "y": null,
+      "type": "pebbles",
+      "layer": "front"
+    },
+    {
+      "x": 760,
       "y": null,
       "type": "cactus-small",
       "layer": "back"
     },
     {
-      "x": 3400,
+      "x": 1085,
       "y": null,
-      "type": "cactus",
+      "type": "pebbles",
+      "layer": "front"
+    },
+    {
+      "x": 1110,
+      "y": null,
+      "type": "skull",
+      "layer": "back"
+    },
+    {
+      "x": 1200,
+      "y": null,
+      "type": "tumbleweed",
+      "layer": "back"
+    },
+    {
+      "x": 1670,
+      "y": null,
+      "type": "pebbles",
+      "layer": "front"
+    },
+    {
+      "x": 1700,
+      "y": null,
+      "type": "cactus-small",
+      "layer": "back"
+    },
+    {
+      "x": 2300,
+      "y": null,
+      "type": "pebbles",
+      "layer": "front"
+    },
+    {
+      "x": 2320,
+      "y": null,
+      "type": "rock",
+      "layer": "back"
+    },
+    {
+      "x": 2560,
+      "y": null,
+      "type": "tumbleweed",
+      "layer": "back"
+    },
+    {
+      "x": 2820,
+      "y": null,
+      "type": "cactus-small",
+      "layer": "back"
+    },
+    {
+      "x": 2850,
+      "y": null,
+      "type": "pebbles",
+      "layer": "front"
+    },
+    {
+      "x": 3200,
+      "y": null,
+      "type": "rock",
+      "layer": "back"
+    },
+    {
+      "x": 3238,
+      "y": null,
+      "type": "pebbles",
+      "layer": "front"
+    },
+    {
+      "x": 3270,
+      "y": null,
+      "type": "vulture",
       "layer": "back"
     },
     {
       "x": 3500,
       "y": null,
+      "type": "skull",
+      "layer": "back"
+    },
+    {
+      "x": 3530,
+      "y": null,
+      "type": "cactus",
+      "layer": "back"
+    },
+    {
+      "x": 3620,
+      "y": null,
+      "type": "tumbleweed",
+      "layer": "back"
+    },
+    {
+      "x": 4200,
+      "y": null,
       "type": "rock",
+      "layer": "back"
+    },
+    {
+      "x": 4290,
+      "y": null,
+      "type": "boulder",
+      "layer": "back"
+    },
+    {
+      "x": 4600,
+      "y": null,
+      "type": "cactus",
+      "layer": "back"
+    },
+    {
+      "x": 4800,
+      "y": null,
+      "type": "cactus-small",
       "layer": "back"
     }
   ],
@@ -484,14 +1217,14 @@
     "rain": 0,
     "snow": 0,
     "lightning": 0,
-    "wind": 0.2,
-    "windDirection": "left"
+    "wind": 0.3,
+    "windDirection": "right"
   },
   "timeOfDay": 12,
   "backdrop": "desert",
   "medals": {
-    "gold": 11,
-    "silver": 14,
-    "bronze": 19
+    "gold": 22,
+    "silver": 28.5,
+    "bronze": 38.5
   }
 }

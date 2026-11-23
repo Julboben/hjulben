@@ -72,9 +72,9 @@ Written by `scripts/generate-trails-overview.mjs` from the trail files, so don't
 
 *Sand, `desert` backdrop, bright noon with sun glare. Teaches air.*
 
-- **15. Dune Hopper:** First air off rounded crests, and using lean to level the bike in the air. *Also new:* Sun glare, cacti. (gold 11 s, bot 29.2 s)
+- **15. Dune Hopper:** Distance control: hopping from crest to crest. Carry the right speed to land on the next dune, not in the hollow. *Also new:* Sun glare, cacti, a dune sea and a buried ruin. (gold 22 s, bot 23.6 s)
 
-  > First air. Each dune is taller than the last, and with speed its rounded crest lifts you off the ground. In the air, lean to level the bike: lean back if the nose drops, forward if it rises, and land with both wheels on the far slope. The apples float just past the crests, where the bike flies.
+  > A dune sea at noon, and the first trail where distance matters: hop from crest to crest. Real dunes have a long, gentle slope on the side the wind comes from, a sharp crest, and a steep slip face beyond, so every crest throws you forward onto a downhill landing. First the edge of the sand: stony flats and two single dunes to ride over, with an apple past the first crest. Then the doubles: two dunes close together. Carry speed from the first crest over the hollow onto the second dune's slip face; too slow and you land in the hollow, which only costs time. The apples float over the hollows, so a clean double takes them. The ripples: small waves of sand to skim or take crest to crest, with an apple low in a hollow. The buried ruin: a stone tower half swallowed by the dunes. Its apple waits deep in the hollow beside the tower, so here the skill is the other way round: ease off and land short, or you fly over it. Last, the great dune: a long climb that needs the speed you bring, with the flower floating over its crest and a rock outcrop beyond. Every miss lands on sand: nothing here ends the run. Intended apple order 1 to 6.
 
 - **16. Kicker Canyon:** Kickers, ramps that throw you up, onto downhill landings. *Also new:* Boulders, crystals. (gold 14.5 s, bot 42.0 s)
 
