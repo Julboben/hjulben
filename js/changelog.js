@@ -2,6 +2,44 @@
 /** @type {{ version: string, date: string, changes: { type: 'new' | 'improved' | 'fixed', text: string }[] }[]} */
 export const RELEASES = [
   {
+    "version": "0.6.9",
+    "date": "2026-11-23",
+    "changes": [
+      {
+        "type": "heads-up",
+        "text": "Sandpit, Dune Hopper and Mind the Gap have been rebuilt, so their best times and leaderboards start fresh."
+      },
+      {
+        "type": "improved",
+        "text": "Sandpit is now The Sandpits, a longer trail where each pit is a puzzle of its own: kick out of one, turn around in one, ease off for one."
+      },
+      {
+        "type": "improved",
+        "text": "Dune Hopper is now Dune Sea, rebuilt so you hop from crest to crest over real dunes, past rippled sand and a ship stranded in the dunes."
+      },
+      {
+        "type": "improved",
+        "text": "Mind the Gap is now Hoodoo Crossing, a canyon crossing with climbs, a jump up, sandstone hoodoos to hop between, a big drop and a broken rope bridge over a river far below."
+      },
+      {
+        "type": "improved",
+        "text": "Rides no longer stutter when new terrain or graffiti comes into view."
+      },
+      {
+        "type": "improved",
+        "text": "The sun's rays are now a soft haze with shadow streaks through it, fading out before they reach the track, and the lens flare is gone."
+      },
+      {
+        "type": "improved",
+        "text": "The headlight is now a soft beam aimed at the road ahead that fades with distance and shows more the darker it gets, and lanterns and street lamps fade out smoothly instead of in hard rings."
+      },
+      {
+        "type": "fixed",
+        "text": "The update prompt is now readable in the light theme."
+      }
+    ]
+  },
+  {
     "version": "0.6.8",
     "date": "2026-11-19",
     "changes": [
