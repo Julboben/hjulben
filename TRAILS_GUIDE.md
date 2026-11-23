@@ -73,7 +73,7 @@ What building Windfall showed, measured in the physics:
 | Drops and step-downs | Stump Drops | Switchback | Sinkhole |
 | Air control | Dune Hopper | Kicker Canyon | Big Air |
 | Pits with a floor | The Sandpits | Mirage | Sinkhole |
-| Open gaps | Mind the Gap | Mirage | Rooftops, Big Air |
+| Open gaps | Hoodoo Crossing | Mirage | Rooftops, Big Air |
 | Fords | Wet Feet | Deep End | Out and Back |
 | Deep water | Deep End | Jetty Jump | Elastic Summit |
 | Turning in the air | Boomerang | Out and Back | Big Air |

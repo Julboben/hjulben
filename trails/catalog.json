@@ -104,10 +104,10 @@
       "name": "The Sandpits"
     },
     {
-      "id": "official:mind-the-gap",
+      "id": "official:hoodoo-crossing",
       "source": "official",
-      "file": "official/18-mind-the-gap.json",
-      "name": "Mind the Gap"
+      "file": "official/18-hoodoo-crossing.json",
+      "name": "Hoodoo Crossing"
     },
     {
       "id": "official:mirage",
