@@ -1,5 +1,6 @@
 import { terrainMaterials } from "./materials.js";
 import { backWallGeometry, terrainAt, terrainGeometry } from "./terrain.js";
+import { trailBackWalls, trailTerrainBlocks } from "./trail-schema.js";
 import {
   ART_PIXEL,
   createCanvas,
@@ -8,6 +9,7 @@ import {
 } from "./drawing.js";
 import { resolveWeather, windSign } from "./weather.js";
 import {
+  compileTerrain,
   terrainBodySpans,
   mergeSpans,
   terrainColumnSpans,
@@ -21,6 +23,11 @@ const CHUNK_SIZE = 512;
 const CHUNK_PIXELS = CHUNK_SIZE / ART_PIXEL;
 const CHUNK_LIMIT = 96;
 const CHUNK_MARGIN = 24;
+// With a worker, how many chunks it is asked for at a time: few, so what it
+// paints next follows the camera rather than a queue left behind it.
+const PAINTS_IN_FLIGHT = 2;
+// And how many chunks beyond the view, on every side, it paints ahead.
+const PAINT_AHEAD = 1;
 const BRICK_COLOR = "#4e2e2a99";
 const GLASS_GLINT_REPEAT = 48;
 // Stones sit on a jittered grid this many art pixels apart, alternate rows
@@ -895,24 +902,107 @@ function shadeBackWall(data) {
 }
 
 /**
+ * The terrain's art over `columns` × `rows` art pixels from world (`originX`,
+ * `originY`) on a canvas, or null where there is none. On the main thread
+ * and on the painting worker alike, so both paint the same pixels.
+ */
+function blockImage(geometry, originX, originY, columns, rows, backWalls) {
+  const raster = rasterizeTerrainChunk(geometry, originX, originY, columns, rows);
+  if (!raster.opaque) return null;
+  if (backWalls) shadeBackWall(raster.data);
+  const canvas = createCanvas(columns, rows);
+  canvas.getContext("2d").putImageData(new ImageData(raster.data, columns, rows), 0, 0);
+  return canvas;
+}
+
+/**
+ * The painting worker's side of createChunkPainter: a function to give each
+ * message, which returns the reply to post back, if any. The worker compiles
+ * the terrain from the blocks it is sent, as the game does, and compiles it
+ * again without the panes broken so far; that is exactly the terrain that
+ * breaking them in place gives (see removeTerrainBodies).
+ */
+export function chunkPainterThread() {
+  let blocks = [],
+    backWalls = false,
+    geometry = null,
+    version = 0;
+  return (message) => {
+    if (message.broken) {
+      if (message.blocks) ({ blocks, backWalls } = message);
+      version = message.version;
+      const broken = message.broken.length ? new Set(message.broken) : undefined;
+      geometry = compileTerrain({ terrainBlocks: blocks, brokenBlocks: broken });
+      return null;
+    }
+    // A request made before the terrain changed would be thrown away.
+    if (message.version !== version) return null;
+    const { key, column, row } = message;
+    const canvas = blockImage(geometry, column * CHUNK_SIZE, row * CHUNK_SIZE, CHUNK_PIXELS, CHUNK_PIXELS, backWalls);
+    return { version, key, image: canvas?.transferToImageBitmap() ?? null };
+  };
+}
+
+/**
+ * Paints a renderer's chunks on a worker thread (js/terrain-worker.js), so
+ * the frame that first needs one doesn't have to. `setTerrain` gives it the
+ * trail to paint, `paint` asks for a chunk while fewer than PAINTS_IN_FLIGHT
+ * are being painted, and `take` hands over the chunks painted since.
+ */
+function createChunkPainter(backWalls) {
+  const worker = new Worker(new URL("./terrain-worker.js", import.meta.url), { type: "module" });
+  let version = 0,
+    source = null;
+  const painting = new Set();
+  let painted = [];
+  worker.onmessage = ({ data }) => {
+    if (data.version !== version) return data.image?.close();
+    painting.delete(data.key);
+    painted.push(data);
+  };
+  return {
+    /** A trail, or a ride's copy of one with panes broken. */
+    setTerrain(trail) {
+      version++;
+      painting.clear();
+      for (const { image } of painted) image?.close();
+      painted = [];
+      // The blocks go over once per trail, as copying them can take a while;
+      // after that, only which panes are broken, which back walls never are.
+      const from = trail.terrainSource || trail;
+      const blocks = from === source ? undefined : backWalls ? trailBackWalls(from) : trailTerrainBlocks(from);
+      source = from;
+      const broken = backWalls ? [] : [...(trail.brokenBlocks?.keys() ?? [])];
+      worker.postMessage({ version, backWalls, blocks, broken });
+    },
+    painting: (key) => painting.has(key),
+    paint(key, column, row) {
+      if (painting.size >= PAINTS_IN_FLIGHT) return false;
+      painting.add(key);
+      worker.postMessage({ version, key, column, row });
+      return true;
+    },
+    take() {
+      const taken = painted;
+      painted = [];
+      return taken;
+    },
+  };
+}
+
+/**
  * Draws a trail's terrain blocks in cached chunks, or with `backWalls` its
  * back-layer blocks instead, darkened and without the start sign. With
- * `still`, for scenes drawn once, it draws exactly the view instead.
+ * `still`, for scenes drawn once, it draws exactly the view instead. With
+ * `worker`, the chunks around the view are painted ahead on a worker thread;
+ * without, one at a time on frames that have every chunk in view ready.
  */
-export function createTerrainRenderer({ backWalls = false, still = false } = {}) {
+export function createTerrainRenderer({ backWalls = false, still = false, worker = false } = {}) {
   const geometryOf = backWalls ? backWallGeometry : terrainGeometry;
+  const painter = worker ? createChunkPainter(backWalls) : null;
   let currentTrail = null;
   let currentGeometry = null;
   let chunks = new Map();
-
-  function buildBlockImage(geometry, originX, originY, columns, rows) {
-    const raster = rasterizeTerrainChunk(geometry, originX, originY, columns, rows);
-    if (!raster.opaque) return null;
-    if (backWalls) shadeBackWall(raster.data);
-    const canvas = createCanvas(columns, rows);
-    canvas.getContext("2d").putImageData(new ImageData(raster.data, columns, rows), 0, 0);
-    return canvas;
-  }
 
   // The sign follows the start, which the editor moves without touching the
   // terrain, so it is drawn live rather than baked in.
@@ -939,11 +1029,22 @@ export function createTerrainRenderer({ backWalls = false, still = false } = {})
     const originX = column * CHUNK_SIZE,
       originY = row * CHUNK_SIZE;
     const built = currentGeometry
-      ? buildBlockImage(currentGeometry, originX, originY, CHUNK_PIXELS, CHUNK_PIXELS)
+      ? blockImage(currentGeometry, originX, originY, CHUNK_PIXELS, CHUNK_PIXELS, backWalls)
       : null;
-    chunks.set(key, built);
-    if (chunks.size > CHUNK_LIMIT) chunks.delete(chunks.keys().next().value);
+    remember(key, built);
     return built;
+  }
+
+  function remember(key, image) {
+    chunks.set(key, image);
+    if (chunks.size > CHUNK_LIMIT) forget(chunks.keys().next().value);
+  }
+
+  // Chunks from the worker are ImageBitmaps, whose memory close() gives back
+  // at once rather than whenever they are collected.
+  function forget(key) {
+    chunks.get(key)?.close?.();
+    chunks.delete(key);
   }
 
   // Draws every chunk overlapping the view. `ctx` must already map world units.
@@ -971,11 +1072,15 @@ export function createTerrainRenderer({ backWalls = false, still = false } = {})
       top = Math.floor(viewY / ART_PIXEL) * ART_PIXEL;
     const columns = Math.floor((viewX + width - left) / ART_PIXEL) + 1,
       rows = Math.floor((viewY + height - top) / ART_PIXEL) + 1;
-    const image = buildBlockImage(currentGeometry, left, top, columns, rows);
+    const image = blockImage(currentGeometry, left, top, columns, rows, backWalls);
     if (image) ctx.drawImage(image, left, top, columns * ART_PIXEL, rows * ART_PIXEL);
   }
 
   function drawChunks(ctx, viewX, viewY, width, height) {
+    for (const { key, image } of painter?.take() ?? []) {
+      if (chunks.has(key)) image?.close();
+      else remember(key, image);
+    }
     const firstColumn = Math.floor(viewX / CHUNK_SIZE),
       lastColumn = Math.floor((viewX + width) / CHUNK_SIZE);
     const firstRow = Math.floor(viewY / CHUNK_SIZE),
@@ -995,10 +1100,29 @@ export function createTerrainRenderer({ backWalls = false, still = false } = {})
           );
       }
     }
-    // When every chunk in view was ready, one more just outside it, so the
-    // rider rarely comes on a chunk still to draw, and never on several at
-    // once: drawing a few in one frame stalled it.
-    if (ready) drawAhead(firstColumn - 1, lastColumn + 1, firstRow - 1, lastRow + 1);
+    // A chunk in view that isn't ready is drawn there and then, as it must
+    // be seen; the worker paints those around the view before they come into
+    // it. Without one, when every chunk in view was ready, one more just
+    // outside it, so the rider rarely comes on a chunk still to draw, and
+    // never on several at once: drawing a few in one frame stalled it.
+    if (painter)
+      paintAhead(firstColumn - PAINT_AHEAD, lastColumn + PAINT_AHEAD, firstRow - PAINT_AHEAD, lastRow + PAINT_AHEAD);
+    else if (ready) drawAhead(firstColumn - 1, lastColumn + 1, firstRow - 1, lastRow + 1);
+  }
+
+  /** Asks the worker for the missing chunks in these columns and rows, nearest the middle first. */
+  function paintAhead(firstColumn, lastColumn, firstRow, lastRow) {
+    const middleColumn = (firstColumn + lastColumn) / 2,
+      middleRow = (firstRow + lastRow) / 2;
+    const missing = [];
+    for (let row = firstRow; row <= lastRow; row++)
+      for (let column = firstColumn; column <= lastColumn; column++) {
+        const key = column + "," + row;
+        if (chunks.has(key) || painter.painting(key)) continue;
+        missing.push({ key, column, row, distance: (column - middleColumn) ** 2 + (row - middleRow) ** 2 });
+      }
+    missing.sort((a, b) => a.distance - b.distance);
+    for (const { key, column, row } of missing) if (!painter.paint(key, column, row)) return;
   }
 
   /** Draws the first missing chunk on the border of these columns and rows, if any. */
@@ -1023,6 +1147,7 @@ export function createTerrainRenderer({ backWalls = false, still = false } = {})
     const previous = currentGeometry;
     currentGeometry = geometry;
     signKey = "";
+    painter?.setTerrain(trail);
     // An edit rebuilt in place says where it changed; anything else is
     // compared body by body.
     invalidateColumns(geometry.update?.from === previous ? geometry.update.ranges : changedColumns(previous, geometry));
@@ -1035,15 +1160,16 @@ export function createTerrainRenderer({ backWalls = false, still = false } = {})
       const left = column * CHUNK_SIZE - CHUNK_MARGIN,
         right = (column + 1) * CHUNK_SIZE + CHUNK_MARGIN;
       if (ranges.some(([from, to]) => to >= left && from <= right))
-        chunks.delete(key);
+        forget(key);
     }
   }
 
   function invalidate(trail = null) {
     currentTrail = trail?.terrainSource || trail;
     currentGeometry = trail ? geometryOf(trail) : null;
-    chunks = new Map();
+    for (const key of [...chunks.keys()]) forget(key);
     signKey = "";
+    if (currentGeometry) painter?.setTerrain(trail);
   }
 
   return { draw, invalidate };

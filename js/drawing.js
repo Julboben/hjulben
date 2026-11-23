@@ -2070,7 +2070,7 @@ export function paintedPropY(trail, prop) {
  * cleared, so the paint stays on the rock face. Cached per prop until it
  * moves or the terrain changes.
  */
-function graffitiSprite(trail, prop) {
+export function graffitiSprite(trail, prop) {
   const y = paintedPropY(trail, prop);
   if (y === null) return null;
   const geometry = terrainGeometry(trail);

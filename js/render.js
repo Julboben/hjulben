@@ -11,6 +11,7 @@ import {
   fogAmount,
   fogColor,
   PAINTED_PROPS,
+  graffitiSprite,
   graffitiTurnedBounds,
   paintedBounds,
   paintedPropY,
@@ -289,8 +290,9 @@ export function createRenderer(canvas, { still = false } = {}) {
   const ctx = canvas.getContext("2d");
   const { pixelRect, pixelPath, drawPixelText } = createDrawingTools(ctx);
   const gameArt = createGameArt(ctx);
-  const terrainRenderer = createTerrainRenderer({ still });
-  const backWallRenderer = createTerrainRenderer({ backWalls: true, still });
+  // A ride's terrain is painted ahead on workers; a still scene is drawn once.
+  const terrainRenderer = createTerrainRenderer({ still, worker: !still });
+  const backWallRenderer = createTerrainRenderer({ backWalls: true, still, worker: !still });
   const lighting = createLighting();
   // Whether the bike's lamps are on: lit lenses in the art, and their light.
   let headlights = true;
@@ -446,8 +448,11 @@ export function createRenderer(canvas, { still = false } = {}) {
     landing = null;
     appleHintUntil = 0;
     spotScene = null;
-    bucketProps();
+    const { painted } = bucketProps();
     lighting.prepare(trail);
+    // Clipping graffiti to the rock tests it pixel by pixel, which can take
+    // several frames; a ride does it as it loads, not as each comes into view.
+    if (!still) for (const prop of painted) graffitiSprite(trail, prop);
   }
 
   // The trail's props sorted once into the lists each pass walks, so a frame

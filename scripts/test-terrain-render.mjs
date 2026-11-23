@@ -17,15 +17,22 @@ buildDom(html);
 const dom = installGlobals();
 for (const match of html.matchAll(/\bid="([^"]+)"/g)) dom.element(match[1]);
 const context = createContextStub();
+// What a worker sends back: the pixels last put on a canvas, closed once the
+// renderer is done with them.
 globalThis.OffscreenCanvas = class {
   constructor(width, height) { this.width = width; this.height = height; }
   getContext() { return context; }
+  transferToImageBitmap() {
+    const bitmap = { pixels: context.calls.findLast(call => call[0] === 'putImageData')[1], closed: false, close() { this.closed = true; } };
+    return bitmap;
+  }
 };
 globalThis.ImageData ??= class { constructor(data, width, height) { Object.assign(this, { data, width, height }); } };
 
-const { createTerrainRenderer, rasterizeTerrainChunk } = await import('../js/terrain-render.js');
+const { chunkPainterThread, createTerrainRenderer, rasterizeTerrainChunk } = await import('../js/terrain-render.js');
 const { normalizeTrail } = await import('../js/trail-schema.js');
-const { terrainGeometry, invalidateTerrain, terrainAt, updateTerrain } = await import('../js/terrain.js');
+const { breakTerrainBlock, terrainGeometry, invalidateTerrain, terrainAt, updateTerrain } = await import('../js/terrain.js');
+const { rideTerrain } = await import('../js/glass.js');
 const { terrainSolidAt } = await import('../js/terrain-runtime.js');
 const { terrainMaterials } = await import('../js/materials.js');
 const { cutBlock } = await import('../js/terrain-geometry.js');
@@ -217,6 +224,60 @@ const drawCalls = (renderer, trail, x, y, w, h) => {
   const blocks = normalizeTrail(blockTrail([rectangle(0, 300, 800, 600)]));
   check('an empty sky chunk costs no blit', !drawCalls(createTerrainRenderer(), blocks, 0, -4000, 600, 600).includes('drawImage'));
   check('a trail with no terrain at all still draws', Array.isArray(drawCalls(createTerrainRenderer(), normalizeTrail(blockTrail([])), 0, 0, 600, 600)));
+}
+
+// 6. In the game, a worker paints the chunks around the view before the
+// camera reaches them. The stand-in worker here runs the worker's own code
+// when told to, so these check what the renderer asks of it and what it does
+// with the replies.
+const workers = [];
+globalThis.Worker = class {
+  constructor() { this.thread = chunkPainterThread(); this.inbox = []; workers.push(this); }
+  postMessage(message) { this.inbox.push(structuredClone(message)); }
+  /** Handles every message posted so far, and posts back the replies. */
+  run() {
+    for (const message of this.inbox.splice(0)) {
+      const reply = this.thread(message);
+      if (reply) this.onmessage({ data: reply });
+    }
+  }
+};
+{
+  const trail = normalizeTrail(blockTrail([rectangle(0, 300, 3000, 800), rectangle(600, 200, 700, 300, 'glass', 'pane')]));
+  const ride = rideTerrain(trail);
+  const renderer = createTerrainRenderer({ worker: true });
+  const worker = workers.at(-1);
+  const frame = x => drawCalls(renderer, ride, x, 0, 900, 600);
+  const painted = calls => calls.filter(name => name === 'putImageData').length;
+
+  check('the chunks in view are drawn at once', painted(frame(0)) > 0);
+  const [terrain, ...asked] = worker.inbox;
+  check('the worker gets the trail\'s blocks', terrain.blocks?.length === 2 && terrain.broken.length === 0);
+  check('and is asked for two chunks around the view at a time', asked.length === 2 && asked.every(message => message.column !== undefined));
+  for (let i = 0; i < 20 && worker.inbox.length; i++) { worker.run(); frame(0); }
+  check('until every chunk around the view is painted', !worker.inbox.length);
+  const moved = frame(512);
+  check('a chunk it painted ahead is drawn without painting it here', painted(moved) === 0 && moved.includes('drawImage'));
+
+  const same = (column, row) => {
+    const reply = worker.thread({ version: terrain.version, key: '', column, row });
+    return reply && [...reply.image.pixels.data].join() === [...rasterizeTerrainChunk(terrainGeometry(ride), column * 512, row * 512, 256, 256).data].join();
+  };
+  check('the worker paints the same pixels', same(1, 0));
+
+  // A pane breaks while chunks are being painted for the terrain before; they
+  // arrive after it broke.
+  frame(1024);
+  const late = worker.inbox.splice(0).map(message => worker.thread(message)).filter(reply => reply?.image);
+  breakTerrainBlock(ride, 'pane', {});
+  frame(0);
+  const update = worker.inbox.find(message => message.broken);
+  check('a broken pane sends the worker only which panes are broken', update && !update.blocks && update.broken.join() === 'pane');
+  for (const data of late) worker.onmessage({ data });
+  check('chunks painted before it broke are thrown away', late.length > 0 && late.every(reply => reply.image.closed));
+  worker.run();
+  const reply = worker.thread({ version: update.version, key: '', column: 1, row: 0 });
+  check('and the worker paints the terrain without it', [...reply.image.pixels.data].join() === [...rasterizeTerrainChunk(terrainGeometry(ride), 512, 0, 256, 256).data].join());
 }
 
 // Props must survive a trail that has no ground line at all.
