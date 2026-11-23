@@ -2,6 +2,22 @@
 
 Player-facing release notes. The game shows them under **What's new**, and each GitHub Release uses its section.
 
+## 0.6.9 — 2026-11-23
+
+### Heads up
+- Sandpit, Dune Hopper and Mind the Gap have been rebuilt, so their best times and leaderboards start fresh.
+
+### Improved
+- Sandpit is now The Sandpits, a longer trail where each pit is a puzzle of its own: kick out of one, turn around in one, ease off for one.
+- Dune Hopper is now Dune Sea, rebuilt so you hop from crest to crest over real dunes, past rippled sand and a ship stranded in the dunes.
+- Mind the Gap is now Hoodoo Crossing, a canyon crossing with climbs, a jump up, sandstone hoodoos to hop between, a big drop and a broken rope bridge over a river far below.
+- Rides no longer stutter when new terrain or graffiti comes into view.
+- The sun's rays are now a soft haze with shadow streaks through it, fading out before they reach the track, and the lens flare is gone.
+- The headlight is now a soft beam aimed at the road ahead that fades with distance and shows more the darker it gets, and lanterns and street lamps fade out smoothly instead of in hard rings.
+
+### Fixed
+- The update prompt is now readable in the light theme.
+
 ## 0.6.8 — 2026-11-19
 
 ### Heads up
