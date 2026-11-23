@@ -392,10 +392,9 @@ function slowDown(ride, share) {
 // rider back onto an earlier stretch, such as off an upper row of islands
 // onto the lower one, costs time but leaves the route ahead.
 //
-// If this still reports false alarms on new trails (a trap the render shows
-// the rider can ride out of), make traps a warning the builder names in the
-// handover rather than one it must fix, and drop the "Fix every TRAP" rule
-// from CLAUDE.md and TRAIL_FORMAT.md.
+// Traps are warnings for the builder to check, not errors: the short search
+// can miss a way out, and a trap can be meant, such as a ledge deep in a gap
+// where a rider who fell in has lost the run anyway.
 const TRAP_SETTLE = Math.round(3 / STEP);
 const TRAP_REST = Math.round(0.5 / STEP);
 const TRAP_NEAR = 120;
@@ -539,7 +538,7 @@ function solveTrail() {
     if (Number.isFinite(set) && set > gold) out(`  The trail's gold of ${set} s is more than 5% over the bot's time, so it is too easy to get: lower it.`);
   } else out(`Result: NOT finished; the bot took ${ride.collected} of ${total} apples.`);
   const traps = stretches.flatMap(stretch => stretch.forgiveness?.traps || []);
-  if (traps.length) out(`TRAPS: ${traps.length} place${traps.length === 1 ? '' : 's'} where a miss leaves the rider with no way back and no crash (${traps.map(at).join(', ')}). Give each a way back to the line, or make it end the run (see TRAILS_GUIDE.md).`);
+  if (traps.length) out(`TRAPS: ${traps.length} place${traps.length === 1 ? '' : 's'} where a miss leaves the rider with no way back and no crash (${traps.map(at).join(', ')}). Check each: give it a way back to the line or make the miss end the run, or, where the run is lost anyway, keep it and name it in the handover (see TRAILS_GUIDE.md).`);
   report.traps = traps;
   const escapes = TRIALS ? findEscapes(stretches.flatMap(stretch => stretch.stats?.route || [])) : [];
   for (const { side, from, to, nisse, things } of escapes) {
