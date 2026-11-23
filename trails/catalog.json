@@ -86,10 +86,10 @@
       "name": "Switchback"
     },
     {
-      "id": "official:dune-hopper",
+      "id": "official:dune-sea",
       "source": "official",
-      "file": "official/15-dune-hopper.json",
-      "name": "Dune Hopper"
+      "file": "official/15-dune-sea.json",
+      "name": "Dune Sea"
     },
     {
       "id": "official:kicker-canyon",

@@ -1,8 +1,8 @@
 {
-  "name": "Dune Hopper",
-  "description": "A dune sea at noon, and the first trail where distance matters: hop from crest to crest. Real dunes have a long, gentle slope on the side the wind comes from, a sharp crest, and a steep slip face beyond, so every crest throws you forward onto a downhill landing. First the edge of the sand: stony flats and two single dunes to ride over, with an apple past the first crest. Then the doubles: two dunes close together. Carry speed from the first crest over the hollow onto the second dune's slip face; too slow and you land in the hollow, which only costs time. The apples float over the hollows, so a clean double takes them. The ripples: small waves of sand to skim or take crest to crest, with an apple low in a hollow. The buried ruin: a stone tower half swallowed by the dunes. Its apple waits deep in the hollow beside the tower, so here the skill is the other way round: ease off and land short, or you fly over it. Last, the great dune: a long climb that needs the speed you bring, with the flower floating over its crest and a rock outcrop beyond. Every miss lands on sand: nothing here ends the run. Intended apple order 1 to 6.",
+  "name": "Dune Sea",
+  "description": "A dune sea at noon, and the first trail where distance matters: hop from crest to crest. Real dunes have a long, gentle slope on the side the wind comes from, a sharp crest, and a steep slip face beyond, so every crest throws you forward onto a downhill landing. First the edge of the sand: stony flats and two single dunes to ride over, with an apple past the first crest. Then the doubles: two dunes close together. Carry speed from the first crest over the hollow onto the second dune's slip face; too slow and you land in the hollow, which only costs time. The apples float over the hollows, so a clean double takes them. The ripples: small waves of sand to skim or take crest to crest, with an apple low in a hollow. The stranded ship: a wooden ship listing in a hollow, half buried by the next dune. Its apple waits deep in the hollow by the wreck, so here the skill is the other way round: ease off and land short, or you fly over it. Last, the great dune: a long climb that needs the speed you bring, with the flower floating over its crest and a rock outcrop beyond. Every miss lands on sand: nothing here ends the run. Intended apple order 1 to 6.",
   "lesson": "Distance control: hopping from crest to crest. Carry the right speed to land on the next dune, not in the hollow.",
-  "alsoNew": "Sun glare, cacti, a dune sea and a buried ruin.",
+  "alsoNew": "Sun glare, cacti, a dune sea and a ship stranded in it.",
   "world": "The Desert",
   "start": {
     "x": 90,
@@ -722,158 +722,131 @@
       "inner": []
     },
     {
-      "id": "ruin-tower",
-      "material": "stone",
+      "id": "ship-hull",
+      "material": "wood",
       "layer": "back",
-      "group": "Ruin",
+      "group": "Ship",
       "outer": {
-        "id": "ruin-tower-boundary",
+        "id": "ship-hull-boundary",
         "nodes": [
           {
-            "id": "ruin-tower-0",
-            "x": 3226,
-            "y": 420,
+            "id": "ship-hull-0",
+            "x": 3138,
+            "y": 236,
             "mode": "corner",
             "in": null,
             "out": null,
             "edge": "straight"
           },
           {
-            "id": "ruin-tower-1",
-            "x": 3226,
-            "y": 150,
+            "id": "ship-hull-1",
+            "x": 3150,
+            "y": 226,
             "mode": "corner",
             "in": null,
             "out": null,
             "edge": "straight"
           },
           {
-            "id": "ruin-tower-2",
-            "x": 3236,
-            "y": 150,
+            "id": "ship-hull-2",
+            "x": 3346,
+            "y": 196,
             "mode": "corner",
             "in": null,
             "out": null,
             "edge": "straight"
           },
           {
-            "id": "ruin-tower-3",
-            "x": 3236,
-            "y": 138,
+            "id": "ship-hull-3",
+            "x": 3354,
+            "y": 204,
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "straight"
+            "edge": "curve"
           },
           {
-            "id": "ruin-tower-4",
-            "x": 3248,
-            "y": 138,
-            "mode": "corner",
-            "in": null,
-            "out": null,
-            "edge": "straight"
+            "id": "ship-hull-4",
+            "x": 3330,
+            "y": 262,
+            "mode": "smooth",
+            "in": [
+              3310,
+              230
+            ],
+            "out": [
+              3356,
+              303.6
+            ],
+            "edge": "curve"
           },
           {
-            "id": "ruin-tower-5",
-            "x": 3248,
-            "y": 150,
-            "mode": "corner",
-            "in": null,
-            "out": null,
-            "edge": "straight"
+            "id": "ship-hull-5",
+            "x": 3250,
+            "y": 300,
+            "mode": "smooth",
+            "in": [
+              3200,
+              296
+            ],
+            "out": [
+              3290,
+              303.2
+            ],
+            "edge": "curve"
           },
           {
-            "id": "ruin-tower-6",
-            "x": 3262,
-            "y": 150,
-            "mode": "corner",
-            "in": null,
-            "out": null,
-            "edge": "straight"
-          },
-          {
-            "id": "ruin-tower-7",
-            "x": 3262,
-            "y": 132,
-            "mode": "corner",
-            "in": null,
-            "out": null,
-            "edge": "straight"
-          },
-          {
-            "id": "ruin-tower-8",
-            "x": 3276,
-            "y": 132,
-            "mode": "corner",
-            "in": null,
-            "out": null,
-            "edge": "straight"
-          },
-          {
-            "id": "ruin-tower-9",
-            "x": 3276,
-            "y": 158,
-            "mode": "corner",
-            "in": null,
-            "out": null,
-            "edge": "straight"
-          },
-          {
-            "id": "ruin-tower-10",
-            "x": 3290,
-            "y": 158,
-            "mode": "corner",
-            "in": null,
-            "out": null,
-            "edge": "straight"
-          },
-          {
-            "id": "ruin-tower-11",
-            "x": 3290,
-            "y": 420,
-            "mode": "corner",
-            "in": null,
-            "out": null,
-            "edge": "straight"
+            "id": "ship-hull-6",
+            "x": 3168,
+            "y": 290,
+            "mode": "smooth",
+            "in": [
+              3146,
+              305.4
+            ],
+            "out": [
+              3184,
+              278.8
+            ],
+            "edge": "curve"
           }
         ]
       },
       "inner": [
         {
-          "id": "ruin-window-1-boundary",
+          "id": "ship-hole-1-boundary",
           "nodes": [
             {
-              "id": "ruin-window-1-0",
-              "x": 3248,
-              "y": 178,
+              "id": "ship-hole-1-0",
+              "x": 3178,
+              "y": 244,
               "mode": "corner",
               "in": null,
               "out": null,
               "edge": "straight"
             },
             {
-              "id": "ruin-window-1-1",
-              "x": 3264,
-              "y": 178,
+              "id": "ship-hole-1-1",
+              "x": 3190,
+              "y": 242,
               "mode": "corner",
               "in": null,
               "out": null,
               "edge": "straight"
             },
             {
-              "id": "ruin-window-1-2",
-              "x": 3264,
-              "y": 206,
+              "id": "ship-hole-1-2",
+              "x": 3192,
+              "y": 276,
               "mode": "corner",
               "in": null,
               "out": null,
               "edge": "straight"
             },
             {
-              "id": "ruin-window-1-3",
-              "x": 3248,
-              "y": 206,
+              "id": "ship-hole-1-3",
+              "x": 3180,
+              "y": 280,
               "mode": "corner",
               "in": null,
               "out": null,
@@ -882,39 +855,80 @@
           ]
         },
         {
-          "id": "ruin-window-2-boundary",
+          "id": "ship-hole-2-boundary",
           "nodes": [
             {
-              "id": "ruin-window-2-0",
-              "x": 3248,
-              "y": 228,
+              "id": "ship-hole-2-0",
+              "x": 3200,
+              "y": 240,
               "mode": "corner",
               "in": null,
               "out": null,
               "edge": "straight"
             },
             {
-              "id": "ruin-window-2-1",
-              "x": 3264,
-              "y": 228,
+              "id": "ship-hole-2-1",
+              "x": 3214,
+              "y": 238,
               "mode": "corner",
               "in": null,
               "out": null,
               "edge": "straight"
             },
             {
-              "id": "ruin-window-2-2",
-              "x": 3264,
-              "y": 256,
+              "id": "ship-hole-2-2",
+              "x": 3216,
+              "y": 284,
               "mode": "corner",
               "in": null,
               "out": null,
               "edge": "straight"
             },
             {
-              "id": "ruin-window-2-3",
-              "x": 3248,
-              "y": 256,
+              "id": "ship-hole-2-3",
+              "x": 3202,
+              "y": 286,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            }
+          ]
+        },
+        {
+          "id": "ship-hole-3-boundary",
+          "nodes": [
+            {
+              "id": "ship-hole-3-0",
+              "x": 3224,
+              "y": 236,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            },
+            {
+              "id": "ship-hole-3-1",
+              "x": 3236,
+              "y": 234,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            },
+            {
+              "id": "ship-hole-3-2",
+              "x": 3238,
+              "y": 262,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            },
+            {
+              "id": "ship-hole-3-3",
+              "x": 3226,
+              "y": 266,
               "mode": "corner",
               "in": null,
               "out": null,
@@ -925,71 +939,452 @@
       ]
     },
     {
-      "id": "ruin-wall",
-      "material": "stone",
+      "id": "ship-rib-1",
+      "material": "wood",
       "layer": "back",
-      "group": "Ruin",
+      "group": "Ship",
       "outer": {
-        "id": "ruin-wall-boundary",
+        "id": "ship-rib-1-boundary",
         "nodes": [
           {
-            "id": "ruin-wall-0",
-            "x": 3290,
-            "y": 420,
+            "id": "ship-rib-1-0",
+            "x": 3184,
+            "y": 240,
             "mode": "corner",
             "in": null,
             "out": null,
             "edge": "straight"
           },
           {
-            "id": "ruin-wall-1",
-            "x": 3290,
-            "y": 196,
+            "id": "ship-rib-1-1",
+            "x": 3187,
+            "y": 240,
             "mode": "corner",
             "in": null,
             "out": null,
             "edge": "straight"
           },
           {
-            "id": "ruin-wall-2",
-            "x": 3312,
-            "y": 204,
+            "id": "ship-rib-1-2",
+            "x": 3189,
+            "y": 286,
             "mode": "corner",
             "in": null,
             "out": null,
             "edge": "straight"
           },
           {
-            "id": "ruin-wall-3",
-            "x": 3330,
-            "y": 222,
+            "id": "ship-rib-1-3",
+            "x": 3186,
+            "y": 286,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "ship-rib-2",
+      "material": "wood",
+      "layer": "back",
+      "group": "Ship",
+      "outer": {
+        "id": "ship-rib-2-boundary",
+        "nodes": [
+          {
+            "id": "ship-rib-2-0",
+            "x": 3207,
+            "y": 237,
             "mode": "corner",
             "in": null,
             "out": null,
             "edge": "straight"
           },
           {
-            "id": "ruin-wall-4",
-            "x": 3344,
-            "y": 218,
+            "id": "ship-rib-2-1",
+            "x": 3210,
+            "y": 237,
             "mode": "corner",
             "in": null,
             "out": null,
             "edge": "straight"
           },
           {
-            "id": "ruin-wall-5",
-            "x": 3366,
-            "y": 246,
+            "id": "ship-rib-2-2",
+            "x": 3212,
+            "y": 282,
             "mode": "corner",
             "in": null,
             "out": null,
             "edge": "straight"
           },
           {
-            "id": "ruin-wall-6",
-            "x": 3380,
-            "y": 420,
+            "id": "ship-rib-2-3",
+            "x": 3209,
+            "y": 282,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "ship-rib-3",
+      "material": "wood",
+      "layer": "back",
+      "group": "Ship",
+      "outer": {
+        "id": "ship-rib-3-boundary",
+        "nodes": [
+          {
+            "id": "ship-rib-3-0",
+            "x": 3230,
+            "y": 234,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ship-rib-3-1",
+            "x": 3233,
+            "y": 234,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ship-rib-3-2",
+            "x": 3235,
+            "y": 278,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ship-rib-3-3",
+            "x": 3232,
+            "y": 278,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "ship-drift",
+      "material": "sand",
+      "layer": "back",
+      "group": "Ship",
+      "outer": {
+        "id": "ship-drift-boundary",
+        "nodes": [
+          {
+            "id": "ship-drift-0",
+            "x": 3162,
+            "y": 292,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "curve"
+          },
+          {
+            "id": "ship-drift-1",
+            "x": 3196,
+            "y": 276,
+            "mode": "smooth",
+            "in": [
+              3182,
+              278.8
+            ],
+            "out": [
+              3214,
+              272.4
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ship-drift-2",
+            "x": 3246,
+            "y": 284,
+            "mode": "smooth",
+            "in": [
+              3226,
+              284
+            ],
+            "out": [
+              3266,
+              284
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ship-drift-3",
+            "x": 3296,
+            "y": 268,
+            "mode": "smooth",
+            "in": [
+              3278,
+              273.4
+            ],
+            "out": [
+              3310,
+              263.8
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "ship-drift-4",
+            "x": 3332,
+            "y": 258,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ship-drift-5",
+            "x": 3326,
+            "y": 290,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ship-drift-6",
+            "x": 3250,
+            "y": 302,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "ship-rail",
+      "material": "wood",
+      "layer": "back",
+      "group": "Ship",
+      "outer": {
+        "id": "ship-rail-boundary",
+        "nodes": [
+          {
+            "id": "ship-rail-0",
+            "x": 3146,
+            "y": 228,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ship-rail-1",
+            "x": 3346,
+            "y": 197,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ship-rail-2",
+            "x": 3348,
+            "y": 190,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ship-rail-3",
+            "x": 3144,
+            "y": 221,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "ship-mast",
+      "material": "wood",
+      "layer": "back",
+      "group": "Ship",
+      "outer": {
+        "id": "ship-mast-boundary",
+        "nodes": [
+          {
+            "id": "ship-mast-0",
+            "x": 3262,
+            "y": 214,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ship-mast-1",
+            "x": 3270,
+            "y": 213,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ship-mast-2",
+            "x": 3300,
+            "y": 112,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ship-mast-3",
+            "x": 3293,
+            "y": 110,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "ship-sail",
+      "material": "sand",
+      "layer": "back",
+      "group": "Ship",
+      "outer": {
+        "id": "ship-sail-boundary",
+        "nodes": [
+          {
+            "id": "ship-sail-0",
+            "x": 3280,
+            "y": 157,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ship-sail-1",
+            "x": 3316,
+            "y": 178,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ship-sail-2",
+            "x": 3311,
+            "y": 200,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ship-sail-3",
+            "x": 3302,
+            "y": 189,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ship-sail-4",
+            "x": 3294,
+            "y": 208,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ship-sail-5",
+            "x": 3287,
+            "y": 186,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ship-sail-6",
+            "x": 3279,
+            "y": 194,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "ship-spar",
+      "material": "wood",
+      "layer": "back",
+      "group": "Ship",
+      "outer": {
+        "id": "ship-spar-boundary",
+        "nodes": [
+          {
+            "id": "ship-spar-0",
+            "x": 3276,
+            "y": 150,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ship-spar-1",
+            "x": 3320,
+            "y": 176,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ship-spar-2",
+            "x": 3317,
+            "y": 181,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ship-spar-3",
+            "x": 3273,
+            "y": 155,
             "mode": "corner",
             "in": null,
             "out": null,

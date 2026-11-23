@@ -66,7 +66,7 @@ What building Windfall showed, measured in the physics:
 | Element | Meet | On the route | Tested |
 | --- | --- | --- | --- |
 | Momentum | Apple Valley | Windfall | Long Way Up |
-| Small hops | Apple Valley | Windfall | Dune Hopper |
+| Small hops | Apple Valley | Windfall | Dune Sea |
 | Turning around | Windfall | Windmill Hill | Out and Back |
 | Switchbacks (turning to climb behind you) | Windfall | Switchback | The Shaft, Elastic Summit |
 | Braking | Hay Lane | Stoppie Slope | Brake Point |
@@ -76,7 +76,7 @@ What building Windfall showed, measured in the physics:
 | Steep climbs | Windmill Hill | Kickback | Long Way Up |
 | Wheelies | Kickback | Switchback | The Shaft |
 | Drops and step-downs | Stump Drops | Switchback | Sinkhole |
-| Distance control (hopping crest to crest) | Dune Hopper | The Sandpits | Hoodoo Crossing |
+| Distance control (hopping crest to crest) | Dune Sea | The Sandpits | Hoodoo Crossing |
 | Pits with a floor | The Sandpits | Mirage | Sinkhole |
 | Open gaps | Hoodoo Crossing | Mirage | Rooftops, Big Air |
 | Fords | Wet Feet | Deep End | Out and Back |
