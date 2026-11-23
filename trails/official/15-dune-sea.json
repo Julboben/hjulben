@@ -1,17 +1,14 @@
 {
   "name": "Dune Sea",
+  "finish": {
+    "x": 4110,
+    "y": 62
+  },
   "description": "A dune sea at noon, and the first trail where distance matters: hop from crest to crest. Real dunes have a long, gentle slope on the side the wind comes from, a sharp crest, and a steep slip face beyond, so every crest throws you forward onto a downhill landing. First the edge of the sand: stony flats and two single dunes to ride over, with an apple past the first crest. Then the doubles: two dunes close together. Carry speed from the first crest over the hollow onto the second dune's slip face; too slow and you land in the hollow, which only costs time. The apples float over the hollows, so a clean double takes them. The ripples: small waves of sand to skim or take crest to crest, with an apple low in a hollow. The stranded ship: a wooden ship listing in a hollow, half buried by the next dune. Its apple waits deep in the hollow by the wreck, so here the skill is the other way round: ease off and land short, or you fly over it. Last, the great dune: a long climb that needs the speed you bring, with the flower floating over its crest and a rock outcrop beyond. Every miss lands on sand: nothing here ends the run. Intended apple order 1 to 6.",
-  "lesson": "Distance control: hopping from crest to crest. Carry the right speed to land on the next dune, not in the hollow.",
-  "alsoNew": "Sun glare, cacti, a dune sea and a ship stranded in it.",
-  "world": "The Desert",
   "start": {
     "x": 90,
     "y": null,
     "facing": 1
-  },
-  "finish": {
-    "x": 4110,
-    "y": 62
   },
   "terrainBlocks": [
     {
@@ -22,12 +19,12 @@
         "nodes": [
           {
             "id": "ground-0",
-            "x": -1200,
+            "x": -1400,
             "y": 100,
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "ground-1",
@@ -496,7 +493,7 @@
           },
           {
             "id": "ground-32",
-            "x": 5000,
+            "x": 5599.999999999999,
             "y": -150,
             "mode": "corner",
             "in": null,
@@ -505,7 +502,7 @@
           },
           {
             "id": "ground-33",
-            "x": 5000,
+            "x": 5599.999999999999,
             "y": 1100,
             "mode": "corner",
             "in": null,
@@ -514,7 +511,7 @@
           },
           {
             "id": "ground-34",
-            "x": -1200,
+            "x": -1400,
             "y": 1100,
             "mode": "corner",
             "in": null,
@@ -533,12 +530,12 @@
         "nodes": [
           {
             "id": "rock-0",
-            "x": -1200,
+            "x": -1400,
             "y": 126,
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "rock-1",
@@ -692,7 +689,7 @@
           },
           {
             "id": "rock-11",
-            "x": 5000,
+            "x": 5599.999999999999,
             "y": -124,
             "mode": "corner",
             "in": null,
@@ -701,7 +698,7 @@
           },
           {
             "id": "rock-12",
-            "x": 5000,
+            "x": 5599.999999999999,
             "y": 1100,
             "mode": "corner",
             "in": null,
@@ -710,7 +707,7 @@
           },
           {
             "id": "rock-13",
-            "x": -1200,
+            "x": -1400,
             "y": 1100,
             "mode": "corner",
             "in": null,
@@ -763,7 +760,7 @@
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "ship-hull-4",
@@ -817,18 +814,9 @@
           "id": "ship-hole-1-boundary",
           "nodes": [
             {
-              "id": "ship-hole-1-0",
-              "x": 3178,
-              "y": 244,
-              "mode": "corner",
-              "in": null,
-              "out": null,
-              "edge": "straight"
-            },
-            {
-              "id": "ship-hole-1-1",
-              "x": 3190,
-              "y": 242,
+              "id": "ship-hole-1-3",
+              "x": 3180,
+              "y": 280,
               "mode": "corner",
               "in": null,
               "out": null,
@@ -844,9 +832,18 @@
               "edge": "straight"
             },
             {
-              "id": "ship-hole-1-3",
-              "x": 3180,
-              "y": 280,
+              "id": "ship-hole-1-1",
+              "x": 3190,
+              "y": 242,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            },
+            {
+              "id": "ship-hole-1-0",
+              "x": 3178,
+              "y": 244,
               "mode": "corner",
               "in": null,
               "out": null,
@@ -858,18 +855,9 @@
           "id": "ship-hole-2-boundary",
           "nodes": [
             {
-              "id": "ship-hole-2-0",
-              "x": 3200,
-              "y": 240,
-              "mode": "corner",
-              "in": null,
-              "out": null,
-              "edge": "straight"
-            },
-            {
-              "id": "ship-hole-2-1",
-              "x": 3214,
-              "y": 238,
+              "id": "ship-hole-2-3",
+              "x": 3202,
+              "y": 286,
               "mode": "corner",
               "in": null,
               "out": null,
@@ -885,9 +873,18 @@
               "edge": "straight"
             },
             {
-              "id": "ship-hole-2-3",
-              "x": 3202,
-              "y": 286,
+              "id": "ship-hole-2-1",
+              "x": 3214,
+              "y": 238,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            },
+            {
+              "id": "ship-hole-2-0",
+              "x": 3200,
+              "y": 240,
               "mode": "corner",
               "in": null,
               "out": null,
@@ -899,18 +896,9 @@
           "id": "ship-hole-3-boundary",
           "nodes": [
             {
-              "id": "ship-hole-3-0",
-              "x": 3224,
-              "y": 236,
-              "mode": "corner",
-              "in": null,
-              "out": null,
-              "edge": "straight"
-            },
-            {
-              "id": "ship-hole-3-1",
-              "x": 3236,
-              "y": 234,
+              "id": "ship-hole-3-3",
+              "x": 3226,
+              "y": 266,
               "mode": "corner",
               "in": null,
               "out": null,
@@ -926,9 +914,18 @@
               "edge": "straight"
             },
             {
-              "id": "ship-hole-3-3",
-              "x": 3226,
-              "y": 266,
+              "id": "ship-hole-3-1",
+              "x": 3236,
+              "y": 234,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            },
+            {
+              "id": "ship-hole-3-0",
+              "x": 3224,
+              "y": 236,
               "mode": "corner",
               "in": null,
               "out": null,
@@ -1097,7 +1094,7 @@
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "ship-drift-1",
@@ -1184,18 +1181,9 @@
         "id": "ship-rail-boundary",
         "nodes": [
           {
-            "id": "ship-rail-0",
-            "x": 3146,
-            "y": 228,
-            "mode": "corner",
-            "in": null,
-            "out": null,
-            "edge": "straight"
-          },
-          {
-            "id": "ship-rail-1",
-            "x": 3346,
-            "y": 197,
+            "id": "ship-rail-3",
+            "x": 3144,
+            "y": 221,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -1211,9 +1199,18 @@
             "edge": "straight"
           },
           {
-            "id": "ship-rail-3",
-            "x": 3144,
-            "y": 221,
+            "id": "ship-rail-1",
+            "x": 3346,
+            "y": 197,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ship-rail-0",
+            "x": 3146,
+            "y": 228,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -1232,18 +1229,9 @@
         "id": "ship-mast-boundary",
         "nodes": [
           {
-            "id": "ship-mast-0",
-            "x": 3262,
-            "y": 214,
-            "mode": "corner",
-            "in": null,
-            "out": null,
-            "edge": "straight"
-          },
-          {
-            "id": "ship-mast-1",
-            "x": 3270,
-            "y": 213,
+            "id": "ship-mast-3",
+            "x": 3293,
+            "y": 110,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -1259,9 +1247,18 @@
             "edge": "straight"
           },
           {
-            "id": "ship-mast-3",
-            "x": 3293,
-            "y": 110,
+            "id": "ship-mast-1",
+            "x": 3270,
+            "y": 213,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "ship-mast-0",
+            "x": 3262,
+            "y": 214,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -1616,6 +1613,9 @@
     "windDirection": "right"
   },
   "timeOfDay": 12,
+  "lesson": "Distance control: hopping from crest to crest. Carry the right speed to land on the next dune, not in the hollow.",
+  "alsoNew": "Sun glare, cacti, a dune sea and a ship stranded in it.",
+  "world": "The Desert",
   "backdrop": "desert",
   "medals": {
     "gold": 22,
