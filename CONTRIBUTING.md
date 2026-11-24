@@ -235,7 +235,7 @@ A deploy publishes only what players load: `scripts/build-site.mjs` copies the p
 
 1. **Actions → Prepare release → Run workflow**, choosing `patch`, `minor` or `major`. It bumps the version, writes player-facing notes for everything since the last `v*` tag into `CHANGELOG.md`, regenerates `js/version.js`, `js/changelog.js` and `sw.js`, runs every check, and opens (or updates) a **Release vX.Y.Z** pull request from `release/next`.
 2. Read the notes in the PR and edit `CHANGELOG.md` on that branch if needed. If something fails, push a fix to the branch, or fix it on `main` and run Prepare release again (this rebuilds the branch from `main`).
-3. Merge the PR. The **Release** workflow (`release.yml`) sees a version with no tag yet, runs the checks again, deploys that commit to Netlify (`deploy.yml`), and then publishes the GitHub Release `vX.Y.Z` (creating the tag). If the deploy fails, nothing is published: fix it and re-run the failed jobs. To redeploy or roll back, run **Actions → Deploy** with any release tag.
+3. Merge the PR. The **Release** workflow (`release.yml`) sees a version with no tag yet, runs the checks again, deploys that commit to Netlify (`deploy.yml`), and then publishes the GitHub Release `vX.Y.Z` (creating the tag). If the deploy fails, nothing is published: fix it and re-run the failed jobs. To redeploy or roll back, run **Actions → Deploy** from a release tag: under **Use workflow from**, pick **Tags** and the release. Each release then deploys with its own copy of the workflow, the way it was built to.
 4. `git pull` to get the version bump locally.
 
 The release PR is opened by GitHub Actions, so its CI run waits for a maintainer's approval. That's optional: Prepare release already ran every check.
