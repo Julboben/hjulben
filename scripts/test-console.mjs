@@ -1,7 +1,8 @@
-// Opens the game and the editor in headless Chrome, served the way static
-// hosting serves them, and fails on anything that reaches the console that
+// Opens the game and the editor in headless Chrome, served from the files the
+// deploy publishes (scripts/build-site.mjs) the way static hosting serves
+// them, and fails on anything that reaches the console that
 // nobody put there on purpose: a failed request (a file that only exists on
-// the dev server, say), an uncaught exception, or a warning or error logged
+// the dev server, or that the deploy leaves out, say), an uncaught exception, or a warning or error logged
 // by the page or its service worker. In production the console should hold
 // only the easter-egg hints.
 //
@@ -13,7 +14,11 @@
 //
 // Needs Chrome, at CHROME_PATH or where macOS or Linux installs it. Without
 // it the test is skipped; CI has it.
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { chromePath, launchChrome, sleep, startStaticServer } from './lib/chrome.mjs';
+import { buildSite } from './lib/site-files.mjs';
 
 const PAGES = ['index.html', 'editor.html'];
 // Mapped to the test server; reserved for testing, so it never resolves elsewhere.
@@ -29,9 +34,14 @@ if (!chromePath) {
   process.exit(0);
 }
 
+const site = mkdtempSync(join(tmpdir(), 'hjulben-site-'));
+process.once('exit', () => rmSync(site, { recursive: true, force: true }));
+buildSite(site);
+
 const problems = [];
 let served = []; // what reached the server during the current visit
 const server = await startStaticServer({
+  root: site,
   onRequest(pathname, status) {
     served.push(pathname);
     if (status >= 400) problems.push(`${status} ${pathname}`);
@@ -147,4 +157,4 @@ if (problems.length) {
   for (const problem of [...new Set(problems)]) console.error('  ' + problem);
   process.exit(1);
 }
-console.log(`Console test passed: ${PAGES.join(' and ')} load from static hosting without a failed request, exception or warning.`);
+console.log(`Console test passed: ${PAGES.join(' and ')} load from the deployed files without a failed request, exception or warning.`);

@@ -5,10 +5,11 @@
 //
 //   node scripts/generate-sw-core.mjs          rewrite sw.js if needed
 //   node scripts/generate-sw-core.mjs --check  fail if sw.js is out of date (CI)
-import { readFileSync, writeFileSync, readdirSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
-import { join, relative } from 'node:path';
+import { join } from 'node:path';
 import { readChangelog, plainText } from './lib/changelog.mjs';
+import { pageFiles } from './lib/site-files.mjs';
 
 const check = process.argv.includes('--check');
 const root = join(import.meta.dirname, '..');
@@ -52,27 +53,7 @@ generate('js/changelog.js', 'CHANGELOG.md', [
   '',
 ].join('\n'), `updated, ${releases.length} releases`);
 
-// Everything the two pages can request, besides the trail files (cached from
-// the catalog) and the service worker itself.
-const included = /\.(js|css|html|webmanifest)$|^icons\/.*\.(svg|png)$|^fonts\/.*\.woff2$/;
-// Top-level folders and files that are never served to players.
-const skipTop = new Set(['sw.js', 'scripts', 'trails', 'tests', 'node_modules', 'dist', 'coverage', 'netlify']);
-
-function walk(dir, out = []) {
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    if (entry.name.startsWith('.')) continue;
-    const full = join(dir, entry.name);
-    const path = relative(root, full).replaceAll('\\', '/');
-    if (dir === root && skipTop.has(entry.name)) continue;
-    if (entry.isDirectory()) walk(full, out);
-    else if (included.test(path)) out.push('./' + path);
-  }
-  return out;
-}
-
-// Plain string order, identical on every machine, so the cache name is too.
-const byPath = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
-const files = ['./', ...walk(root).sort(byPath)];
+const files = ['./', ...pageFiles().map(file => './' + file)];
 
 // A new cache name whenever the list or any file's content changes, so clients
 // drop the old precache. Line endings are normalised so every OS gets the same hash.

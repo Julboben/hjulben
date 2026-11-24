@@ -20,20 +20,21 @@ export const chromePath = [
 export const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 /**
- * Static hosting: the repo's files as they are, and nothing else. `handle`
- * may answer a request first (returning true); every request is passed to
- * `onRequest` with the status it got, so none can go unseen.
- * @param {{ onRequest?: (pathname: string, status: number) => void,
+ * Static hosting: the files in `root` (the repo, unless given) as they are,
+ * and nothing else. `handle` may answer a request first (returning true);
+ * every request is passed to `onRequest` with the status it got, so none can
+ * go unseen.
+ * @param {{ root?: string, onRequest?: (pathname: string, status: number) => void,
  *   handle?: (pathname: string, response: http.ServerResponse) => boolean }} [options]
  * @returns {Promise<http.Server>}
  */
-export function startStaticServer({ onRequest = () => {}, handle = () => false } = {}) {
+export function startStaticServer({ root = repoRoot, onRequest = () => {}, handle = () => false } = {}) {
   const server = http.createServer(async (request, response) => {
     const { pathname } = new URL(request.url, 'http://localhost');
     response.on('finish', () => onRequest(pathname, response.statusCode));
     if (handle(pathname, response)) return;
-    let filePath = path.normalize(path.join(repoRoot, decodeURIComponent(pathname)));
-    if (!filePath.startsWith(repoRoot)) { response.writeHead(403); return response.end(); }
+    let filePath = path.normalize(path.join(root, decodeURIComponent(pathname)));
+    if (!filePath.startsWith(root)) { response.writeHead(403); return response.end(); }
     try {
       if ((await stat(filePath)).isDirectory()) filePath = path.join(filePath, 'index.html');
       const content = await readFile(filePath);

@@ -1,8 +1,9 @@
 name: Deploy
 
 # Production deploys only happen here: called by release.yml when a release PR
-# is merged, or by hand from the Actions tab with any release tag (to redeploy
-# or roll back).
+# is merged, or by hand from the Actions tab, run from a release tag (to
+# redeploy or roll back). Run by hand, it is the tag's own copy of this
+# workflow, so every release deploys the way it was built to.
 on:
   workflow_call:
     inputs:
@@ -15,10 +16,6 @@ on:
         type: string
         required: false
   workflow_dispatch:
-    inputs:
-      tag:
-        description: Release tag to deploy, for example v0.2.0. Use an older tag to roll back.
-        required: true
 
 permissions:
   contents: read
@@ -33,11 +30,16 @@ jobs:
       name: production
       url: ${{ steps.deploy.outputs.url }}
     env:
-      TAG: ${{ inputs.tag }}
+      TAG: ${{ inputs.tag || github.ref_name }}
     steps:
+      - name: Check it runs from a release tag
+        if: github.event_name == 'workflow_dispatch' && github.ref_type != 'tag'
+        run: |
+          echo "::error::Run Deploy from a release tag: under Use workflow from, pick Tags and the release."
+          exit 1
       - uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.ref || inputs.tag }}
+          ref: ${{ inputs.ref || inputs.tag || github.ref }}
       - uses: actions/setup-node@v4
         with:
           node-version: 26
@@ -64,7 +66,8 @@ jobs:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ vars.NETLIFY_SITE_ID }}
         run: |
-          npx --yes netlify-cli@27 deploy --prod --no-build --dir . --functions netlify/functions --message "$TAG" --json > "$RUNNER_TEMP/deploy.json"
+          node scripts/build-site.mjs
+          npx --yes netlify-cli@27 deploy --prod --no-build --dir dist --functions netlify/functions --message "$TAG" --json > "$RUNNER_TEMP/deploy.json"
           url=$(node -p "const d = require(process.env.RUNNER_TEMP + '/deploy.json'); d.url || d.deploy_url")
           echo "url=$url" >> "$GITHUB_OUTPUT"
           echo "Deployed $TAG to $url" >> "$GITHUB_STEP_SUMMARY"
