@@ -962,7 +962,7 @@ function mixHex(a, b, t) {
   );
 }
 
-export const BACKDROPS = ["hills", "mountains", "forest", "desert", "city"];
+export const BACKDROPS = ["hills", "mountains", "forest", "desert", "city", "coast"];
 
 // Daylight colours of each theme; the time of day shades them. Hills use the
 // time of day's own hill colours, so they look exactly as before.
@@ -971,6 +971,7 @@ const BACKDROP_COLORS = {
   forest: { far: "#9db2a1", near: "#71907a", tree: "#5a7a63" },
   desert: { far: "#d0ad88", accent: "#bf9873", near: "#dcc59f", tree: "#8c9c6b" },
   city: { far: "#9eaab0", near: "#7d8c90", tree: "#6f7d82", window: "#b9c7ca" },
+  coast: { far: "#5f9fae", accent: "#a6d3d2", island: "#6a9a72", near: "#6f9668", sand: "#e3d2a6", tree: "#557d5a" },
 };
 
 function backdropColors(trail, time) {
@@ -993,8 +994,10 @@ function backdropColors(trail, time) {
   return {
     far: grade(theme.far, 0.3),
     // Faces turned away from the sun (mountains).
-    farShade: grade(mixHex(theme.far, "#4f5d66", 0.22), 0.3),
+    farShade: grade(mixHex(theme.island ?? theme.far, "#4f5d66", 0.22), 0.3),
     accent: theme.accent ? grade(theme.accent, 0.3) : null,
+    island: theme.island ? grade(theme.island, 0.3) : null,
+    sand: theme.sand ? grade(theme.sand, 0.1) : null,
     accentShade: theme.accent ? grade(mixHex(theme.accent, "#9aa8b4", 0.35), 0.3) : null,
     near: grade(theme.near, 0.1),
     tree: grade(theme.tree, 0.1),
@@ -1054,6 +1057,29 @@ function backdropCactus(tools, x, groundY, height, color) {
   tools.pixelRect(x + 12, rightArm - q(0.25), 4, q(0.25), color, 4);
 }
 
+// A palm silhouette on the 4-unit grid: a trunk bowing out towards `lean`
+// (±1) and a crown of fronds arching out and drooping to both sides.
+function backdropPalm(tools, x, groundY, height, lean, color) {
+  const q = (v) => Math.round(v / 4) * 4;
+  const h = Math.max(12, q(height));
+  let top = 0;
+  for (let y = 0; y < h; y += 4) {
+    const t = y / h;
+    top = q(lean * h * 0.25 * t * t);
+    tools.pixelRect(x + top, groundY - y - 4, 4, 4, color, 4);
+  }
+  const cx = x + top,
+    cy = groundY - h - 4;
+  const reach = Math.max(12, q(h * 0.5));
+  for (const side of [-1, 1])
+    for (const [rise, fall, length] of [[0.35, 0.55, 1], [0.1, 0.8, 0.75], [0.5, 0.2, 0.45]])
+      for (let dx = 4; dx <= reach * length; dx += 4) {
+        const u = dx / reach;
+        tools.pixelRect(cx + side * dx, q(cy - Math.sin(u * Math.PI * 0.7) * reach * rise + u * u * reach * fall), 4, 4, color, 4);
+      }
+  tools.pixelRect(cx - 4, cy - 4, 12, 8, color, 4);
+}
+
 /**
  * The two parallax layers of a theme. Each has a ground `shape(x)`, an
  * optional `column` hook for per-column detail (snow, rock bands) and an
@@ -1061,7 +1087,7 @@ function backdropCactus(tools, x, groundY, height, color) {
  */
 function backdropLayers(theme, c) {
   const key = (i) =>
-    `${theme}|${i}|${c.far}|${c.farShade}|${c.near}|${c.tree}|${c.trunk}|${c.accent}|${c.window}|${c.lit}`;
+    `${theme}|${i}|${c.far}|${c.farShade}|${c.near}|${c.tree}|${c.trunk}|${c.accent}|${c.window}|${c.lit}|${c.island}|${c.sand}`;
 
   if (theme === "mountains") {
     const base = 300,
@@ -1258,6 +1284,105 @@ function backdropLayers(theme, c) {
                 30 + n1 * 34,
                 c.tree,
               );
+          }),
+      },
+    ];
+  }
+
+  if (theme === "coast") {
+    // The open sea out to a level horizon, with an island now and then on it,
+    // and the near shore: a beach with palms on a low green bank.
+    const horizon = 236,
+      islandSpacing = 760;
+    // Island k: its summit's place and height, and its width each side. Some
+    // gaps stay open sea.
+    const islandAt = (k) => ({
+      on: backdropNoise(k * 5 + 3) > 0.3,
+      c: k * islandSpacing + (backdropNoise(k + 11) - 0.5) * 300,
+      h: 22 + backdropNoise(k + 23) * 52,
+      w: 120 + backdropNoise(k + 31) * 140,
+    });
+    // How far the island at x rises above the sea: a volcanic cone with
+    // shoulders that slope gently into the water.
+    const islandOver = (x) => {
+      const k0 = Math.round(x / islandSpacing);
+      for (let k = k0 - 1; k <= k0 + 1; k++) {
+        const island = islandAt(k);
+        const t = Math.abs(x - island.c) / island.w;
+        if (!island.on || t >= 1) continue;
+        // A rounded volcanic peak over low shoulders that run into the sea.
+        const dome = Math.cos((t * Math.PI) / 2) ** 2.2;
+        return { island, lift: island.h * dome + 6 * (1 - t ** 4) };
+      }
+      return { island: null, lift: 0 };
+    };
+    const near = (x) =>
+      292 + Math.sin(x * 0.008 + 0.6) * 8 + Math.sin(x * 0.021) * 3;
+    return [
+      {
+        key: key(0),
+        color: c.far,
+        parallax: 0.1,
+        step: 4,
+        shape: (x) => horizon - islandOver(x).lift,
+        column(context, x, y, step) {
+          const { island } = islandOver(x);
+          if (island) {
+            // Lit from the right, so the slopes left of the summit are in shade.
+            context.fillStyle = x < island.c ? c.farShade : c.island;
+            context.fillRect(x, y, step, horizon - y);
+            // Surf where the island meets the sea.
+            context.fillStyle = c.accent;
+            context.fillRect(x, horizon - 4, step, 4);
+          }
+          // Swell catching the light, in level rows that thin out towards the horizon.
+          context.fillStyle = c.accent;
+          for (let row = 1; row < 9; row++) {
+            const wy = Math.round((horizon + 4 + row * row * 1.6) / 4) * 4;
+            // Dashes longer nearer in, as the swell would look.
+            const dash = 8 + row * 4;
+            if (backdropNoise(Math.floor(x / dash) * 7 + row * 131) > 0.8)
+              context.fillRect(x, wy, step, 4);
+          }
+        },
+        decorate: (tools, left, right) => {
+          // A palm or two on the bigger islands' shoulders.
+          for (
+            let k = Math.floor(left / islandSpacing) - 1;
+            k <= Math.ceil(right / islandSpacing) + 1;
+            k++
+          ) {
+            const island = islandAt(k);
+            if (!island.on || island.h < 40) continue;
+            for (const side of [-0.45, 0.55]) {
+              const x = Math.round((island.c + side * island.w) / 4) * 4;
+              const ground = Math.round((horizon - islandOver(x).lift) / 4) * 4;
+              backdropPalm(tools, x, ground + 4, 16, side < 0 ? -1 : 1, x < island.c ? c.farShade : c.island);
+            }
+          }
+        },
+      },
+      {
+        key: key(1),
+        color: c.near,
+        parallax: 0.28,
+        shape: near,
+        // The beach along the top of the bank.
+        column(context, x, y, step) {
+          context.fillStyle = c.sand;
+          context.fillRect(x, y, step, 8);
+        },
+        decorate: (tools, left, right) =>
+          scatter(left, right, 70, 50, (x, n0, n1) => {
+            if (n0 < 0.4) return;
+            backdropPalm(
+              tools,
+              x,
+              groundAt(near, x) + 8,
+              34 + n1 * 26,
+              n1 > 0.5 ? 1 : -1,
+              c.tree,
+            );
           }),
       },
     ];

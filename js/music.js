@@ -96,7 +96,7 @@ const WORLD_MOODS = {
   'First Rides': 'hills', 'The Woods': 'forest', 'The Desert': 'desert', 'Lakeland': 'lakes',
   'Underground': 'caves', 'The City': 'city', 'The Mountains': 'mountains'
 };
-const BACKDROP_MOODS = { hills: 'hills', forest: 'forest', desert: 'desert', city: 'city', mountains: 'mountains' };
+const BACKDROP_MOODS = { hills: 'hills', forest: 'forest', desert: 'desert', city: 'city', mountains: 'mountains', coast: 'lakes' };
 
 // A song goes groove, tune, second tune, tune again with a new ending, then
 // a quiet break before it loops, so the lead isn't on all the time.

@@ -370,6 +370,18 @@ globalThis.Worker = class {
     const lit = bodies.filter(([colour]) => colour === '#ffeaa8').length;
     check(`city buildings at ${timeOfDay}:00 are filled with building colours only`, colours.size === 3 && lit === 0 && bodies.length > 0, `(${[...colours].join(', ')})`);
   }
+  // The coast's sea reaches a level horizon, and an island over it is painted
+  // in its own colours right down to the water.
+  fills.length = 0;
+  for (let cameraX = 0; cameraX < 60000; cameraX += 4000)
+    art.drawBackground({ width: 800, height: 400, palette: { backdrop: 'coast' }, cameraX });
+  // The far layer is drawn in 4-unit columns from its top to the strip's foot.
+  const sea = fills.filter(([, , y, width, height]) => width === 4 && y + height === 520);
+  const horizon = Math.max(...sea.map(([, , y]) => y));
+  const islands = sea.filter(([, , y]) => y < horizon);
+  check('the coast shows open sea out to a level horizon', sea.length - islands.length > islands.length && islands.length > 0);
+  check('the coast\'s islands are painted down to the sea', islands.every(([colour, x, y]) =>
+    fills.some(([other, ox, oy, , height]) => other !== colour && ox === x && oy === y && oy + height === horizon)));
   globalThis.OffscreenCanvas = Offscreen;
 }
 
