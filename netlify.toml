@@ -1,3 +1,9 @@
+# Only the files players load are published (scripts/build-site.mjs), not
+# the docs, scripts and tests beside them.
+[build]
+  command = "node scripts/build-site.mjs"
+  publish = "dist"
+
 [functions]
   directory = "netlify/functions"
 

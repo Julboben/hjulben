@@ -1,5 +1,6 @@
 .DS_Store
 node_modules/
+dist/
 trails/custom/*
 !trails/custom/README.md
 trails/custom-catalog.json
