@@ -52,7 +52,7 @@
                 </button>
                 <span class="save-status" id="save-status"></span>
                 <div class="header-actions">
-                    <div class="history-actions">
+                    <div class="history-actions" id="history">
                         <button
                             id="undo"
                             class="icon-button"
@@ -69,6 +69,22 @@
                         >
                             <span data-icon="redo" aria-hidden="true"></span>
                         </button>
+                        <button
+                            id="history-toggle"
+                            class="tool-menu-toggle"
+                            type="button"
+                            title="Undo history"
+                            aria-label="Undo history"
+                            aria-haspopup="menu"
+                            aria-expanded="false"
+                            aria-controls="history-menu"
+                        >
+                            <span data-icon="caret-down" aria-hidden="true"></span>
+                        </button>
+                        <div class="undo-history" id="history-menu" hidden>
+                            <div class="tool-menu-heading">Undo history</div>
+                            <ol id="history-list" role="menu" aria-label="Undo history"></ol>
+                        </div>
                     </div>
                     <button
                         id="play-test"

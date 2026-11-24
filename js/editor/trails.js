@@ -35,7 +35,7 @@ import {
   savedName,
   updateVersionChip,
 } from "./drafts.js";
-import { pushHistory } from "./history.js";
+import { pushHistory, snapshot } from "./history.js";
 import { flagsSnapshot, moveLocks } from "./locks.js";
 import { syncInspector } from "./inspector.js";
 import { render } from "./render.js";
@@ -119,7 +119,12 @@ export function loadTrailData(index) {
     const restored = normalizeTrail(autosave.trail);
     if (JSON.stringify(restored, null, 2) === editor.version.base) return trail;
     editor.version.restoredAt = autosave.at;
-    editor.history.push({ trail: JSON.stringify(trail), selection: null, flags: flagsSnapshot() });
+    editor.history.push({
+      trail: JSON.stringify(trail),
+      selection: null,
+      flags: flagsSnapshot(),
+      label: "restored your unsaved changes",
+    });
     return restored;
   } catch (_) {
     return trail;
@@ -212,7 +217,13 @@ export function saveDraft() {
 
 function openVersion(kind, at, data) {
   /** @type {HTMLDialogElement} */ ($("versions")).close();
-  pushHistory();
+  pushHistory(
+    snapshot(
+      kind === "draft"
+        ? `opened the draft (${formatDraftTime(at)})`
+        : `reverted to the ${savedName(currentEntry()).toLowerCase()}`,
+    ),
+  );
   editor.trail = normalizeTrail(JSON.parse(JSON.stringify(data)));
   setVersion(kind, at, editor.trail);
   editor.selection = null;
@@ -431,6 +442,7 @@ export function selectEntry(index) {
   editor.trailIndex = index;
   editor.history = [];
   editor.future = [];
+  editor.historyTrimmed = false;
   editor.trail = loadTrailData(editor.trailIndex);
   editor.selection = null;
   editor.focusPending = true;

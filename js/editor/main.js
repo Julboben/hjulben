@@ -16,7 +16,7 @@ import { autosaveFailing, autosaveNow, bindAutosave } from "./autosave.js";
 import { bindClipboard } from "./clipboard.js";
 import { $, canvas, wrap } from "./dom.js";
 import { openDraftStore, whenWritten } from "./draft-store.js";
-import { pushHistory, redo, undo, updateHistoryButtons } from "./history.js";
+import { bindHistoryButtons, pushHistory, snapshot, updateHistoryButtons } from "./history.js";
 import { bindInput } from "./input.js";
 import { bindInspector, rememberedAuthor, renameTrail, syncInspector } from "./inspector.js";
 import { bindMenu } from "./menu.js";
@@ -164,9 +164,7 @@ renameDialog.addEventListener("click", (event) => {
   if (event.target === renameDialog) renameDialog.close();
 });
 
-$("undo").addEventListener("click", undo);
-
-$("redo").addEventListener("click", redo);
+bindHistoryButtons();
 
 $("zoom-in").addEventListener("click", () => zoomAtCenter(1.2));
 
@@ -276,7 +274,7 @@ $("import-json").addEventListener("click", () => {
     // Parsed and normalized before the undo step is taken, so a typo in the
     // JSON leaves the history as it was.
     const imported = normalizeTrail(JSON.parse($("trail-json").value));
-    pushHistory();
+    pushHistory(snapshot("imported the JSON"));
     editor.trail = imported;
     editor.selection = null;
     editor.focusPending = true;

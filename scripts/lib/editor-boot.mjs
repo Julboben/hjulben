@@ -1150,6 +1150,27 @@ if (kind === 'nisse') {
   out.deleted = !('nisse' in current());
   document.getElementById('undo').click();
   out.restored = current().nisse;
+  out.undoSaid = document.getElementById('editor-toast').textContent;
+  const redoButton = document.getElementById('redo');
+  redoButton.dispatch('pointerenter');
+  out.redoTitle = redoButton.title;
+  redoButton.click();
+  out.redoSaid = document.getElementById('editor-toast').textContent;
+  document.getElementById('undo').click();
+  // The undo history lists the steps newest first; picking one jumps there.
+  const historyRows = () => {
+    document.getElementById('history-toggle').click();
+    return document.getElementById('history-list').children
+      .filter(item => item.firstElementChild)
+      .map(item => ({ item, text: item.firstElementChild.children[1].textContent }));
+  };
+  const rows = historyRows();
+  out.historyRows = rows.slice(0, 3).map(({ item, text }) => `${item.className}|${text}`);
+  rows.find(({ text }) => text === 'Added a nisse').item.firstElementChild.click();
+  out.historyBack = [current().nisse, document.getElementById('editor-toast').textContent];
+  historyRows()[0].item.firstElementChild.click();
+  out.historyForward = ['nisse' in current(), document.getElementById('editor-toast').textContent];
+  document.getElementById('undo').click();
   toolSettings.apple.kind = 'apple';
 
   // Start and Finish share a button, which shows the one used last: its menu

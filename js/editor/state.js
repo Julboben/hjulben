@@ -39,6 +39,9 @@ export const editor = {
   version: null,
   history: [],
   future: [],
+  // Whether undo has dropped its oldest steps, so the list can't say it goes
+  // back to where the session started.
+  historyTrimmed: false,
   snapGuide: null,
   // The lines a drag has snapped along, drawn between what lined up.
   snapLines: [],

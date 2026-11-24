@@ -54,6 +54,19 @@ const reported = (report, label) => {
   check('a selected nisse is titled and explained', report.title === 'NISSE' && report.hintShown);
   check('deleting it removes the field', report.deleted);
   check('and undo brings it back', report.restored && report.restored.x === report.moved.x);
+  check('undo says what it took back', report.undoSaid === 'Undid: deleted the nisse', `("${report.undoSaid}")`);
+  check('redo names the step in its tooltip, and says it did it again',
+    report.redoTitle === 'Redo: deleted the nisse (Cmd/Ctrl+Shift+Z)' && report.redoSaid === 'Redid: deleted the nisse',
+    `("${report.redoTitle}", "${report.redoSaid}")`);
+  check('the undo history lists the step to redo, the one that made the trail as it is, then older ones',
+    JSON.stringify(report.historyRows) === JSON.stringify(['redoable|Deleted the nisse', 'now|Moved the nisse', '|Added a nisse']),
+    `(${JSON.stringify(report.historyRows)})`);
+  check('picking an older step takes back the steps after it',
+    report.historyBack[0]?.x === report.placed.x && report.historyBack[1] === 'Undid: moved the nisse',
+    `(${JSON.stringify(report.historyBack)})`);
+  check('picking the newest redoes every step up to it, as one jump',
+    report.historyForward[0] === false && report.historyForward[1] === 'Redid 2 steps: moved the nisse and deleted the nisse',
+    `(${JSON.stringify(report.historyForward)})`);
   check('a spike\'s radius set in the inspector carries over to the next spike', JSON.stringify(report.nextSpike?.slice(-2)) === '[30,30]', `(${JSON.stringify(report.nextSpike)})`);
   check('Start and Finish share a flag button that takes up the one used last, and its menu sets the start\'s facing',
     JSON.stringify(report.markerButton) === JSON.stringify([['start', 'flag'], ['finish', 'flag', 'finish', 'finish'], ['start', 'flag', 'start'], '-1']), `(${JSON.stringify(report.markerButton)})`);

@@ -43,7 +43,17 @@ select {
 }
 input[type="checkbox"] { accent-color: var(--color-accent); }
 .header-actions { margin-left: auto; display: flex; align-items: center; gap: 6px; }
-.history-actions { margin-right: 4px; display: flex; gap: 6px; }
+.history-actions { position: relative; margin-right: 4px; display: flex; align-items: center; gap: 6px; }
+.history-actions .tool-menu-toggle { min-height: 34px; }
+/* The undo history, newest first, under the undo and redo buttons. */
+.undo-history { position: absolute; top: calc(100% + 8px); left: 0; z-index: 20; width: 290px; border: 1px solid var(--color-border); background: var(--color-shell); box-shadow: 5px 5px 0 var(--color-shadow); }
+.undo-history .tool-menu-heading { padding: 10px 12px 4px; }
+.undo-history ol { max-height: min(420px, 70vh); margin: 0; padding: 4px 6px 6px; display: grid; gap: 2px; overflow-y: auto; list-style: none; }
+.undo-history li button { width: 100%; min-height: 30px; padding: 4px 8px; display: flex; align-items: center; gap: 8px; border-color: transparent; background: none; box-shadow: none; color: var(--color-text); font-size: var(--text-sm); font-weight: var(--weight-heavy); letter-spacing: .5px; text-align: left; }
+.undo-history li button:hover, .undo-history li button:focus-visible { border-color: var(--color-border); background: var(--color-surface); outline: none; }
+.undo-history .history-mark { width: 14px; flex: none; display: grid; place-items: center; color: var(--color-accent-text); }
+.undo-history .redoable button, .undo-history .edge:not(.now) button { color: var(--color-text-faint); }
+.undo-history .now strong { margin-left: auto; color: var(--color-accent-text); font-size: var(--text-xs); letter-spacing: 1.5px; }
 .trail-actions { display: flex; gap: 6px; }
 .trail-actions button { min-height: 34px; padding: 0 10px; font-size: var(--text-xs); }
 .save-status { max-width: 220px; color: var(--color-text-muted); font-size: var(--text-xs); letter-spacing: .5px; overflow-wrap: anywhere; }
