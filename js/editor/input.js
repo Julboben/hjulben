@@ -88,8 +88,6 @@ import {
 import { canSave, saveDraft, saveTrail } from "./trails.js";
 import {
   clampCamera,
-  fitTrail,
-  focusOnStart,
   pointerWorld,
   toggleGameArt,
   toggleGrid,
@@ -97,6 +95,7 @@ import {
   updateZoom,
   zoomAtCenter,
 } from "./view.js";
+import { goToStart, zoomToActualSize, zoomToFit, zoomToSelection } from "./zoom-menu.js";
 
 let dragging = false;
 
@@ -1317,14 +1316,18 @@ export function bindInput() {
       return;
     }
     if (event.key === "0") {
-      zoomAtCenter(1 / editor.zoom);
+      zoomToActualSize();
+      return;
+    }
+    // By physical key, as Shift+2 types a different character on each layout.
+    if (event.shiftKey && event.code === "Digit2") {
+      zoomToSelection();
       return;
     }
     if (event.key === "Home") {
       // Shift fits the whole trail in the view; plain Home goes back to the start.
-      if (event.shiftKey) fitTrail();
-      else focusOnStart();
-      render();
+      if (event.shiftKey) zoomToFit();
+      else goToStart();
       return;
     }
   });

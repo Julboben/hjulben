@@ -39,7 +39,7 @@ function choose(tool, key, value) {
 }
 
 /** A menu item: a check, then its icon, if any, the label and the tool's key. */
-function menuItem(text, { checked = null, icon = null, key = "", onChoose }) {
+export function menuItem(text, { checked = null, icon = null, key = "", onChoose }) {
   const item = document.createElement("button");
   item.type = "button";
   item.setAttribute("role", checked === null ? "menuitem" : "menuitemradio");
@@ -71,7 +71,7 @@ function menuItem(text, { checked = null, icon = null, key = "", onChoose }) {
   return item;
 }
 
-function heading(text) {
+export function heading(text) {
   const node = document.createElement("div");
   node.className = "tool-menu-heading";
   node.textContent = text;

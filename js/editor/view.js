@@ -40,14 +40,23 @@ export function clampCamera() {
 }
 
 /** Zoom and move the view so the whole trail is in it, with a little air round it. */
-export function fitTrail() {
-  const bounds = trailBounds();
+export const fitTrail = () => fitBox(trailBounds());
+
+// Zooming to a selection stops here, so a lone apple or a point isn't blown
+// up to the closest zoom there is.
+const SELECTION_ZOOM_MAX = 2;
+
+/** Zoom and move the view so the selection fills it, with a little air round it. */
+export const fitSelection = (box) => fitBox(box, SELECTION_ZOOM_MAX);
+
+/** Frame a box in world units, zoomed in no further than `maxZoom`. */
+function fitBox(bounds, maxZoom = Infinity) {
   const { width, height } = viewportSize();
   if (!bounds || !width || !height) return false;
   const padding = 80;
   const spanX = bounds.right - bounds.left + padding * 2;
   const spanY = bounds.bottom - bounds.top + padding * 2;
-  editor.zoom = clampZoom(Math.min(width / spanX, height / spanY));
+  editor.zoom = clampZoom(Math.min(width / spanX, height / spanY, maxZoom));
   editor.cameraX = (bounds.left + bounds.right) / 2 - width / 2 / editor.zoom;
   editor.cameraY = (bounds.top + bounds.bottom) / 2 - height / 2 / editor.zoom;
   editor.focusPending = false;

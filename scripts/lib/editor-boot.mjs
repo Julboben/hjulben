@@ -1171,6 +1171,24 @@ if (kind === 'nisse') {
   historyRows()[0].item.firstElementChild.click();
   out.historyForward = ['nisse' in current(), document.getElementById('editor-toast').textContent];
   document.getElementById('undo').click();
+
+  // The zoom level opens a menu of views; Zoom to selection needs a selection.
+  const zoomMenu = document.getElementById('zoom-menu');
+  const zoomItem = text => zoomMenu.children.find(node => node.children?.[1]?.textContent === text);
+  editor.selection = null;
+  document.getElementById('zoom-in').click();
+  document.getElementById('zoom-menu-toggle').click();
+  out.zoomMenu = [zoomMenu.hidden, zoomMenu.children.map(node => node.children?.[1]?.textContent).filter(Boolean), zoomItem('Zoom to selection').disabled];
+  zoomItem('Zoom to 100%').click();
+  out.zoomReset = [editor.zoom, zoomMenu.hidden, document.getElementById('zoom-label').textContent];
+  key('@', { code: 'Digit2', shiftKey: true });
+  out.zoomNoSelection = document.getElementById('editor-toast').textContent;
+  editor.selection = { kind: 'nisse', index: 0 };
+  key('@', { code: 'Digit2', shiftKey: true });
+  // The canvas stub is 1200 wide, so the middle of the view is 600 across.
+  out.zoomSelection = [editor.zoom, editor.cameraX + 600 / editor.zoom - current().nisse.x];
+  document.getElementById('zoom-menu-toggle').dispatch('dblclick');
+  out.zoomDouble = editor.zoom;
   toolSettings.apple.kind = 'apple';
 
   // Start and Finish share a button, which shows the one used last: its menu

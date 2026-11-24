@@ -56,6 +56,7 @@ import {
   updateZoom,
   zoomAtCenter,
 } from "./view.js";
+import { bindZoomMenu } from "./zoom-menu.js";
 
 editor.trailIndex = storedTrailIndex();
 
@@ -165,6 +166,7 @@ renameDialog.addEventListener("click", (event) => {
 });
 
 bindHistoryButtons();
+bindZoomMenu();
 
 $("zoom-in").addEventListener("click", () => zoomAtCenter(1.2));
 

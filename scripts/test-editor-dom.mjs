@@ -64,6 +64,14 @@ const reported = (report, label) => {
   check('picking an older step takes back the steps after it',
     report.historyBack[0]?.x === report.placed.x && report.historyBack[1] === 'Undid: moved the nisse',
     `(${JSON.stringify(report.historyBack)})`);
+  check('the zoom level opens the zoom menu, with Zoom to selection off while nothing is selected',
+    JSON.stringify(report.zoomMenu) === JSON.stringify([false, ['Zoom to 100%', 'Zoom to fit', 'Zoom to selection', 'Go to start'], true]),
+    `(${JSON.stringify(report.zoomMenu)})`);
+  check('Zoom to 100% resets the zoom and closes the menu', JSON.stringify(report.zoomReset) === '[1,true,"100%"]', `(${JSON.stringify(report.zoomReset)})`);
+  check('Shift+2 without a selection says what it needs', report.zoomNoSelection === 'Select something to zoom to it.', `("${report.zoomNoSelection}")`);
+  check('Shift+2 frames the selection, zoomed in no further than 200%',
+    report.zoomSelection[0] === 2 && Math.abs(report.zoomSelection[1]) < 1e-6, `(${JSON.stringify(report.zoomSelection)})`);
+  check('a double-click on the zoom level goes back to 100%', report.zoomDouble === 1, `(${report.zoomDouble})`);
   check('picking the newest redoes every step up to it, as one jump',
     report.historyForward[0] === false && report.historyForward[1] === 'Redid 2 steps: moved the nisse and deleted the nisse',
     `(${JSON.stringify(report.historyForward)})`);

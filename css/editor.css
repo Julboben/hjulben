@@ -158,8 +158,13 @@ fieldset:disabled :is(input, select, textarea, button) { opacity: .55; cursor: n
 /* A row scrolled into view stops above the footer that sticks over the list. */
 .toolbox { scroll-padding-bottom: 64px; }
 .toolbox-footer { position: sticky; z-index: 2; bottom: -14px; margin: 12px -14px -14px; padding: 10px 14px 14px; border-top: 1px solid var(--color-border); background: var(--color-shell); }
-.zoom-controls { display: grid; grid-template-columns: 40px 34px 1fr 34px; align-items: center; gap: 5px; text-align: center; font-size: var(--text-sm); }
-.zoom-controls button { width: 34px; height: 32px; padding: 0; display: flex; align-items: center; justify-content: center; }
+.zoom-controls { position: relative; display: grid; grid-template-columns: 40px 34px 1fr 34px; align-items: center; gap: 5px; text-align: center; font-size: var(--text-sm); }
+.zoom-controls > button { width: 34px; height: 32px; padding: 0; display: flex; align-items: center; justify-content: center; }
+/* The zoom level opens the zoom menu, so it is a button that reads as the label it was. */
+.zoom-controls #zoom-menu-toggle { width: 100%; gap: 5px; border-color: transparent; background: none; box-shadow: none; font-size: var(--text-sm); }
+.zoom-controls #zoom-menu-toggle [data-icon] { --px: 1px; color: var(--color-text-muted); }
+.zoom-controls #zoom-menu-toggle:hover, .zoom-controls #zoom-menu-toggle[aria-expanded="true"] { border-color: var(--color-border); background: var(--color-surface); }
+.zoom-menu { bottom: calc(100% + 8px); left: 0; width: 100%; text-align: left; }
 .zoom-controls #game-art[aria-pressed="true"] { border-color: var(--color-accent); background: var(--color-accent); color: var(--color-accent-ink); }
 /* On, but zoomed out too far for the art to be drawn. */
 .zoom-controls #game-art[aria-pressed="true"].zoomed-out { opacity: .5; }

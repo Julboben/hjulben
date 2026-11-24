@@ -205,11 +205,20 @@
                     </div>
 
                     <div class="toolbox-footer">
-                        <div class="zoom-controls">
+                        <div class="zoom-controls" id="zoom-controls">
                             <button id="game-art" aria-pressed="false" aria-label="Show game art"><span data-icon="picture" aria-hidden="true"></span></button
                             ><button id="zoom-out" aria-label="Zoom out"><span data-icon="minus" aria-hidden="true"></span></button
-                            ><span id="zoom-label">100%</span
+                            ><button
+                                id="zoom-menu-toggle"
+                                type="button"
+                                title="Zoom options (double-click for 100%)"
+                                aria-label="Zoom options"
+                                aria-haspopup="menu"
+                                aria-expanded="false"
+                                aria-controls="zoom-menu"
+                            ><span id="zoom-label">100%</span><span data-icon="caret-down" aria-hidden="true"></span></button
                             ><button id="zoom-in" aria-label="Zoom in"><span data-icon="plus" aria-hidden="true"></span></button>
+                            <div class="tool-menu more-items zoom-menu" id="zoom-menu" role="menu" aria-label="Zoom" hidden></div>
                         </div>
                     </div>
                 </aside>
@@ -1030,6 +1039,7 @@
                         <div><dt><kbd data-mod>⌘</kbd> <kbd>\</kbd></dt><dd>Hide or show the side panels</dd></div>
                         <div><dt><kbd>/</kbd></dt><dd>Filter Objects by name</dd></div>
                         <div><dt><kbd>Home</kbd></dt><dd>Go to the start (Shift: whole trail)</dd></div>
+                        <div><dt><kbd>Shift</kbd> <kbd>2</kbd></dt><dd>Zoom to the selection</dd></div>
                     </dl>
                 </section>
                 <section>
