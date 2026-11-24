@@ -46,6 +46,10 @@ body {
     @media (max-width: 520px) {
         padding: 0;
     }
+    /* Phones and handhelds ridden sideways with a controller: the game fills the screen. */
+    @media (orientation: landscape) and (pointer: coarse) and (max-height: 500px) {
+        padding: 0;
+    }
 }
 button,
 select {
@@ -156,6 +160,28 @@ select:focus-visible {
         padding: 0;
         border: 0;
         border-radius: 0;
+    }
+    /* A phone or handheld held sideways is ridden with a controller (see
+       turn-upright.js), so the trail fills the screen with no touch controls,
+       clear of a notch or rounded corners. */
+    @media (orientation: landscape) and (pointer: coarse) and (max-height: 500px) {
+        width: 100%;
+        max-width: none;
+        height: 100dvh;
+        min-height: 0;
+        padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px)
+            env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+        border: 0;
+        border-radius: 0;
+        & > .viewport {
+            flex: 1 1 auto;
+            height: auto;
+            aspect-ratio: auto;
+            border-radius: 0;
+        }
+        & > .control-area {
+            display: none;
+        }
     }
 }
 @keyframes boot-loader {
@@ -843,19 +869,22 @@ h2 {
 #primary {
     position: relative;
 }
+/* The badge follows the device in use (see promptKeys in game.js): a quiet
+   key outline, or a gamepad button in its own colour; hidden on a touch
+   screen, where there is no key to press. */
 .results-key {
     position: absolute;
     top: 50%;
     right: 12px;
     translate: 0 -50%;
-    padding: 1px 5px;
-    border: 1px solid currentColor;
-    background: none;
-    color: inherit;
     font-size: var(--text-xs);
-    opacity: 0.55;
-    /* The label follows the device in use (see promptKeys in game.js), and is
-       hidden on a touch screen, where there is no key to press. */
+    & kbd {
+        padding: 1px 5px;
+        border: 1px solid currentColor;
+        background: none;
+        color: inherit;
+        opacity: 0.55;
+    }
     .secondary & {
         position: static;
         translate: none;
@@ -1050,6 +1079,9 @@ h2 {
     background: var(--color-text-soft);
     color: var(--color-shell);
     text-align: center;
+    /* Dark text on a light chip: a shadow from the text around it (the pause
+       hint's, say) would only double the letters. */
+    text-shadow: none;
     &[data-face="a"] {
         background: var(--color-green);
     }
@@ -3694,11 +3726,10 @@ html[data-sandbox] body::after {
 }
 
 /* Phones are played upright, with the touch controls under the trail. Turned
-   sideways, the game hides behind this until the phone is turned back; the
-   game pauses a ride meanwhile. Short screens only, so a tablet can lie flat
-   (which is why manifest.webmanifest leaves the orientation free). The media
-   query shows it on its own; overlay.js also opens it as a modal dialog, so
-   it sits on the top layer above the results and any popover. */
+   sideways without a controller, the game hides behind this until the phone
+   is turned back, and a ride pauses meanwhile; turn-upright.js opens it as a
+   modal dialog. Short screens only, so a tablet can lie flat (which is why
+   manifest.webmanifest leaves the orientation free). */
 .turn-upright {
     position: fixed;
     z-index: 1001;
@@ -3732,9 +3763,6 @@ html[data-sandbox] body::after {
     }
     &::backdrop {
         background: transparent;
-    }
-    @media (orientation: landscape) and (pointer: coarse) and (max-height: 500px) {
-        display: flex;
     }
 }
 .turn-upright-icon {

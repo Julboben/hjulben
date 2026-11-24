@@ -24,9 +24,19 @@ export function keyLabel(code) {
   return code.replace(/^Key/, '').replace(/^Digit/, '').replace(/^Numpad/, 'NUM ').toUpperCase();
 }
 
+/** A key code as aria-keyshortcuts names it: the key it types, or its name, without the side. */
+export function shortcutName(code) {
+  return code.replace(/^(Key|Digit)/, '').replace(/^(Shift|Control|Alt|Meta)(Left|Right)$/, '$1');
+}
+
 // Standard gamepad layout (https://w3c.github.io/gamepad/#remapping).
 const PAD = { a: 0, b: 1, x: 2, y: 3, lb: 4, rb: 5, lt: 6, rt: 7, select: 8, start: 9, up: 12, down: 13, left: 14, right: 15 };
 const STICK_DEADZONE = .25;
+
+/** What the player is using, which prompts name: a gamepad, the keyboard, or the on-screen buttons. @typedef {'pad' | 'keys' | 'touch'} InputDevice */
+
+/** Typing in a text field, which says nothing about how the game is played. */
+const typing = target => target instanceof HTMLElement && target.matches('input, textarea, select, [contenteditable]');
 
 /**
  * `buttons` press their `data-action`. `indicators` handle their own clicks
@@ -37,9 +47,10 @@ const STICK_DEADZONE = .25;
  *   indicators?: HTMLElement[],
  *   isActive: () => boolean,
  *   onPress: (action: string, source: 'key' | 'pointer' | 'pad') => void,
+ *   onDevice: (device: InputDevice) => void,
  * }} options
  */
-export function createInput({ element, buttons, indicators = [], isActive, onPress }) {
+export function createInput({ element, buttons, indicators = [], isActive, onPress, onDevice }) {
   const keys = new Set();
   /** Keys down on a held action off the ride: they press its button in but do nothing. */
   const shownKeys = new Set();
@@ -52,10 +63,23 @@ export function createInput({ element, buttons, indicators = [], isActive, onPre
     // What the pad's buttons map to, held or not, so the on-screen buttons
     // press in with them even when the press does nothing.
     shown: new Set(), previous: /** @type {boolean[]} */ ([]), connected: false, stickX: 0, stickY: 0,
-    // Which pad was read, and whether it is what the player is using: a key or
-    // a touch hands over to that, so a pad lying idle never rumbles.
-    index: -1, inUse: false,
+    // Which pad was read.
+    index: -1,
   };
+  // The prompts follow what the player last used: a key, a touch, or a pad
+  // button (see pollGamepad). A mouse goes with either a keyboard or a pad, so
+  // it never switches them. A pad lying idle after a key or a touch never rumbles.
+  const touchScreen = window.matchMedia('(hover: none) and (pointer: coarse)');
+  const resting = () => touchScreen.matches ? 'touch' : 'keys';
+  /** @type {InputDevice} */
+  let device = resting();
+  function useDevice(/** @type {InputDevice} */ next) {
+    if (next === device) return;
+    device = next;
+    onDevice(next);
+  }
+  window.addEventListener('keydown', event => { if (!typing(event.target)) useDevice('keys'); }, true);
+  window.addEventListener('pointerdown', event => { if (event.pointerType === 'touch') useDevice('touch'); }, true);
   /** @type {Record<string, string[]>} */
   let bindings = DEFAULT_BINDINGS;
   /** @type {Map<string, string>} */
@@ -115,7 +139,6 @@ export function createInput({ element, buttons, indicators = [], isActive, onPre
     if (event.code === 'MetaLeft' || event.code === 'MetaRight') { keys.clear(); shownKeys.clear(); paint(); return false; }
     const action = codeActions.get(event.code);
     if (!action) return false;
-    pad.inUse = false;
     event.preventDefault();
     if (PRESS_ACTIONS.includes(action)) {
       if (!event.repeat) onPress(action, 'key');
@@ -137,7 +160,6 @@ export function createInput({ element, buttons, indicators = [], isActive, onPre
     // A button always presses in, like a real pad's, but only acts mid-ride.
     button.addEventListener('pointerdown', event => {
       event.preventDefault();
-      pad.inUse = false;
       element.focus({ preventScroll: true });
       button.setPointerCapture(event.pointerId);
       touching.set(event.pointerId, button);
@@ -170,12 +192,16 @@ export function createInput({ element, buttons, indicators = [], isActive, onPre
     pad.shown.clear();
     pad.lean = 0;
     pad.connected = Boolean(gamepad);
-    if (!gamepad) { pad.previous = []; pad.index = -1; pad.inUse = false; return; }
+    if (!gamepad) {
+      pad.previous = []; pad.index = -1;
+      if (device === 'pad') useDevice(resting());
+      return;
+    }
     pad.index = gamepad.index;
     const pressed = gamepad.buttons.map(button => button.pressed || button.value > .5);
     // Only a button claims the pad: an idle stick can drift past the deadzone,
     // which must not switch the prompts over to pad buttons.
-    if (pressed.some(Boolean)) pad.inUse = true;
+    if (pressed.some(Boolean)) useDevice('pad');
     // Compared with the last frame's buttons, kept before they're replaced.
     const previous = pad.previous;
     const edge = index => pressed[index] && !previous[index];
@@ -223,9 +249,11 @@ export function createInput({ element, buttons, indicators = [], isActive, onPre
   return {
     held, leanInput, clear, paint, keyDown, keyUp, pollGamepad, setBindings, captureNextKey,
     get gamepadConnected() { return pad.connected; },
+    /** What the player is using, for prompts. */
+    get device() { return device; },
     /** The gamepad being played with, fresh from the browser, or null when keys or touch took over. */
     activeGamepad() {
-      if (!pad.inUse || pad.index < 0 || typeof navigator.getGamepads !== 'function') return null;
+      if (device !== 'pad' || pad.index < 0 || typeof navigator.getGamepads !== 'function') return null;
       return navigator.getGamepads()[pad.index] ?? null;
     },
     get capturing() { return capture !== null; }

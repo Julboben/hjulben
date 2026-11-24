@@ -6,7 +6,7 @@
 // reload it can't skip (see update-prompt.js): files it loads after that come
 // from the new release, so it can't safely keep running the old one. Trail files and anything
 // else are network-first, and kept so the game also starts offline.
-const CACHE = 'hjulben-838815ef';
+const CACHE = 'hjulben-eef6d1f0';
 const CORE = [
   './',
   './css/editor.css',
@@ -138,6 +138,7 @@ const CORE = [
   './js/ui/key-text.js',
   './js/ui/menu.js',
   './js/ui/overlay.js',
+  './js/ui/turn-upright.js',
   './js/unlocks.js',
   './js/update-prompt.js',
   './js/vehicle-physics.js',

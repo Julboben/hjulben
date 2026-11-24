@@ -149,12 +149,11 @@
                             autofocus
                         >
                             <span id="primary-label">Play Again</span
-                            ><kbd
+                            ><span
                                 class="results-key"
                                 id="primary-key"
                                 aria-hidden="true"
-                                >Enter</kbd
-                            >
+                            ></span>
                         </button>
                         <div class="results-actions">
                             <button
@@ -162,12 +161,11 @@
                                 id="secondary"
                                 data-icon-before="retry"
                             >
-                                Retry<kbd
+                                Retry<span
                                     class="results-key"
                                     id="retry-key"
                                     aria-hidden="true"
-                                    >R</kbd
-                                >
+                                ></span>
                             </button>
                             <button
                                 class="secondary"
@@ -212,7 +210,7 @@
                             class="control"
                             id="left-control"
                             data-action="back"
-                            aria-label="Lean back, left arrow"
+                            aria-label="Lean back"
                         >
                             <span
                                 class="symbol"
@@ -225,7 +223,7 @@
                             class="control"
                             id="right-control"
                             data-action="forward"
-                            aria-label="Lean forward, right arrow"
+                            aria-label="Lean forward"
                         >
                             <span
                                 class="symbol"
@@ -238,7 +236,7 @@
                             class="control"
                             id="flip-control"
                             data-action="flip"
-                            aria-label="Turn around, Space"
+                            aria-label="Turn around"
                         >
                             <span
                                 class="symbol"
@@ -291,7 +289,7 @@
                             class="control"
                             id="down-control"
                             data-action="down"
-                            aria-label="Brake, down arrow"
+                            aria-label="Brake"
                         >
                             <span
                                 class="symbol"
@@ -304,7 +302,7 @@
                             class="control gas"
                             id="up-control"
                             data-action="up"
-                            aria-label="Accelerate, up arrow"
+                            aria-label="Accelerate"
                         >
                             <span
                                 class="symbol"
@@ -911,6 +909,8 @@
                                     BACK
                                 </button>
                             </div>
+                            <!-- The first three cards name the controls the player
+                                 is using; menu.js writes them (syncHowTo). -->
                             <div class="how-grid">
                                 <article class="how-card">
                                     <canvas
@@ -923,13 +923,7 @@
                                     <div>
                                         <span class="how-number">01</span>
                                         <h4>Gas and brake</h4>
-                                        <p>
-                                            Hold <kbd>↑</kbd> or <kbd>W</kbd> to
-                                            accelerate. Use <kbd>↓</kbd> or
-                                            <kbd>S</kbd> to brake. On
-                                            touchscreens, use the matching
-                                            buttons below the game.
-                                        </p>
+                                        <p id="how-gas"></p>
                                     </div>
                                 </article>
                                 <article class="how-card">
@@ -943,12 +937,7 @@
                                     <div>
                                         <span class="how-number">02</span>
                                         <h4>Shift your weight</h4>
-                                        <p>
-                                            Use <kbd>←</kbd>/<kbd>A</kbd> and
-                                            <kbd>→</kbd>/<kbd>D</kbd>
-                                            to lean. Move forward on climbs and
-                                            back under hard braking.
-                                        </p>
+                                        <p id="how-lean"></p>
                                     </div>
                                 </article>
                                 <article class="how-card">
@@ -962,12 +951,7 @@
                                     <div>
                                         <span class="how-number">03</span>
                                         <h4>Control the air</h4>
-                                        <p>
-                                            Carry momentum into jumps and use
-                                            small lean inputs to match the
-                                            landing. Press <kbd>Space</kbd> to
-                                            turn the bike around.
-                                        </p>
+                                        <p id="how-air"></p>
                                     </div>
                                 </article>
                                 <article class="how-card">
@@ -1488,11 +1472,13 @@
                 </span>
             </div>
             <!-- A modal dialog, so it sits on the top layer over the results
-                 and any popover; overlay.js opens it while the phone is sideways. -->
+                 and any popover; turn-upright.js opens it while the phone is
+                 sideways without a controller. -->
             <dialog class="turn-upright" id="turn-upright" aria-live="polite" aria-label="Turn your phone upright">
                 <span class="turn-upright-icon" data-icon="phone" aria-hidden="true"></span>
                 <strong>Turn your phone upright</strong>
                 <small>Hjulben plays in portrait mode, with the controls below the trail.</small>
+                <small>Playing with a controller? Press any button to ride sideways.</small>
             </dialog>
         </main>
         <!-- A new release has taken over the page; update-prompt.js opens it on

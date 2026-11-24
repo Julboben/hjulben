@@ -58,22 +58,6 @@ export function createOverlay({ onDismiss, onCard } = {}) {
   }
   window.addEventListener("resize", () => { if (dialog.open) pinToGame(dialog); });
 
-  // A phone turned sideways (see .turn-upright) shows its screen as a modal
-  // dialog, so it sits on the top layer above the results and any popover.
-  // The game pauses the ride on the same media query.
-  const turnUpright = /** @type {HTMLDialogElement} */ ($("turn-upright"));
-  const sideways = window.matchMedia("(orientation: landscape) and (pointer: coarse) and (max-height: 500px)");
-  function syncSideways() {
-    if (sideways.matches) { if (!turnUpright.open) turnUpright.showModal(); }
-    else if (turnUpright.open) turnUpright.close();
-  }
-  // Escape or a back gesture can't dismiss it: only turning the phone back does.
-  turnUpright.addEventListener("cancel", (event) => event.preventDefault());
-  turnUpright.addEventListener("close", () => requestAnimationFrame(syncSideways));
-  sideways.addEventListener("change", syncSideways);
-  syncSideways();
-
-
   /** @type {{ gold: number, silver: number, bronze: number } | null} */
   let medalTimes = null;
   let shownMedal = "";
@@ -150,8 +134,16 @@ export function createOverlay({ onDismiss, onCard } = {}) {
    * @param {import("./key-text.js").KeyText} message
    * @param {string} [icon] a pixel icon shown after the message
    */
+  /** A toast that names keys, worked out again when the player picks up another device (see refreshToast). @type {(() => import("./key-text.js").KeyText) | null} */
+  let toastText = null;
+
+  /**
+   * @param {import("./key-text.js").KeyText | (() => import("./key-text.js").KeyText)} message
+   *   a function for one that names keys, so it can follow the device in use
+   */
   function toast(message, duration = 2600, icon) {
-    $("toast").replaceChildren(...keyTextNodes(message));
+    toastText = typeof message === "function" ? message : null;
+    $("toast").replaceChildren(...keyTextNodes(typeof message === "function" ? message() : message));
     if (icon) $("toast").dataset.iconAfter = icon;
     else delete $("toast").dataset.iconAfter;
     toastUntil =
@@ -162,6 +154,12 @@ export function createOverlay({ onDismiss, onCard } = {}) {
   function clearToast() {
     $("toast").classList.remove("visible");
     toastUntil = 0;
+    toastText = null;
+  }
+
+  /** Names the keys of the device in use in a toast that is still up. */
+  function refreshToast() {
+    if (toastText && $("toast").classList.contains("visible")) $("toast").replaceChildren(...keyTextNodes(toastText()));
   }
 
   const popover = $("achievement-popover");
@@ -265,8 +263,27 @@ export function createOverlay({ onDismiss, onCard } = {}) {
   function showPause(visible, hint = "") {
     $("pause-overlay").hidden = !visible;
     if (!visible) return;
-    $("pause-hint").replaceChildren(...keyTextNodes(hint));
+    setPauseHint(hint);
     announce("Paused. " + keyTextWords(hint));
+  }
+
+  /** How to resume, for the device in use, without announcing the pause again. */
+  function setPauseHint(hint) {
+    $("pause-hint").replaceChildren(...keyTextNodes(hint));
+  }
+
+  /**
+   * The badges on the results' buttons, for the device in use: a key, a
+   * gamepad button coloured like it, or none on a touch screen.
+   * @param {{ confirm: import("./key-text.js").KeyPart | null, restart: import("./key-text.js").KeyPart | null }} keys
+   */
+  function setResultKeys(keys) {
+    const show = (/** @type {string} */ id, /** @type {import("./key-text.js").KeyPart | null} */ part) => {
+      $(id).hidden = !part;
+      $(id).replaceChildren(...(part ? keyTextNodes([part]) : []));
+    };
+    show("primary-key", keys.confirm);
+    show("retry-key", keys.restart);
   }
 
   function hide() {
@@ -285,8 +302,8 @@ export function createOverlay({ onDismiss, onCard } = {}) {
    *   worldPending?: boolean,
    *   medals?: { gold: number, silver: number, bronze: number }, medal: string | null,
    *   apples: number, primaryLabel: string, author?: string,
-   *   keys: { confirm: string, restart: string }
-   * }} result keys: the badges on the buttons, "" for none
+   *   keys: { confirm: import("./key-text.js").KeyPart | null, restart: import("./key-text.js").KeyPart | null }
+   * }} result keys: the badges on the buttons, null for none
    */
   function showResults(result) {
     const { time, previousBest, rank, medals, medal } = result;
@@ -352,10 +369,7 @@ export function createOverlay({ onDismiss, onCard } = {}) {
       : sideNote;
     $("overlay-description").hidden = !$("overlay-description").textContent;
     $("primary-label").textContent = result.primaryLabel;
-    $("primary-key").textContent = result.keys.confirm;
-    $("primary-key").hidden = !result.keys.confirm;
-    $("retry-key").textContent = result.keys.restart;
-    $("retry-key").hidden = !result.keys.restart;
+    setResultKeys(result.keys);
     $("pause-overlay").hidden = true;
     openDialog();
     announce(
@@ -460,6 +474,7 @@ export function createOverlay({ onDismiss, onCard } = {}) {
     setTimer,
     toast,
     clearToast,
+    refreshToast,
     achievement,
     gear,
     split,
@@ -467,6 +482,8 @@ export function createOverlay({ onDismiss, onCard } = {}) {
     announce,
     setDirection,
     showPause,
+    setPauseHint,
+    setResultKeys,
     hide,
     reopen,
     showResults,

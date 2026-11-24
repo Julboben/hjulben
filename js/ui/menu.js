@@ -20,7 +20,7 @@ import { RIDE_VERSION } from '../ride.js';
 import { normalizeAuthor, normalizeTrail, validateTrail, medalFor } from '../trail-schema.js';
 import { ACTION_LABELS, keyLabel } from '../input.js';
 import { createGamepadDiagram } from './gamepad-diagram.js';
-import { keyTextNodes } from './key-text.js';
+import { keyChoices, keyTextNodes } from './key-text.js';
 import { canRumble } from '../haptics.js';
 import { VERSION } from '../version.js';
 import { RELEASES } from '../changelog.js';
@@ -33,6 +33,39 @@ import {
 
 // Runs made without a savegame have no name.
 const runnerName = name => name || 'RIDER';
+
+/**
+ * How to play's lines for the controls the player is using: their own key
+ * bindings, the gamepad's buttons (fixed, see input.js), or the on-screen buttons.
+ * @param {import('../input.js').InputDevice} device
+ * @param {Record<string, string[]>} bindings
+ * @returns {Record<string, import('./key-text.js').KeyText>} by the paragraph's id
+ */
+function howToText(device, bindings) {
+  const air = 'Carry momentum into jumps and use small lean inputs to match the landing. ';
+  const leanTip = ' to lean. Move forward on climbs and back under hard braking.';
+  if (device === 'pad') return {
+    'how-gas': ['Hold ', { pad: 'RT' }, ' or ', { pad: 'A' }, ' to accelerate. Use ', { pad: 'LT' }, ' or ', { pad: 'X' }, ' to brake.'],
+    'how-lean': ['Use the ', { pad: 'L-STICK' }, ' or ', { pad: 'D-PAD' }, leanTip],
+    'how-air': [air + 'Press ', { pad: 'B' }, ' to turn the bike around.'],
+  };
+  if (device === 'touch') return {
+    'how-gas': ['Hold ', { key: 'GAS' }, ' to accelerate and ', { key: 'BRAKE' }, ' to slow down, with the buttons below the game.'],
+    'how-lean': ['Use ', { key: 'LEAN BACK' }, ' and ', { key: 'LEAN FWD' }, leanTip],
+    'how-air': [air + 'Tap ', { key: 'TURN' }, ' to turn the bike around.'],
+  };
+  // A key taken by another action leaves one with none, until it is set again.
+  const unset = action => [`the ${ACTION_LABELS[action].toLowerCase()} key (unset)`];
+  const either = action => bindings[action].length ? keyChoices(bindings[action].map(code => ({ key: keyLabel(code) }))) : unset(action);
+  const slashed = action => bindings[action].length
+    ? bindings[action].flatMap((code, index) => index ? ['/', { key: keyLabel(code) }] : [{ key: keyLabel(code) }])
+    : unset(action);
+  return {
+    'how-gas': ['Hold ', ...either('up'), ' to accelerate. Use ', ...either('down'), ' to brake.'],
+    'how-lean': ['Use ', ...slashed('back'), ' and ', ...slashed('forward'), leanTip],
+    'how-air': [air + 'Press ', ...either('flip'), ' to turn the bike around.'],
+  };
+}
 
 /** Shows a setting's switch: on for its on value, which the knob spells out. */
 export function showSwitch(button, value) {
@@ -159,6 +192,12 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
       session.rideSaveId = session.saveGame?.createdAt ?? null;
       onStartCustom(index);
     });
+  }
+
+  /** Writes How to play's lines for what the player is using now; the game calls it when that changes. */
+  function syncHowTo() {
+    const lines = howToText(input.device, session.preferences.bindings);
+    for (const [id, line] of Object.entries(lines)) $(id).replaceChildren(...keyTextNodes(line));
   }
 
   /** The ride How to play starts when its Let's ride button is pressed. */
@@ -870,7 +909,7 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     // Opened by hand, How to play has no ride waiting; either way it has been seen.
     rideAfterHowTo = null;
     $('how-ride').hidden = true;
-    if (view === 'how') saveSeenHowTo();
+    if (view === 'how') { syncHowTo(); saveSeenHowTo(); }
     syncBell();
     $('menu-scroll').scrollTop = 0;
     requestAnimationFrame(() => {
@@ -2139,7 +2178,7 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     const button = event.currentTarget;
     if (!resetArmed) {
       resetArmed = true;
-      button.textContent = coarsePointer.matches ? 'TAP AGAIN TO RESET' : 'CLICK AGAIN TO RESET';
+      button.textContent = { pad: 'PRESS', touch: 'TAP', keys: 'CLICK' }[input.device] + ' AGAIN TO RESET';
       resetTimer = setTimeout(() => { resetArmed = false; button.textContent = 'RESET ALL SETTINGS'; }, 2500);
       return;
     }
@@ -2159,5 +2198,5 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     if ($('menu-home').hidden) { goBack(); return true; }
     return false;
   };
-  return { open, close, isOpen, showTrailsStatus, updateDashboard, drawBackground, syncSettings, handlePad, showView, showCredits, canResume, back, refreshCloudSave, refreshNotifications, markRideStarted };
+  return { open, close, isOpen, syncHowTo, showTrailsStatus, updateDashboard, drawBackground, syncSettings, handlePad, showView, showCredits, canResume, back, refreshCloudSave, refreshNotifications, markRideStarted };
 }

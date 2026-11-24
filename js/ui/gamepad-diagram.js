@@ -2,6 +2,8 @@
 // A pixel-art gamepad with labelled callouts, for the controls settings.
 // The mapping mirrors pollGamepad in ../input.js; gamepad buttons can't be remapped.
 
+import { keyTextNodes } from './key-text.js';
+
 const SVG = 'http://www.w3.org/2000/svg';
 
 /**
@@ -71,11 +73,7 @@ export function createGamepadDiagram() {
   for (const { lines } of CALLOUTS) {
     for (const [key, action, name = key] of lines) {
       const item = document.createElement('li');
-      const chip = document.createElement('span');
-      chip.className = 'gamepad-chip';
-      if (/^[ABXY]$/.test(name)) chip.dataset.face = name.toLowerCase();
-      chip.textContent = name;
-      item.append(chip, action);
+      item.append(...keyTextNodes([{ pad: name }]), action);
       legend.append(item);
     }
   }

@@ -44,6 +44,8 @@ It runs in the browser with no build step and no runtime dependencies, built wit
 
 Every keyboard action can be rebound under **Settings → Keys**. Holding restart freezes the bike until you let go, so you can line up a clean start.
 
+Phones play upright with the touch controls. With a controller, a phone or a gaming handheld plays sideways too: press any button on the "Turn your phone upright" screen.
+
 Gamepads use the standard mapping: `RT` or `A` for gas, `LT` or `X` for brake, the left stick or d-pad to lean, `B` to turn around, d-pad up for the headlight, `Y` to restart, and `Start` to pause. In menus, the d-pad or stick moves the selection, `A` confirms, and `B` goes back.
 
 ## Trails

@@ -18,7 +18,7 @@ import { bikeBroken, createFeatTracker, editorProgress, eggAchievements, eventAc
 import { createLimWatcher, installConsoleCheats } from './easter-eggs.js';
 import { submitOnlineRun, fetchWorldGhost, fetchRiderGhost, refreshOnlineBoard, cachedOnlineBoard, queuePendingRun, dropPendingRun, flushPendingRuns, useBoardViewer } from './online-leaderboard.js';
 import { queueSaveSync, SIGNED_OUT_EVENT, SESSION_RENEWED_EVENT } from './account.js';
-import { createInput, keyLabel } from './input.js';
+import { createInput, keyLabel, shortcutName } from './input.js';
 import { createHaptics } from './haptics.js';
 import { createCamera } from './camera.js';
 import { createEffects } from './effects.js';
@@ -29,11 +29,14 @@ import { createDebugHud } from './debug-hud.js';
 import { bikeExhaustPoint, riderPalette } from './drawing.js';
 import { gearCard, legacyRider, lookOf, lookParts, newlyUnlockedItems } from './cosmetics.js';
 import { createOverlay } from './ui/overlay.js';
-import { keyChoices, keyTextNodes } from './ui/key-text.js';
+import { createTurnUpright } from './ui/turn-upright.js';
+import { keyChoices, keyTextNodes, keyTextWords } from './ui/key-text.js';
 import { createMenu, loadStoredState, showSwitch } from './ui/menu.js';
 import { $, session, currentTrailEntry, trailKey, nisseKey, timeText, isRankedSource, bonusUnlock, riderLook, progressOf, debugMode, ghostMode, newlyOpenedBonusTrails, reducedMotion } from './state.js';
 import { notify } from './notifications.js';
 import { isNight } from './time-of-day.js';
+
+/** @typedef {import('./ui/key-text.js').KeyPart} KeyPart */
 
 const LANDING_SOUND_IMPACT = 45;
 const HARD_LANDING_IMPACT = 170;
@@ -83,7 +86,8 @@ export function startGame({ shared = null } = {}) {
     buttons: [...document.querySelectorAll('[data-action]')],
     indicators: [...document.querySelectorAll('[data-shows]')],
     isActive: () => session.state === 'running' && !menu.isOpen(),
-    onPress: handlePress
+    onPress: handlePress,
+    onDevice: () => syncDevice(),
   });
   const menu = createMenu({
     sounds, input,
@@ -215,22 +219,20 @@ export function startGame({ shared = null } = {}) {
 
   // --- Device features -----------------------------------------------------
 
-  // Phones and tablets without a mouse, where prompts name the on-screen buttons.
-  const touchScreen = window.matchMedia('(hover: none) and (pointer: coarse)');
-
   /**
-   * The keys prompts name, for what the player is using: the gamepad's
-   * buttons, their own key bindings, or none on a touch screen. `pause` lists
-   * every key that resumes, as Esc does too on a keyboard.
+   * The keys prompts name, for what the player is using (see input.device):
+   * the gamepad's buttons, their own key bindings, or none on a touch screen.
+   * `pause` lists every key that resumes, as Esc does too on a keyboard.
+   * @returns {{ confirm: KeyPart | null, restart: KeyPart | null, pause: KeyPart[] }}
    */
   function promptKeys() {
-    if (input.activeGamepad()) return { confirm: 'A', restart: 'Y', pause: ['Start'] };
-    if (touchScreen.matches) return { confirm: '', restart: '', pause: [] };
+    if (input.device === 'pad') return { confirm: { pad: 'A' }, restart: { pad: 'Y' }, pause: [{ pad: 'START' }] };
+    if (input.device === 'touch') return { confirm: null, restart: null, pause: [] };
     const { bindings } = session.preferences;
     return {
-      confirm: 'Enter',
-      restart: keyLabel(bindings.restart[0] || 'KeyR'),
-      pause: [...bindings.pause.slice(0, 1).map(keyLabel), 'Esc'],
+      confirm: { key: 'Enter' },
+      restart: { key: keyLabel(bindings.restart[0] || 'KeyR') },
+      pause: [...bindings.pause.slice(0, 1).map(code => ({ key: keyLabel(code) })), { key: 'Esc' }],
     };
   }
 
@@ -238,6 +240,34 @@ export function startGame({ shared = null } = {}) {
   function pauseHint() {
     const { pause } = promptKeys();
     return pause.length ? ['Press ', ...keyChoices(pause), ' to resume'] : 'Tap to resume';
+  }
+
+  // The key cap over what the rider can interact with: the bound key, d-pad
+  // down on a gamepad, or a tap on the trail on a touch screen.
+  function syncInteractKey() {
+    const code = session.preferences.bindings.interact?.[0];
+    renderer.setInteractKey(input.device === 'pad' ? '↓' : input.device === 'touch' ? 'TAP' : code ? keyLabel(code) : '');
+  }
+
+  // Prompts on screen follow the device the player picks up: How to play,
+  // the pause hint, the results' badges, a toast naming a key, and the
+  // interact key cap. A pad button also lets a phone or handheld ride sideways.
+  function syncDevice() {
+    if (input.device === 'pad') turnUpright.setController(true);
+    menu.syncHowTo();
+    if (session.state === 'paused') overlay.setPauseHint(pauseHint());
+    overlay.setResultKeys(promptKeys());
+    overlay.refreshToast();
+    syncInteractKey();
+  }
+
+  // The on-screen buttons tell assistive technology their keys, which follow the bindings.
+  function syncButtonShortcuts() {
+    for (const button of document.querySelectorAll('#control-area [data-action]')) {
+      const codes = session.preferences.bindings[/** @type {HTMLElement} */ (button).dataset.action || ''] ?? [];
+      if (codes.length) button.setAttribute('aria-keyshortcuts', codes.map(shortcutName).join(' '));
+      else button.removeAttribute('aria-keyshortcuts');
+    }
   }
 
   // Phone vibration and gamepad rumble. Watching a replay is not riding, so it stays still.
@@ -263,10 +293,27 @@ export function startGame({ shared = null } = {}) {
   const fullscreenElement = () => document.fullscreenElement;
   const coarsePointer = window.matchMedia('(pointer: coarse)').matches;
 
-  // A phone turned sideways shows the "turn your phone upright" screen over
-  // the game (see .turn-upright), so a ride pauses until it is turned back.
-  const sideways = window.matchMedia('(orientation: landscape) and (pointer: coarse) and (max-height: 500px)');
-  sideways.addEventListener('change', () => { if (sideways.matches) pauseGame(); });
+  // A phone or handheld turned sideways is ridden with a controller. Without
+  // one, the "turn your phone upright" screen covers the game, so a ride
+  // pauses until it is turned back.
+  const turnUpright = createTurnUpright({ onOpen: () => pauseGame(), onControllerChange: lockOrientation });
+  // A controller counts once one of its buttons is pressed, the first moment
+  // the browser shows it, and stops counting when it goes away or the touch
+  // controls are used instead.
+  window.addEventListener('gamepaddisconnected', () => {
+    if (![...navigator.getGamepads()].some(gamepad => gamepad?.connected)) turnUpright.setController(false);
+  });
+  $('control-area').addEventListener('pointerdown', () => turnUpright.setController(false));
+
+  // Phones are played upright, so the touch controls fit under the trail,
+  // unless a controller is in hand. Locking only works while fullscreen.
+  function lockOrientation() {
+    if (!coarsePointer || !screen.orientation) return;
+    try {
+      if (fullscreenElement() && !turnUpright.controller) screen.orientation.lock?.('portrait').catch(() => {});
+      else screen.orientation.unlock?.();
+    } catch (_) {}
+  }
 
   // True only while an in-game action (F, Settings) is turning fullscreen off.
   let fullscreenExitRequested = false;
@@ -304,14 +351,7 @@ export function startGame({ shared = null } = {}) {
         else { sounds.escape(); showMainMenu(); }
       }
     }
-    // Phones are played upright, so the touch controls fit under the trail;
-    // locking only works while fullscreen.
-    if (coarsePointer && screen.orientation) {
-      try {
-        if (on) screen.orientation.lock?.('portrait').catch(() => {});
-        else screen.orientation.unlock?.();
-      } catch (_) {}
-    }
+    lockOrientation();
     requestAnimationFrame(() => { resize(); menu.drawBackground(); });
   }
 
@@ -325,7 +365,8 @@ export function startGame({ shared = null } = {}) {
     sounds.setMusic(preferences.music === 'on');
     syncSound();
     input.setBindings(preferences.bindings);
-    renderer.setInteractKey(preferences.bindings.interact?.[0] ? keyLabel(preferences.bindings.interact[0]) : '');
+    syncInteractKey();
+    syncButtonShortcuts();
     if (ghostMode() === 'off' && ghost?.kind !== 'rival') ghost = null;
     syncHeadlight();
   }
@@ -649,9 +690,12 @@ export function startGame({ shared = null } = {}) {
     $('crash-retry').hidden = false;
     // Focused, so Enter rides the trail, as it continues from the results.
     $('crash-retry').focus({ preventScroll: true });
+    overlay.toast(() => {
+      const { restart } = promptKeys();
+      return restart ? ['Replay finished · Press ', restart, ' to ride this trail'] : 'Replay finished';
+    }, Infinity);
     const { restart } = promptKeys();
-    overlay.toast(restart ? ['Replay finished · Press ', { key: restart }, ' to ride this trail'] : 'Replay finished', Infinity);
-    overlay.announce('Replay finished. ' + (restart ? 'Press ' + restart + ' or select' : 'Select') + ' Ride This Trail to ride it yourself.');
+    overlay.announce('Replay finished. ' + (restart ? 'Press ' + keyTextWords([restart]) + ' or select' : 'Select') + ' Ride This Trail to ride it yourself.');
   }
 
   /**
@@ -1070,8 +1114,11 @@ export function startGame({ shared = null } = {}) {
         haptics.play('crash');
         setState('ragdoll');
         const { restart } = promptKeys();
-        overlay.announce('Rider down. ' + (restart ? 'Press ' + restart + ' or select' : 'Select') + ' Retry to try again.');
-        overlay.toast(restart ? ['Rider down · Press ', { key: restart }, ' to retry'] : 'Rider down', Infinity);
+        overlay.announce('Rider down. ' + (restart ? 'Press ' + keyTextWords([restart]) + ' or select' : 'Select') + ' Retry to try again.');
+        overlay.toast(() => {
+          const { restart } = promptKeys();
+          return restart ? ['Rider down · Press ', restart, ' to retry'] : 'Rider down';
+        }, Infinity);
         break;
       }
       case 'helmet':

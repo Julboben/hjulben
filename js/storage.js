@@ -15,6 +15,7 @@ const SEEN_VERSION_KEY = 'hjulben-seen-version-v1';
 const SEEN_HOW_TO_KEY = 'hjulben-seen-how-to-v1';
 const SEEN_GEAR_KEY = 'hjulben-seen-gear-v1';
 const NOTIFICATIONS_KEY = 'hjulben-notifications-v1';
+const CONTROLLER_KEY = 'hjulben-controller-v1';
 const SLOT_COUNT = 3;
 // The ghost a rider races (see the Ghost setting): their own best, the faster
 // of that and the world's best, or none.
@@ -154,6 +155,19 @@ export function loadSeenHowTo() {
 
 export function saveSeenHowTo() {
   writeJson(SEEN_HOW_TO_KEY, true);
+}
+
+/**
+ * Whether this device is played with a controller, which lets a phone or
+ * handheld ride sideways (see ui/turn-upright.js). Kept across launches, as
+ * the browser only reports a controller once one of its buttons is pressed.
+ */
+export function loadControllerHeld() {
+  return readJson(CONTROLLER_KEY, false) === true;
+}
+
+export function saveControllerHeld(held) {
+  writeJson(CONTROLLER_KEY, held);
 }
 
 /**

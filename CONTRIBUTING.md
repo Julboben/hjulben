@@ -174,7 +174,7 @@ Don't add `.foo[hidden] { display: none; }` rules. The global `[hidden] { displa
 
 ### Breakpoints
 
-Phones are played in portrait only: a phone turned sideways gets the "Turn your phone upright" screen (`.turn-upright`), and fullscreen locks the orientation. Design and check phone layouts upright.
+Phones are played upright with the touch controls, or sideways with a controller. A phone or handheld turned sideways gets the "Turn your phone upright" screen (`.turn-upright`, opened by `js/ui/turn-upright.js`) until a controller button is pressed; the device remembers the controller until it disconnects or the touch controls are used. Sideways, the trail fills the screen and the touch controls are hidden. Fullscreen locks the orientation to portrait only without a controller. Design and check phone layouts upright, and the ride sideways.
 
 | Media query                                   | Used for                                                          |
 | --------------------------------------------- | ----------------------------------------------------------------- |
@@ -184,6 +184,7 @@ Phones are played in portrait only: a phone turned sideways gets the "Turn your 
 | `(max-width: 350px)`                          | Smallest phones: tighter modal padding and headings               |
 | `(max-width: 520px) and (min-height: 600px)`  | Portrait phones: home buttons pinned to the bottom of the menu    |
 | `(max-height: 500px)`                         | Short landscape phones: shorter menu rows                         |
+| `(orientation: landscape) and (pointer: coarse) and (max-height: 500px)` | Phones and handhelds held sideways: the game fills the screen with no touch controls, or the turn-upright screen without a controller |
 | `(hover: none)`, `(hover: none) and (pointer: coarse)` | Touch screens: no selection ring or keyboard hints        |
 
 ### Handheld controls
