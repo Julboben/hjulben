@@ -324,6 +324,7 @@ water: [
 - Water up to `40` deep is a ford: the bike can ride through it, but the water drags on it and slows it down. A wheel in water deeper than `40`, measured from the surface to the wheel's bottom or the body's floor, wipes the rider out, as does the rider's head going under.
 - After a crash the ragdoll floats: buoyancy lifts it to rest at the surface while the water damps its motion. The bike sinks.
 - Riding or falling in splashes, and moving through water leaves a wake.
+- The surface is drawn with waves from the trail's `wind`, as big as the stretch of open water allows: a pond only ripples, while a wide lake or a sea gets swell, with whitecaps in a gale. Shallow water stays low, and the water lies still against its banks. The bike, the rider, splashes and rain send ripples along it that bounce off the banks. All of this is drawn only: the bike and rider always meet a flat surface at the body's `y`, so tall waves on a sea are scenery rather than something to ride.
 
 Use the editor's **Water** tool (`W`): drag a rectangle. Drag a body by the middle of its surface, or click open water to select it. The inspector edits width (keeping the body centred) and depth (keeping the surface), and says whether the body is a ford or deep. The editor warns when water covers the start, or lies entirely inside terrain.
 

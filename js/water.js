@@ -5,7 +5,7 @@
 //
 // Everything here that touches the simulation uses plain arithmetic and
 // det-math only, so rides and replays stay deterministic.
-import { GRAVITY, STEP, clamp } from "./config.js";
+import { GRAVITY, STEP, TAU, clamp } from "./config.js";
 import { hypot } from "./det-math.js";
 import { terrainColumnSpans } from "./terrain-runtime.js";
 
@@ -159,17 +159,225 @@ export function surfaceCrossing(bodies, fromX, fromY, toX, toY) {
 }
 
 // ---- Drawing ---------------------------------------------------------------
+// The drawn surface moves, the simulated one does not: the bike and rider
+// always meet a flat surface at the top of the body, so nothing below feeds
+// back into a ride and it may use Math.sin and Math.random.
+
+// World units in an art pixel, the grid the surface is drawn on.
+const SURFACE_PIXEL = 2;
+
+// Wind waves need open water to build up over. A pond gets ripples that grow
+// with the wind up to POND_FETCH units of open surface; beyond it, a lake or
+// a sea builds swell, at its tallest and longest over OCEAN_FETCH more, as
+// real waves grow with the wind and the stretch of water it blows over.
+const POND_FETCH = 400, OCEAN_FETCH = 2400;
+// Waves die away this far from where the water meets a bank, so the waterline
+// stays put against it.
+const WAVE_TAPER = 28;
 
 /**
- * How far the drawn surface has risen (negative) or fallen at an x, in whole
- * art pixels: the ripples. Floating props ride them too.
+ * The wind waves on a stretch of open surface `length` long over water
+ * `depth` deep, in a wind of `strength` (0…1): the swell's `height`, the
+ * `chop` on top of it and the swell's wavelength, in world units, and how
+ * fast each travels downwind, in units a second. Shallow water can't hold
+ * waves much taller than a third of its depth, so a ford only ever ripples.
  */
-export function surfaceWave(x, time) {
-  return (
-    Math.round(
-      Math.sin(x * 0.07 + time * 2.4) * 0.8 + Math.sin(x * 0.023 - time * 1.1) * 0.7,
-    ) * 2
-  );
+export function windWaves(length, depth, strength) {
+  const pond = Math.min(1, length / POND_FETCH);
+  const open = clamp((length - POND_FETCH) / OCEAN_FETCH, 0, 1) ** 0.7;
+  const height = Math.min(depth * 0.35, pond * (0.3 + 3.4 * strength) + open * 14 * strength ** 2);
+  const chop = Math.min(depth * 0.15, pond * 1.6 * strength ** 2);
+  const swell = 130 + 270 * open;
+  // Longer waves travel faster, as they do on deep water.
+  return { height, chop, swell, swellSpeed: 1.2 * Math.sqrt(swell), chopSpeed: 7 };
+}
+
+// A wave with sharper crests and flatter troughs than a sine: -1 at the
+// trough, 1.175 at the crest.
+const crest = (wave) => wave + 0.35 * (wave * wave - 0.5);
+
+// The ripples spread as springs between neighbouring columns, stepped at a
+// fixed rate whatever the frame rate: each column is pulled back to rest
+// (TENSION) and slowed (DAMPING), and passes some of its height to its
+// neighbours (SPREAD, in SPREAD_PASSES rounds a step, so ripples travel at a
+// believable speed). The ends of a stretch are held still by the banks.
+const SPRING_STEP = 1 / 60;
+const TENSION = 0.03, DAMPING = 0.015, SPREAD = 0.12, SPREAD_PASSES = 6;
+// Ripples smaller than this, in world units, have died away.
+const SETTLED = 0.02;
+// Churned water, columns moving faster than this (units a spring step), and
+// wind waves taller than CAP_HEIGHT near their crests, are drawn with foam.
+const CHURN = 0.35, CAP_HEIGHT = 1.2;
+// Raindrops striking the surface: how many a second fall on each unit of it
+// in a downpour, and how hard each pushes it down.
+const RAIN_DROPS = 1 / 40, RAIN_PUSH = 0.35;
+
+/**
+ * The drawn surfaces of a ride's water: wind waves sized by the open water
+ * and the wind, and ripples from whatever disturbs it (the bike, the rider,
+ * splashes and rain) that spread out and reflect off the banks.
+ */
+export function createWaterSurface() {
+  /** @type {any[]} */ let runs = [];
+  let time = 0, lag = 0, wind = -1, downwind = -1;
+  let last = null;
+  const sampled = { offset: 0, foam: false };
+
+  /**
+   * Starts afresh on a ride's water: each stretch of open surface, from
+   * `waterColumns`, becomes a run of columns with its own waves.
+   * @param {Water[]} bodies
+   * @param {any} compiled terrain from `terrainGeometry`, or null
+   */
+  function reset(bodies, compiled) {
+    runs = [];
+    time = 0; lag = 0; wind = -1; last = null;
+    for (const body of bodies) {
+      let run = null;
+      for (const { x, segments } of waterColumns(compiled, body, SURFACE_PIXEL)) {
+        const open = Math.abs(segments[0][0] - body.y) < 0.5;
+        if (open && run && x === run.right) { run.right += SURFACE_PIXEL; continue; }
+        if (run) runs.push(run);
+        run = open ? { body, left: x, right: x + SURFACE_PIXEL } : null;
+      }
+      if (run) runs.push(run);
+    }
+    for (const run of runs) {
+      const count = (run.right - run.left) / SURFACE_PIXEL;
+      Object.assign(run, { height: new Float32Array(count), speed: new Float32Array(count), waves: null, active: false });
+    }
+  }
+
+  // The run whose surface is at `y` and reaches over `x`, or null.
+  function runAt(x, y) {
+    if (last && x >= last.left && x < last.right && Math.abs(last.body.y - y) < 1) return last;
+    for (const run of runs)
+      if (x >= run.left && x < run.right && Math.abs(run.body.y - y) < 1) return (last = run);
+    return null;
+  }
+
+  /**
+   * Moves the surface on by `dt` seconds in `weather`: the waves roll on and
+   * the ripples spread and settle. 0 holds it still.
+   * @param {number} dt
+   * @param {import('./weather.js').Weather} weather resolved
+   */
+  function step(dt, weather) {
+    if (wind !== weather.wind) {
+      wind = weather.wind;
+      for (const run of runs) run.waves = windWaves(run.right - run.left, run.body.depth, wind);
+    }
+    downwind = weather.windDirection === "right" ? 1 : -1;
+    if (!dt) return;
+    time += dt;
+    if (weather.rain > 0)
+      for (const run of runs) {
+        const drops = weather.rain * RAIN_DROPS * (run.right - run.left) * dt;
+        for (let drop = Math.floor(drops + Math.random()); drop > 0; drop--)
+          push(run, run.left + Math.random() * (run.right - run.left), RAIN_PUSH * (0.5 + Math.random()), 2);
+      }
+    lag = Math.min(lag + dt, SPRING_STEP * 6);
+    for (; lag >= SPRING_STEP; lag -= SPRING_STEP)
+      for (const run of runs) if (run.active) settle(run);
+  }
+
+  function settle(run) {
+    const { height, speed } = run;
+    const end = height.length - 1;
+    let moving = false;
+    for (let index = 1; index < end; index++) {
+      speed[index] -= TENSION * height[index] + DAMPING * speed[index];
+      height[index] += speed[index];
+    }
+    height[0] = height[end] = speed[0] = speed[end] = 0;
+    for (let pass = 0; pass < SPREAD_PASSES; pass++) {
+      let before = height[0];
+      for (let index = 1; index < end; index++) {
+        const here = height[index];
+        const share = SPREAD * (before + height[index + 1] - 2 * here);
+        before = here;
+        height[index] += share;
+        speed[index] += share;
+      }
+    }
+    for (let index = 1; index < end; index++)
+      if (Math.abs(height[index]) > SETTLED || Math.abs(speed[index]) > SETTLED) { moving = true; break; }
+    if (!moving) { height.fill(0); speed.fill(0); }
+    run.active = moving;
+  }
+
+  // Pushes a run's columns around `x` down (a positive `strength`, in units a
+  // spring step) or up, falling off over `spread` units either side.
+  function push(run, x, strength, spread) {
+    const { speed } = run;
+    const from = Math.max(1, Math.floor((x - 2 * spread - run.left) / SURFACE_PIXEL));
+    const to = Math.min(speed.length - 2, Math.ceil((x + 2 * spread - run.left) / SURFACE_PIXEL));
+    for (let index = from; index <= to; index++) {
+      const away = run.left + (index + 0.5) * SURFACE_PIXEL - x;
+      speed[index] += strength * Math.exp(-(away * away) / (2 * spread * spread));
+    }
+    if (from <= to) run.active = true;
+  }
+
+  /**
+   * Pushes the surface near (`x`, `y`) down by `strength` (up if negative),
+   * spread over about `spread` units either side: something breaking the
+   * surface or moving through it. Water `y` is in, or just above, counts.
+   */
+  function disturb(x, y, strength, spread = 4) {
+    for (const run of runs) {
+      const { body } = run;
+      if (x < run.left - spread || x > run.right + spread || y < body.y - 12 || y > body.y + body.depth) continue;
+      push(run, x, strength, spread);
+    }
+  }
+
+  /**
+   * The drawn surface at `x` on the water whose surface is at `y`: its
+   * `offset` from `y` in whole art pixels, down positive, and whether it
+   * shows `foam` there, on a windblown crest or where the water is churned
+   * up. The same object is reused for every call.
+   */
+  function sample(x, y) {
+    sampled.offset = 0;
+    sampled.foam = false;
+    const run = runAt(x, y);
+    if (!run) return sampled;
+    const index = Math.floor((x - run.left) / SURFACE_PIXEL);
+    let wave = 0;
+    const waves = run.waves;
+    if (waves && (waves.height || waves.chop)) {
+      const edge = Math.min(x - run.left, run.right - x) / WAVE_TAPER;
+      const taper = edge >= 1 ? 1 : edge * edge * (3 - 2 * edge);
+      const along = (length, speed) => (TAU * (x - downwind * speed * time)) / length;
+      const swell = 0.75 * crest(Math.sin(along(waves.swell, waves.swellSpeed)))
+        + 0.25 * crest(Math.sin(along(waves.swell * 0.61, waves.swellSpeed * 0.78) + 2.1));
+      const chop = crest(Math.sin(along(34, waves.chopSpeed) + 1.3));
+      wave = -taper * (waves.height * swell + waves.chop * chop);
+      sampled.foam = waves.height + waves.chop > CAP_HEIGHT && wave < -0.7 * (waves.height + waves.chop) * taper;
+    }
+    sampled.offset = Math.round((wave + run.height[index]) / SURFACE_PIXEL) * SURFACE_PIXEL;
+    if (Math.abs(run.speed[index]) > CHURN) sampled.foam = true;
+    return sampled;
+  }
+
+  /** How far the drawn surface at `x` on the water at `y` is off it; see `sample`. */
+  const offset = (x, y) => sample(x, y).offset;
+
+  return { reset, step, disturb, sample, offset };
+}
+
+/**
+ * Whether a glint of light shows on the surface at `x` at `time`: short
+ * bright dashes that drift slowly along the water and fade in and out.
+ */
+export function surfaceGlint(x, time) {
+  const cell = Math.floor((x + time * 6) / 6);
+  let hash = Math.imul(cell ^ 0x9e3779b9, 0x85ebca6b);
+  hash ^= hash >>> 13;
+  hash = Math.imul(hash, 0xc2b2ae35);
+  hash = (hash ^ (hash >>> 16)) >>> 0;
+  return hash % 100 > 62 && Math.sin(time * 0.7 + (hash % 600) / 100) > 0.2;
 }
 
 // Which parts of a body are open water, column by column: the rectangle minus

@@ -580,7 +580,7 @@ function drawWater() {
   list.forEach((raw, index) => {
     if (isHidden("water", index)) return;
     const body = normalizeWater(raw);
-    art.drawWater(body, waterColumns(compiled, body), 0);
+    art.drawWater(body, waterColumns(compiled, body));
     const selected = isSelected("water", index);
     ctx.strokeStyle = selected ? "#fff3be" : "#8fd6e8aa";
     ctx.lineWidth = (selected ? 2 : 1) / editor.zoom;

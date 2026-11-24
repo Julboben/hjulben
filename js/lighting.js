@@ -25,7 +25,7 @@ import { dayBlend, normalizeHour } from "./time-of-day.js";
 import { backWallGeometry, terrainAt, terrainGeometry } from "./terrain.js";
 import { terrainSolidAt } from "./terrain-runtime.js";
 import { isSeeThrough } from "./materials.js";
-import { surfaceWave, waterColumns } from "./water.js";
+import { waterColumns } from "./water.js";
 import { LANTERN_CENTRE } from "./cave-props.js";
 import { CRANE_LIGHTS, LAMP_HEAD } from "./city-props.js";
 import { HUT_WINDOW_CENTRE } from "./mountain-props.js";
@@ -765,7 +765,8 @@ export function createLighting() {
    * `width` and `height` are the view's size in world units. Returns false
    * when the view is in full daylight and the scene needed no shading. `sun`
    * is the sun's place and strength for this view (see sunLight), when the
-   * caller has it already; `still` is for reduced motion.
+   * caller has it already; `still` is for reduced motion, and `water` the
+   * ride's water surface, for the glitter to follow its waves.
    */
   function draw(ctx, options) {
     const { trail, cameraX, cameraY, width, height } = options;
@@ -1128,7 +1129,7 @@ export function createLighting() {
   // Glitter on water in a clear sun: a faint path of light along the surface
   // under the sun, and twinkles on it, thick there and thin elsewhere. Only
   // water in daylight glitters, and with reduced motion only the path shows.
-  function drawGlitter(ctx, entry, { trail, ride, cameraX, cameraY, width, height, time = 0, still = false }, sun, color, shine) {
+  function drawGlitter(ctx, entry, { trail, ride, cameraX, cameraY, width, height, time = 0, still = false, water = null }, sun, color, shine) {
     if (!ride?.water?.length) return;
     const compiled = terrainGeometry(trail);
     const sx = cameraX + sun.x;
@@ -1142,7 +1143,7 @@ export function createLighting() {
       const surface = Math.round(body.y / ART_PIXEL) * ART_PIXEL;
       for (const { x, segments } of waterColumns(compiled, body, ART_PIXEL)) {
         if (x < cameraX - ART_PIXEL || x > cameraX + width || Math.abs(segments[0][0] - body.y) >= 0.5) continue;
-        const y = surface + surfaceWave(x, time);
+        const y = surface + (water ? water.offset(x, body.y) : 0);
         const lit = Math.max(0, Math.min(1, (lightFieldAt(entry.field, x, y - ART_PIXEL) - 0.6) / 0.4));
         const strength = shine * lit;
         if (strength <= 0) continue;

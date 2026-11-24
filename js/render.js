@@ -28,7 +28,7 @@ import {
 } from "./drawing.js";
 import { fallLine, terrainAt, groundShadowSamples, terrainGeometry, terrainRaycastAt } from "./terrain.js";
 import { finishHeight } from "./trail-schema.js";
-import { waterColumns, surfaceWave } from "./water.js";
+import { waterColumns } from "./water.js";
 import { WEATHER_COLUMN, weatherGroundAt } from "./weather-fall.js";
 import { createTerrainRenderer } from "./terrain-render.js";
 import { riderCollisionPoints } from "./ride.js";
@@ -1612,7 +1612,7 @@ export function createRenderer(canvas, { still = false } = {}) {
       const hit = weatherGroundAt(trail, worldX, worldY, drift);
       // Where along its slant this drop meets the ground.
       const landX = worldX + drift * (hit.y - worldY);
-      const surface = hit.water ? hit.y + surfaceWave(landX, propScene.time) : hit.y;
+      const surface = hit.water && propScene.water ? hit.y + propScene.water.offset(landX, hit.y) : hit.y;
       const ground = Math.round((surface - cameraY) / ART_PIXEL) * ART_PIXEL;
       const age = top + down - ground;
       if (age >= 0 && age < RAIN_SPLASH) {
@@ -2000,7 +2000,7 @@ export function createRenderer(canvas, { still = false } = {}) {
 
   // Drawn over the bike and rider, so whatever is in the water looks wet;
   // terrain inside a body is left dry.
-  function drawWater(ride) {
+  function drawWater(ride, surface) {
     if (!ride.water?.length) return;
     const compiled = terrainGeometry(trail);
     for (const body of ride.water) {
@@ -2011,7 +2011,7 @@ export function createRenderer(canvas, { still = false } = {}) {
         body.y + body.depth < cameraY - 4
       )
         continue;
-      gameArt.drawWater(body, waterColumns(compiled, body, ART_PIXEL), propScene.time);
+      gameArt.drawWater(body, waterColumns(compiled, body, ART_PIXEL), surface, propScene.time);
     }
   }
 
@@ -2073,11 +2073,15 @@ export function createRenderer(canvas, { still = false } = {}) {
       riderX: focus.x,
       riderY: focus.y,
       weather: resolveWeather(trail.weather),
+      water: effects.water,
       landing,
       // Where the rider came off, and how long ago, for the spectators.
       crash: ride.ragdoll ? { x: focus.x, y: focus.y, age: (now - crashStart) / 1000 } : null,
     };
     frameNow = now;
+    // The water's surface rolls on and settles with the scene, and holds
+    // still with reduced motion.
+    effects.water.step(reducedMotion ? 0 : animationDt, propScene.weather);
     startleProps(ride, focus, now);
     watchCrash(ride, focus, now);
     watchHalfway(ride, focus, now);
@@ -2159,7 +2163,7 @@ export function createRenderer(canvas, { still = false } = {}) {
     // Water props in front are drawn before the water, so what is under the
     // surface looks wet.
     drawProps("front", full, gameArt, null, true);
-    drawWater(ride);
+    drawWater(ride, effects.water);
     drawProps("front", full, gameArt, null, false);
     drawXray(ride, look, ride.ragdoll ? "ragdoll" : state, full);
     drawParticles(effects.particles, false);
@@ -2174,6 +2178,7 @@ export function createRenderer(canvas, { still = false } = {}) {
       height: H,
       flash: effects.weather.flash,
       time: propScene.time,
+      water: effects.water,
       flip: flipVisual,
       sun: frameSun,
       still: reducedMotion,

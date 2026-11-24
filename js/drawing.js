@@ -23,7 +23,7 @@ import { canFlip } from "./trail-schema.js";
 import { APPLE_SPRITE } from "./apple.js";
 import { SPIKE_CORE, SPIKE_TIP, spikePoints } from "./spike.js";
 import { WHEELBASE } from "./config.js";
-import { WATER_COLORS, surfaceWave, waterBodies } from "./water.js";
+import { WATER_COLORS, surfaceGlint, waterBodies } from "./water.js";
 import {
   WATER_PROPS,
   SURFACE_PROPS,
@@ -5105,33 +5105,42 @@ export function createGameArt(ctx) {
 
   /**
    * A body of water from its open columns (see `waterColumns`): see-through
-   * blue, darker with depth, with a light rippling line where it meets the
-   * air. `time` only moves the ripples.
+   * blue, darker deeper down, under a thin light line where it meets the air
+   * with glints drifting along it, and foam against the banks. `surface` is
+   * the ride's water surface (see `createWaterSurface`), which moves the line
+   * and adds foam where it is windblown or churned up; without it the water
+   * lies flat. `time` moves the glints.
    */
-  function drawWater(body, columns, time = 0, alpha = 1) {
+  function drawWater(body, columns, surface = null, time = 0) {
     ctx.save();
-    ctx.globalAlpha *= alpha;
-    for (const { x, segments } of columns) {
-      for (const [top, bottom] of segments) {
-        const surface = Math.abs(top - body.y) < 0.5;
-        const wave = surface ? surfaceWave(x, time) : 0;
-        const y0 = Math.round(top / ART_PIXEL) * ART_PIXEL + wave;
+    const top = Math.round(body.y / ART_PIXEL) * ART_PIXEL;
+    const open = columns.map(({ segments }) => Math.abs(segments[0][0] - body.y) < 0.5);
+    // Whether the column `away` from `index` is open surface right next to it.
+    const surfaceAt = (index, away) => open[index + away] && columns[index + away].x === columns[index].x + away * ART_PIXEL;
+    columns.forEach(({ x, segments }, index) => {
+      for (const [segmentTop, bottom] of segments) {
+        const atSurface = segmentTop === segments[0][0] && open[index];
+        const sample = atSurface && surface ? surface.sample(x, body.y) : null;
+        const y0 = atSurface ? top + (sample?.offset ?? 0) : Math.round(segmentTop / ART_PIXEL) * ART_PIXEL;
         const y1 = Math.round(bottom / ART_PIXEL) * ART_PIXEL;
         if (y1 <= y0) continue;
         ctx.fillStyle = WATER_COLORS.body;
         ctx.fillRect(x, y0, ART_PIXEL, y1 - y0);
-        const deep = Math.max(y0, Math.round((body.y + 18) / ART_PIXEL) * ART_PIXEL);
+        // The deeper water rises and falls with the waves over it.
+        const deep = Math.max(y0, top + (sample?.offset ?? 0) + 18);
         if (y1 > deep) {
           ctx.fillStyle = WATER_COLORS.deep;
           ctx.fillRect(x, deep, ART_PIXEL, y1 - deep);
         }
-        if (!surface) continue;
-        ctx.fillStyle = WATER_COLORS.shine;
-        ctx.fillRect(x, y0 + ART_PIXEL, ART_PIXEL, ART_PIXEL * 2);
-        ctx.fillStyle = WATER_COLORS.foam;
+        if (!atSurface) continue;
+        const bank = !surfaceAt(index, -1) || !surfaceAt(index, 1)
+          || (surfaceAt(index, -1) && !surfaceAt(index - 1, -1))
+          || (surfaceAt(index, 1) && !surfaceAt(index + 1, 1));
+        const foam = bank || sample?.foam || surfaceGlint(x, time);
+        ctx.fillStyle = foam ? WATER_COLORS.foam : WATER_COLORS.shine;
         ctx.fillRect(x, y0, ART_PIXEL, ART_PIXEL);
       }
-    }
+    });
     ctx.restore();
   }
 
@@ -5723,10 +5732,11 @@ export function createGameArt(ctx) {
     });
   }
 
-  // A water prop where its fit puts it (see waterFit): lily pads and ducks
-  // riding the ripples on the surface, a fish swimming to and fro and darting
+  // A water prop at (x, y) where its fit puts it (see waterFit): lily pads and
+  // ducks riding the ripples on the surface (`scene.water`, the ride's water
+  // surface; flat without it), a fish swimming to and fro and darting
   // off once startled (`scene.flight`), and seaweed and reeds swaying on the bed.
-  function drawWaterProp(type, x, fit, mirrored, groundOffset, scene) {
+  function drawWaterProp(type, x, y, fit, mirrored, groundOffset, scene) {
     const tools = { pixelRect };
     const time = scene.time || 0;
     const snap = (value) => Math.round(value / ART_PIXEL) * ART_PIXEL;
@@ -5734,9 +5744,9 @@ export function createGameArt(ctx) {
     if (SURFACE_PROPS.has(type)) {
       const afloat = Number.isFinite(fit?.surface);
       ctx.translate(0, afloat ? snap(fit.surface) : 0);
-      const wave = (local) => (afloat ? surfaceWave(worldX(local), time) : 0);
+      const wave = (local) => (afloat && scene.water ? scene.water.offset(worldX(local), y + fit.surface) : 0);
       if (type === "lily") {
-        // Just clear of the foam line, so the pads lie on the water.
+        // Just clear of the surface line, so the pads lie on the water.
         ctx.translate(0, -2);
         drawLily(tools, wave);
         return;
@@ -6927,7 +6937,7 @@ export function createGameArt(ctx) {
         else drawBats(x, scene);
       }
     } else if (WATER_PROPS.has(type)) {
-      drawWaterProp(type, x, wall, mirrored, groundOffset, scene);
+      drawWaterProp(type, x, y, wall, mirrored, groundOffset, scene);
     } else if (type === "mushrooms") {
       drawMushrooms({ pixelRect }, groundOffset);
     } else if (type === "minecart") {

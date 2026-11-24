@@ -2,10 +2,12 @@
 import assert from 'node:assert/strict';
 import { STEP } from '../js/config.js';
 import { createEffects } from '../js/effects.js';
-import { createRide, simulateRun, stepRide } from '../js/ride.js';
+import { bikeSpeed, createRide, simulateRun, stepRide } from '../js/ride.js';
 import { createBlankTrail, normalizeTrail, validateTrail } from '../js/trail-schema.js';
 import { trailHash } from '../js/trail-hash.js';
-import { WATER_SIZE, WATER_WIPEOUT_DEPTH, deepWater, normalizeWater, waterAt, wheelImmersion } from '../js/water.js';
+import { WATER_SIZE, WATER_WIPEOUT_DEPTH, createWaterSurface, deepWater, normalizeWater, waterAt, wheelImmersion, windWaves } from '../js/water.js';
+import { resolveWeather } from '../js/weather.js';
+import { terrainGeometry } from '../js/terrain.js';
 import { rectangle } from './lib/terrain-fixtures.mjs';
 import { propSpan, propWallFit, waterPropAt } from '../js/drawing.js';
 import { DRAGONFLY_RANGE, FISH_HALF, FISH_RANGE, FROG_LEAP, SURFACE_PROPS, WATER_PROPS, dragonflyAt, fishDart, fishSwim, frogLeap, risingBubbles } from '../js/water-props.js';
@@ -173,6 +175,61 @@ const errors = trail => validateTrail(trail).filter(message => message.type === 
   assert.ok(flights.every((f) => Math.abs(f.x) <= DRAGONFLY_RANGE.x && f.y <= -DRAGONFLY_RANGE.low + 2 && f.y >= -DRAGONFLY_RANGE.high - 2), 'over the water, within range');
   assert.ok(new Set(flights.map((f) => f.x)).size > 3, 'and darting about');
   assert.deepEqual(dragonflyAt(0, 0.4, 0), dragonflyAt(0, 0.4, 0), 'still at time 0');
+}
+
+// The drawn surface: wind waves grow with the wind and the open water they
+// blow over, and only rippling stays in a ford.
+{
+  const calm = windWaves(200, 60, 0), breeze = windWaves(200, 60, 0.4), gale = windWaves(200, 60, 1);
+  assert.ok(calm.height < 0.5 && calm.chop === 0, 'still water lies flat');
+  assert.ok(breeze.height > calm.height && gale.height > breeze.height, 'more wind, taller waves');
+  const sea = windWaves(3000, 400, 1);
+  assert.ok(sea.height > 12 && sea.swell > gale.swell, `a sea in a gale has real waves (${sea.height.toFixed(1)})`);
+  assert.ok(sea.swellSpeed > gale.swellSpeed, 'and longer waves travel faster');
+  assert.ok(windWaves(3000, 20, 1).height <= 7, 'shallow water cannot hold tall waves');
+}
+
+// The surface lies flat in still air, ripples where it is disturbed, holds
+// still against the banks and settles again.
+{
+  const pond = normalizeTrail(pitTrail([{ x: 560, y: 360, width: 480, depth: 80 }]));
+  const surface = createWaterSurface();
+  surface.reset(pond.water, terrainGeometry(pond));
+  const still = resolveWeather({ wind: 0 });
+  surface.step(0.5, still);
+  const line = () => Array.from({ length: 200 }, (_, i) => surface.offset(600 + i * 2, 360));
+  assert.ok(line().every((offset) => offset === 0), 'still air, still water');
+  surface.disturb(800, 360, 6, 6);
+  let moved = 0;
+  for (let frame = 0; frame < 30; frame++) {
+    surface.step(1 / 60, still);
+    moved = Math.max(moved, ...line().map(Math.abs));
+  }
+  assert.ok(moved >= 2, 'a splash sends ripples along the surface');
+  assert.equal(surface.offset(601, 360), 0, 'the water holds still against the bank');
+  assert.equal(surface.offset(500, 360), 0, 'and there is no surface over the ground beside it');
+  for (let frame = 0; frame < 900; frame++) surface.step(1 / 60, still);
+  assert.ok(line().every((offset) => offset === 0), 'the ripples die away');
+  const windy = resolveWeather({ wind: 1 });
+  surface.step(1, windy);
+  assert.ok(line().some((offset) => offset !== 0), 'a gale raises waves');
+}
+
+// Riding through water stirs up its surface.
+{
+  const ford = normalizeTrail(flatTrail({ water: [{ x: 400, y: 296, width: 300, depth: 24 }], weather: { wind: 0 } }));
+  const ride = createRide(ford), effects = createEffects();
+  effects.reset(ford);
+  const still = resolveWeather(ford.weather);
+  let stirred = false;
+  for (let step = 0; step < 600 && ride.status === 'running' && !stirred; step++) {
+    const speed = bikeSpeed(ride);
+    stepRide(ride, { accelerating: true, leanInput: 0 });
+    effects.waterWake(ride, speed);
+    effects.water.step(STEP, still);
+    stirred = Array.from({ length: 150 }, (_, i) => effects.water.offset(400 + i * 2, 296)).some((offset) => offset !== 0);
+  }
+  assert.ok(stirred, 'the wheels leave ripples');
 }
 
 // Riding through a ford soaks the rider's boots and legs, not their head;

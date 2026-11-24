@@ -1,12 +1,13 @@
 // @ts-check
-// Cosmetic effects: particles, skid marks, terrain spray and weather timing.
+// Cosmetic effects: particles, skid marks, terrain spray, the water's drawn
+// surface and weather timing.
 // None of this feeds back into the simulation, so it may use Math.random.
 import { STEP, RADIUS, TAU, GRAVITY, clamp, lerp } from './config.js';
 import { terrainMaterials } from './materials.js';
-import { terrainAt } from './terrain.js';
+import { terrainAt, terrainGeometry } from './terrain.js';
 import { inGlass } from './glass.js';
 import { ringArea } from './terrain-geometry.js';
-import { WATER_COLORS, submergedFraction, waterAt } from './water.js';
+import { WATER_COLORS, createWaterSurface, submergedFraction, waterAt, waterBodies } from './water.js';
 import { RIDER_HAND, RIDER_HEAD, RIDER_PEG, riderKnee } from './bike-lamps.js';
 import { riderBodyFrame } from './rider-hair.js';
 import { rainSlant, resolveWeather, windSign } from './weather.js';
@@ -69,9 +70,12 @@ export function createEffects() {
   const dripAccumulator = [0, 0, 0, 0];
   /** How hard it rains, 0 … 1, and how far the drops drift sideways per unit they fall. */
   const rain = { strength: 0, drift: 0 };
+  /** The water's drawn surface, which the bike, the rider and splashes stir up. */
+  const water = createWaterSurface();
 
   function reset(nextTrail) {
     trail = nextTrail;
+    water.reset(waterBodies(trail), terrainGeometry(trail));
     particles.length = 0; skidMarks.length = 0; tyreTracks.length = 0;
     trackFrom.rear = null; trackFrom.front = null;
     sprayAccumulator = 0; skidAccumulator = 0; wakeAccumulator = 0;
@@ -216,6 +220,7 @@ export function createEffects() {
 
   /** Droplets thrown up where something hits the water, more the harder it hits. */
   function splash(x, y, speed) {
+    water.disturb(x, y, clamp(speed / 60, 1.5, 6), 6);
     const count = Math.round(clamp(speed / 22, 5, 18));
     for (let index = 0; index < count; index++) {
       const side = index % 2 ? 1 : -1;
@@ -270,10 +275,15 @@ export function createEffects() {
     }
   }
 
-  /** Spray from wheels pushing through the water's surface. */
+  /**
+   * Spray from wheels pushing through the water's surface, and ripples from
+   * the wheels and the thrown rider moving through it.
+   */
   function waterWake(ride, speed) {
     const bodies = ride.water;
-    if (!bodies?.length || ride.status !== 'running') return;
+    if (!bodies?.length) return;
+    stirWater(ride);
+    if (ride.status !== 'running') return;
     const magnitude = Math.abs(speed);
     let surface = null, x = 0;
     for (const wheel of [ride.rear, ride.front]) {
@@ -294,6 +304,25 @@ export function createEffects() {
         life, max: life, color: WATER_COLORS.splash[Math.floor(Math.random() * 3)], size: 2, drag: 2
       });
     }
+  }
+
+  // Anything moving along through the surface pushes up a bow wave ahead of
+  // it and leaves a trough behind, harder the faster it goes. Called every
+  // physics step, so the push is a step's share of a spring step's.
+  function stirWater(ride) {
+    const share = STEP * 60;
+    const stir = (point, radius) => {
+      const wet = submergedFraction(ride.water, point.x, point.y, radius);
+      if (wet <= 0 || wet >= 1) return;
+      const along = (point.x - point.ox) / STEP;
+      const push = clamp(Math.abs(along) / 200, 0, 1.2) * share;
+      if (push < .01 * share) return;
+      const ahead = Math.sign(along);
+      water.disturb(point.x + ahead * radius, point.y, -.2 * push, radius * .6);
+      water.disturb(point.x - ahead * radius * .5, point.y, .25 * push, radius * .8);
+    };
+    if (ride.ragdoll) for (const point of ride.ragdoll.list) stir(point, 6);
+    else for (const wheel of [ride.rear, ride.front]) stir(wheel, RADIUS);
   }
 
   /**
@@ -476,7 +505,7 @@ export function createEffects() {
     removeExpired(tyreTracks, MAX_TYRE_TRACKS);
   }
 
-  return { particles, skidMarks, tyreTracks, wheelDirt, tyreSquish, riderWet, weather, reset, burst, dustPuff, exhaustPuff, crashDebris, brakeMarks, layTracks, terrainSpray, splash, shatter, crack, waterWake, wheelGrime, squishTyres, riderWetness, stepWeather, update, prune };
+  return { particles, skidMarks, tyreTracks, wheelDirt, tyreSquish, riderWet, weather, water, reset, burst, dustPuff, exhaustPuff, crashDebris, brakeMarks, layTracks, terrainSpray, splash, shatter, crack, waterWake, wheelGrime, squishTyres, riderWetness, stepWeather, update, prune };
 }
 
 const midpoint = (a, b) => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
