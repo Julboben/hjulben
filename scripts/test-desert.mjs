@@ -1,10 +1,12 @@
 // Desert props: the tumbleweed's roll, the windmill in the wind, the heat
-// haze and the vulture's circle. All of it is visual only and still at time 0.
+// haze, the vulture's circle and the palm's fronds and falling coconuts. All
+// of it is visual only and still at time 0.
 import assert from 'node:assert/strict';
 import { normalizeTrail, validateTrail } from '../js/trail-schema.js';
 import { rectangle } from './lib/terrain-fixtures.mjs';
 import { propSpan, propWallFit } from '../js/drawing.js';
 import {
+  COCONUT_REACH, COCONUTS, PALMS, PALM_BOUNDS, PALM_SWAY_MAX, coconutFall, coconutKnock, palmFrondBounds, palmFrondSway,
   TUMBLEWEED_RUN, TUMBLEWEED_STEP, VULTURE_HEIGHT, hazeShift, hazeStreaks,
   swoopDuration, tumbleweedRoll, vultureNotice, vultureOrbit, vulturePerch, vultureSwoop, windmillAngle,
 } from '../js/desert-props.js';
@@ -86,7 +88,7 @@ const prop = (type, x, extra = {}) => ({ type, x, y: null, layer: 'back', ...ext
 
 // They are all known prop types.
 {
-  const types = ['skull', 'tumbleweed', 'car-wreck', 'water-tower', 'windmill', 'heat-haze', 'vulture'];
+  const types = ['palm', 'palm-small', 'skull', 'tumbleweed', 'car-wreck', 'water-tower', 'windmill', 'heat-haze', 'vulture'];
   const warnings = validateTrail(trail(types.map((type, i) => prop(type, 300 + i * 80))))
     .filter((m) => m.type === 'warning');
   assert.ok(!warnings.some((m) => /unknown type/.test(m.text)), warnings.map((m) => m.text).join('\n'));
@@ -115,6 +117,74 @@ const prop = (type, x, extra = {}) => ({ type, x, y: null, layer: 'back', ...ext
     assert.ok(at.y >= lowest - 1e-9, 'it only ever descends');
     lowest = at.y;
   }
+}
+
+// A palm's fronds hold still at time 0 and in still air, flutter each in
+// their own time, and lean downwind further the harder it blows, never past
+// PALM_SWAY_MAX (less on the small palm) and always on the art grid.
+for (const [type, palm] of Object.entries(PALMS)) {
+  palm.fronds.forEach((_, index) => {
+    assert.equal(palmFrondSway(palm, 0, 1, -1, 0.3, index), 0, 'still at time 0');
+    assert.equal(palmFrondSway(palm, 5, 0, -1, 0.3, index), 0, 'still in still air');
+  });
+  const mean = (wind, downwind) => {
+    let sum = 0;
+    for (let t = 0.1; t < 20; t += 0.1) palm.fronds.forEach((_, index) => (sum += palmFrondSway(palm, t, wind, downwind, 0.3, index)));
+    return sum / (199 * palm.fronds.length);
+  };
+  assert.ok(mean(1, -1) < mean(0.4, -1) && mean(0.4, -1) < 0, `a gale leans the ${type}'s fronds further downwind`);
+  assert.ok(mean(1, 1) > 0, 'either way');
+  assert.notEqual(palmFrondSway(palm, 3, 0.5, 1, 0.3, 0), palmFrondSway(palm, 3, 0.5, 1, 0.3, 1), 'each frond in its own time');
+  const most = Math.round((PALM_SWAY_MAX * palm.scale) / 2) * 2;
+  for (let t = 0.1; t < 20; t += 0.37) {
+    const sway = palmFrondSway(palm, t, 1, 1, 0.7, 4);
+    assert.ok(Math.abs(sway) <= most && sway % 2 === 0, `on the grid and in range at ${t.toFixed(2)}`);
+  }
+  // The culling bounds hold every frond, however far it is pushed.
+  palm.fronds.forEach((_, index) => {
+    for (let sway = -most; sway <= most; sway += 2) {
+      const [left, top, right] = palmFrondBounds(palm, index, sway);
+      const bounds = PALM_BOUNDS[type];
+      assert.ok(left >= bounds[0] && top >= bounds[1] && right <= bounds[2], `${type} frond ${index} at ${sway}`);
+    }
+  });
+}
+assert.ok(-PALM_BOUNDS['palm-small'][1] < -PALM_BOUNDS.palm[1] / 2, 'the small palm is less than half as tall');
+
+// A hard landing near a palm knocks a coconut down, rolling away from the
+// landing; each falls to the ground, rolls a little way and lies where it
+// stops, apart from the others.
+{
+  const landing = { x: 500, y: 320, time: 10, strength: 1 };
+  assert.equal(coconutKnock(null, 560, 320), null);
+  assert.equal(coconutKnock(landing, 500 + COCONUT_REACH + 1, 320), null, 'too far to the side');
+  assert.equal(coconutKnock(landing, 560, 900), null, 'too far above or below');
+  assert.equal(coconutKnock(landing, 560, 320), 1, 'away from the landing');
+  assert.equal(coconutKnock(landing, 440, 320), -1);
+  const flat = () => 0;
+  COCONUTS.forEach((_, index) => {
+    const start = coconutFall(index, 0, 1, flat);
+    assert.ok(start.y < PALMS.palm.crown.y + 20, 'it starts in the bunch');
+    let last = start;
+    for (let age = 0.05; age < 3; age += 0.05) {
+      const nut = coconutFall(index, age, 1, flat);
+      assert.ok(nut.y <= -6, `never sinks into the ground at ${age.toFixed(2)}`);
+      assert.ok(nut.x >= last.x, 'it only rolls one way');
+      last = nut;
+    }
+    const lying = coconutFall(index, 3, 1, flat);
+    assert.ok(lying.y === -6 && lying.x > start.x, 'it lies on the ground, off to the side');
+    assert.deepEqual(coconutFall(index, 60, 1, flat), lying, 'and stays there');
+    assert.ok(coconutFall(index, 3, -1, flat).x < start.x, 'the other way too');
+  });
+  for (const dir of [-1, 1]) {
+    const resting = COCONUTS.map((_, index) => coconutFall(index, 3, dir, flat).x);
+    assert.ok(resting.every((x, i) => resting.every((other, j) => i === j || Math.abs(x - other) >= 10)), 'they come to rest apart');
+    assert.ok(resting.every((x) => Math.abs(x) >= PALMS.palm.foot + 6), 'clear of the trunk');
+  }
+  const slope = (x) => -x;
+  const stopped = coconutFall(0, 3, 1, slope);
+  assert.equal(stopped.y, -stopped.x - 6, 'on the ground where it stops');
 }
 
 console.log('Desert tests passed.');

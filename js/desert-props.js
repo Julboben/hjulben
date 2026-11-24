@@ -772,3 +772,285 @@ export function drawVultureBanking(tools) {
     [0, -6, 2, 2, c.beak],
   ]);
 }
+
+// ---------------------------------------------------------------------------
+// Palm tree
+// ---------------------------------------------------------------------------
+
+// The trunk's bark, grey-brown from the woods' timber.
+const PALM_TRUNK = { shade: WOOD.dark, dark: WOOD.base, base: WOOD.plank, light: WOOD.tip, lit: WOOD.cut };
+// The fronds' greens by layer, back to front, from the trees' summer foliage:
+// the rib, the leaflets, and the leaflets turned to the sun.
+const PALM_GREEN = [
+  { rib: "#365345", leaf: "#3d6452", tip: "#477158" },
+  { rib: "#3d6452", leaf: "#4e785c", tip: "#568061" },
+  { rib: "#477158", leaf: "#618b66", tip: "#86a56a" },
+];
+const COCONUT = { dark: RUBBER.dark, base: WOOD.dark, light: WOOD.plank, shine: WOOD.tip };
+
+// The big palm's fronds: the angle each leaves the crown at (degrees, 0
+// right, 90 up), its length and droop, and its layer, 0 at the back to 2 at
+// the front, darker to lighter.
+const PALM_FRONDS = [
+  { angle: 150, length: 70, droop: 1, layer: 0 },
+  { angle: 30, length: 74, droop: 1, layer: 0 },
+  { angle: 108, length: 50, droop: 0.9, layer: 0 },
+  { angle: 70, length: 52, droop: 0.9, layer: 0 },
+  { angle: 176, length: 84, droop: 1.2, layer: 1 },
+  { angle: 4, length: 88, droop: 1.2, layer: 1 },
+  { angle: 132, length: 64, droop: 1.05, layer: 1 },
+  { angle: 50, length: 66, droop: 1.05, layer: 1 },
+  { angle: 98, length: 46, droop: 1.5, layer: 1 },
+  { angle: 204, length: 58, droop: 0.9, layer: 2 },
+  { angle: -22, length: 62, droop: 0.9, layer: 2 },
+];
+
+/** The furthest the wind ever pushes a big palm's frond tip, in world units. */
+export const PALM_SWAY_MAX = 56;
+
+/**
+ * The palms' shapes, by prop type: where the crown sits above the anchor (the
+ * trunk bows out to the right from its foot and stands upright under it), the
+ * trunk's half width at the foot and the neck, how far apart its rings are,
+ * where the cached trunk ends above the live foot that follows the ground,
+ * the fronds, how long their leaflets are, and `scale`, how big the crown is
+ * next to the big palm's, which scales how far the wind pushes it too. The
+ * small palm is a young one: a short, stout trunk with tighter rings and a
+ * smaller crown of fewer fronds, and no coconuts yet.
+ */
+export const PALMS = {
+  palm: { crown: { x: 24, y: -178 }, foot: 9, neck: 5, ring: 8, bodyBottom: -10, fronds: PALM_FRONDS, reach: 14, scale: 1 },
+  "palm-small": {
+    crown: { x: 8, y: -66 },
+    foot: 7,
+    neck: 5,
+    ring: 6,
+    bodyBottom: -8,
+    // Without the two shortest, uppermost fronds at the back.
+    fronds: PALM_FRONDS.filter((_, index) => index !== 2 && index !== 3).map((frond) => ({ ...frond, length: Math.round(frond.length * 0.55) })),
+    reach: 9,
+    scale: 0.55,
+  },
+};
+
+/** The coconuts hanging in front of the big palm's crown, as offsets from it, in the order they fall: the lowest first. */
+export const COCONUTS = [[-2, 15], [-8, 10], [6, 10]];
+
+/** Where the centre of the trunk of `palm` (an entry in PALMS) is at height `y` above the anchor (negative up). */
+export function palmTrunkX(palm, y) {
+  const t = Math.max(0, Math.min(1, y / palm.crown.y));
+  return palm.crown.x * Math.sin((t * Math.PI) / 2);
+}
+
+/**
+ * The trunk of `palm` (an entry in PALMS) from the heart of the crown, where
+ * the fronds meet, down to its bodyBottom: tapering, ringed with old leaf
+ * scars that jut out a pixel either side, and lit from the right.
+ */
+export function drawPalmTrunk({ pixelRect }, palm) {
+  const { crown, foot, neck, ring: spacing } = palm;
+  const c = PALM_TRUNK;
+  pixelRect(crown.x - 4, crown.y - 4, 8, 8, c.dark, 2);
+  pixelRect(crown.x + 2, crown.y - 4, 2, 6, c.light, 2);
+  for (let y = crown.y + 4; y < palm.bodyBottom; y += 2) {
+    const t = y / crown.y;
+    const half = snap(neck + (foot - neck) * (1 - t));
+    const step = ((y % spacing) + spacing) % spacing;
+    const ring = step === 0;
+    const lip = ring ? 2 : 0;
+    const left = snap(palmTrunkX(palm, y)) - half - lip;
+    const width = (half + lip) * 2;
+    pixelRect(left, y, width, 2, ring ? c.dark : c.base, 2);
+    pixelRect(left, y, 4, 2, ring ? c.shade : c.dark, 2);
+    pixelRect(left + width - 4, y, 2, 2, ring ? c.base : c.light, 2);
+    pixelRect(left + width - 2, y, 2, 2, ring ? c.light : c.lit, 2);
+    // The top of each ring catches the light.
+    if (step === 2) pixelRect(left + 4, y, width - 8, 2, c.light, 2);
+  }
+}
+
+/** The foot of the trunk of `palm` (an entry in PALMS), flaring out just above the ground, which it follows. */
+export function drawPalmFoot({ pixelRect }, palm, groundOffset) {
+  const c = PALM_TRUNK;
+  const half = palm.foot + 1;
+  for (let x = -half; x < half; x += 2) {
+    const ground = snap(groundOffset(x + 1));
+    // The outermost columns flare out only just above the ground.
+    const flare = x === -half || x === half - 2 ? 2 : palm.foot + 3;
+    const top = Math.min(palm.bodyBottom, ground - flare);
+    const color = x < -half + 4 ? c.dark : x >= half - 2 ? c.lit : x >= half - 4 ? c.light : c.base;
+    pixelRect(x, top, 2, ground - top + 2, color, 2);
+  }
+}
+
+/**
+ * How far the wind pushes the tip of frond `index` of `palm` (an entry in
+ * PALMS) at `time`, along x in world units, for a `wind` of 0…1 blowing
+ * `downwind` (-1 or 1): a steady lean that grows with the wind until a gale
+ * streams the crown out one way, and a flutter each frond keeps in its own
+ * time (`phase`, 0…1, staggers palms), less on a smaller crown. Snapped to
+ * the art grid, so each value can be cached; 0 at time 0 and in still air.
+ */
+export function palmFrondSway(palm, time, wind, downwind, phase, index) {
+  const w = Math.max(0, Math.min(1, Number(wind) || 0));
+  if (!time || !w) return 0;
+  const lean = downwind * w * w * 44;
+  const flutter = Math.sin(time * (2.1 + index * 0.37) + phase * Math.PI * 2 + index * 1.7) * (1 + w * 7);
+  return snap(Math.max(-PALM_SWAY_MAX, Math.min(PALM_SWAY_MAX, lean + flutter)) * palm.scale);
+}
+
+// Frond `index` of `palm` pushed `sway` at its tip: its rib, as points from
+// the crown out to the tip, and its leaflets as strokes from (x0, y0) on the
+// rib to (x1, y1), each with a tone: "rib" (underneath, in shade), "leaf" or
+// "tip" (turned to the sun).
+function palmFrond(palm, index, sway) {
+  const { angle, length, droop } = palm.fronds[index];
+  const { x: cx, y: cy } = palm.crown;
+  const a = (angle * Math.PI) / 180;
+  // Out along its angle, drooping more towards the tip, and pushed by the
+  // wind most at the tip.
+  const point = (u) => [
+    cx + Math.cos(a) * length * u + sway * u * u,
+    cy - Math.sin(a) * length * u + droop * length * 0.55 * u * u,
+  ];
+  const steps = Math.round(length / 2);
+  const leaflets = [];
+  // A leaflet every art pixel on both sides, so the frond reads as a solid blade.
+  for (const side of [-1, 1]) {
+    for (let s = 2; s < steps; s++) {
+      const u = s / steps;
+      const [x0, y0] = point(u);
+      const [x1, y1] = point(Math.min(1, u + 0.02));
+      const len = Math.hypot(x1 - x0, y1 - y0) || 1;
+      const tx = (x1 - x0) / len;
+      const ty = (y1 - y0) / len;
+      // Square to the rib, swept back towards the tip and pulled down by their weight.
+      const lx = -ty * side + tx * 0.6;
+      const ly = tx * side + ty * 0.6 + 0.7;
+      const norm = Math.hypot(lx, ly) || 1;
+      // Longest along the middle of the frond.
+      const reach = palm.reach * Math.sin(Math.min(1, u * 1.3) * Math.PI) ** 0.7 + 2;
+      const x2 = x0 + (lx / norm) * reach;
+      const y2 = y0 + (ly / norm) * reach;
+      const tone = y2 - y0 > Math.abs(x2 - x0) ? "rib" : x2 > x0 ? "tip" : "leaf";
+      leaflets.push({ x0: snap(x0), y0: snap(y0), x1: snap(x2), y1: snap(y2), tone });
+    }
+  }
+  const rib = [];
+  for (let s = 0; s <= Math.ceil(steps * 0.7); s++) rib.push(point(s / steps).map(snap));
+  return { rib, leaflets };
+}
+
+/**
+ * The local bounds [left, top, right, bottom] of frond `index` of `palm` (an
+ * entry in PALMS) pushed `sway` at its tip (see palmFrondSway), with a pixel
+ * to spare, for its sprite.
+ */
+export function palmFrondBounds(palm, index, sway) {
+  const { rib, leaflets } = palmFrond(palm, index, sway);
+  const xs = [...rib.map(([x]) => x), ...leaflets.flatMap(({ x0, x1 }) => [x0, x1])];
+  const ys = [...rib.map(([, y]) => y), ...leaflets.flatMap(({ y0, y1 }) => [y0, y1])];
+  return [Math.min(...xs) - 2, Math.min(...ys) - 2, Math.max(...xs) + 4, Math.max(...ys) + 4];
+}
+
+/** Frond `index` of `palm` (an entry in PALMS) pushed `sway` at its tip, in its layer's greens. drawing.js caches it. */
+export function drawPalmFrond({ pixelPath }, palm, index, sway) {
+  const colors = PALM_GREEN[palm.fronds[index].layer];
+  const { rib, leaflets } = palmFrond(palm, index, sway);
+  for (const { x0, y0, x1, y1, tone } of leaflets) pixelPath([[x0, y0], [x1, y1]], colors[tone], 1, 2);
+  pixelPath(rib, colors.leaf, 1, 2);
+}
+
+/**
+ * The local bounds [left, top, right] of each palm, by prop type, with its
+ * fronds pushed as far as the wind ever pushes them either way.
+ */
+export const PALM_BOUNDS = Object.fromEntries(
+  Object.entries(PALMS).map(([type, palm]) => {
+    const most = snap(PALM_SWAY_MAX * palm.scale);
+    const all = palm.fronds.flatMap((_, index) => [-most, most].map((sway) => palmFrondBounds(palm, index, sway)));
+    return [type, [Math.min(...all.map((b) => b[0])), Math.min(...all.map((b) => b[1])), Math.max(...all.map((b) => b[2]))]];
+  }),
+);
+
+/** A coconut centred on (x, y), its sunlit side turned by `turn` quarter turns as it rolls. */
+export function drawCoconut({ pixelRect }, x, y, turn = 0) {
+  const c = COCONUT;
+  x = snap(x);
+  y = snap(y);
+  rects({ pixelRect }, [
+    // A round husk, shaded on the left and underneath.
+    [-2, -4, 6, 2, c.base],
+    [-4, -2, 10, 6, c.base],
+    [-2, 4, 6, 2, c.dark],
+    [-4, -2, 2, 6, c.dark],
+    [2, -2, 2, 2, c.light],
+  ], x, y);
+  // The three eyes' end of the shell, coming round as it rolls.
+  const [ex, ey] = [[2, -4], [4, 0], [0, 2], [-2, -2]][((turn % 4) + 4) % 4];
+  pixelRect(x + ex, y + ey, 2, 2, c.shine, 2);
+}
+
+/** The coconuts under the big palm's crown, but for the first `fallen` of them, which have been knocked down. */
+export function drawCoconuts(tools, fallen = 0) {
+  const { x: cx, y: cy } = PALMS.palm.crown;
+  // Drawn from the last to fall to the first, so the lowest hangs in front.
+  for (let index = COCONUTS.length - 1; index >= fallen; index--) {
+    const [x, y] = COCONUTS[index];
+    drawCoconut(tools, cx + x, cy + y);
+  }
+}
+
+// How close to a palm a hard landing must be to knock a coconut down, across
+// and up or down; how fast one falls, in units per second squared; how long
+// it bounces and rolls for, in seconds; and where each comes to rest rolling
+// either way, [left, right] in the order they fall, so they lie apart and
+// clear of the trunk's foot.
+export const COCONUT_REACH = 160;
+const COCONUT_REACH_Y = 220;
+const COCONUT_GRAVITY = 520;
+const COCONUT_BOUNCE = 0.3;
+const COCONUT_ROLL = 0.9;
+const COCONUT_RESTS = [[-20, 44], [-32, 56], [-44, 68]];
+
+/**
+ * Whether a hard landing knocks a coconut off a palm standing at (`x`, `y`):
+ * which way (-1 or 1, in the world) it rolls, away from the landing, or null
+ * when the landing is too far off. `landing` is { x, y } as in the scene.
+ * render.js counts the coconuts knocked down each ride, so a palm runs out.
+ */
+export function coconutKnock(landing, x, y) {
+  if (!landing || !Number.isFinite(landing.x) || Math.abs(landing.x - x) > COCONUT_REACH) return null;
+  if (Number.isFinite(landing.y) && Number.isFinite(y) && Math.abs(landing.y - y) > COCONUT_REACH_Y) return null;
+  return landing.x <= x ? 1 : -1;
+}
+
+/**
+ * Where coconut `index` (in COCONUTS) is `age` seconds after it was knocked
+ * down, in the palm's own frame: it drops from the bunch to the ground
+ * (`groundOffset(x)` as in drawing.js), bounces once and rolls a little way
+ * `dir` (-1 or 1), then lies there for the rest of the ride. Rolling back
+ * towards the trunk, it rolls on past its foot, so it never comes to rest on
+ * it. Returns { x, y, turn }, `y` its centre, `turn` quarter turns.
+ */
+export function coconutFall(index, age, dir, groundOffset) {
+  const [nx, ny] = COCONUTS[index];
+  const x0 = PALMS.palm.crown.x + nx;
+  const y0 = PALMS.palm.crown.y + ny;
+  const rest = (x) => snap(groundOffset(x)) - 6;
+  const drop = Math.max(0, rest(x0) - y0);
+  const fall = Math.sqrt((2 * drop) / COCONUT_GRAVITY);
+  if (age < fall) return { x: x0, y: snap(y0 + 0.5 * COCONUT_GRAVITY * age * age), turn: 0 };
+  // One low bounce, already moving off.
+  const bounce = age - fall;
+  if (bounce < COCONUT_BOUNCE) {
+    const s = bounce / COCONUT_BOUNCE;
+    const x = x0 + dir * 10 * s;
+    return { x: snap(x), y: rest(x) - snap(28 * s * (1 - s)), turn: Math.floor(s * 2) * dir };
+  }
+  // Then it rolls, slowing to a stop.
+  const s = Math.min(1, (bounce - COCONUT_BOUNCE) / COCONUT_ROLL);
+  const end = COCONUT_RESTS[index][dir > 0 ? 1 : 0];
+  const x = x0 + dir * (10 + (Math.abs(end - x0) - 10) * (1 - (1 - s) ** 2));
+  return { x: snap(x), y: rest(x), turn: Math.floor(Math.abs(x - x0) / 8) * dir };
+}

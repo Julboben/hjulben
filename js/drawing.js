@@ -147,6 +147,8 @@ import {
   HAZE,
   HAZE_HALF,
   HAZE_RISE,
+  PALMS,
+  PALM_BOUNDS,
   ROTOR,
   TOWER_BODY_BOTTOM,
   TOWER_LADDER,
@@ -161,8 +163,14 @@ import {
   WINDMILL_BODY_BOTTOM,
   WINDMILL_FEET,
   WRECK_SINK,
+  coconutFall,
   drawCarWreck,
+  drawCoconut,
+  drawCoconuts,
   drawCowSkull,
+  drawPalmFoot,
+  drawPalmFrond,
+  drawPalmTrunk,
   drawTumbleweed,
   drawVultureBanking,
   drawVultureLanding,
@@ -173,6 +181,8 @@ import {
   drawWindmillTower,
   hazeShift,
   hazeStreaks,
+  palmFrondBounds,
+  palmFrondSway,
   tumbleweedRoll,
   vultureOrbit,
   windmillAngle,
@@ -4385,6 +4395,14 @@ export function riderGaze(scene, x, y, mirrored = false, eye = { x: 0, y: 0 }) {
   return { x: side, y: steep ? Math.sign(dy) : 0 };
 }
 
+/** The canopy sprite of a palm's trunk (an entry in PALMS), from the heart of its crown down. */
+function palmTrunkSprite(palm) {
+  return {
+    bounds: [-palm.foot - 4, palm.crown.y - 4, palm.crown.x + palm.neck + 6, palm.bodyBottom],
+    draw: (tools) => drawPalmTrunk(tools, palm),
+  };
+}
+
 // Local bounds [left, top, right, bottom] of each canopy sprite, in world units.
 const CANOPY_SPRITES = {
   // Room either side for the crown bending in the wind (TREE_SWAY_MAX).
@@ -4410,6 +4428,9 @@ const CANOPY_SPRITES = {
     bounds: [-8, -56, 8, SMALL_CACTUS_BOTTOM],
     draw: drawSmallCactusBody,
   },
+  // The trunks; the fronds bend on their own (see palmFrondSprite).
+  palm: palmTrunkSprite(PALMS.palm),
+  "palm-small": palmTrunkSprite(PALMS["palm-small"]),
   crates: { bounds: [-50, -72, 50, 0], draw: drawCrates },
   apple: { bounds: [-4, -10, 4, 0], draw: drawSmallApple },
   ladder: { bounds: [-28, -100, 26, 0], draw: drawLadder },
@@ -4476,14 +4497,11 @@ const CANOPY_SPRITES = {
 };
 const canopySprites = new Map();
 
-/** A canopy's cached sprite; `variant` is how far a crown that bends is bent. */
-function canopySprite(type, variant = 0) {
-  const key = variant ? `${type}:${variant}` : type;
-  if (canopySprites.has(key)) return canopySprites.get(key);
-  const {
-    bounds: [left, top, right, bottom],
-    draw,
-  } = CANOPY_SPRITES[type];
+/**
+ * Art drawn once into a sprite on the art grid: `draw(tools)` paints it in
+ * local units within `[left, top, right, bottom]`.
+ */
+function paintSprite([left, top, right, bottom], draw) {
   const canvas = createCanvas(
     (right - left) / ART_PIXEL,
     (bottom - top) / ART_PIXEL,
@@ -4497,15 +4515,39 @@ function canopySprite(type, variant = 0) {
     -left / ART_PIXEL,
     -top / ART_PIXEL,
   );
-  draw(createDrawingTools(context), variant);
-  const sprite = {
+  draw(createDrawingTools(context));
+  return {
     canvas,
     left,
     top,
     width: right - left,
     height: bottom - top,
   };
+}
+
+/** A canopy's cached sprite; `variant` is how far a crown that bends is bent. */
+function canopySprite(type, variant = 0) {
+  const key = variant ? `${type}:${variant}` : type;
+  if (canopySprites.has(key)) return canopySprites.get(key);
+  const { bounds, draw } = CANOPY_SPRITES[type];
+  const sprite = paintSprite(bounds, (tools) => draw(tools, variant));
   canopySprites.set(key, sprite);
+  return sprite;
+}
+
+const palmFrondSprites = new Map();
+
+/**
+ * The cached sprite of frond `index` of a palm of prop `type`, pushed `sway`
+ * at its tip (see palmFrondSway): each frond moves on its own, so each is
+ * cached apart, one for each art pixel of push it has been drawn at.
+ */
+function palmFrondSprite(type, index, sway) {
+  const key = `${type}:${index}:${sway}`;
+  if (palmFrondSprites.has(key)) return palmFrondSprites.get(key);
+  const palm = PALMS[type];
+  const sprite = paintSprite(palmFrondBounds(palm, index, sway), (tools) => drawPalmFrond(tools, palm, index, sway));
+  palmFrondSprites.set(key, sprite);
   return sprite;
 }
 // A sign reading "GO" (or a "start" prop) is drawn as the start pennant.
@@ -4532,6 +4574,10 @@ const PROP_EXTENTS = {
   stump: [-12, -18, 12],
   cactus: [-32, -104, 32],
   "cactus-small": [-14, -58, 14],
+  // Room for the fronds streaming out in a gale, and for the coconuts hard
+  // landings knock down.
+  palm: PALM_BOUNDS.palm,
+  "palm-small": PALM_BOUNDS["palm-small"],
   sapling: [-32, -78, 32],
   "pine-small": [-28, -90, 28],
   pebbles: [-14, -12, 14],
@@ -5928,7 +5974,10 @@ export function createGameArt(ctx) {
   }
 
   function drawCanopy(type, variant = 0) {
-    const sprite = canopySprite(type, variant);
+    drawSprite(canopySprite(type, variant));
+  }
+
+  function drawSprite(sprite) {
     ctx.imageSmoothingEnabled = false;
     ctx.drawImage(
       sprite.canvas,
@@ -6309,6 +6358,29 @@ export function createGameArt(ctx) {
       rectDownTo(-18, groundOffset(-16) - 4, 4, "#7f8d83", 2, groundOffset);
       pixelRect(-18, groundOffset(-16) - 4, 2, 2, "#aeb5a7", 2);
       rectDownTo(12, groundOffset(13) - 2, 4, "#697872", 2, groundOffset);
+    } else if (type === "palm" || type === "palm-small") {
+      // Coconut palms, the big one about 210 tall and the young one about
+      // 85: the trunk cached and its foot following the ground, and each
+      // frond stirring in the wind on its own.
+      const palm = PALMS[type];
+      drawCanopy(type);
+      drawPalmFoot({ pixelRect }, palm, groundOffset);
+      const { wind, downwind } = propWind(scene);
+      const phase = propNoise(x, 63);
+      palm.fronds.forEach((_, index) =>
+        drawSprite(palmFrondSprite(type, index, palmFrondSway(palm, scene.time || 0, wind, downwind, phase, index))),
+      );
+      // The big palm's coconuts knocked down this ride (scene.coconuts,
+      // { time, dir } in the order they fell; see render.js) fall and roll
+      // off, and lie where they stop.
+      if (type === "palm") {
+        const knocked = scene.coconuts ?? [];
+        drawCoconuts({ pixelRect }, knocked.length);
+        knocked.forEach(({ time, dir }, index) => {
+          const nut = coconutFall(index, (scene.time || 0) - time, dir, groundOffset);
+          drawCoconut({ pixelRect }, nut.x, nut.y, nut.turn);
+        });
+      }
     } else if (type === "crystal") {
       // Solid shards painted in horizontal bands.
       // Ground clipping keeps their bases seated on uneven terrain.

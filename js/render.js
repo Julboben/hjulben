@@ -60,11 +60,14 @@ import { FARMHOUSE, FLAGPOLE, MILL, STALL, STALL_COIN_DROP, TURBINE, farmhouseWi
 import { WATER_PROPS, FISH_DART, FISH_RANGE } from "./water-props.js";
 import { FIRE, IVY, SQUIRREL_HIDE_MAX, SQUIRREL_RANGE, TENT_DOOR_CENTRE } from "./forest-props.js";
 import {
+  COCONUTS,
   HAZE_HALF,
+  PALM_BOUNDS,
   TUMBLEWEED_RUN,
   VULTURE_HEIGHT,
   VULTURE_ORBIT,
   VULTURE_SIGHT,
+  coconutKnock,
   desertNoise,
   swoopDuration,
   vultureNotice,
@@ -101,6 +104,8 @@ const SCENERY_SHADOWS = {
   boulder: { width: 24, alpha: 0.15, thickness: 3, lift: 24 },
   cactus: { width: 12, alpha: 0.15, thickness: 3, lift: 22 },
   "cactus-small": { width: 7, alpha: 0.15, thickness: 3, lift: 12 },
+  palm: { width: 14, alpha: 0.15, thickness: 3, lift: 30 },
+  "palm-small": { width: 10, alpha: 0.15, thickness: 3, lift: 16 },
   sapling: { width: 10, alpha: 0.15, thickness: 3, lift: 20 },
   "pine-small": { width: 9, alpha: 0.15, thickness: 3, lift: 22 },
   crates: { width: 26, alpha: 0.15, thickness: 3, lift: 24 },
@@ -176,6 +181,8 @@ const PROP_RISE = {
   sapling: 80,
   "pine-small": 92,
   "cactus-small": 60,
+  palm: -PALM_BOUNDS.palm[1] + 4,
+  "palm-small": -PALM_BOUNDS["palm-small"][1] + 4,
   ladder: 102,
   scarecrow: 114,
   lamp: -LAMP_HEAD.y + 16,
@@ -244,6 +251,9 @@ const PROP_REACH = {
   smoke: 84,
   // Its leaves drift a long way downwind as they fall.
   tree: 300,
+  // Their fronds stream out a long way in a gale.
+  palm: Math.max(-PALM_BOUNDS.palm[0], PALM_BOUNDS.palm[2]) + 8,
+  "palm-small": Math.max(-PALM_BOUNDS["palm-small"][0], PALM_BOUNDS["palm-small"][2]) + 8,
   mill: MILL.sail + 8,
   // Its chimney smoke blows well out past the gable downwind.
   farmhouse: 150,
@@ -372,6 +382,9 @@ export function createRenderer(canvas, { still = false } = {}) {
   let corgiRide = null;
   // When (scene time) a coin last went into each stall's honesty box.
   const payments = new Map();
+  // The coconuts knocked off each palm this ride, in the order they fell:
+  // when (scene time), and which way each rolled. A palm only has so many.
+  const coconuts = new Map();
   let woofs = 0;
   // The interact key's label, shown over whatever it would act on.
   let interactLabel = "";
@@ -472,6 +485,7 @@ export function createRenderer(canvas, { still = false } = {}) {
       startled: [],
       corgis: [],
       vultures: [],
+      palms: [],
       passable: [],
       painted: [],
       glowing: [],
@@ -491,6 +505,7 @@ export function createRenderer(canvas, { still = false } = {}) {
       if (STARTLE[prop.type]) buckets.startled.push(prop);
       if (prop.type === "corgi") buckets.corgis.push(prop);
       if (prop.type === "vulture") buckets.vultures.push(prop);
+      if (prop.type === "palm") buckets.palms.push(prop);
       if (PASS_PROPS.has(prop.type)) buckets.passable.push(prop);
       if (PAINTED_PROPS.has(prop.type)) buckets.painted.push(prop);
       if (GLOW_REACH[prop.type]) buckets.glowing.push(prop);
@@ -502,6 +517,15 @@ export function createRenderer(canvas, { still = false } = {}) {
   /** A hard landing at x, y, `strength` 0…1, for the props to react to. */
   function land(x, y, strength = 1) {
     landing = { x, y, time: frameNow / 1000, strength: clamp(strength, 0, 1) };
+    // It knocks a coconut off each palm near enough that has one left. With
+    // reduced motion none fall.
+    if (reducedMotion) return;
+    for (const palm of bucketProps().palms) {
+      const knocked = coconuts.get(palm) ?? [];
+      const dir = coconutKnock(landing, palm.x, Number.isFinite(palm.y) ? palm.y : terrainAt(trail, palm.x).y);
+      if (dir === null || knocked.length >= COCONUTS.length) continue;
+      coconuts.set(palm, [...knocked, { time: landing.time, dir }]);
+    }
   }
 
   /** Points out the apples still missing for `seconds`, e.g. at a locked finish. */
@@ -776,8 +800,10 @@ export function createRenderer(canvas, { still = false } = {}) {
   function watchHalfway(ride, focus, now) {
     if (passRide !== ride) {
       passes.clear();
-      // Coins dropped into honesty boxes belong to the ride too.
+      // Coins dropped into honesty boxes, and coconuts knocked off palms,
+      // belong to the ride too.
       payments.clear();
+      coconuts.clear();
       passRide = ride;
       passFromX = null;
     }
@@ -954,7 +980,7 @@ export function createRenderer(canvas, { still = false } = {}) {
         continue;
       }
       if (
-        (!full && (prop.type === "tree" || prop.type === "pine" || prop.type === "snow-pine")) ||
+        (!full && (prop.type === "tree" || prop.type === "pine" || prop.type === "snow-pine" || prop.type === "palm")) ||
         (HAZE_PROPS.has(prop.type) && (reducedMotion || !full || area)) ||
         !inView(prop.x, reach) ||
         (area && (prop.x < area.left - reach || prop.x > area.right + reach))
@@ -975,6 +1001,8 @@ export function createRenderer(canvas, { still = false } = {}) {
       if (corgi) scene = { ...propScene, corgi };
       const paid = payments.get(prop);
       if (paid !== undefined) scene = { ...propScene, paid: { time: paid } };
+      const knocked = coconuts.get(prop);
+      if (knocked) scene = { ...propScene, coconuts: knocked };
       const pass = passes.get(prop);
       if (pass) scene = { ...propScene, passed: { split: pass.split, age: (frameNow - pass.start) / 1000 } };
       const flight = flights.get(prop);

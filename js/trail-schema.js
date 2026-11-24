@@ -673,6 +673,8 @@ export function validateTrail(trail) {
         "sapling",
         "pine-small",
         "cactus-small",
+        "palm",
+        "palm-small",
         "pebbles",
         "crates",
         "apple",

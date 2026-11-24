@@ -93,6 +93,7 @@ Write functions as `export function drawThing({ pixelRect, pixelPath }, …)` an
 | `flight` | A startled animal's `{ age, dir }` (birds, bats, fish, squirrels) |
 | `corgi` | Coda's state from `corgiStep`, kept per prop by render.js |
 | `swoop` | A vulture's pose while it comes down to a crash |
+| `coconuts` | The coconuts knocked off a palm this ride, `{ time, dir }` each, kept per prop by render.js |
 
 **The wind blows either way**, set by the trail's `windDirection`. `propWind(scene, mirrored)` in drawing.js gives a prop's `wind` (0 to 1) and `downwind` (-1 or 1 in the prop's own frame, already flipped for a mirrored prop). Anything wind-blown (smoke, flags, grass) should lean or drift `downwind`.
 
