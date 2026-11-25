@@ -3,7 +3,7 @@ import { STEP, GRAVITY } from "./config.js";
 import { collideFreePoint, collideWithBike } from "./vehicle-physics.js";
 import { terrainCollisionsAt } from "./terrain.js";
 import { atan2, cos, hypot, sin } from "./det-math.js";
-import { RAGDOLL_WATER, RAGDOLL_WATER_RADIUS, applyWater } from "./water.js";
+import { BARE_HEAD_WATER, RAGDOLL_WATER, RAGDOLL_WATER_RADIUS, applyWater } from "./water.js";
 import { bodyPose, riderSeatedPose } from "./bike-lamps.js";
 
 // `grip` lets a resting body hold on slopes up to about 35 degrees. Once
@@ -425,12 +425,14 @@ function stepBody(ragdoll, trail, water, vehicle) {
     ragdoll.still = 0;
   }
   let floating = false;
-  if (water.length)
-    for (const p of ragdoll.list)
-      if (
-        applyWater(p, Math.max(p.radius, RAGDOLL_WATER_RADIUS), water, RAGDOLL_WATER)
-      )
-        floating = true;
+  if (water.length) {
+    // A head without a helmet, never worn or knocked off, is the smaller one.
+    const bare = ragdoll.points.head.radius === BARE_HEAD_RADIUS;
+    for (const [name, p] of Object.entries(ragdoll.points)) {
+      const params = name === "head" && bare ? BARE_HEAD_WATER : RAGDOLL_WATER[name];
+      if (applyWater(p, Math.max(p.radius, RAGDOLL_WATER_RADIUS), water, params)) floating = true;
+    }
+  }
   for (const p of ragdoll.list) {
     const vx = (p.x - p.ox) * 0.996,
       vy = (p.y - p.oy) * 0.996;

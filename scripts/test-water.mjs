@@ -70,7 +70,7 @@ const errors = trail => validateTrail(trail).filter(message => message.type === 
   assert.ok(ford.ride.rear.x < dry.ride.rear.x - 20, 'water slows the bike');
 }
 
-// Riding into deep water wipes the rider out, and the rider floats at the surface.
+// Riding into deep water wipes the rider out, and the rider floats upright.
 {
   const trail = pitTrail([{ x: 600, y: 330, width: 400, depth: 110 }]);
   const { ride, events } = simulateRun(trail, hold(400, { accelerating: true }), { settleSteps: 600 });
@@ -80,10 +80,14 @@ const errors = trail => validateTrail(trail).filter(message => message.type === 
   assert.ok(crash.x > 600 && crash.x < 1000, 'the wipe-out happens in the water');
   assert.ok(events.some(event => event.type === 'splash' && !event.rider), 'the bike splashes in');
   assert.ok(events.some(event => event.type === 'splash' && event.rider), 'the rider splashes in');
-  const points = ride.ragdoll.list;
-  const centre = points.reduce((sum, point) => sum + point.y, 0) / points.length;
-  assert.ok(Math.abs(centre - 330) < 10, `the rider floats at the surface (centre ${centre.toFixed(1)})`);
+  const points = ride.ragdoll.list, { head, foot } = ride.ragdoll.points;
+  assert.ok(Math.abs(head.y - 330) < 6, `the rider floats with their head at the surface (${head.y.toFixed(1)})`);
+  assert.ok(foot.y > head.y + 20, 'and their legs hanging below');
   assert.ok(points.every(point => point.y < 440 - 4), 'no part of the rider sinks to the floor');
+  // A helmet's foam and air hold the head a little higher than a bare one.
+  const bare = createRide(normalizeTrail(trail), { helmet: false });
+  for (const input of [...hold(400, { accelerating: true }), ...hold(600, {})]) stepRide(bare, input);
+  assert.ok(bare.ragdoll.points.head.y > head.y, `a bare head floats lower (${bare.ragdoll.points.head.y.toFixed(1)} under ${head.y.toFixed(1)})`);
 }
 
 // Water is deterministic, down to every ragdoll joint.
@@ -213,6 +217,12 @@ const errors = trail => validateTrail(trail).filter(message => message.type === 
   const windy = resolveWeather({ wind: 1 });
   surface.step(1, windy);
   assert.ok(line().some((offset) => offset !== 0), 'a gale raises waves');
+  // Something floating rides the waves, less the further it is from the surface.
+  const x = Array.from({ length: 200 }, (_, i) => 600 + i * 2).find((at) => Math.abs(surface.offset(at, 360)) >= 4);
+  assert.equal(surface.carry(x, 360), surface.offset(x, 360), 'at the surface it moves with it');
+  assert.ok(Math.abs(surface.carry(x, 372)) < Math.abs(surface.offset(x, 360)), 'under it, less');
+  assert.equal(surface.carry(x, 400), 0, 'and deep down not at all');
+  assert.equal(surface.carry(500, 360), 0, 'nor off the water');
 }
 
 // Riding through water stirs up its surface.

@@ -31,7 +31,25 @@ export const WATER_WIPEOUT_DEPTH = 40;
 // the water, more the faster it goes, so a rider dropping in hits it with a
 // slap. Spin is how fast water brakes a wheel's rotation.
 export const BIKE_WATER = { buoyancy: 0.35, drag: 1.1, quadratic: 0.0035, spin: 1.6 };
-export const RAGDOLL_WATER = { buoyancy: 1.7, drag: 2.4, quadratic: 0.012, spin: 0 };
+// A person is only a little lighter than water, so a rider who falls in goes
+// well under and takes a couple of seconds to come back up. What lifts them
+// is the air in their chest and helmet, so those float and the legs hang
+// lower, as people float in the water: each of the ragdoll's joints has its
+// own buoyancy.
+const riderWater = (buoyancy) => ({ buoyancy, drag: 1, quadratic: 0.003, spin: 0 });
+export const RAGDOLL_WATER = {
+  // A helmet's foam and air lift the head clear.
+  head: riderWater(2.0),
+  shoulder: riderWater(1.6),
+  hip: riderWater(1.0),
+  elbow: riderWater(0.9),
+  hand: riderWater(0.85),
+  knee: riderWater(0.85),
+  foot: riderWater(0.8),
+};
+// A bare head, never helmeted or with the helmet knocked off, is a little
+// heavier than water, so the rider floats lower with their chin in it.
+export const BARE_HEAD_WATER = riderWater(1.6);
 
 // Thickness the rider's limbs and the chassis present to the water, which
 // sets how gently they settle at the surface.
@@ -208,6 +226,8 @@ const SETTLED = 0.02;
 // Churned water, columns moving faster than this (units a spring step), and
 // wind waves taller than CAP_HEIGHT near their crests, are drawn with foam.
 const CHURN = 0.35, CAP_HEIGHT = 1.2;
+// Something floating this close to the surface, above or below, bobs with it.
+const FLOAT_BAND = 24;
 // Raindrops striking the surface: how many a second fall on each unit of it
 // in a downpour, and how hard each pushes it down.
 const RAIN_DROPS = 1 / 40, RAIN_PUSH = 0.35;
@@ -364,7 +384,23 @@ export function createWaterSurface() {
   /** How far the drawn surface at `x` on the water at `y` is off it; see `sample`. */
   const offset = (x, y) => sample(x, y).offset;
 
-  return { reset, step, disturb, sample, offset };
+  /**
+   * How far something floating at (`x`, `y`) is carried up or down by the
+   * drawn surface, in whole art pixels: all of the surface's offset at the
+   * surface, fading out over FLOAT_BAND units above or below it.
+   */
+  function carry(x, y) {
+    for (const run of runs) {
+      if (x < run.left || x >= run.right) continue;
+      const away = Math.abs(y - run.body.y);
+      if (away >= FLOAT_BAND) continue;
+      const share = 1 - away / FLOAT_BAND;
+      return Math.round((offset(x, run.body.y) * share) / SURFACE_PIXEL) * SURFACE_PIXEL;
+    }
+    return 0;
+  }
+
+  return { reset, step, disturb, sample, offset, carry };
 }
 
 /**

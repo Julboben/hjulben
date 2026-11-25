@@ -322,7 +322,7 @@ water: [
 - `x` and `y` are the top-left corner in world space, so `y` is the water's surface.
 - `width` and `depth` are the size, at least `16` and `8` (defaults `240` and `32`).
 - Water up to `40` deep is a ford: the bike can ride through it, but the water drags on it and slows it down. A wheel in water deeper than `40`, measured from the surface to the wheel's bottom or the body's floor, wipes the rider out, as does the rider's head going under.
-- After a crash the ragdoll floats: buoyancy lifts it to rest at the surface while the water damps its motion. The bike sinks.
+- After a crash the rider goes well under, then comes back up over a second or two and floats upright with the legs hanging below: a helmet just out of the water, a bare head lower with the chin at it. A rider and a knocked-off helmet floating at the surface bob on the drawn waves. The bike sinks.
 - Riding or falling in splashes, and moving through water leaves a wake.
 - The surface is drawn with waves from the trail's `wind`, as big as the stretch of open water allows: a pond only ripples, while a wide lake or a sea gets swell, with whitecaps in a gale. Shallow water stays low, and the water lies still against its banks. The bike, the rider, splashes and rain send ripples along it that bounce off the banks. All of this is drawn only: the bike and rider always meet a flat surface at the body's `y`, so tall waves on a sea are scenery rather than something to ride.
 

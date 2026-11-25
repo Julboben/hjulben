@@ -2082,6 +2082,7 @@ export function createRenderer(canvas, { still = false } = {}) {
     // The water's surface rolls on and settles with the scene, and holds
     // still with reduced motion.
     effects.water.step(reducedMotion ? 0 : animationDt, propScene.weather);
+    const settleWaves = floatOnWaves([ride.ragdoll, ghost?.ragdoll], effects.water);
     startleProps(ride, focus, now);
     watchCrash(ride, focus, now);
     watchHalfway(ride, focus, now);
@@ -2192,6 +2193,34 @@ export function createRenderer(canvas, { still = false } = {}) {
     effects.prune();
     ctx.restore();
     drawWeather(effects.weather, full);
+    settleWaves();
+  }
+
+  /**
+   * Lifts and drops thrown riders, and a helmet knocked off, floating in
+   * water with its drawn waves, which the simulation's flat surface doesn't
+   * have: moves their points for this frame's drawing, and returns what puts
+   * them back exactly, as the ride must replay as it was simulated.
+   */
+  function floatOnWaves(ragdolls, surface) {
+    const moved = [];
+    const lift = (points, by) => {
+      if (!by) return;
+      for (const point of points) {
+        moved.push(point, point.y);
+        point.y += by;
+      }
+    };
+    for (const ragdoll of ragdolls) {
+      if (!ragdoll) continue;
+      const head = ragdoll.points.head;
+      lift(ragdoll.list, surface.carry(head.x, head.y));
+      const helmet = ragdoll.helmet;
+      if (helmet) lift([helmet], surface.carry(helmet.x, helmet.y));
+    }
+    return () => {
+      for (let index = 0; index < moved.length; index += 2) moved[index].y = moved[index + 1];
+    };
   }
 
   /**
