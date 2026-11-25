@@ -1,176 +1,1448 @@
 {
   "name": "Mirage",
-  "description": "The desert finale. Hop the dune for the first apple, then clear the gaps: the apples float in the air above them, so jump high as well as far. The kicker throws you onto a floating island: land on its back slope, collect the apple, and ride off its far edge across a 100 unit gap. The sand pit at the end has a floor, but coming up short costs time.",
-  "lesson": "Apples floating over gaps, and a floating island to jump onto and off.",
-  "alsoNew": "Heat haze.",
-  "world": "The Desert",
-  "start": {
-    "x": 40,
-    "y": null,
-    "facing": 1
-  },
   "finish": {
-    "x": 3200,
-    "y": null
+    "x": 52,
+    "y": 252
+  },
+  "description": "The desert finale, an open map in the Elasto Mania way. You start in the middle, beside a small castle half buried in the sand, and the apples lie out on both sides: ride out to each end and back, in any order, and come home to the castle, where the flower floats at its door. West: down from the hub to a pit with a floor and an apple, ridden in and out from either side. Then a cradle, a floating bowl of rock over the canyon with a lip at each end, so it throws you across both ways; its apple waits in the bowl. Then the big west dune, with an apple high over its crest for a fast pass, and the cliff that closes the west, with an apple tucked in the cave under its overhang. East: dunes to hop going out and to roll coming back, with an apple over the middle one; a kicker each side of an open gap, with an apple high above it; a second cradle; and the big east dune, with an apple high over its crest. Past it lies the dead end under the eastern cliff, with the last apple. Up on the cliff top an oasis shimmers, palms over a pool, and nobody ever reaches it: a mirage. The gaps are open to the canyon floor far below: fall in and the run is over.",
+  "start": {
+    "x": -40,
+    "y": null,
+    "facing": -1
   },
   "terrainBlocks": [
     {
-      "id": "mesa-1",
-      "material": "sand",
+      "id": "floor-west",
+      "material": "dirt",
       "outer": {
-        "id": "mesa-1-outer",
+        "id": "floor-west-boundary",
         "nodes": [
           {
-            "id": "mesa-1-0",
-            "x": -1000,
-            "y": 900,
+            "id": "floor-west-0",
+            "x": -1760,
+            "y": 1100,
             "mode": "corner",
             "in": null,
             "out": null,
             "edge": "straight"
           },
           {
-            "id": "mesa-1-1",
-            "x": -1000,
-            "y": 90,
+            "id": "floor-west-1",
+            "x": -1760,
+            "y": 660,
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
-            "id": "mesa-1-2",
-            "x": -420,
-            "y": 90,
-            "mode": "smooth",
-            "in": [
-              -613.3333,
-              90
-            ],
+            "id": "floor-west-2",
+            "x": -1743,
+            "y": 643,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-west-3",
+            "x": -1733,
+            "y": 657,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-west-4",
+            "x": -1720,
+            "y": 648,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-west-5",
+            "x": -1713,
+            "y": 659,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-west-6",
+            "x": -1688,
+            "y": 616,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-west-7",
+            "x": -1675,
+            "y": 655,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-west-8",
+            "x": -1652,
+            "y": 648,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-west-9",
+            "x": -1639,
+            "y": 656,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-west-10",
+            "x": -1611,
+            "y": 628,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-west-11",
+            "x": -1602,
+            "y": 657,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-west-12",
+            "x": -1589,
+            "y": 619,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-west-13",
+            "x": -1579,
+            "y": 656,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-west-14",
+            "x": -1568,
+            "y": 625,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-west-15",
+            "x": -1555,
+            "y": 660,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-west-16",
+            "x": -1542,
+            "y": 635,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-west-17",
+            "x": -1532,
+            "y": 660,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-west-18",
+            "x": -1513,
+            "y": 640,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-west-19",
+            "x": -1499,
+            "y": 659,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-west-20",
+            "x": -1480,
+            "y": 624,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-west-21",
+            "x": -1473,
+            "y": 659,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-west-22",
+            "x": -1455,
+            "y": 643,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-west-23",
+            "x": -1440,
+            "y": 658,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-west-24",
+            "x": -1421,
+            "y": 616,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-west-25",
+            "x": -1409,
+            "y": 655,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-west-26",
+            "x": -1383,
+            "y": 620,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-west-27",
+            "x": -1375,
+            "y": 655,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-west-28",
+            "x": -1355,
+            "y": 627,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-west-29",
+            "x": -1343,
+            "y": 655,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-west-30",
+            "x": -1320,
+            "y": 636,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-west-31",
+            "x": -1309,
+            "y": 656,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-west-32",
+            "x": -1286,
+            "y": 626,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-west-33",
+            "x": -1278,
+            "y": 655,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-west-34",
+            "x": -1251,
+            "y": 638,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-west-35",
+            "x": -1242,
+            "y": 657,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-west-36",
+            "x": -1240,
+            "y": 660,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-west-37",
+            "x": -1240,
+            "y": 1100,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "floor-gap",
+      "material": "dirt",
+      "outer": {
+        "id": "floor-gap-boundary",
+        "nodes": [
+          {
+            "id": "floor-gap-0",
+            "x": 1380,
+            "y": 1100,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-gap-1",
+            "x": 1380,
+            "y": 640,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-gap-2",
+            "x": 1395,
+            "y": 605,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-gap-3",
+            "x": 1402,
+            "y": 639,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-gap-4",
+            "x": 1421,
+            "y": 626,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-gap-5",
+            "x": 1435,
+            "y": 638,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-gap-6",
+            "x": 1459,
+            "y": 619,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-gap-7",
+            "x": 1466,
+            "y": 639,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-gap-8",
+            "x": 1491,
+            "y": 634,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-gap-9",
+            "x": 1505,
+            "y": 639,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-gap-10",
+            "x": 1530,
+            "y": 640,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-gap-11",
+            "x": 1530,
+            "y": 1100,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "floor-east",
+      "material": "dirt",
+      "outer": {
+        "id": "floor-east-boundary",
+        "nodes": [
+          {
+            "id": "floor-east-0",
+            "x": 1680,
+            "y": 1100,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-east-1",
+            "x": 1680,
+            "y": 660,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-east-2",
+            "x": 1692,
+            "y": 638,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-east-3",
+            "x": 1707,
+            "y": 660,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-east-4",
+            "x": 1733,
+            "y": 642,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-east-5",
+            "x": 1743,
+            "y": 656,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-east-6",
+            "x": 1765,
+            "y": 619,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-east-7",
+            "x": 1778,
+            "y": 658,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-east-8",
+            "x": 1804,
+            "y": 622,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-east-9",
+            "x": 1820,
+            "y": 656,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-east-10",
+            "x": 1844,
+            "y": 627,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-east-11",
+            "x": 1851,
+            "y": 655,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-east-12",
+            "x": 1863,
+            "y": 645,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-east-13",
+            "x": 1875,
+            "y": 657,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-east-14",
+            "x": 1893,
+            "y": 644,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-east-15",
+            "x": 1904,
+            "y": 658,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-east-16",
+            "x": 1920,
+            "y": 643,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-east-17",
+            "x": 1928,
+            "y": 659,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-east-18",
+            "x": 1945,
+            "y": 631,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-east-19",
+            "x": 1956,
+            "y": 659,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-east-20",
+            "x": 1980,
+            "y": 643,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-east-21",
+            "x": 1987,
+            "y": 659,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-east-22",
+            "x": 2001,
+            "y": 628,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-east-23",
+            "x": 2011,
+            "y": 657,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-east-24",
+            "x": 2024,
+            "y": 627,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-east-25",
+            "x": 2040,
+            "y": 660,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-east-26",
+            "x": 2059,
+            "y": 631,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-east-27",
+            "x": 2072,
+            "y": 659,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-east-28",
+            "x": 2082,
+            "y": 630,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-east-29",
+            "x": 2092,
+            "y": 657,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-east-30",
+            "x": 2105,
+            "y": 645,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-east-31",
+            "x": 2118,
+            "y": 656,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-east-32",
+            "x": 2140,
+            "y": 660,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "floor-east-33",
+            "x": 2140,
+            "y": 1100,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "west",
+      "material": "sand",
+      "outer": {
+        "id": "west-boundary",
+        "nodes": [
+          {
+            "id": "west-0",
+            "x": -3800,
+            "y": 1100,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-1",
+            "x": -3800,
+            "y": -300,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-2",
+            "x": -2330,
+            "y": -300,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-3",
+            "x": -2190,
+            "y": 280,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-4",
+            "x": -2250,
+            "y": 262,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-5",
+            "x": -2330,
+            "y": 250,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-6",
+            "x": -2430,
+            "y": 232,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-7",
+            "x": -2530,
+            "y": 228,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-8",
+            "x": -2610,
+            "y": 244,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-9",
+            "x": -2680,
+            "y": 262,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-10",
+            "x": -2700,
+            "y": 256,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-11",
+            "x": -2700,
+            "y": 170,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-12",
+            "x": -2708,
+            "y": 150,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-13",
+            "x": -2712,
+            "y": 136,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-14",
+            "x": -2720,
+            "y": 120,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-15",
+            "x": -2720,
+            "y": 50,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-16",
+            "x": -2706,
+            "y": 32,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-17",
+            "x": -2690,
+            "y": 16,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-18",
+            "x": -2668,
+            "y": 2,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-19",
+            "x": -2660,
+            "y": -10,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-20",
+            "x": -2660,
+            "y": -150,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-21",
+            "x": -2672,
+            "y": -170,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-22",
+            "x": -2700,
+            "y": -196,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-23",
+            "x": -2742,
+            "y": -206,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-24",
+            "x": -2800,
+            "y": -228,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-25",
+            "x": -2870,
+            "y": -232,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-26",
+            "x": -2950,
+            "y": -246,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-27",
+            "x": -3020,
+            "y": -240,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-28",
+            "x": -3100,
+            "y": -248,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-29",
+            "x": -3170,
+            "y": -236,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-30",
+            "x": -3240,
+            "y": -232,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-31",
+            "x": -3300,
+            "y": -214,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-32",
+            "x": -3392,
+            "y": -206,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-33",
+            "x": -3398,
+            "y": -100,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-34",
+            "x": -3010,
+            "y": -100,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-35",
+            "x": -3010,
+            "y": -88,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-36",
+            "x": -3026,
+            "y": -74,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-37",
+            "x": -3300,
+            "y": -74,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-38",
+            "x": -3306,
+            "y": -50,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-39",
+            "x": -3296,
+            "y": -30,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-40",
+            "x": -3300,
+            "y": 60,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-41",
+            "x": -3270,
+            "y": 54,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-42",
+            "x": -3240,
+            "y": 52,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-43",
+            "x": -3200,
+            "y": 96,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-44",
+            "x": -3200,
+            "y": 170,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-45",
+            "x": -3207,
+            "y": 200,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-46",
+            "x": -3197,
+            "y": 232,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-47",
+            "x": -3204,
+            "y": 258,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-48",
+            "x": -3200,
+            "y": 280,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-49",
+            "x": -3040,
+            "y": 280,
+            "mode": "corner",
+            "in": null,
             "out": [
-              -380.0,
-              90
+              -3022,
+              280
             ],
             "edge": "curve"
           },
           {
-            "id": "mesa-1-3",
-            "x": -300,
-            "y": 300,
-            "mode": "smooth",
+            "id": "west-50",
+            "x": -3000,
+            "y": 262,
+            "mode": "corner",
             "in": [
-              -340.0,
-              300
+              -3016,
+              274
             ],
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-51",
+            "x": -3000,
+            "y": 274,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-52",
+            "x": -3006,
+            "y": 350,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-53",
+            "x": -2972,
+            "y": 350,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-54",
+            "x": -2930,
+            "y": 326,
+            "mode": "corner",
+            "in": null,
             "out": [
-              -150.0,
-              300
+              -2880,
+              340
             ],
             "edge": "curve"
           },
           {
-            "id": "mesa-1-4",
-            "x": 150,
-            "y": 300,
-            "mode": "smooth",
+            "id": "west-55",
+            "x": -2790,
+            "y": 350,
+            "mode": "corner",
             "in": [
-              0.0,
-              300
+              -2840,
+              350
             ],
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-56",
+            "x": -2700,
+            "y": 350,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-57",
+            "x": -2700,
+            "y": 400,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-58",
+            "x": -2610,
+            "y": 400,
+            "mode": "corner",
+            "in": null,
             "out": [
-              226.6667,
-              300
+              -2585,
+              400
             ],
             "edge": "curve"
           },
           {
-            "id": "mesa-1-5",
-            "x": 380,
+            "id": "west-59",
+            "x": -2540,
+            "y": 332,
+            "mode": "corner",
+            "in": [
+              -2566,
+              346
+            ],
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-60",
+            "x": -2420,
+            "y": 330,
+            "mode": "corner",
+            "in": null,
+            "out": [
+              -2394,
+              346
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "west-61",
+            "x": -2340,
+            "y": 400,
+            "mode": "corner",
+            "in": [
+              -2366,
+              400
+            ],
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-62",
+            "x": -2120,
+            "y": 400,
+            "mode": "corner",
+            "in": null,
+            "out": [
+              -2050,
+              400
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "west-63",
+            "x": -1950,
             "y": 262,
             "mode": "smooth",
             "in": [
-              303.3333,
+              -2020,
               262
             ],
             "out": [
-              466.6667,
+              -1880,
               262
             ],
             "edge": "curve"
           },
           {
-            "id": "mesa-1-6",
-            "x": 640,
-            "y": 306,
+            "id": "west-64",
+            "x": -1790,
+            "y": 392,
             "mode": "smooth",
             "in": [
-              553.3333,
-              306
+              -1830,
+              392
             ],
             "out": [
-              686.6667,
-              306
+              -1770,
+              392
             ],
             "edge": "curve"
           },
           {
-            "id": "mesa-1-7",
-            "x": 780,
-            "y": 306,
-            "mode": "smooth",
-            "in": [
-              733.3333,
-              306
-            ],
-            "out": [
-              820.0,
-              306
-            ],
-            "edge": "curve"
-          },
-          {
-            "id": "mesa-1-8",
-            "x": 900,
-            "y": 306,
-            "mode": "smooth",
-            "in": [
-              860.0,
-              306
-            ],
-            "out": [
-              947.3333,
-              306
-            ],
-            "edge": "curve"
-          },
-          {
-            "id": "mesa-1-9",
-            "x": 1042,
-            "y": 292,
-            "mode": "independent",
-            "in": [
-              992.3,
-              296.9
-            ],
-            "out": [
-              1044.8,
-              291.3
-            ],
-            "edge": "curve"
-          },
-          {
-            "id": "mesa-1-10",
-            "x": 1050,
-            "y": 290,
+            "id": "west-65",
+            "x": -1720,
+            "y": 374,
             "mode": "corner",
-            "in": null,
+            "in": [
+              -1750,
+              384
+            ],
             "out": null,
             "edge": "straight"
           },
           {
-            "id": "mesa-1-11",
-            "x": 1050,
-            "y": 900,
+            "id": "west-66",
+            "x": -1720,
+            "y": 1100,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -181,259 +1453,651 @@
       "inner": []
     },
     {
-      "id": "mesa-2",
-      "material": "sand",
+      "id": "west-rock",
+      "material": "dirt",
       "outer": {
-        "id": "mesa-2-outer",
+        "id": "west-rock-boundary",
         "nodes": [
           {
-            "id": "mesa-2-0",
-            "x": 1140,
-            "y": 900,
+            "id": "west-rock-0",
+            "x": -3800,
+            "y": 1100,
             "mode": "corner",
             "in": null,
             "out": null,
             "edge": "straight"
           },
           {
-            "id": "mesa-2-1",
-            "x": 1140,
-            "y": 308,
-            "mode": "corner",
-            "in": null,
-            "out": null,
-            "edge": "curve"
-          },
-          {
-            "id": "mesa-2-2",
-            "x": 1180,
-            "y": 314,
-            "mode": "independent",
-            "in": [
-              1166.0,
-              311.9
-            ],
-            "out": [
-              1232.5,
-              319.6
-            ],
-            "edge": "curve"
-          },
-          {
-            "id": "mesa-2-3",
-            "x": 1330,
-            "y": 330,
-            "mode": "smooth",
-            "in": [
-              1280.0,
-              330
-            ],
-            "out": [
-              1360.0,
-              330
-            ],
-            "edge": "curve"
-          },
-          {
-            "id": "mesa-2-4",
-            "x": 1420,
-            "y": 326,
-            "mode": "smooth",
-            "in": [
-              1390.0,
-              326
-            ],
-            "out": [
-              1463.3333,
-              326
-            ],
-            "edge": "curve"
-          },
-          {
-            "id": "mesa-2-5",
-            "x": 1550,
-            "y": 326,
-            "mode": "smooth",
-            "in": [
-              1506.6667,
-              326
-            ],
-            "out": [
-              1597.3333,
-              326
-            ],
-            "edge": "curve"
-          },
-          {
-            "id": "mesa-2-6",
-            "x": 1692,
-            "y": 312,
-            "mode": "independent",
-            "in": [
-              1642.3,
-              316.9
-            ],
-            "out": [
-              1694.8,
-              311.3
-            ],
-            "edge": "curve"
-          },
-          {
-            "id": "mesa-2-7",
-            "x": 1700,
-            "y": 310,
+            "id": "west-rock-1",
+            "x": -3800,
+            "y": -274,
             "mode": "corner",
             "in": null,
             "out": null,
             "edge": "straight"
           },
           {
-            "id": "mesa-2-8",
-            "x": 1700,
-            "y": 900,
+            "id": "west-rock-2",
+            "x": -2330,
+            "y": -274,
             "mode": "corner",
             "in": null,
             "out": null,
             "edge": "straight"
-          }
-        ]
-      },
-      "inner": []
-    },
-    {
-      "id": "island",
-      "material": "sand",
-      "outer": {
-        "id": "island-outer",
-        "nodes": [
+          },
           {
-            "id": "island-0",
-            "x": 1790,
-            "y": 322,
+            "id": "west-rock-3",
+            "x": -2190,
+            "y": 280,
             "mode": "corner",
             "in": null,
             "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-rock-4",
+            "x": -2250,
+            "y": 262,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-rock-5",
+            "x": -2330,
+            "y": 250,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-rock-6",
+            "x": -2430,
+            "y": 232,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-rock-7",
+            "x": -2530,
+            "y": 228,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-rock-8",
+            "x": -2610,
+            "y": 244,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-rock-9",
+            "x": -2680,
+            "y": 262,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-rock-10",
+            "x": -2700,
+            "y": 256,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-rock-11",
+            "x": -2700,
+            "y": 170,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-rock-12",
+            "x": -2708,
+            "y": 150,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-rock-13",
+            "x": -2712,
+            "y": 136,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-rock-14",
+            "x": -2720,
+            "y": 120,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-rock-15",
+            "x": -2720,
+            "y": 50,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-rock-16",
+            "x": -2706,
+            "y": 32,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-rock-17",
+            "x": -2690,
+            "y": 16,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-rock-18",
+            "x": -2668,
+            "y": 2,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-rock-19",
+            "x": -2660,
+            "y": -10,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-rock-20",
+            "x": -2660,
+            "y": -150,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-rock-21",
+            "x": -2672,
+            "y": -170,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-rock-22",
+            "x": -2700,
+            "y": -196,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-rock-23",
+            "x": -2742,
+            "y": -206,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-rock-24",
+            "x": -2800,
+            "y": -228,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-rock-25",
+            "x": -2870,
+            "y": -232,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-rock-26",
+            "x": -2950,
+            "y": -246,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-rock-27",
+            "x": -3020,
+            "y": -240,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-rock-28",
+            "x": -3100,
+            "y": -248,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-rock-29",
+            "x": -3170,
+            "y": -236,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-rock-30",
+            "x": -3240,
+            "y": -232,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-rock-31",
+            "x": -3300,
+            "y": -214,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-rock-32",
+            "x": -3392,
+            "y": -206,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-rock-33",
+            "x": -3398,
+            "y": -100,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-rock-34",
+            "x": -3010,
+            "y": -100,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-rock-35",
+            "x": -3010,
+            "y": -88,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-rock-36",
+            "x": -3026,
+            "y": -74,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-rock-37",
+            "x": -3300,
+            "y": -74,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-rock-38",
+            "x": -3306,
+            "y": -50,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-rock-39",
+            "x": -3296,
+            "y": -30,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-rock-40",
+            "x": -3300,
+            "y": 60,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-rock-41",
+            "x": -3270,
+            "y": 54,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-rock-42",
+            "x": -3240,
+            "y": 52,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-rock-43",
+            "x": -3200,
+            "y": 96,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-rock-44",
+            "x": -3200,
+            "y": 170,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-rock-45",
+            "x": -3207,
+            "y": 200,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-rock-46",
+            "x": -3197,
+            "y": 232,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-rock-47",
+            "x": -3204,
+            "y": 258,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-rock-48",
+            "x": -3200,
+            "y": 280,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-rock-49",
+            "x": -3040,
+            "y": 280,
+            "mode": "corner",
+            "in": null,
+            "out": [
+              -3022,
+              280
+            ],
             "edge": "curve"
           },
           {
-            "id": "island-1",
-            "x": 1830,
+            "id": "west-rock-50",
+            "x": -3000,
+            "y": 262,
+            "mode": "corner",
+            "in": [
+              -3016,
+              274
+            ],
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-rock-51",
+            "x": -3000,
+            "y": 274,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-rock-52",
+            "x": -3006,
+            "y": 350,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-rock-53",
+            "x": -2972,
+            "y": 350,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-rock-54",
+            "x": -2930,
             "y": 326,
-            "mode": "independent",
-            "in": [
-              1816.0,
-              324.6
-            ],
+            "mode": "corner",
+            "in": null,
             "out": [
-              1889.5,
-              328.8
+              -2880,
+              340
             ],
             "edge": "curve"
           },
           {
-            "id": "island-2",
-            "x": 2000,
-            "y": 334,
-            "mode": "smooth",
+            "id": "west-rock-55",
+            "x": -2790,
+            "y": 350,
+            "mode": "corner",
             "in": [
-              1943.3333,
-              334
+              -2840,
+              350
             ],
-            "out": [
-              2033.3333,
-              334
-            ],
-            "edge": "curve"
+            "out": null,
+            "edge": "straight"
           },
           {
-            "id": "island-3",
-            "x": 2100,
-            "y": 330,
-            "mode": "smooth",
-            "in": [
-              2066.6667,
-              330
-            ],
-            "out": [
-              2110.0,
-              330
-            ],
-            "edge": "curve"
-          },
-          {
-            "id": "island-4",
-            "x": 2130,
-            "y": 322,
+            "id": "west-rock-56",
+            "x": -2700,
+            "y": 350,
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
-            "id": "island-5",
-            "x": 2130,
-            "y": 356,
-            "mode": "independent",
-            "in": [
-              2130.0,
-              344.1
-            ],
-            "out": [
-              2105.5,
-              371.4
-            ],
-            "edge": "curve"
-          },
-          {
-            "id": "island-6",
-            "x": 2060,
+            "id": "west-rock-57",
+            "x": -2700,
             "y": 400,
-            "mode": "independent",
-            "in": [
-              2084.5,
-              384.6
-            ],
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-rock-58",
+            "x": -2610,
+            "y": 400,
+            "mode": "corner",
+            "in": null,
             "out": [
-              2025.0,
-              407.0
+              -2585,
+              400
             ],
             "edge": "curve"
           },
           {
-            "id": "island-7",
-            "x": 1960,
-            "y": 420,
+            "id": "west-rock-59",
+            "x": -2540,
+            "y": 332,
+            "mode": "corner",
+            "in": [
+              -2566,
+              346
+            ],
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-rock-60",
+            "x": -2420,
+            "y": 330,
+            "mode": "corner",
+            "in": null,
+            "out": [
+              -2394,
+              346
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "west-rock-61",
+            "x": -2340,
+            "y": 400,
+            "mode": "corner",
+            "in": [
+              -2366,
+              400
+            ],
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-rock-62",
+            "x": -2120,
+            "y": 400,
+            "mode": "corner",
+            "in": null,
+            "out": [
+              -2050,
+              400
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "west-rock-63",
+            "x": -1950,
+            "y": 288,
             "mode": "smooth",
             "in": [
-              1993.3333,
-              420
+              -2020,
+              288
             ],
             "out": [
-              1923.3333,
-              420
+              -1880,
+              288
             ],
             "edge": "curve"
           },
           {
-            "id": "island-8",
-            "x": 1850,
-            "y": 390,
-            "mode": "independent",
+            "id": "west-rock-64",
+            "x": -1790,
+            "y": 418,
+            "mode": "smooth",
             "in": [
-              1888.5,
-              400.5
+              -1830,
+              418
             ],
             "out": [
-              1829.0,
-              372.5
+              -1770,
+              418
             ],
             "edge": "curve"
           },
           {
-            "id": "island-9",
-            "x": 1790,
-            "y": 340,
+            "id": "west-rock-65",
+            "x": -1720,
+            "y": 386,
+            "mode": "corner",
+            "in": [
+              -1750,
+              396
+            ],
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "west-rock-66",
+            "x": -1720,
+            "y": 1100,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -444,198 +2108,2952 @@
       "inner": []
     },
     {
-      "id": "mesa-3",
+      "id": "cradle-west",
       "material": "sand",
       "outer": {
-        "id": "mesa-3-outer",
+        "id": "cradle-west-boundary",
         "nodes": [
           {
-            "id": "mesa-3-0",
-            "x": 2230,
-            "y": 900,
+            "id": "cradle-west-0",
+            "x": -1620,
+            "y": 374,
+            "mode": "corner",
+            "in": null,
+            "out": [
+              -1586,
+              396
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "cradle-west-1",
+            "x": -1500,
+            "y": 424,
+            "mode": "smooth",
+            "in": [
+              -1560,
+              424
+            ],
+            "out": [
+              -1440,
+              424
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "cradle-west-2",
+            "x": -1380,
+            "y": 374,
+            "mode": "corner",
+            "in": [
+              -1414,
+              396
+            ],
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "cradle-west-3",
+            "x": -1382,
+            "y": 408,
             "mode": "corner",
             "in": null,
             "out": null,
             "edge": "straight"
           },
           {
-            "id": "mesa-3-1",
-            "x": 2230,
+            "id": "cradle-west-4",
+            "x": -1424,
+            "y": 496,
+            "mode": "smooth",
+            "in": [
+              -1400,
+              480
+            ],
+            "out": [
+              -1450,
+              512
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "cradle-west-5",
+            "x": -1500,
+            "y": 520,
+            "mode": "smooth",
+            "in": [
+              -1446,
+              520
+            ],
+            "out": [
+              -1554,
+              520
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "cradle-west-6",
+            "x": -1576,
+            "y": 496,
+            "mode": "smooth",
+            "in": [
+              -1550,
+              512
+            ],
+            "out": [
+              -1600,
+              480
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "cradle-west-7",
+            "x": -1618,
+            "y": 408,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "cradle-west-rock",
+      "material": "dirt",
+      "outer": {
+        "id": "cradle-west-rock-boundary",
+        "nodes": [
+          {
+            "id": "cradle-west-rock-0",
+            "x": -1612,
+            "y": 388,
+            "mode": "corner",
+            "in": null,
+            "out": [
+              -1578,
+              410
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "cradle-west-rock-1",
+            "x": -1500,
+            "y": 438,
+            "mode": "smooth",
+            "in": [
+              -1560,
+              438
+            ],
+            "out": [
+              -1440,
+              438
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "cradle-west-rock-2",
+            "x": -1388,
+            "y": 388,
+            "mode": "corner",
+            "in": [
+              -1422,
+              410
+            ],
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "cradle-west-rock-3",
+            "x": -1382,
+            "y": 408,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "cradle-west-rock-4",
+            "x": -1424,
+            "y": 496,
+            "mode": "smooth",
+            "in": [
+              -1400,
+              480
+            ],
+            "out": [
+              -1450,
+              512
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "cradle-west-rock-5",
+            "x": -1500,
+            "y": 520,
+            "mode": "smooth",
+            "in": [
+              -1446,
+              520
+            ],
+            "out": [
+              -1554,
+              520
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "cradle-west-rock-6",
+            "x": -1576,
+            "y": 496,
+            "mode": "smooth",
+            "in": [
+              -1550,
+              512
+            ],
+            "out": [
+              -1600,
+              480
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "cradle-west-rock-7",
+            "x": -1618,
+            "y": 408,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "middle-west",
+      "material": "sand",
+      "outer": {
+        "id": "middle-west-boundary",
+        "nodes": [
+          {
+            "id": "middle-west-0",
+            "x": -1280,
+            "y": 1100,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "middle-west-1",
+            "x": -1280,
+            "y": 374,
+            "mode": "corner",
+            "in": null,
+            "out": [
+              -1250,
+              384
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "middle-west-2",
+            "x": -1200,
+            "y": 400,
+            "mode": "smooth",
+            "in": [
+              -1230,
+              400
+            ],
+            "out": [
+              -1160,
+              400
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "middle-west-3",
+            "x": -1040,
+            "y": 400,
+            "mode": "corner",
+            "in": null,
+            "out": [
+              -1015,
+              404
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "middle-west-4",
+            "x": -1000,
+            "y": 440,
+            "mode": "smooth",
+            "in": [
+              -1012,
+              425.6
+            ],
+            "out": [
+              -988,
+              454.4
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "middle-west-5",
+            "x": -970,
+            "y": 470,
+            "mode": "corner",
+            "in": [
+              -982,
+              466
+            ],
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "middle-west-6",
+            "x": -870,
+            "y": 470,
+            "mode": "corner",
+            "in": null,
+            "out": [
+              -858,
+              466
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "middle-west-7",
+            "x": -840,
+            "y": 440,
+            "mode": "smooth",
+            "in": [
+              -852,
+              454.4
+            ],
+            "out": [
+              -828,
+              425.6
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "middle-west-8",
+            "x": -800,
+            "y": 400,
+            "mode": "corner",
+            "in": [
+              -825,
+              404
+            ],
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "middle-west-9",
+            "x": -650,
+            "y": 400,
+            "mode": "smooth",
+            "in": [
+              -710,
+              400
+            ],
+            "out": [
+              -570,
+              400
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "middle-west-10",
+            "x": -300,
+            "y": 214,
+            "mode": "smooth",
+            "in": [
+              -380,
+              214
+            ],
+            "out": [
+              -250,
+              214
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "middle-west-11",
+            "x": -160,
+            "y": 280,
+            "mode": "smooth",
+            "in": [
+              -200,
+              260
+            ],
+            "out": [
+              -130,
+              295
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "middle-west-12",
+            "x": -90,
+            "y": 300,
+            "mode": "corner",
+            "in": [
+              -110,
+              300
+            ],
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "middle-west-13",
+            "x": 90,
+            "y": 300,
+            "mode": "corner",
+            "in": null,
+            "out": [
+              110,
+              300
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "middle-west-14",
+            "x": 160,
+            "y": 280,
+            "mode": "smooth",
+            "in": [
+              130,
+              295
+            ],
+            "out": [
+              200,
+              260
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "middle-west-15",
+            "x": 300,
+            "y": 214,
+            "mode": "smooth",
+            "in": [
+              250,
+              214
+            ],
+            "out": [
+              380,
+              214
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "middle-west-16",
+            "x": 650,
+            "y": 400,
+            "mode": "smooth",
+            "in": [
+              570,
+              400
+            ],
+            "out": [
+              710,
+              400
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "middle-west-17",
+            "x": 820,
+            "y": 336,
+            "mode": "smooth",
+            "in": [
+              770,
+              336
+            ],
+            "out": [
+              870,
+              336
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "middle-west-18",
+            "x": 910,
+            "y": 392,
+            "mode": "smooth",
+            "in": [
+              880,
+              392
+            ],
+            "out": [
+              940,
+              392
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "middle-west-19",
+            "x": 1000,
+            "y": 330,
+            "mode": "smooth",
+            "in": [
+              950,
+              330
+            ],
+            "out": [
+              1050,
+              330
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "middle-west-20",
+            "x": 1090,
+            "y": 392,
+            "mode": "smooth",
+            "in": [
+              1060,
+              392
+            ],
+            "out": [
+              1120,
+              392
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "middle-west-21",
+            "x": 1180,
+            "y": 338,
+            "mode": "smooth",
+            "in": [
+              1130,
+              338
+            ],
+            "out": [
+              1230,
+              338
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "middle-west-22",
+            "x": 1270,
+            "y": 400,
+            "mode": "smooth",
+            "in": [
+              1230,
+              400
+            ],
+            "out": [
+              1310,
+              400
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "middle-west-23",
+            "x": 1400,
+            "y": 372,
+            "mode": "corner",
+            "in": [
+              1360,
+              392
+            ],
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "middle-west-24",
+            "x": 1400,
+            "y": 1100,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "middle-west-rock",
+      "material": "dirt",
+      "outer": {
+        "id": "middle-west-rock-boundary",
+        "nodes": [
+          {
+            "id": "middle-west-rock-0",
+            "x": -1280,
+            "y": 1100,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "middle-west-rock-1",
+            "x": -1280,
+            "y": 386,
+            "mode": "corner",
+            "in": null,
+            "out": [
+              -1250,
+              396
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "middle-west-rock-2",
+            "x": -1200,
+            "y": 426,
+            "mode": "smooth",
+            "in": [
+              -1230,
+              426
+            ],
+            "out": [
+              -1160,
+              426
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "middle-west-rock-3",
+            "x": -1040,
+            "y": 426,
+            "mode": "corner",
+            "in": null,
+            "out": [
+              -1015,
+              430
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "middle-west-rock-4",
+            "x": -1000,
+            "y": 466,
+            "mode": "smooth",
+            "in": [
+              -1012,
+              451.6
+            ],
+            "out": [
+              -988,
+              480.4
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "middle-west-rock-5",
+            "x": -970,
+            "y": 496,
+            "mode": "corner",
+            "in": [
+              -982,
+              492
+            ],
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "middle-west-rock-6",
+            "x": -870,
+            "y": 496,
+            "mode": "corner",
+            "in": null,
+            "out": [
+              -858,
+              492
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "middle-west-rock-7",
+            "x": -840,
+            "y": 466,
+            "mode": "smooth",
+            "in": [
+              -852,
+              480.4
+            ],
+            "out": [
+              -828,
+              451.6
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "middle-west-rock-8",
+            "x": -800,
+            "y": 426,
+            "mode": "corner",
+            "in": [
+              -825,
+              430
+            ],
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "middle-west-rock-9",
+            "x": -650,
+            "y": 426,
+            "mode": "smooth",
+            "in": [
+              -710,
+              426
+            ],
+            "out": [
+              -570,
+              426
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "middle-west-rock-10",
+            "x": -300,
+            "y": 244,
+            "mode": "smooth",
+            "in": [
+              -380,
+              244
+            ],
+            "out": [
+              -250,
+              244
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "middle-west-rock-11",
+            "x": -160,
+            "y": 306,
+            "mode": "smooth",
+            "in": [
+              -200,
+              286
+            ],
+            "out": [
+              -130,
+              321
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "middle-west-rock-12",
+            "x": -90,
+            "y": 326,
+            "mode": "corner",
+            "in": [
+              -110,
+              326
+            ],
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "middle-west-rock-13",
+            "x": 90,
+            "y": 326,
+            "mode": "corner",
+            "in": null,
+            "out": [
+              110,
+              326
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "middle-west-rock-14",
+            "x": 160,
+            "y": 306,
+            "mode": "smooth",
+            "in": [
+              130,
+              321
+            ],
+            "out": [
+              200,
+              286
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "middle-west-rock-15",
+            "x": 300,
+            "y": 244,
+            "mode": "smooth",
+            "in": [
+              250,
+              244
+            ],
+            "out": [
+              380,
+              244
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "middle-west-rock-16",
+            "x": 650,
+            "y": 426,
+            "mode": "smooth",
+            "in": [
+              570,
+              426
+            ],
+            "out": [
+              710,
+              426
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "middle-west-rock-17",
+            "x": 820,
+            "y": 366,
+            "mode": "smooth",
+            "in": [
+              770,
+              366
+            ],
+            "out": [
+              870,
+              366
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "middle-west-rock-18",
+            "x": 910,
+            "y": 422,
+            "mode": "smooth",
+            "in": [
+              880,
+              422
+            ],
+            "out": [
+              940,
+              422
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "middle-west-rock-19",
+            "x": 1000,
+            "y": 360,
+            "mode": "smooth",
+            "in": [
+              950,
+              360
+            ],
+            "out": [
+              1050,
+              360
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "middle-west-rock-20",
+            "x": 1090,
+            "y": 422,
+            "mode": "smooth",
+            "in": [
+              1060,
+              422
+            ],
+            "out": [
+              1120,
+              422
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "middle-west-rock-21",
+            "x": 1180,
+            "y": 368,
+            "mode": "smooth",
+            "in": [
+              1130,
+              368
+            ],
+            "out": [
+              1230,
+              368
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "middle-west-rock-22",
+            "x": 1270,
+            "y": 430,
+            "mode": "smooth",
+            "in": [
+              1230,
+              430
+            ],
+            "out": [
+              1310,
+              430
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "middle-west-rock-23",
+            "x": 1400,
+            "y": 384,
+            "mode": "corner",
+            "in": [
+              1360,
+              404
+            ],
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "middle-west-rock-24",
+            "x": 1400,
+            "y": 1100,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "middle-east",
+      "material": "sand",
+      "outer": {
+        "id": "middle-east-boundary",
+        "nodes": [
+          {
+            "id": "middle-east-0",
+            "x": 1510,
+            "y": 1100,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "middle-east-1",
+            "x": 1510,
+            "y": 372,
+            "mode": "corner",
+            "in": null,
+            "out": [
+              1550,
+              392
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "middle-east-2",
+            "x": 1590,
+            "y": 400,
+            "mode": "smooth",
+            "in": [
+              1560,
+              400
+            ],
+            "out": [
+              1620,
+              400
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "middle-east-3",
+            "x": 1700,
+            "y": 374,
+            "mode": "corner",
+            "in": [
+              1670,
+              384
+            ],
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "middle-east-4",
+            "x": 1700,
+            "y": 1100,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "middle-east-rock",
+      "material": "dirt",
+      "outer": {
+        "id": "middle-east-rock-boundary",
+        "nodes": [
+          {
+            "id": "middle-east-rock-0",
+            "x": 1510,
+            "y": 1100,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "middle-east-rock-1",
+            "x": 1510,
+            "y": 384,
+            "mode": "corner",
+            "in": null,
+            "out": [
+              1550,
+              404
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "middle-east-rock-2",
+            "x": 1590,
+            "y": 426,
+            "mode": "smooth",
+            "in": [
+              1560,
+              426
+            ],
+            "out": [
+              1620,
+              426
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "middle-east-rock-3",
+            "x": 1700,
+            "y": 386,
+            "mode": "corner",
+            "in": [
+              1670,
+              396
+            ],
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "middle-east-rock-4",
+            "x": 1700,
+            "y": 1100,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "cradle-east",
+      "material": "sand",
+      "outer": {
+        "id": "cradle-east-boundary",
+        "nodes": [
+          {
+            "id": "cradle-east-0",
+            "x": 1800,
+            "y": 374,
+            "mode": "corner",
+            "in": null,
+            "out": [
+              1834,
+              396
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "cradle-east-1",
+            "x": 1910,
+            "y": 424,
+            "mode": "smooth",
+            "in": [
+              1855,
+              424
+            ],
+            "out": [
+              1965,
+              424
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "cradle-east-2",
+            "x": 2020,
+            "y": 374,
+            "mode": "corner",
+            "in": [
+              1986,
+              396
+            ],
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "cradle-east-3",
+            "x": 2018,
+            "y": 408,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "cradle-east-4",
+            "x": 1976,
+            "y": 496,
+            "mode": "smooth",
+            "in": [
+              2000,
+              480
+            ],
+            "out": [
+              1950,
+              512
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "cradle-east-5",
+            "x": 1910,
+            "y": 520,
+            "mode": "smooth",
+            "in": [
+              1959.5,
+              520
+            ],
+            "out": [
+              1860.5,
+              520
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "cradle-east-6",
+            "x": 1844,
+            "y": 496,
+            "mode": "smooth",
+            "in": [
+              1870,
+              512
+            ],
+            "out": [
+              1820,
+              480
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "cradle-east-7",
+            "x": 1802,
+            "y": 408,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "cradle-east-rock",
+      "material": "dirt",
+      "outer": {
+        "id": "cradle-east-rock-boundary",
+        "nodes": [
+          {
+            "id": "cradle-east-rock-0",
+            "x": 1808,
+            "y": 388,
+            "mode": "corner",
+            "in": null,
+            "out": [
+              1842,
+              410
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "cradle-east-rock-1",
+            "x": 1910,
+            "y": 438,
+            "mode": "smooth",
+            "in": [
+              1855,
+              438
+            ],
+            "out": [
+              1965,
+              438
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "cradle-east-rock-2",
+            "x": 2012,
+            "y": 388,
+            "mode": "corner",
+            "in": [
+              1978,
+              410
+            ],
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "cradle-east-rock-3",
+            "x": 2018,
+            "y": 408,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "cradle-east-rock-4",
+            "x": 1976,
+            "y": 496,
+            "mode": "smooth",
+            "in": [
+              2000,
+              480
+            ],
+            "out": [
+              1950,
+              512
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "cradle-east-rock-5",
+            "x": 1910,
+            "y": 520,
+            "mode": "smooth",
+            "in": [
+              1959.5,
+              520
+            ],
+            "out": [
+              1860.5,
+              520
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "cradle-east-rock-6",
+            "x": 1844,
+            "y": 496,
+            "mode": "smooth",
+            "in": [
+              1870,
+              512
+            ],
+            "out": [
+              1820,
+              480
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "cradle-east-rock-7",
+            "x": 1802,
+            "y": 408,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "east",
+      "material": "sand",
+      "outer": {
+        "id": "east-boundary",
+        "nodes": [
+          {
+            "id": "east-0",
+            "x": 2120,
+            "y": 1100,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "east-1",
+            "x": 2120,
+            "y": 374,
+            "mode": "corner",
+            "in": null,
+            "out": [
+              2150,
+              384
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "east-2",
+            "x": 2200,
+            "y": 400,
+            "mode": "smooth",
+            "in": [
+              2170,
+              400
+            ],
+            "out": [
+              2260,
+              400
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "east-3",
+            "x": 2470,
+            "y": 232,
+            "mode": "smooth",
+            "in": [
+              2410,
+              232
+            ],
+            "out": [
+              2550,
+              232
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "east-4",
+            "x": 2690,
+            "y": 400,
+            "mode": "smooth",
+            "in": [
+              2630,
+              400
+            ],
+            "out": [
+              2730,
+              400
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "east-5",
+            "x": 2860,
+            "y": 400,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "east-6",
+            "x": 2880,
+            "y": 160,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "east-7",
+            "x": 2950,
+            "y": 160,
+            "mode": "corner",
+            "in": null,
+            "out": [
+              2980,
+              160
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "east-8",
+            "x": 3050,
+            "y": 188,
+            "mode": "smooth",
+            "in": [
+              3020,
+              188
+            ],
+            "out": [
+              3080,
+              188
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "east-9",
+            "x": 3150,
+            "y": 160,
+            "mode": "corner",
+            "in": [
+              3120,
+              160
+            ],
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "east-10",
+            "x": 4000,
+            "y": 160,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "east-11",
+            "x": 4000,
+            "y": 1100,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "east-rock",
+      "material": "dirt",
+      "outer": {
+        "id": "east-rock-boundary",
+        "nodes": [
+          {
+            "id": "east-rock-0",
+            "x": 2120,
+            "y": 1100,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "east-rock-1",
+            "x": 2120,
+            "y": 386,
+            "mode": "corner",
+            "in": null,
+            "out": [
+              2150,
+              396
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "east-rock-2",
+            "x": 2200,
+            "y": 426,
+            "mode": "smooth",
+            "in": [
+              2170,
+              426
+            ],
+            "out": [
+              2260,
+              426
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "east-rock-3",
+            "x": 2470,
+            "y": 258,
+            "mode": "smooth",
+            "in": [
+              2410,
+              258
+            ],
+            "out": [
+              2550,
+              258
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "east-rock-4",
+            "x": 2690,
+            "y": 426,
+            "mode": "smooth",
+            "in": [
+              2630,
+              426
+            ],
+            "out": [
+              2730,
+              426
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "east-rock-5",
+            "x": 2860,
+            "y": 426,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "east-rock-6",
+            "x": 2880,
+            "y": 160,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "east-rock-7",
+            "x": 2950,
+            "y": 160,
+            "mode": "corner",
+            "in": null,
+            "out": [
+              2980,
+              160
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "east-rock-8",
+            "x": 3050,
+            "y": 188,
+            "mode": "smooth",
+            "in": [
+              3020,
+              188
+            ],
+            "out": [
+              3080,
+              188
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "east-rock-9",
+            "x": 3150,
+            "y": 160,
+            "mode": "corner",
+            "in": [
+              3120,
+              160
+            ],
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "east-rock-10",
+            "x": 4000,
+            "y": 160,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "east-rock-11",
+            "x": 4000,
+            "y": 1100,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "chasm-west",
+      "material": "dirt",
+      "layer": "back",
+      "group": "Chasms",
+      "outer": {
+        "id": "chasm-west-boundary",
+        "nodes": [
+          {
+            "id": "chasm-west-0",
+            "x": -1750,
+            "y": 1100,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "chasm-west-1",
+            "x": -1750,
+            "y": 392,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "chasm-west-2",
+            "x": -1588,
+            "y": 376,
+            "mode": "smooth",
+            "in": [
+              -1602,
+              374.6
+            ],
+            "out": [
+              -1574,
+              377.4
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "chasm-west-3",
+            "x": -1412,
+            "y": 388,
+            "mode": "smooth",
+            "in": [
+              -1426,
+              389.4
+            ],
+            "out": [
+              -1398,
+              386.6
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "chasm-west-4",
+            "x": -1250,
+            "y": 382,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "chasm-west-5",
+            "x": -1250,
+            "y": 1100,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "chasm-gap",
+      "material": "dirt",
+      "layer": "back",
+      "group": "Chasms",
+      "outer": {
+        "id": "chasm-gap-boundary",
+        "nodes": [
+          {
+            "id": "chasm-gap-0",
+            "x": 1370,
+            "y": 1100,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "chasm-gap-1",
+            "x": 1370,
+            "y": 392,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "chasm-gap-2",
+            "x": 1433,
+            "y": 376,
+            "mode": "smooth",
+            "in": [
+              1419,
+              374.6
+            ],
+            "out": [
+              1447,
+              377.4
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "chasm-gap-3",
+            "x": 1477,
+            "y": 388,
+            "mode": "smooth",
+            "in": [
+              1463,
+              389.4
+            ],
+            "out": [
+              1491,
+              386.6
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "chasm-gap-4",
+            "x": 1540,
+            "y": 382,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "chasm-gap-5",
+            "x": 1540,
+            "y": 1100,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "chasm-east",
+      "material": "dirt",
+      "layer": "back",
+      "group": "Chasms",
+      "outer": {
+        "id": "chasm-east-boundary",
+        "nodes": [
+          {
+            "id": "chasm-east-0",
+            "x": 1670,
+            "y": 1100,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "chasm-east-1",
+            "x": 1670,
+            "y": 392,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "chasm-east-2",
+            "x": 1826,
+            "y": 376,
+            "mode": "smooth",
+            "in": [
+              1812,
+              374.6
+            ],
+            "out": [
+              1840,
+              377.4
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "chasm-east-3",
+            "x": 1994,
+            "y": 388,
+            "mode": "smooth",
+            "in": [
+              1980,
+              389.4
+            ],
+            "out": [
+              2008,
+              386.6
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "chasm-east-4",
+            "x": 2150,
+            "y": 382,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "chasm-east-5",
+            "x": 2150,
+            "y": 1100,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "castle-tower",
+      "material": "stone",
+      "layer": "back",
+      "group": "Castle",
+      "outer": {
+        "id": "castle-tower-boundary",
+        "nodes": [
+          {
+            "id": "castle-tower-0",
+            "x": 20,
+            "y": 420,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "castle-tower-1",
+            "x": 20,
+            "y": 150,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "castle-tower-2",
+            "x": 30,
+            "y": 150,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "castle-tower-3",
+            "x": 30,
+            "y": 138,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "castle-tower-4",
+            "x": 42,
+            "y": 138,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "castle-tower-5",
+            "x": 42,
+            "y": 150,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "castle-tower-6",
+            "x": 56,
+            "y": 150,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "castle-tower-7",
+            "x": 56,
+            "y": 132,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "castle-tower-8",
+            "x": 70,
+            "y": 132,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "castle-tower-9",
+            "x": 70,
+            "y": 158,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "castle-tower-10",
+            "x": 84,
+            "y": 158,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "castle-tower-11",
+            "x": 84,
+            "y": 420,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": [
+        {
+          "id": "castle-window-1-boundary",
+          "nodes": [
+            {
+              "id": "castle-window-1-3",
+              "x": 42,
+              "y": 206,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            },
+            {
+              "id": "castle-window-1-2",
+              "x": 58,
+              "y": 206,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            },
+            {
+              "id": "castle-window-1-1",
+              "x": 58,
+              "y": 178,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            },
+            {
+              "id": "castle-window-1-0",
+              "x": 42,
+              "y": 178,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            }
+          ]
+        },
+        {
+          "id": "castle-window-2-boundary",
+          "nodes": [
+            {
+              "id": "castle-window-2-3",
+              "x": 42,
+              "y": 256,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            },
+            {
+              "id": "castle-window-2-2",
+              "x": 58,
+              "y": 256,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            },
+            {
+              "id": "castle-window-2-1",
+              "x": 58,
+              "y": 228,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            },
+            {
+              "id": "castle-window-2-0",
+              "x": 42,
+              "y": 228,
+              "mode": "corner",
+              "in": null,
+              "out": null,
+              "edge": "straight"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "castle-wall",
+      "material": "stone",
+      "layer": "back",
+      "group": "Castle",
+      "outer": {
+        "id": "castle-wall-boundary",
+        "nodes": [
+          {
+            "id": "castle-wall-0",
+            "x": 84,
+            "y": 420,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "castle-wall-1",
+            "x": 84,
+            "y": 196,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "castle-wall-2",
+            "x": 106,
+            "y": 204,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "castle-wall-3",
+            "x": 124,
+            "y": 222,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "castle-wall-4",
+            "x": 138,
+            "y": 218,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "castle-wall-5",
+            "x": 160,
+            "y": 246,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "castle-wall-6",
+            "x": 174,
+            "y": 420,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "cave-back",
+      "material": "dirt",
+      "layer": "back",
+      "group": "Cave",
+      "outer": {
+        "id": "cave-back-boundary",
+        "nodes": [
+          {
+            "id": "cave-back-0",
+            "x": -2806,
+            "y": 412,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "cave-back-1",
+            "x": -2806,
+            "y": 244,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "cave-back-2",
+            "x": -2620,
+            "y": 226,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "cave-back-3",
+            "x": -2430,
+            "y": 218,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "cave-back-4",
+            "x": -2320,
+            "y": 238,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "cave-back-5",
+            "x": -2250,
+            "y": 256,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "cave-back-6",
+            "x": -2236,
+            "y": 412,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "chimney-back",
+      "material": "dirt",
+      "layer": "back",
+      "group": "Cave",
+      "outer": {
+        "id": "chimney-back-boundary",
+        "nodes": [
+          {
+            "id": "chimney-back-0",
+            "x": -3410,
             "y": 360,
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
-            "id": "mesa-3-2",
-            "x": 2270,
-            "y": 366,
-            "mode": "independent",
-            "in": [
-              2256.0,
-              363.9
-            ],
-            "out": [
-              2322.5,
-              371.6
-            ],
-            "edge": "curve"
-          },
-          {
-            "id": "mesa-3-3",
-            "x": 2420,
-            "y": 382,
-            "mode": "smooth",
-            "in": [
-              2370.0,
-              382
-            ],
-            "out": [
-              2443.3333,
-              382
-            ],
-            "edge": "curve"
-          },
-          {
-            "id": "mesa-3-4",
-            "x": 2490,
-            "y": 386,
-            "mode": "smooth",
-            "in": [
-              2466.6667,
-              386
-            ],
-            "out": [
-              2556.6667,
-              386
-            ],
-            "edge": "curve"
-          },
-          {
-            "id": "mesa-3-5",
-            "x": 2690,
-            "y": 333,
-            "mode": "independent",
-            "in": [
-              2620.0,
-              351.55
-            ],
-            "out": [
-              2693.5,
-              331.95
-            ],
-            "edge": "curve"
-          },
-          {
-            "id": "mesa-3-6",
-            "x": 2700,
-            "y": 330,
+            "id": "chimney-back-1",
+            "x": -3410,
+            "y": -224,
             "mode": "corner",
             "in": null,
             "out": null,
             "edge": "straight"
           },
           {
-            "id": "mesa-3-7",
-            "x": 2714,
-            "y": 394,
+            "id": "chimney-back-2",
+            "x": -3240,
+            "y": -250,
             "mode": "corner",
             "in": null,
             "out": null,
             "edge": "straight"
           },
           {
-            "id": "mesa-3-8",
-            "x": 2790,
-            "y": 394,
+            "id": "chimney-back-3",
+            "x": -3100,
+            "y": -262,
             "mode": "corner",
             "in": null,
             "out": null,
             "edge": "straight"
           },
           {
-            "id": "mesa-3-9",
-            "x": 2860,
-            "y": 344,
+            "id": "chimney-back-4",
+            "x": -2950,
+            "y": -262,
             "mode": "corner",
             "in": null,
             "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "chimney-back-5",
+            "x": -2790,
+            "y": -244,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "chimney-back-6",
+            "x": -2650,
+            "y": -190,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "chimney-back-7",
+            "x": -2650,
+            "y": 360,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "nisse-door-frame",
+      "material": "stone",
+      "layer": "back",
+      "group": "Nisse",
+      "outer": {
+        "id": "nisse-door-frame-boundary",
+        "nodes": [
+          {
+            "id": "nisse-door-frame-0",
+            "x": -2782,
+            "y": 350,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nisse-door-frame-1",
+            "x": -2782,
+            "y": 318,
+            "mode": "corner",
+            "in": null,
+            "out": [
+              -2782,
+              305.9
+            ],
             "edge": "curve"
           },
           {
-            "id": "mesa-3-10",
-            "x": 3010,
-            "y": 354,
-            "mode": "smooth",
+            "id": "nisse-door-frame-2",
+            "x": -2760,
+            "y": 296,
+            "mode": "corner",
             "in": [
-              2960.0,
-              354
+              -2772.1,
+              296
             ],
             "out": [
-              3056.6667,
-              354
+              -2747.9,
+              296
             ],
             "edge": "curve"
           },
           {
-            "id": "mesa-3-11",
-            "x": 3150,
-            "y": 354,
-            "mode": "smooth",
+            "id": "nisse-door-frame-3",
+            "x": -2738,
+            "y": 318,
+            "mode": "corner",
             "in": [
-              3103.3333,
-              354
+              -2738,
+              305.9
+            ],
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nisse-door-frame-4",
+            "x": -2738,
+            "y": 350,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "nisse-door",
+      "material": "wood",
+      "layer": "back",
+      "group": "Nisse",
+      "outer": {
+        "id": "nisse-door-boundary",
+        "nodes": [
+          {
+            "id": "nisse-door-0",
+            "x": -2776,
+            "y": 350,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nisse-door-1",
+            "x": -2776,
+            "y": 320,
+            "mode": "corner",
+            "in": null,
+            "out": [
+              -2776,
+              311.2
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "nisse-door-2",
+            "x": -2760,
+            "y": 304,
+            "mode": "corner",
+            "in": [
+              -2768.8,
+              304
             ],
             "out": [
-              3186.6667,
-              354
+              -2751.2,
+              304
             ],
             "edge": "curve"
           },
           {
-            "id": "mesa-3-12",
-            "x": 3260,
-            "y": 354,
-            "mode": "smooth",
+            "id": "nisse-door-3",
+            "x": -2744,
+            "y": 320,
+            "mode": "corner",
             "in": [
-              3223.3333,
-              354
+              -2744,
+              311.2
             ],
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "nisse-door-4",
+            "x": -2744,
+            "y": 350,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "shelf-2",
+      "material": "dirt",
+      "group": "Chimney",
+      "outer": {
+        "id": "shelf-2-boundary",
+        "nodes": [
+          {
+            "id": "shelf-2-9",
+            "x": -2660,
+            "y": 240,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "shelf-2-8",
+            "x": -2716,
+            "y": 234,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "shelf-2-7",
+            "x": -2796,
+            "y": 232,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "shelf-2-6",
+            "x": -2868,
+            "y": 224,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "shelf-2-5",
+            "x": -2928,
+            "y": 220,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "shelf-2-4",
+            "x": -2940,
+            "y": 202,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "shelf-2-3",
+            "x": -2940,
+            "y": 192,
+            "mode": "corner",
+            "in": null,
             "out": [
-              3300.0,
-              354
+              -2924,
+              203.7
             ],
             "edge": "curve"
           },
           {
-            "id": "mesa-3-13",
-            "x": 3380,
+            "id": "shelf-2-2",
+            "x": -2900,
+            "y": 210,
+            "mode": "corner",
+            "in": [
+              -2922,
+              210
+            ],
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "shelf-2-1",
+            "x": -2700,
+            "y": 210,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "shelf-2-0",
+            "x": -2660,
+            "y": 180,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "shelf-3",
+      "material": "dirt",
+      "group": "Chimney",
+      "outer": {
+        "id": "shelf-3-boundary",
+        "nodes": [
+          {
+            "id": "shelf-3-0",
+            "x": -3240,
+            "y": 50,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "shelf-3-1",
+            "x": -3200,
+            "y": 80,
+            "mode": "corner",
+            "in": null,
+            "out": [
+              -3200,
+              113
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "shelf-3-2",
+            "x": -3140,
             "y": 140,
-            "mode": "smooth",
+            "mode": "corner",
             "in": [
-              3340.0,
+              -3173,
               140
             ],
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "shelf-3-3",
+            "x": -3090,
+            "y": 140,
+            "mode": "corner",
+            "in": null,
             "out": [
-              3520.0,
+              -3068,
               140
             ],
             "edge": "curve"
           },
           {
-            "id": "mesa-3-14",
-            "x": 3800,
-            "y": 140,
+            "id": "shelf-3-4",
+            "x": -3050,
+            "y": 122,
+            "mode": "corner",
+            "in": [
+              -3066,
+              133.7
+            ],
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "shelf-3-5",
+            "x": -3050,
+            "y": 132,
             "mode": "corner",
             "in": null,
             "out": null,
             "edge": "straight"
           },
           {
-            "id": "mesa-3-15",
-            "x": 3800,
-            "y": 900,
+            "id": "shelf-3-6",
+            "x": -3062,
+            "y": 150,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "shelf-3-7",
+            "x": -3095,
+            "y": 155,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "shelf-3-8",
+            "x": -3140,
+            "y": 162,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "shelf-3-9",
+            "x": -3184,
+            "y": 166,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "shelf-3-10",
+            "x": -3240,
+            "y": 170,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "shelf-4",
+      "material": "dirt",
+      "group": "Chimney",
+      "outer": {
+        "id": "shelf-4-boundary",
+        "nodes": [
+          {
+            "id": "shelf-4-9",
+            "x": -2680,
+            "y": 120,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "shelf-4-8",
+            "x": -2736,
+            "y": 114,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "shelf-4-7",
+            "x": -2816,
+            "y": 112,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "shelf-4-6",
+            "x": -2888,
+            "y": 104,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "shelf-4-5",
+            "x": -2948,
+            "y": 100,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "shelf-4-4",
+            "x": -2960,
+            "y": 82,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "shelf-4-3",
+            "x": -2960,
+            "y": 72,
+            "mode": "corner",
+            "in": null,
+            "out": [
+              -2944,
+              83.7
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "shelf-4-2",
+            "x": -2920,
+            "y": 90,
+            "mode": "corner",
+            "in": [
+              -2942,
+              90
+            ],
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "shelf-4-1",
+            "x": -2720,
+            "y": 90,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "shelf-4-0",
+            "x": -2680,
+            "y": 60,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "shelf-5",
+      "material": "dirt",
+      "group": "Chimney",
+      "outer": {
+        "id": "shelf-5-boundary",
+        "nodes": [
+          {
+            "id": "shelf-5-0",
+            "x": -3340,
+            "y": -10,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "shelf-5-1",
+            "x": -3300,
+            "y": 20,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "shelf-5-2",
+            "x": -3070,
+            "y": 20,
+            "mode": "corner",
+            "in": null,
+            "out": [
+              -3048,
+              20
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "shelf-5-3",
+            "x": -3030,
+            "y": 2,
+            "mode": "corner",
+            "in": [
+              -3046,
+              13.7
+            ],
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "shelf-5-4",
+            "x": -3030,
+            "y": 12,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "shelf-5-5",
+            "x": -3042,
+            "y": 30,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "shelf-5-6",
+            "x": -3111,
+            "y": 36,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "shelf-5-7",
+            "x": -3192,
+            "y": 42,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "shelf-5-8",
+            "x": -3284,
+            "y": 46,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "shelf-5-9",
+            "x": -3340,
+            "y": 50,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          }
+        ]
+      },
+      "inner": []
+    },
+    {
+      "id": "shelf-6",
+      "material": "dirt",
+      "group": "Chimney",
+      "outer": {
+        "id": "shelf-6-boundary",
+        "nodes": [
+          {
+            "id": "shelf-6-10",
+            "x": -2620,
+            "y": 0,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "shelf-6-9",
+            "x": -2676,
+            "y": -6,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "shelf-6-8",
+            "x": -2756,
+            "y": -8,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "shelf-6-7",
+            "x": -2828,
+            "y": -16,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "shelf-6-6",
+            "x": -2888,
+            "y": -20,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "shelf-6-5",
+            "x": -2900,
+            "y": -38,
+            "mode": "corner",
+            "in": null,
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "shelf-6-4",
+            "x": -2900,
+            "y": -48,
+            "mode": "corner",
+            "in": null,
+            "out": [
+              -2884,
+              -36.3
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "shelf-6-3",
+            "x": -2860,
+            "y": -30,
+            "mode": "corner",
+            "in": [
+              -2882,
+              -30
+            ],
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "shelf-6-2",
+            "x": -2720,
+            "y": -30,
+            "mode": "corner",
+            "in": null,
+            "out": [
+              -2687,
+              -30
+            ],
+            "edge": "curve"
+          },
+          {
+            "id": "shelf-6-1",
+            "x": -2660,
+            "y": -90,
+            "mode": "corner",
+            "in": [
+              -2660,
+              -57
+            ],
+            "out": null,
+            "edge": "straight"
+          },
+          {
+            "id": "shelf-6-0",
+            "x": -2620,
+            "y": -120,
             "mode": "corner",
             "in": null,
             "out": null,
@@ -648,213 +5066,359 @@
   ],
   "apples": [
     {
-      "x": 420,
-      "y": 185
+      "x": -920,
+      "y": 445
     },
     {
-      "x": 1095,
-      "y": 250
+      "x": -1500,
+      "y": 395
     },
     {
-      "x": 1960,
+      "x": -2480,
+      "y": 296
+    },
+    {
+      "x": -1950,
+      "y": 206
+    },
+    {
+      "x": 1000,
+      "y": 268
+    },
+    {
+      "x": 1455,
+      "y": 290
+    },
+    {
+      "x": 1910,
+      "y": 395
+    },
+    {
+      "x": 2470,
+      "y": 180
+    },
+    {
+      "x": 2790,
       "y": null
-    },
-    {
-      "x": 2180,
-      "y": 270
-    },
-    {
-      "x": 2780,
-      "y": 250
     }
   ],
   "props": [
     {
-      "x": -700,
+      "x": -2700,
       "y": null,
       "type": "cactus",
       "layer": "back"
     },
     {
-      "x": -540,
+      "x": -2420,
       "y": null,
       "type": "skull",
+      "layer": "back"
+    },
+    {
+      "x": -2050,
+      "y": null,
+      "type": "cactus-small",
+      "layer": "back"
+    },
+    {
+      "x": -1800,
+      "y": null,
+      "type": "tumbleweed",
+      "layer": "back"
+    },
+    {
+      "x": -1240,
+      "y": null,
+      "type": "pebbles",
+      "layer": "front"
+    },
+    {
+      "x": -1150,
+      "y": null,
+      "type": "cactus",
+      "layer": "back"
+    },
+    {
+      "x": -920,
+      "y": null,
+      "type": "skull",
+      "layer": "back"
+    },
+    {
+      "x": -940,
+      "y": null,
+      "type": "pebbles",
+      "layer": "front"
+    },
+    {
+      "x": -720,
+      "y": null,
+      "type": "cactus-small",
+      "layer": "back"
+    },
+    {
+      "x": -620,
+      "y": null,
+      "type": "heat-haze",
+      "layer": "back"
+    },
+    {
+      "x": -480,
+      "y": null,
+      "type": "cactus",
       "layer": "back"
     },
     {
       "x": -200,
       "y": null,
-      "type": "cactus-small",
-      "layer": "back"
+      "type": "pebbles",
+      "layer": "front"
     },
     {
-      "x": 240,
-      "y": null,
-      "type": "heat-haze",
-      "layer": "back"
-    },
-    {
-      "x": 560,
-      "y": null,
-      "type": "cactus",
-      "layer": "back"
-    },
-    {
-      "x": 720,
+      "x": 110,
       "y": null,
       "type": "pebbles",
       "layer": "front"
     },
     {
-      "x": 930,
-      "y": null,
-      "type": "sign",
-      "layer": "front",
-      "text": "! GAP"
-    },
-    {
-      "x": 1000,
-      "y": null,
-      "type": "tyre",
-      "layer": "back"
-    },
-    {
-      "x": 1016,
-      "y": null,
-      "type": "tyre",
-      "layer": "back"
-    },
-    {
-      "x": 1032,
-      "y": null,
-      "type": "tyre",
-      "layer": "back"
-    },
-    {
-      "x": 1200,
-      "y": null,
-      "type": "cactus-small",
-      "layer": "back"
-    },
-    {
-      "x": 1330,
-      "y": null,
-      "type": "heat-haze",
-      "layer": "front"
-    },
-    {
-      "x": 1500,
-      "y": null,
-      "type": "cactus",
-      "layer": "back"
-    },
-    {
-      "x": 1580,
-      "y": null,
-      "type": "sign",
-      "layer": "front",
-      "text": "JUMP \u2192"
-    },
-    {
-      "x": 1650,
-      "y": null,
-      "type": "tyre",
-      "layer": "back"
-    },
-    {
-      "x": 1666,
-      "y": null,
-      "type": "tyre",
-      "layer": "back"
-    },
-    {
-      "x": 1682,
-      "y": null,
-      "type": "tyre",
-      "layer": "back"
-    },
-    {
-      "x": 1900,
-      "y": null,
-      "type": "cactus-small",
-      "layer": "back"
-    },
-    {
-      "x": 2060,
-      "y": null,
-      "type": "pebbles",
-      "layer": "front"
-    },
-    {
-      "x": 2000,
-      "y": null,
-      "type": "heat-haze",
-      "layer": "back"
-    },
-    {
-      "x": 2350,
-      "y": null,
-      "type": "cactus",
-      "layer": "back"
-    },
-    {
-      "x": 2450,
-      "y": null,
-      "type": "car-wreck",
-      "layer": "back"
-    },
-    {
-      "x": 2600,
-      "y": null,
-      "type": "sign",
-      "layer": "front",
-      "text": "! PIT"
-    },
-    {
-      "x": 2750,
+      "x": 150,
       "y": null,
       "type": "skull",
-      "layer": "front"
-    },
-    {
-      "x": 2950,
-      "y": null,
-      "type": "heat-haze",
-      "layer": "front"
-    },
-    {
-      "x": 3050,
-      "y": null,
-      "type": "cactus-small",
       "layer": "back"
     },
     {
-      "x": 3120,
-      "y": null,
-      "type": "water-tower",
-      "layer": "back"
-    },
-    {
-      "x": 3300,
+      "x": 60,
       "y": null,
       "type": "vulture",
       "layer": "back"
     },
     {
-      "x": 3500,
+      "x": 220,
       "y": null,
-      "type": "windmill",
+      "type": "cactus-small",
       "layer": "back"
     },
     {
-      "x": 3650,
+      "x": 480,
       "y": null,
       "type": "cactus",
+      "layer": "back"
+    },
+    {
+      "x": 620,
+      "y": null,
+      "type": "heat-haze",
+      "layer": "back"
+    },
+    {
+      "x": 910,
+      "y": null,
+      "type": "pebbles",
+      "layer": "front"
+    },
+    {
+      "x": 1090,
+      "y": null,
+      "type": "cactus-small",
+      "layer": "back"
+    },
+    {
+      "x": 1300,
+      "y": null,
+      "type": "rock",
+      "layer": "back"
+    },
+    {
+      "x": 1590,
+      "y": null,
+      "type": "pebbles",
+      "layer": "front"
+    },
+    {
+      "x": 1620,
+      "y": null,
+      "type": "cactus",
+      "layer": "back"
+    },
+    {
+      "x": 2200,
+      "y": null,
+      "type": "cactus-small",
+      "layer": "back"
+    },
+    {
+      "x": 2300,
+      "y": null,
+      "type": "tumbleweed",
+      "layer": "back"
+    },
+    {
+      "x": 2700,
+      "y": null,
+      "type": "heat-haze",
+      "layer": "back"
+    },
+    {
+      "x": 2660,
+      "y": null,
+      "type": "pebbles",
+      "layer": "front"
+    },
+    {
+      "x": 2820,
+      "y": null,
+      "type": "skull",
+      "layer": "back"
+    },
+    {
+      "x": 2850,
+      "y": null,
+      "type": "rock",
+      "layer": "back"
+    },
+    {
+      "x": 3010,
+      "y": null,
+      "type": "flowers",
+      "layer": "back"
+    },
+    {
+      "x": 3300,
+      "y": null,
+      "type": "cactus",
+      "layer": "back"
+    },
+    {
+      "x": 2944.790607242125,
+      "y": 164,
+      "type": "bush",
+      "layer": "back"
+    },
+    {
+      "x": 3150,
+      "y": 160.97,
+      "type": "palm",
+      "layer": "back"
+    },
+    {
+      "x": 2950,
+      "y": 160.97,
+      "type": "palm-small",
+      "layer": "back"
+    },
+    {
+      "x": 3165.2163777627225,
+      "y": 160.97,
+      "type": "bush",
+      "layer": "back"
+    },
+    {
+      "x": -2380,
+      "y": 300,
+      "type": "lantern",
+      "layer": "back"
+    },
+    {
+      "x": -2840,
+      "y": 150,
+      "type": "lantern",
+      "layer": "back"
+    },
+    {
+      "x": -2718,
+      "y": 300,
+      "type": "lantern",
+      "layer": "back"
+    },
+    {
+      "x": -2804,
+      "y": 350,
+      "type": "bucket",
+      "layer": "back"
+    },
+    {
+      "x": -2792,
+      "y": 350,
+      "type": "shovel",
+      "layer": "back"
+    },
+    {
+      "x": -2724,
+      "y": 350,
+      "type": "pickaxe",
+      "layer": "back"
+    },
+    {
+      "x": -3285,
+      "y": -100,
+      "type": "fireplace",
+      "layer": "back"
+    },
+    {
+      "x": -3130,
+      "y": 84,
+      "type": "lantern",
+      "layer": "back"
+    },
+    {
+      "x": -2800,
+      "y": 34,
+      "type": "lantern",
+      "layer": "back"
+    },
+    {
+      "x": -2880,
+      "y": -190,
+      "type": "stalactites",
+      "layer": "back"
+    },
+    {
+      "x": -3060,
+      "y": -200,
+      "type": "bats",
+      "layer": "back"
+    },
+    {
+      "x": -3140,
+      "y": 270,
+      "type": "pebbles",
+      "layer": "front"
+    },
+    {
+      "x": -2430,
+      "y": 292,
+      "type": "lantern",
+      "layer": "back"
+    },
+    {
+      "x": -2362,
+      "y": 400,
+      "type": "crystal",
+      "layer": "back"
+    },
+    {
+      "x": -2300,
+      "y": 400,
+      "type": "pebbles",
+      "layer": "front"
+    },
+    {
+      "x": -2600,
+      "y": 400,
+      "type": "skull",
       "layer": "back"
     }
   ],
   "spikes": [],
-  "water": [],
+  "water": [
+    {
+      "x": 2925,
+      "y": 164,
+      "width": 225,
+      "depth": 46
+    }
+  ],
   "weather": {
     "sun": 1,
     "clouds": 0.05,
@@ -862,14 +5426,25 @@
     "rain": 0,
     "snow": 0,
     "lightning": 0,
-    "wind": 0.1,
-    "windDirection": "left"
+    "wind": 0.15,
+    "windDirection": "right"
   },
-  "timeOfDay": 12,
+  "timeOfDay": 13,
+  "lesson": "The desert finale: ride out from the castle to both sides and back, for apples spread over dunes, a pit, gaps and floating cradles, in any order.",
+  "alsoNew": "Heat haze, cradles of rock over the canyon, and an oasis out of reach.",
+  "world": "The Desert",
+  "nisse": {
+    "x": -3350,
+    "y": -100
+  },
   "backdrop": "desert",
   "medals": {
-    "gold": 10,
-    "silver": 13,
-    "bronze": 18
+    "gold": 52,
+    "silver": 68,
+    "bronze": 91
+  },
+  "preview": {
+    "x": 2939,
+    "y": 93
   }
 }
