@@ -23,7 +23,7 @@ import {
 import { NOON_LIGHT, bakeLightField, bakeSunShafts, lightFieldAt, lightReach } from "./light-field.js";
 import { dayBlend, normalizeHour } from "./time-of-day.js";
 import { backWallGeometry, terrainAt, terrainGeometry } from "./terrain.js";
-import { terrainSolidAt } from "./terrain-runtime.js";
+import { terrainBodySpans, terrainSolidAt } from "./terrain-runtime.js";
 import { isSeeThrough } from "./materials.js";
 import { waterColumns } from "./water.js";
 import { LANTERN_CENTRE } from "./cave-props.js";
@@ -142,6 +142,40 @@ export function sunVisible(trail, x, y, radius) {
   for (const [dx, dy] of SUN_SAMPLES)
     if (!layers.some((compiled) => terrainSolidAt(compiled, x + dx * radius, y + dy * radius, opaque))) open++;
   return open / SUN_SAMPLES.length;
+}
+
+/**
+ * Cuts the sun's disc out of its glare on `g`, a canvas of the view's art
+ * pixels with its top left at (left, top) in the world, so the halo and rays
+ * start at the sun's edge rather than cross it. The disc is drawn in the sky
+ * (see drawPixelDisc), in cells on a 4-unit grid round the pixel (ox, oy), and
+ * only where nothing opaque stands in front of it, since a wall that hides
+ * the sun takes the glare like the rest of the scene and would otherwise show
+ * the disc as a darker shape on it.
+ */
+function cutSunDisc(g, trail, radius, ox, oy, left, top) {
+  const layers = [terrainGeometry(trail), backWallGeometry(trail)].filter(Boolean);
+  const cell = 4 / ART_PIXEL,
+    cells = Math.ceil(radius / 4);
+  for (let px = ox - cells * cell; px < ox + (cells + 1) * cell; px++) {
+    const column = Math.floor((px - ox) / cell);
+    const x = left + (px + 0.5) * ART_PIXEL;
+    const covers = layers.flatMap((compiled) => terrainBodySpans(compiled, x)).filter((span) => opaque(span.topBody));
+    let start = null;
+    for (let py = oy - cells * cell; py <= oy + (cells + 1) * cell; py++) {
+      const row = Math.floor((py - oy) / cell);
+      const y = top + (py + 0.5) * ART_PIXEL;
+      const open =
+        Math.abs(row) <= cells &&
+        Math.abs(column) <= Math.floor(Math.sqrt(cells * cells - row * row)) &&
+        !covers.some((span) => y > span.top && y < span.bottom);
+      if (open && start === null) start = py;
+      else if (!open && start !== null) {
+        g.fillRect(px, start, 1, py - start);
+        start = null;
+      }
+    }
+  }
 }
 
 // Sunbeams show sharpest while something cuts across the sun: with half of it
@@ -323,8 +357,8 @@ export function createLighting() {
     cols = 0,
     rows = 0;
   // The sun's rays and halo (`rays`), redrawn only as the sun moves on screen
-  // or its rays sway, and with the baked shade cut out of them (`glare`), redrawn
-  // only as the view moves (see drawGlare).
+  // or its rays sway, and with the sun's disc and the baked shade cut out of
+  // them (`glare`), redrawn only as the view moves (see drawGlare).
   let glareCanvas = null,
     glareContext = null,
     glareKey = "",
@@ -1028,9 +1062,11 @@ export function createLighting() {
   // kept out of caves and rock by the baked shade. Screened on top so it only
   // ever brightens. The rays are only drawn again when the sun has moved a
   // pixel on screen, their sway has moved on (about every third frame) or
-  // their strength has changed a step, and the shade is only cut out again
-  // when the view has moved; otherwise the kept canvas is laid over the scene.
-  function drawGlare(ctx, entry, { cameraX, cameraY, width, height, time = 0 }, sun, color, glare, rays, left, top) {
+  // their strength has changed a step, and the disc and the shade are only cut
+  // out again when the view has moved; otherwise the kept canvas is laid over
+  // the scene.
+  function drawGlare(ctx, entry, options, sun, color, glare, rays, left, top) {
+    const { cameraX, cameraY, width, height, time = 0 } = options;
     const sx = cameraX + sun.x,
       sy = cameraY + sun.y;
     if (!raysCanvas) {
@@ -1082,47 +1118,36 @@ export function createLighting() {
       g.translate(ox, oy);
       const halo = sprite(150, color);
       g.drawImage(halo.image, -halo.r, -halo.r);
-      // The rays and halo start at the sun's edge rather than cross its disc:
-      // the disc's cells (see drawPixelDisc), on its 4-unit grid, are cut out.
-      g.globalCompositeOperation = "destination-out";
-      g.globalAlpha = 1;
-      const cell = 4 / ART_PIXEL,
-        cells = Math.ceil(sun.radius / 4);
-      for (let row = -cells; row <= cells; row++) {
-        const span = Math.floor(Math.sqrt(cells * cells - row * row));
-        g.fillRect(-span * cell, row * cell, (span * 2 + 1) * cell, cell);
-      }
       g.setTransform(1, 0, 0, 1, 0, 0);
       g.globalCompositeOperation = "source-over";
     }
-    let image = raysCanvas;
-    if (entry.shade) {
-      if (!glareCanvas) {
-        glareCanvas = createCanvas(cols, rows);
-        glareContext = glareCanvas.getContext("2d");
-      }
-      const shadeKey = `${key}|${left}|${top}`;
-      if (shadeKey !== glareKey || entry !== glareEntry) {
-        glareKey = shadeKey;
-        glareEntry = entry;
-        const g = glareContext;
-        g.setTransform(1, 0, 0, 1, 0, 0);
-        g.globalCompositeOperation = "source-over";
-        g.globalAlpha = 1;
-        g.clearRect(0, 0, cols, rows);
-        g.drawImage(raysCanvas, 0, 0);
-        g.globalCompositeOperation = "destination-out";
+    if (!glareCanvas) {
+      glareCanvas = createCanvas(cols, rows);
+      glareContext = glareCanvas.getContext("2d");
+    }
+    const glareViewKey = `${key}|${left}|${top}`;
+    if (glareViewKey !== glareKey || entry !== glareEntry) {
+      glareKey = glareViewKey;
+      glareEntry = entry;
+      const g = glareContext;
+      g.setTransform(1, 0, 0, 1, 0, 0);
+      g.globalCompositeOperation = "source-over";
+      g.globalAlpha = 1;
+      g.clearRect(0, 0, cols, rows);
+      g.drawImage(raysCanvas, 0, 0);
+      g.globalCompositeOperation = "destination-out";
+      cutSunDisc(g, options.trail, sun.radius, ox, oy, left, top);
+      if (entry.shade) {
         g.imageSmoothingEnabled = true;
         drawField(g, entry.shade, entry.field, left, top);
-        g.globalCompositeOperation = "source-over";
       }
-      image = glareCanvas;
+      g.globalCompositeOperation = "source-over";
     }
     ctx.save();
     ctx.imageSmoothingEnabled = false;
     ctx.globalCompositeOperation = "screen";
     ctx.globalAlpha = 0.24 * glare;
-    ctx.drawImage(image, left, top, cols * ART_PIXEL, rows * ART_PIXEL);
+    ctx.drawImage(glareCanvas, left, top, cols * ART_PIXEL, rows * ART_PIXEL);
     ctx.restore();
   }
 
