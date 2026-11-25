@@ -2,6 +2,76 @@
 /** @type {{ version: string, date: string, changes: { type: 'new' | 'improved' | 'fixed', text: string }[] }[]} */
 export const RELEASES = [
   {
+    "version": "0.7.0",
+    "date": "2026-11-25",
+    "changes": [
+      {
+        "type": "new",
+        "text": "A new world, The Coast, with Sandcastle: a long climb through a whole sandcastle by the sea, from the beach outside its gate to the flag on its keep. The Mountains now start at trail 38."
+      },
+      {
+        "type": "new",
+        "text": "Coast props for trails: shells, driftwood, bunting, a shipwreck, crabs that dig into the sand when you come close (unless a wheel bowls them over first), a pail and spade, pennants, shells pressed into a wall, and a beach ball you can push around anywhere."
+      },
+      {
+        "type": "new",
+        "text": "Palm trees for trails, big and small, their fronds stirring in the wind; hard landings nearby knock the big one's coconuts down."
+      },
+      {
+        "type": "new",
+        "text": "Pickaxe, shovel and bucket props, small enough for a nisse."
+      },
+      {
+        "type": "new",
+        "text": "A coast backdrop for tropical islands: the open sea out to the horizon with islands on it, and a beach lined with palms in front."
+      },
+      {
+        "type": "new",
+        "text": "Crashing into deep water sends up bubbles, more the harder you hit it: a rush off the rider, then a thinning trail, and burps from the sinking bike. They pop at the surface with a little ripple."
+      },
+      {
+        "type": "new",
+        "text": "Phones and gaming handhelds can now be played sideways with a controller: press any button on the \"Turn your phone upright\" screen, and the trail fills the screen."
+      },
+      {
+        "type": "new",
+        "text": "Links to the game now show a picture of it in chats and social apps."
+      },
+      {
+        "type": "new",
+        "text": "In the editor, click the zoom level for a menu that zooms to 100%, fits the trail, zooms to the selection or goes to the start; double-click it to go straight back to 100%. Shift+2 also zooms to the selection."
+      },
+      {
+        "type": "new",
+        "text": "In the editor, undo and redo say what they took back or did again, such as \"moved 3 blocks\", and the buttons name the step when you point at them. The ▾ beside them lists your steps, newest first; pick one to jump back or forward to it."
+      },
+      {
+        "type": "improved",
+        "text": "Mirage is rebuilt as an open desert map: start by a castle buried in the sand and ride out to both sides for the apples, in any order."
+      },
+      {
+        "type": "improved",
+        "text": "Water looks more like water: it lies calm in still air, ripples in a breeze and rolls with swell and whitecaps in a gale, more the wider it is. Riding through it, splashing into it and rain send ripples across it that bounce off the banks, and ducks, lilies and boats bob on them."
+      },
+      {
+        "type": "improved",
+        "text": "A rider who crashes into deep water now plunges under, deeper the harder they hit it, comes back up over a second or two and floats upright, their helmet just out of the water or, without one, their chin at it. Floating riders and lost helmets bob on the waves."
+      },
+      {
+        "type": "improved",
+        "text": "Back walls in daylight keep the colour of their material, so a sunlit hall or street no longer looks like stone deep in a cave. Caves stay as dark as before."
+      },
+      {
+        "type": "improved",
+        "text": "Every control prompt now shows what you're playing with: your own key bindings, your gamepad's buttons, or the on-screen buttons. How to Play, the pause screen, the results, the crash message and the interact key all switch as soon as you pick up another."
+      },
+      {
+        "type": "fixed",
+        "text": "In the editor, a curved edge on a block drawn clockwise could load straight or move to the next edge."
+      }
+    ]
+  },
+  {
     "version": "0.6.9",
     "date": "2026-11-23",
     "changes": [
