@@ -211,6 +211,7 @@ export const FACING_PROPS = new Set([
   "ski-lift",
   "ladder",
   "arrow-sign",
+  "pickaxe",
 ]);
 
 export const canFlip = (type) => FACING_PROPS.has(type);
@@ -700,6 +701,9 @@ export function validateTrail(trail) {
         "mushrooms",
         "minecart",
         "beams",
+        "pickaxe",
+        "shovel",
+        "bucket",
         "drip",
         "lantern",
         "bats",

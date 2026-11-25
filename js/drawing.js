@@ -65,6 +65,7 @@ import {
   LANTERN_LIGHT,
   LANTERN_TOP,
   RAIL_TOP,
+  TOOL_BOUNDS,
   drawBatFlying,
   drawBatHanging,
   drawBeams,
@@ -78,6 +79,7 @@ import {
   drawMushrooms,
   drawRails,
   drawStalactites,
+  drawTool,
   mushroomCaps,
   WATER,
 } from "./cave-props.js";
@@ -467,6 +469,7 @@ const GROUND_ALIGNED_PROP_SPANS = {
   "tyre-wall": [-44, 44],
   "hay-bales": [-34, 34],
   "petrol-can": [-10, 10],
+  bucket: [-6, 6],
   "prison-fence": [-44, 44],
   "ball-and-chain": [-18, 18],
   "escape-tunnel": [-20, 20],
@@ -4629,6 +4632,9 @@ const CANOPY_SPRITES = {
   scaffolding: { bounds: [-52, -142, 52, 0], draw: drawScaffoldDecks },
   graffiti: { bounds: GRAFFITI_BOUNDS, draw: drawGraffiti },
   minecart: { bounds: [-26, -38, 26, 0], draw: drawMinecart },
+  pickaxe: { bounds: TOOL_BOUNDS.pickaxe, draw: (tools) => drawTool(tools, "pickaxe") },
+  shovel: { bounds: TOOL_BOUNDS.shovel, draw: (tools) => drawTool(tools, "shovel") },
+  bucket: { bounds: TOOL_BOUNDS.bucket, draw: (tools) => drawTool(tools, "bucket") },
   skull: { bounds: [-22, -26, 22, 0], draw: drawCowSkull },
   "car-wreck": { bounds: [-70, -44, 70, WRECK_SINK], draw: drawCarWreck },
   driftwood: { bounds: DRIFTWOOD_BOUNDS, draw: drawDriftwood },
@@ -4800,6 +4806,9 @@ const PROP_EXTENTS = {
   mushrooms: [-20, -34, 20],
   minecart: [-RAIL_REACH - 4, -52, RAIL_REACH + 4],
   beams: [-BEAM_HALF - 2, -BEAM_REACH - 12, BEAM_HALF + 2],
+  pickaxe: TOOL_BOUNDS.pickaxe.slice(0, 3),
+  shovel: TOOL_BOUNDS.shovel.slice(0, 3),
+  bucket: TOOL_BOUNDS.bucket.slice(0, 3),
   lily: [-18, -SURFACE_REACH - 12, 22],
   duck: [-14, -SURFACE_REACH - 20, 16],
   // A frog leaps out either way, and its splash spreads.
@@ -6925,6 +6934,9 @@ export function createGameArt(ctx) {
       type === "tyre-wall" ||
       type === "hay-bales" ||
       type === "petrol-can" ||
+      type === "pickaxe" ||
+      type === "shovel" ||
+      type === "bucket" ||
       PAINTED_PROPS.has(type)
     ) {
       drawCanopy(type);

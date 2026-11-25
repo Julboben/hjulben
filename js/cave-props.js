@@ -3,6 +3,7 @@
 // Ceiling props are drawn hanging down from y = 0, which drawing.js moves onto
 // the cave ceiling it found above the prop's anchor. Floor props stand on y = 0.
 import { STEEL } from "./city-props.js";
+import { drawGrid } from "./corgi-props.js";
 
 // Wrought iron, from the rubber greys.
 const IRON = { dark: "#3a403d", base: "#4a524d", light: "#5b645e" };
@@ -386,4 +387,85 @@ export function drawBeams({ pixelRect }, groundOffset, headerTop, ceiling, packi
   pixelRect(BEAM_HALF - 2, top, 2, 6, WOOD.tip, 2);
   pixelRect(-20, top + 4, 8, 2, WOOD.base, 2);
   pixelRect(6, top + 2, 10, 2, WOOD.base, 2);
+}
+
+// ---------------------------------------------------------------------------
+// Digging tools, small enough for a nisse
+// ---------------------------------------------------------------------------
+
+// One character per 2-unit cell, drawn with the rabbit's and corgi's grid.
+const TOOL_KEYS = {
+  w: WOOD.base, W: WOOD.plank, l: WOOD.light,
+  i: IRON.light, I: STEEL.base, h: STEEL.light,
+  b: WOOD.dark, B: WOOD.base, L: WOOD.light, n: IRON.dark,
+  r: ORE.dark, R: ORE.base, s: ORE.light,
+};
+const TOOLS = {
+  // Leaning on its handle, the pick's head up: it faces the way it leans.
+  pickaxe: {
+    left: -12,
+    rows: [
+      "....hhII....",
+      "..hII.WII...",
+      ".Ii...W..Ii.",
+      "i....W.....i",
+      ".....W......",
+      "....W.......",
+      "....W.......",
+      "...W........",
+      "...W........",
+      "..W.........",
+      "..w.........",
+      ".w..........",
+    ],
+  },
+  // Stood on its blade, the grip up.
+  shovel: {
+    left: -4,
+    rows: [
+      ".wWl.",
+      "..W..",
+      "..W..",
+      "..W..",
+      "..W..",
+      "..W..",
+      "..w..",
+      ".iIh.",
+      ".iIIh",
+      "iIIIh",
+      ".iIh.",
+      "..i..",
+    ],
+  },
+  // A wooden pail heaped with rubble, an iron band round its middle.
+  bucket: {
+    left: -8,
+    rows: [
+      ".s.Rr..",
+      "rRsRRs.",
+      "bBBBBBL",
+      ".bBBBL.",
+      ".nnnnn.",
+      ".bBBBL.",
+      "..bBL..",
+    ],
+  },
+};
+
+/**
+ * Sprite bounds `[left, top, right, bottom]` of each digging tool, standing
+ * on y = 0: a 24 × 24 pickaxe, a 10 × 24 shovel and a 14 × 14 bucket.
+ * @type {Record<"pickaxe" | "shovel" | "bucket", [number, number, number, number]>}
+ */
+export const TOOL_BOUNDS = /** @type {any} */ (Object.fromEntries(Object.entries(TOOLS).map(([type, { left, rows }]) =>
+  [type, [left, -rows.length * 2, left + rows[0].length * 2, 0]])));
+
+/**
+ * One of the digging tools, standing on y = 0 and lit from the right.
+ * @param {{ pixelRect: Function }} tools
+ * @param {"pickaxe" | "shovel" | "bucket"} type
+ */
+export function drawTool(tools, type) {
+  const { left, rows } = TOOLS[type];
+  drawGrid(tools, left, -rows.length * 2, rows, TOOL_KEYS);
 }
