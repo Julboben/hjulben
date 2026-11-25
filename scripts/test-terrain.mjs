@@ -293,4 +293,21 @@ assert.ok(
   "a buried point reports its full depth",
 );
 
+// A block drawn clockwise is turned round when it loads, and each curve stays
+// on the edge it was drawn on: here the slope down from the top corner, the
+// only curved one.
+{
+  const node = (x, y, extra = {}) => ({ x, y, mode: "corner", in: null, out: null, edge: "straight", ...extra });
+  const clockwise = {
+    id: "ramp", material: "dirt", inner: [],
+    outer: { nodes: [node(0, 300), node(300, 300), node(300, 0, { out: [280, 40], edge: "curve" }), node(200, 100, { in: [240, 100] }), node(0, 100)] },
+  };
+  const trail = normalizeTrail({ name: "test", start: { x: 50, y: null, facing: 1 }, finish: { x: 250, y: null }, apples: [], spikes: [], terrainBlocks: [clockwise] });
+  const nodes = trail.terrainBlocks[0].outer.nodes;
+  const curved = nodes.filter((n) => n.edge === "curve");
+  assert.equal(curved.length, 1, "one curved edge after turning the block round");
+  assert.deepEqual([curved[0].x, curved[0].y, curved[0].out], [200, 100, [240, 100]], "it now leaves the foot of the slope, along the handle drawn there");
+  assert.deepEqual(normalizeTrail(trail).terrainBlocks, trail.terrainBlocks, "and loading it again changes nothing");
+}
+
 console.log("Terrain collision, seating and shadow tests passed.");

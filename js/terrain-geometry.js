@@ -319,11 +319,17 @@ function orientBoundary(boundary, wantPositive) {
   if (Math.abs(area) < MIN_AREA) return boundary;
   if (area > 0 === wantPositive) return boundary;
   // Reversing the node order also swaps which handle belongs to which edge, so
-  // the handles travel with their node rather than being re-derived.
-  const nodes = boundary.nodes.slice().reverse();
+  // the handles travel with their node rather than being re-derived, and the
+  // edge leaving each node is the one that used to arrive there.
+  const { nodes } = boundary;
   return {
     id: boundary.id,
-    nodes: nodes.map(node => ({ ...node, in: node.out ? [...node.out] : null, out: node.in ? [...node.in] : null })),
+    nodes: nodes.map((node, index) => ({
+      ...node,
+      in: node.out ? [...node.out] : null,
+      out: node.in ? [...node.in] : null,
+      edge: nodes[(index + nodes.length - 1) % nodes.length].edge,
+    })).reverse(),
   };
 }
 
