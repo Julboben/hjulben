@@ -16,4 +16,3 @@ export const tools = createDrawingTools(ctx);
 
 export const terrainArt = createTerrainRenderer();
 
-export const backWallArt = createTerrainRenderer({ backWalls: true });

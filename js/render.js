@@ -21,14 +21,15 @@ import {
   propRotation,
   propSpan,
   propWallFit,
+  crabPropAt,
   rabbitPropAt,
   sunLight,
   sunShadowOffset,
   waterPropAt,
 } from "./drawing.js";
-import { fallLine, terrainAt, groundShadowSamples, terrainGeometry, terrainRaycastAt } from "./terrain.js";
+import { fallLine, terrainAt, terrainCollisionsAt, groundShadowSamples, terrainGeometry, terrainRaycastAt } from "./terrain.js";
 import { finishHeight } from "./trail-schema.js";
-import { waterColumns } from "./water.js";
+import { submergedFraction, waterBodies, waterColumns } from "./water.js";
 import { WEATHER_COLUMN, weatherGroundAt } from "./weather-fall.js";
 import { createTerrainRenderer } from "./terrain-render.js";
 import { riderCollisionPoints } from "./ride.js";
@@ -88,6 +89,7 @@ import {
   corgiStep,
 } from "./corgi-props.js";
 import { RABBIT_FLEE, RABBIT_RANGE } from "./rabbit-props.js";
+import { BALL_RADIUS, BUNTING, CRAB_FLEE, CRAB_RANGE, ballStart, ballStep, crabRunOver } from "./coast-props.js";
 import { crackLines, glassPane } from "./glass.js";
 
 const GLASS_CRACK_COLOR = "#f6fffde6";
@@ -117,6 +119,8 @@ const SCENERY_SHADOWS = {
   lamp: { width: 6, alpha: 0.15, thickness: 3, lift: 40 },
   skull: { width: 12, alpha: 0.13, thickness: 3, lift: 6 },
   "car-wreck": { width: 54, alpha: 0.15, thickness: 3, lift: 16 },
+  driftwood: { width: 28, alpha: 0.13, thickness: 3, lift: 6 },
+  shipwreck: { width: 96, alpha: 0.15, thickness: 3, lift: 30 },
   "water-tower": { width: 36, alpha: 0.15, thickness: 3, lift: 70 },
   windmill: { width: 24, alpha: 0.14, thickness: 3, lift: 60 },
   cairn: { width: 14, alpha: 0.13, thickness: 3, lift: 14 },
@@ -190,6 +194,7 @@ const PROP_RISE = {
   scaffolding: 146,
   skull: 28,
   "car-wreck": 48,
+  shipwreck: 112,
   "water-tower": 180,
   windmill: 196,
   "heat-haze": 56,
@@ -240,6 +245,10 @@ const PROP_REACH = {
   squirrel: SQUIRREL_RANGE + 40,
   corgi: CORGI_RANGE + 40,
   rabbit: RABBIT_RANGE + 40,
+  crab: CRAB_RANGE + 20,
+  bunting: BUNTING.half + 10,
+  shipwreck: 120,
+  pennant: 40,
   tumbleweed: TUMBLEWEED_RUN + 30,
   vulture: VULTURE_ORBIT.x + 40,
   "heat-haze": HAZE_HALF + 10,
@@ -260,9 +269,9 @@ const PROP_REACH = {
   "wind-turbine": TURBINE.blade + 8,
 };
 // Perched birds and ducks take off, roosting bats scatter, fish dart off,
-// rabbits bound away and squirrels run for a tree when the rider comes within
-// `x` and `y` of them; they are gone `flight` seconds later (a squirrel as
-// soon as it has hidden).
+// rabbits bound away, crabs dig in and squirrels run for a tree when the rider
+// comes within `x` and `y` of them; they are gone `flight` seconds later (a
+// squirrel as soon as it has hidden, a crab once it has buried itself).
 const STARTLE = {
   bird: { x: 110, y: 140, flight: 2.5 },
   bats: { x: 160, y: 200, flight: 2.2 },
@@ -272,6 +281,7 @@ const STARTLE = {
   fish: { x: 90, y: 70, flight: FISH_DART },
   squirrel: { x: 140, y: 120, flight: SQUIRREL_HIDE_MAX },
   rabbit: { x: 130, y: 110, flight: RABBIT_FLEE },
+  crab: { x: 70, y: 50, flight: CRAB_FLEE },
 };
 // Heat haze shimmers the scene behind it, so it stays out of the x-ray mask,
 // and it is left out with reduced motion and in the lighter graphics mode.
@@ -380,6 +390,13 @@ export function createRenderer(canvas, { still = false } = {}) {
   // woofs have gone off in view since game.js last asked, for the sound.
   const corgis = new Map();
   let corgiRide = null;
+  // Each beach ball's state (see ballStep) for the current ride, where the
+  // wheels were last frame, for how fast they hit one, and the hardest knock
+  // a ball in view has taken since game.js last asked, for the sound.
+  const balls = new Map();
+  let ballRide = null;
+  let wheelsBefore = null;
+  let ballKnock = 0;
   // When (scene time) a coin last went into each stall's honesty box.
   const payments = new Map();
   // The coconuts knocked off each palm this ride, in the order they fell:
@@ -484,6 +501,7 @@ export function createRenderer(canvas, { still = false } = {}) {
       shadowed: [],
       startled: [],
       corgis: [],
+      balls: [],
       vultures: [],
       palms: [],
       passable: [],
@@ -504,6 +522,7 @@ export function createRenderer(canvas, { still = false } = {}) {
       if (SCENERY_SHADOWS[prop.type]) buckets.shadowed.push(prop);
       if (STARTLE[prop.type]) buckets.startled.push(prop);
       if (prop.type === "corgi") buckets.corgis.push(prop);
+      if (prop.type === "beach-ball") buckets.balls.push(prop);
       if (prop.type === "vulture") buckets.vultures.push(prop);
       if (prop.type === "palm") buckets.palms.push(prop);
       if (PASS_PROPS.has(prop.type)) buckets.passable.push(prop);
@@ -621,7 +640,8 @@ export function createRenderer(canvas, { still = false } = {}) {
   }
 
   // Perched birds, ducks, roosting bats, fish, rabbits and squirrels take off,
-  // away from the rider (a squirrel to its tree), once the rider comes close.
+  // away from the rider (a squirrel to its tree), once the rider comes close,
+  // and crabs dig in, unless a wheel gets to one first and bowls it over.
   // Purely visual: nothing here feeds back into the simulation.
   function startleProps(ride, focus, now) {
     if (flightRide !== ride) {
@@ -630,7 +650,15 @@ export function createRenderer(canvas, { still = false } = {}) {
     }
     for (const prop of bucketProps().startled) {
       const reach = STARTLE[prop.type];
-      if (flights.has(prop)) continue;
+      const flight = flights.get(prop);
+      if (flight) {
+        if (prop.type === "crab" && flight.knocked === undefined && !ride.ragdoll) {
+          const age = (now - flight.start) / 1000;
+          if ([ride.rear, ride.front].some((wheel) => crabRunOver(age, wheel.x - flight.x, wheel.y + RADIUS - flight.y)))
+            flight.knocked = age;
+        }
+        continue;
+      }
       let x = prop.x,
         y = Number.isFinite(prop.y) ? prop.y : terrainAt(trail, prop.x).y,
         from;
@@ -641,8 +669,10 @@ export function createRenderer(canvas, { still = false } = {}) {
       }
       // A rabbit bounds off from wherever it has hopped to.
       if (prop.type === "rabbit") ({ x, y, from } = rabbitPropAt(trail, prop, propScene.time));
+      // So does a crab, which digs in there.
+      if (prop.type === "crab") ({ x, y, from } = crabPropAt(trail, prop, propScene.time));
       if (Math.abs(focus.x - x) < reach.x && Math.abs(focus.y - y) < reach.y)
-        flights.set(prop, { start: now, dir: x >= focus.x ? 1 : -1, from });
+        flights.set(prop, { start: now, dir: x >= focus.x ? 1 : -1, from, x, y });
     }
   }
 
@@ -666,6 +696,45 @@ export function createRenderer(canvas, { still = false } = {}) {
       corgis.set(prop, state);
       if (state.woofed && inView(prop.x + state.dx, 40, y, 50)) woofs++;
     }
+  }
+
+  // Beach balls go wherever the wheels push them, for the rest of the ride.
+  // Purely visual, like Coda; with reduced motion (time 0) they stay put.
+  function rollBalls(ride, dt) {
+    if (ballRide !== ride) {
+      balls.clear();
+      ballRide = ride;
+      wheelsBefore = null;
+    }
+    const props = bucketProps().balls;
+    if (!props.length) return;
+    // A long frame, such as coming back to the tab, is taken as a short one.
+    const step = propScene.time ? Math.min(dt, 0.05) : 0;
+    const wheels = [ride.rear, ride.front].map(({ x, y }, index) => {
+      const before = wheelsBefore?.[index];
+      return { x, y, vx: before && dt ? (x - before.x) / dt : 0, vy: before && dt ? (y - before.y) / dt : 0 };
+    });
+    wheelsBefore = wheels;
+    const water = waterBodies(trail);
+    for (const prop of props) {
+      const state = balls.get(prop) ?? ballStart(prop.x, Number.isFinite(prop.y) ? prop.y : terrainAt(trail, prop.x).y);
+      const next = ballStep(state, {
+        dt: step,
+        wheels,
+        wheelRadius: RADIUS,
+        contacts: (x, y, radius) => terrainCollisionsAt(trail, x, y, radius),
+        submerged: (x, y, radius) => submergedFraction(water, x, y, radius),
+      });
+      balls.set(prop, next);
+      if (next.knock && inView(next.x, BALL_RADIUS, next.y, BALL_RADIUS)) ballKnock = Math.max(ballKnock, next.knock);
+    }
+  }
+
+  /** The hardest knock a beach ball in view has taken since last asked, in units per second, or 0. */
+  function takeBallKnock() {
+    const knock = ballKnock;
+    ballKnock = 0;
+    return knock;
   }
 
   // What the rider can interact with, by prop type (see interactions.js).
@@ -971,6 +1040,14 @@ export function createRenderer(canvas, { still = false } = {}) {
         PROP_REACH[prop.type] ?? 70,
         rotation ? Math.max(PROP_RISE[prop.type] ?? 90, PROP_HANG[prop.type] ?? 0) : 0,
       );
+      // A beach ball is drawn wherever it has rolled to.
+      const ball = balls.get(prop);
+      if (ball) {
+        if (!inView(ball.x, BALL_RADIUS, ball.y + BALL_RADIUS, BALL_RADIUS * 2) || (area && (ball.x < area.left - BALL_RADIUS || ball.x > area.right + BALL_RADIUS))) continue;
+        art.drawProp(prop.type, Math.round(ball.x / 2) * 2, Math.round((ball.y + BALL_RADIUS) / 2) * 2, 1, 0, () => 0, "", null, false, { ...propScene, ball });
+        drawn++;
+        continue;
+      }
       const swoop = swoops.get(prop);
       if (swoop) {
         const at = vultureSwoop(swoop.from, swoop.to, (frameNow - swoop.start) / 1000, swoop.duration, propScene.riderX);
@@ -1012,7 +1089,7 @@ export function createRenderer(canvas, { still = false } = {}) {
         // leaves its empty pad behind).
         if (reducedMotion && prop.type === "frog") scene = { ...propScene, flight: { age: Infinity, dir: flight.dir } };
         else if (reducedMotion || age > STARTLE[prop.type].flight) continue;
-        else scene = { ...propScene, flight: { age, dir: flight.dir, from: flight.from } };
+        else scene = { ...propScene, flight: { age, dir: flight.dir, from: flight.from, knocked: flight.knocked } };
       }
       art.drawProp(
         prop.type,
@@ -2087,6 +2164,7 @@ export function createRenderer(canvas, { still = false } = {}) {
     watchCrash(ride, focus, now);
     watchHalfway(ride, focus, now);
     walkCorgis(ride, focus, animationDt);
+    rollBalls(ride, animationDt);
     camera.follow(focus, {
       facing: ride.facing,
       loose: Boolean(ride.ragdoll),
@@ -2276,6 +2354,7 @@ export function createRenderer(canvas, { still = false } = {}) {
     reset,
     land,
     takeWoofs,
+    takeBallKnock,
     /** Whether the scene behind the results has come to a stop. */
     settled: () => wonFor >= WIN_SETTLE,
     interact,

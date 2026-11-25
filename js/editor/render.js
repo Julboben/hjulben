@@ -12,6 +12,7 @@ import { NISSE_GROUND_LIFT, drawNisse } from "../nisse.js";
 import { SPIKE_TIP } from "../spike.js";
 import { store } from "../local-store.js";
 import { fallLine, invalidateTerrain, terrainGeometry, updateTerrain } from "../terrain.js";
+import { createTerrainRenderer } from "../terrain-render.js";
 import { terrainColumnSpans } from "../terrain-runtime.js";
 import { edgeCurve, regionBounds } from "../terrain-geometry.js";
 import { finishFlower, finishHeight, surfaceBelow } from "../trail-schema.js";
@@ -26,7 +27,7 @@ import {
   traceBoundary,
   traceBlock,
 } from "./blocks.js";
-import { $, art, backWallArt, canvas, ctx, terrainArt, tools } from "./dom.js";
+import { $, art, canvas, ctx, terrainArt, tools } from "./dom.js";
 import { drawPreviewFrame } from "./preview.js";
 import { drawMinimap } from "./minimap.js";
 import { scaleFrame, scaling } from "./scale.js";
@@ -319,6 +320,9 @@ export const GAME_ART_MIN_ZOOM = 0.35;
 // point colour so their corners can still be found and grabbed there.
 const BACK_WALL_SHADE = "#1b263380";
 const BACK_WALL_POINT = "#a99cf0";
+// The game's art for back walls, drawn again when their daylight catches up
+// with an edit, a moment after it.
+const backWallArt = createTerrainRenderer({ backWalls: true, redraw: renderView });
 
 function showGameArt() {
   return editor.gameArt && editor.zoom >= GAME_ART_MIN_ZOOM;

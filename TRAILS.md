@@ -172,33 +172,41 @@ Written by `scripts/generate-trails-overview.mjs` from the trail files, so don't
 
   > The one where you climb a scaffold off a sunny Copenhagen street, ride the roofs past the spire of Vor Frelsers Kirke and break through a glass courtyard roof to get back down. Route: 1 Street: the kerbs of a side street, a cafe terrace with two steps up and a ramp down. 2 Scaffold: plank ramps up a house under renovation, a pallet of bricks to hop, a missing plank to jump, a long top lift for speed and a kicker to the first roof's gutter (come up short and you hang from it by the front wheel). 3 Roofs: two chimneys to hop, the slate kicker over the gap in front of the church tower, a dormer over a tall chimney, a second dormer up to a balcony, the steep slate above it, a gap down to a roof terrace, and a tall tiled roof to climb on momentum. 4 Courtyard: roll off its gutter onto the glass roof; it breaks and drops you on the loft, and galleries step down to the yard. 5 Out through the carriage arch and up three steps to the flower above the terrace. Apples in order: 1 under the cafe awning (pop the steps). 2 over the missing plank (jump, don't drop in). 3 on the tall chimney (launch off the dormer). 4 on the balcony (a short, precise hop: too long hits the wall, too short lands back on the roof). 5 high over the terrace pergola: ride up the tiled roof, roll back, turn and launch left off the hump (needs the turn; checked with --without turn). 6 in the courtyard under the loft: only reached from above, so turn back for it once down. Recovery: a fall off the scaffold lands on the street, ride up again. Missing the balcony or apple 5 costs time on the roof, not the run. Only the gaps between roofs end it. Look: the street is back walls with glass windows cut in, shops, awnings, balconies and flower boxes; the houses you ride are terrain facades; a second row and the spire rise behind.
 
+## The Coast
+
+*Sand and sea, `coast` backdrop, a sunny afternoon with beach toys and bunting. Brings the career together in one long climb before the mountains.*
+
+- **37. Sandcastle:** A long climb through a sandcastle that strings the career together: kicker jumps over holes, an air turn up a quarter pipe, a ledge hang, hops, steps and a momentum climb to the finish. Most misses drop you a floor and cost time rather than the run. *Also new:* The coast backdrop and palms, and the beach: crabs, bunting, pennants, shells pressed into the walls and a beach ball to push around. A castle drawn with terrain, open to the sky through its arches, with a portcullis, a flooded cistern and a keep on arches over the sea. (gold 92 s, bot 88.3 s)
+
+  > The one with a whole sandcastle to climb, from the beach outside its gate to the flag on its keep, inside, outside and over the roof. 1 Beach: hop the dunes (apple 1 over the second), then kick off the bank over the moat to the gate (2); short, you land in the ford and ride back out. 2 Gate hall, east: hop the rubble heap (3), ride down into the flooded cistern (4). 3 Tower: ride up the quarter pipe, which throws you back onto the great hall's ledge (5), and turn, in the air or on the ledge. 4 Great hall, west: kick over the hole above the cistern (6) and the hole above the rubble; a miss drops you to the gate hall to ride round again. Climb the dais (7). 5 Bridge: kick up, hang from the bastion's lip and pull up (8), turn, roll down and kick across to the gallery balcony; short, you land on the bridge and try again. 6 Gallery, east: kick over two holes, holding speed for 9 high over the second. Hop the pillows (10) and climb the stairs, lifting the front at each step. 7 Ride up the keep (11 beside the flower, which isn't open yet). Roll back down for speed and the kicker on the landing throws you over the stairwell onto the roof (12); too slow, you fall onto the stairs. Ride the battlements west, kicking over the hole in the roof (13; a miss drops you onto the pillows), to the west tower (14). Turn, ride back and drop into the stairwell to climb the stairs again, or come fast off the last hump and fly it back to the landing. 8 Over the keep, brake down its curled side to the terrace on the arches (15 at the far end), turn, and use the whole terrace as a run-up: only real speed carries you up the curl to the flower. Experts: reach the first pillow at about 450 units/s and it throws you over the second onto the third. The stairwell jump needs about 400. A miss inside drops you a floor and costs time rather than the run.
+
 ## The Mountains
 
 *Snow and rock, `mountains` backdrop, worsening weather. The final tests.*
 
-- **37. Long Way Up:** Endurance. An 800+ unit climb where you must not lose momentum. *Also new:* Light snow (`snow` ≈ 0.3), cairns. (gold 20 s, bot 28.2 s)
+- **38. Long Way Up:** Endurance. An 800+ unit climb where you must not lose momentum. *Also new:* Light snow (`snow` ≈ 0.3), cairns. (gold 20 s, bot 28.2 s)
 
   > Link everything together across a long climb: preserve momentum, control wheelies, and recover your balance without losing speed.
 
-- **38. Whiteout:** Fog limits how far ahead you can see, so signs and props mark the route. *Also new:* Heavier snow, the ski lift. (gold 15 s, bot 41.4 s)
+- **39. Whiteout:** Fog limits how far ahead you can see, so signs and props mark the route. *Also new:* Heavier snow, the ski lift. (gold 15 s, bot 41.4 s)
 
   > The fog closes in and you can't see far ahead. Trust the markers: the ski lift pylons run along the route, cairns mark the safe line, and the signs warn of what's coming before you can see it. A drop, a gully, a kicker and a step-up are hidden in the white. Ride at a speed that lets you react.
 
-- **39. Big Air:** Big kickers and gaps of 120–160 units. Air flips are optional, for gold times. *Also new:* A clear high-altitude sky. (gold 10 s, bot 10.0 s)
+- **40. Big Air:** Big kickers and gaps of 120–160 units. Air flips are optional, for gold times. *Also new:* A clear high-altitude sky. (gold 10 s, bot 10.0 s)
 
   > Big kickers and big gaps: 120, 140 and 160 units across, under a clear sky high up the mountain. Roll down the start slope to build speed, keep the throttle on up every kicker and level the bike in the air to land on the downslope. Want gold? Throw an air flip off a kicker: lean hard and come round in time to land on both wheels.
 
-- **40. Thunderhead:** A night storm where lightning lights up the route between flashes. *Also new:* Lightning, heavy rain. (gold 11 s, bot 13.2 s)
+- **41. Thunderhead:** A night storm where lightning lights up the route between flashes. *Also new:* Lightning, heavy rain. (gold 11 s, bot 13.2 s)
 
   > A night storm on the ridge. It's pitch dark between the lightning flashes: each flash lights up the whole route for a moment, so watch what's ahead and remember it. Pop the rock step, hit the kicker over the 100 unit gap with speed, climb the ridge and roll off the ledge on the far side. The rain makes the rock slippery: go easy on the throttle on the climbs.
 
-- **41. Elastic Summit:** The final exam, with something from every world. *Also new:* The summit flag and a full storm. (gold 30 s, bot 34.9 s)
+- **42. Elastic Summit:** The final exam, with something from every world. *Also new:* The summit flag and a full storm. (gold 30 s, bot 34.9 s)
 
   > The final exam: rolling speed, precise braking, steep climbs, controlled airtime, and enough patience to finish in one piece.
 
 ## Not in a world yet
 
-- **42. High Hopes:** Steeper faces that lift the front and throw bigger air. Shift your weight early, then match the landing slope with small leans. (gold 18.5 s, bot 36.5 s)
+- **43. High Hopes:** Steeper faces that lift the front and throw bigger air. Shift your weight early, then match the landing slope with small leans. (gold 18.5 s, bot 36.5 s)
 
   > Steeper faces create wheelies and bigger airtime. Shift your weight early, then use small lean inputs to match the landing slope.
 

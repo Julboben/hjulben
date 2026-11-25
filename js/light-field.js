@@ -18,6 +18,11 @@ import { terrainColumnSpans } from "./terrain-runtime.js";
 
 // World units per texel; the field is smoothed when it is drawn.
 export const LIGHT_UNIT = 4;
+// Noon's light: how far sky light soaks down through rock and fades in
+// sideways through air, and how much of the sky air must see to be fully lit.
+// It is noon's look in lighting.js, and the daylight back walls are shaded by
+// at every hour (see daylightField).
+export const NOON_LIGHT = { soak: 1400, reach: 190, open: 0.3 };
 // Larger trails are baked coarser to bound the bake time and memory.
 const MAX_TEXELS = 1_000_000;
 // Room around the terrain, in world units: enough for the fades to settle.
@@ -424,6 +429,51 @@ export function lightFieldAt(field, wx, wy) {
     r = Math.floor((wy - field.y) / field.unit);
   if (c < 0 || c >= field.width || r < 0) return 1;
   return field.light[Math.min(r, field.height - 1) * field.width + c];
+}
+
+/**
+ * The light at a world point, blended between the four texels around it, for
+ * art that would show the texels' steps. Like lightFieldAt, open sky past the
+ * field's sides and top is fully lit.
+ */
+export function lightFieldBlend(field, wx, wy) {
+  if (!field) return 1;
+  const fx = (wx - field.x) / field.unit - 0.5,
+    fy = (wy - field.y) / field.unit - 0.5;
+  const c = Math.floor(fx),
+    r = Math.floor(fy);
+  const tx = fx - c,
+    ty = fy - r;
+  const texel = (column, row) =>
+    column < 0 || column >= field.width || row < 0 ? 1 : field.light[Math.min(row, field.height - 1) * field.width + column];
+  const top = texel(c, r) + (texel(c + 1, r) - texel(c, r)) * tx;
+  const bottom = texel(c, r + 1) + (texel(c + 1, r + 1) - texel(c, r + 1)) * tx;
+  return top + (bottom - top) * ty;
+}
+
+// Daylight bakes by the terrain they were baked for.
+const daylightBakes = new WeakMap();
+
+/**
+ * How much of noon's daylight reaches each point of a trail, whatever its time
+ * of day: back walls are shaded by it (see terrain-render.js), so they look
+ * the same at every hour, with the time of day's light laid over them as over
+ * everything else. Cached while the trail's terrain and back walls are
+ * unchanged. Null for a trail without terrain, else { x, y, unit, width,
+ * height, light } as bakeLightField gives.
+ * @param {any} trail
+ */
+export function daylightField(trail) {
+  const terrain = terrainGeometry(trail);
+  if (!terrain) return null;
+  const backWalls = backWallGeometry(trail);
+  const cached = daylightBakes.get(terrain);
+  if (cached?.backWalls === backWalls) return cached.field;
+  const baked = bakeLightField(trail, NOON_LIGHT);
+  // Only the light is kept: the rest of a bake is for lighting.js.
+  const field = baked && { x: baked.x, y: baked.y, unit: baked.unit, width: baked.width, height: baked.height, light: baked.light };
+  daylightBakes.set(terrain, { backWalls, field });
+  return field;
 }
 
 // Sunbeams: air the sun reaches directly, with sun-shaded air around it, lit

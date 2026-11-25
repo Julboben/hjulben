@@ -30,7 +30,7 @@ const FAST = [
     'det-math', 'terrain-geometry', 'terrain-render', 'lighting', 'terrain-integration',
     'terrain-schema', 'editor-terrain', 'editor-history', 'editor-gestures', 'editor-snap', 'editor-markup',
     'terrain', 'physics', 'flips', 'glass', 'trail-schema', 'weather', 'time-of-day',
-    'trail-link', 'career', 'water', 'squirrel', 'rabbit', 'corgi', 'interactions', 'desert',
+    'trail-link', 'career', 'water', 'squirrel', 'rabbit', 'corgi', 'interactions', 'desert', 'coast',
     'mountain', 'event', 'prison', 'spiders', 'dungeon', 'countryside', 'apples', 'nisse',
     'prop-drawing', 'spikes', 'cosmetics', 'achievements', 'storage', 'pending-runs',
     'changelog', 'haptics', 'notifications',

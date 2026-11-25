@@ -101,6 +101,7 @@ What a world's trails aim for. Which trails are in each world, in order, is in [
 | Lakeland | 3000–3800 | 100 | 4–6, some behind you | 0 | 18–26 |
 | Underground | 2400–3600 | 100 | 5–6 | 0 | 18–28 |
 | The City | 3200–4000 | 120 | 5–7 | 2–6 | 20–30 |
+| The Coast | 5000–5200, over several floors | 200 | 15, on every floor | 0 | 85–95 |
 | The Mountains | 3500–5000 | 160 | 5–8 | 2–8 | 24–40 |
 
 ---

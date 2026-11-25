@@ -20,7 +20,7 @@ import {
   sunRays,
   timeOfDayPalette,
 } from "./drawing.js";
-import { bakeLightField, bakeSunShafts, lightFieldAt, lightReach } from "./light-field.js";
+import { NOON_LIGHT, bakeLightField, bakeSunShafts, lightFieldAt, lightReach } from "./light-field.js";
 import { dayBlend, normalizeHour } from "./time-of-day.js";
 import { backWallGeometry, terrainAt, terrainGeometry } from "./terrain.js";
 import { terrainSolidAt } from "./terrain-runtime.js";
@@ -41,7 +41,7 @@ import { FIRE, TENT_DOOR_CENTRE } from "./forest-props.js";
 const AMBIENT = {
   dawn: { sky: [232, 208, 216], cave: [50, 48, 62], soak: 300, reach: 150, open: 0.38 },
   morning: { sky: [255, 243, 230], cave: [70, 68, 80], soak: 900, reach: 170, open: 0.32 },
-  noon: { sky: [255, 255, 255], cave: [78, 80, 94], soak: 1400, reach: 190, open: 0.3 },
+  noon: { sky: [255, 255, 255], cave: [78, 80, 94], ...NOON_LIGHT },
   evening: { sky: [244, 210, 188], cave: [50, 42, 58], soak: 260, reach: 150, open: 0.38 },
   dusk: { sky: [182, 164, 204], cave: [36, 34, 52], soak: 160, reach: 140, open: 0.42 },
   night: { sky: [122, 136, 192], cave: [24, 28, 46], soak: 100, reach: 130, open: 0.45 },

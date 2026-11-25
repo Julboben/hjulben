@@ -4,7 +4,8 @@
 import assert from 'node:assert/strict';
 import { rectangle, blockTrail } from './lib/terrain-fixtures.mjs';
 
-const { bakeLightField, bakeSunShafts, lightFieldAt, lightReach } = await import('../js/light-field.js');
+const { NOON_LIGHT, bakeLightField, bakeSunShafts, daylightField, lightFieldAt, lightFieldBlend, lightReach } = await import('../js/light-field.js');
+const { backWallShade } = await import('../js/terrain-render.js');
 const { adaptToGlare, sunVisible } = await import('../js/lighting.js');
 const { glareStrength, sunRays } = await import('../js/drawing.js');
 
@@ -15,7 +16,6 @@ const check = (label, condition, detail = '') => {
   else console.log('ok  ', label);
 };
 
-const NOON = { soak: 1400, reach: 190, open: 0.3 };
 const NIGHT = { soak: 100, reach: 130, open: 0.45 };
 
 // Ground from y 300 down to 900; a roof over it from x 600 to 1000, closed on
@@ -31,7 +31,7 @@ const blocks = [
   rectangle(1170, 200, 1200, 240, 'stone', 'box-right'),
 ];
 const trail = blockTrail([backWall(650, 150, 1000, 300), ...blocks]);
-const noon = bakeLightField(trail, NOON);
+const noon = bakeLightField(trail, NOON_LIGHT);
 const night = bakeLightField(trail, NIGHT);
 assert.ok(noon && night, 'a trail with blocks bakes a field');
 
@@ -56,7 +56,7 @@ check('the field is all 0…1', noon.light.every((v) => v >= 0 && v <= 1) && nig
 check('air never hides lights', cover(noon, 200, 200) === 0 && cover(noon, 800, 260) === 0);
 check('rock hides lights below its skin', cover(noon, 200, 400) === 1 && cover(noon, 200, 302) < 0.5);
 check('below the terrain is dark at night', at(night, 200, 1000) < 0.05, at(night, 200, 1000));
-check('a trail without blocks has no field', bakeLightField(blockTrail([]), NOON) === null && lightFieldAt(null, 0, 0) === 1);
+check('a trail without blocks has no field', bakeLightField(blockTrail([]), NOON_LIGHT) === null && lightFieldAt(null, 0, 0) === 1);
 
 // Open air under a wide floating ledge sees most of the sky, so it stays lit
 // by day instead of reading as a cave.
@@ -64,7 +64,7 @@ const ledgeTrail = blockTrail([
   rectangle(0, 300, 1400, 900, 'grass', 'ground'),
   rectangle(500, 100, 900, 140, 'stone', 'ledge'),
 ]);
-const ledgeNoon = bakeLightField(ledgeTrail, NOON);
+const ledgeNoon = bakeLightField(ledgeTrail, NOON_LIGHT);
 check('air under a floating ledge is lit at noon', at(ledgeNoon, 700, 250) > 0.9 && at(ledgeNoon, 700, 160) > 0.45, `${at(ledgeNoon, 700, 250)} ${at(ledgeNoon, 700, 160)}`);
 check('ground under a floating ledge is lit at noon', at(ledgeNoon, 700, 304) > 0.6, at(ledgeNoon, 700, 304));
 
@@ -85,6 +85,26 @@ check('the same ring with a back wall is dark inside', at(closedRing, 700, 50) <
 const halfWall = bakeLightField(blockTrail([...ring, backWall(700, -180, 980, 280)]), NIGHT);
 check('light fades in from the edge of a back wall', at(halfWall, 600, 50) > 0.95 && at(halfWall, 720, 50) > at(halfWall, 880, 50) && at(halfWall, 880, 50) < 0.5, `${at(halfWall, 720, 50)} ${at(halfWall, 880, 50)}`);
 check('back walls never block lights', lightReach(closedRing, 700, 50, 1, 0, 150, 12) === 150);
+
+// Back walls are shaded by noon's daylight, whatever the hour: in a cave as
+// dark and cool as ever, and where daylight reaches, lighter and keeping their
+// material's own colour.
+const [darkRed, darkGreen, darkBlue] = backWallShade(0);
+const [litRed, litGreen, litBlue] = backWallShade(1);
+check('a back wall without daylight is dark and cool', darkBlue > darkRed && darkBlue <= 0.6);
+check('a back wall in daylight is lighter and neutral', litRed > darkRed && litGreen > darkGreen && litRed >= litGreen && litGreen >= litBlue && litRed - litBlue < 0.05);
+const halfTrail = blockTrail([...ring, backWall(700, -180, 980, 280)]);
+const daylight = daylightField(halfTrail);
+const noonLight = bakeLightField(halfTrail, NOON_LIGHT).light;
+check('daylight is noon\'s light, baked once', daylight.light.every((v, i) => v === noonLight[i]) && daylightField(halfTrail) === daylight);
+const shadeAt = (field, x, y) => backWallShade(lightFieldBlend(field, x, y));
+const closedDaylight = daylightField(blockTrail([...ring, backWall(420, -180, 980, 280)]));
+check('a back wall in a closed cave keeps the dark shade', shadeAt(closedDaylight, 700, 50).every((v, i) => v === backWallShade(0)[i]));
+check('a back wall lightens towards the daylight at its edge', shadeAt(daylight, 720, 50)[0] > shadeAt(daylight, 880, 50)[0], `${shadeAt(daylight, 720, 50)} ${shadeAt(daylight, 880, 50)}`);
+const centre = (c, r) => [daylight.x + (c + 0.5) * daylight.unit, daylight.y + (r + 0.5) * daylight.unit];
+const [cx, cy] = centre(170, 40), [nx] = centre(171, 40);
+const blended = lightFieldBlend(daylight, (cx + nx) / 2, cy);
+check('the blend matches the texels at their centres and lies between them', lightFieldBlend(daylight, cx, cy) === lightFieldAt(daylight, cx, cy) && blended >= Math.min(lightFieldAt(daylight, cx, cy), lightFieldAt(daylight, nx, cy)) && blended <= Math.max(lightFieldAt(daylight, cx, cy), lightFieldAt(daylight, nx, cy)));
 
 const sky = (timeOfDay, weather) => glareStrength({ timeOfDay, weather });
 check('a bright clear noon sun glares', sky(12, { sun: 1, clouds: 0.15 }) > 0.9);
@@ -159,7 +179,7 @@ check('the glare fades in after dawn and out by dusk', clear(5) === 0 && clear(6
     rectangle(600, 600, 1700, 1000, 'stone', 'floor'), backWall(600, 380, 1700, 600),
   ]);
   const beams = (trail) => {
-    const field = bakeLightField(trail, NOON);
+    const field = bakeLightField(trail, NOON_LIGHT);
     const values = bakeSunShafts(field, 0.5);
     return (x, y) => {
       const c = Math.floor((x - field.x) / field.unit),

@@ -843,6 +843,20 @@ export function createAudio(getSnapshot) {
         air.start(t, Math.random() * .5); air.stop(t + .14);
       }
     },
+    /**
+     * A beach ball knocked by a wheel or bouncing: a hollow, rubbery "bonk"
+     * of air in a vinyl skin, with a short ring after it, louder and a little
+     * higher the harder it was hit (`speed`, units per second). Soft touches
+     * make no sound.
+     */
+    beachBall(speed) {
+      const strength = clamp((speed - 40) / 360, 0, 1);
+      if (!strength) return;
+      playTone(170 + strength * 70, .12, 'sine', .04 + strength * .1, 0, 115);
+      playTone(340 + strength * 120, .06, 'triangle', .015 + strength * .04, 0, 230);
+      playTone(520, .16, 'sine', .006 + strength * .014, .03, 470);
+      playNoise(.03, .01 + strength * .03, 1100);
+    },
     /** A coin dropping into a stall's honesty box: a bright clink and a rattle. */
     coin() {
       playTone(2350, .05, 'triangle', .05, 0, 2200);

@@ -583,7 +583,7 @@ const ESCAPE_STEPS = 1 * MILLION;
 // Plain nature and wildlife, which dress the ground beyond a closing on
 // most trails. A prop type missing here counts as something placed out there
 // on purpose.
-const SCENERY = new Set(['tree', 'pine', 'sapling', 'pine-small', 'snow-pine', 'palm', 'palm-small', 'bush', 'grass', 'flowers', 'rock', 'boulder', 'pebbles', 'stump', 'cactus', 'cactus-small', 'vines', 'roots', 'moss', 'ivy', 'rabbit', 'squirrel', 'bird', 'vulture', 'tumbleweed']);
+const SCENERY = new Set(['tree', 'pine', 'sapling', 'pine-small', 'snow-pine', 'palm', 'palm-small', 'bush', 'grass', 'flowers', 'rock', 'boulder', 'pebbles', 'stump', 'cactus', 'cactus-small', 'vines', 'roots', 'moss', 'ivy', 'rabbit', 'squirrel', 'bird', 'vulture', 'tumbleweed', 'shells', 'driftwood', 'crab']);
 
 function findEscapes(route) {
   const ride = createRide(trail);

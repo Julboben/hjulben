@@ -218,33 +218,39 @@
       "name": "Copenhagen Rooftops"
     },
     {
+      "id": "official:sandcastle",
+      "source": "official",
+      "file": "official/37-sandcastle.json",
+      "name": "Sandcastle"
+    },
+    {
       "id": "official:long-way-up",
       "source": "official",
-      "file": "official/37-long-way-up.json",
+      "file": "official/38-long-way-up.json",
       "name": "Long Way Up"
     },
     {
       "id": "official:whiteout",
       "source": "official",
-      "file": "official/38-whiteout.json",
+      "file": "official/39-whiteout.json",
       "name": "Whiteout"
     },
     {
       "id": "official:big-air",
       "source": "official",
-      "file": "official/39-big-air.json",
+      "file": "official/40-big-air.json",
       "name": "Big Air"
     },
     {
       "id": "official:thunderhead",
       "source": "official",
-      "file": "official/40-thunderhead.json",
+      "file": "official/41-thunderhead.json",
       "name": "Thunderhead"
     },
     {
       "id": "official:elastic-summit",
       "source": "official",
-      "file": "official/41-elastic-summit.json",
+      "file": "official/42-elastic-summit.json",
       "name": "Elastic Summit"
     },
     {

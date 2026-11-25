@@ -1,4 +1,5 @@
 import { terrainMaterials } from "./materials.js";
+import { daylightField, lightFieldBlend } from "./light-field.js";
 import { backWallGeometry, terrainAt, terrainGeometry } from "./terrain.js";
 import { trailBackWalls, trailTerrainBlocks } from "./trail-schema.js";
 import {
@@ -41,9 +42,20 @@ const STONE_GROWTH = 3;
 // row's butt joints shifted by its own amount, like boards on a wall or deck.
 const PLANK_HEIGHT = 9;
 const PLANK_LENGTH = 34;
-// Back walls are drawn as their material in shadow, a little cool, so they
-// read as rock set back behind the riding surface.
+// Back walls are drawn as their material in shade, so they read as rock set
+// back behind the riding surface. Where no daylight reaches, as in a cave,
+// the shade is dark and a little cool, BACK_WALL_SHADE; where it does, the
+// daylight bouncing off the ground around keeps the material's own colour,
+// BACK_WALL_DAYLIGHT, so a sunlit hall looks like sand in shade rather than
+// stone in the dark. Noon's daylight there (see daylightField) between
+// DAYLIGHT_FROM and DAYLIGHT_FULL blends the two.
 const BACK_WALL_SHADE = [0.5, 0.52, 0.58];
+const BACK_WALL_DAYLIGHT = [0.6, 0.58, 0.56];
+const DAYLIGHT_FROM = 0.35,
+  DAYLIGHT_FULL = 0.9;
+// After an edit, the daylight is baked again once the terrain has been left
+// alone this long (ms), as a bake takes a few frames.
+const DAYLIGHT_SETTLE = 250;
 
 const materialFor = (name) => terrainMaterials[name] || terrainMaterials.grass;
 
@@ -893,23 +905,61 @@ function changedColumns(before, after) {
   return ranges;
 }
 
-function shadeBackWall(data) {
-  for (let offset = 0; offset < data.length; offset += 4) {
-    data[offset] *= BACK_WALL_SHADE[0];
-    data[offset + 1] *= BACK_WALL_SHADE[1];
-    data[offset + 2] *= BACK_WALL_SHADE[2];
+/**
+ * The world x ranges where two daylight bakes differ, a texel wider on each
+ * side for the blend between texels; everywhere when their grids differ.
+ */
+function daylightChanges(before, after) {
+  if (before === after) return [];
+  if (
+    !before || !after || before.x !== after.x || before.y !== after.y || before.unit !== after.unit ||
+    before.width !== after.width || before.height !== after.height
+  )
+    return [[-Infinity, Infinity]];
+  const { x, unit, width, light } = after;
+  const changed = new Uint8Array(width);
+  for (let index = 0; index < light.length; index++)
+    if (light[index] !== before.light[index]) changed[index % width] = 1;
+  const ranges = [];
+  for (let column = 0; column < width; column++)
+    if (changed[column]) ranges.push([x + (column - 1) * unit, x + (column + 2) * unit]);
+  return ranges;
+}
+
+/**
+ * The shade a back wall is drawn in, as [red, green, blue] factors, where
+ * `daylight` (0…1) of noon's daylight reaches it.
+ * @param {number} daylight
+ */
+export function backWallShade(daylight) {
+  const t = Math.max(0, Math.min(1, (daylight - DAYLIGHT_FROM) / (DAYLIGHT_FULL - DAYLIGHT_FROM)));
+  const blend = t * t * (3 - 2 * t);
+  return BACK_WALL_SHADE.map((dark, index) => dark + (BACK_WALL_DAYLIGHT[index] - dark) * blend);
+}
+
+/** Shades back-wall art from world (`originX`, `originY`), `columns` art pixels wide, by the daylight on it. */
+function shadeBackWall(data, daylight, originX, originY, columns) {
+  for (let offset = 0, pixel = 0; offset < data.length; offset += 4, pixel++) {
+    if (!data[offset + 3]) continue;
+    const column = pixel % columns,
+      row = (pixel - column) / columns;
+    const shade = backWallShade(lightFieldBlend(daylight, originX + (column + 0.5) * ART_PIXEL, originY + (row + 0.5) * ART_PIXEL));
+    data[offset] *= shade[0];
+    data[offset + 1] *= shade[1];
+    data[offset + 2] *= shade[2];
   }
 }
 
 /**
  * The terrain's art over `columns` × `rows` art pixels from world (`originX`,
- * `originY`) on a canvas, or null where there is none. On the main thread
- * and on the painting worker alike, so both paint the same pixels.
+ * `originY`) on a canvas, or null where there is none; with `backWalls`,
+ * shaded by `daylight`, the trail's daylightField. On the main thread and on
+ * the painting worker alike, so both paint the same pixels.
  */
-function blockImage(geometry, originX, originY, columns, rows, backWalls) {
+function blockImage(geometry, originX, originY, columns, rows, backWalls, daylight) {
   const raster = rasterizeTerrainChunk(geometry, originX, originY, columns, rows);
   if (!raster.opaque) return null;
-  if (backWalls) shadeBackWall(raster.data);
+  if (backWalls) shadeBackWall(raster.data, daylight, originX, originY, columns);
   const canvas = createCanvas(columns, rows);
   canvas.getContext("2d").putImageData(new ImageData(raster.data, columns, rows), 0, 0);
   return canvas;
@@ -925,11 +975,13 @@ function blockImage(geometry, originX, originY, columns, rows, backWalls) {
 export function chunkPainterThread() {
   let blocks = [],
     backWalls = false,
+    daylight = null,
     geometry = null,
     version = 0;
   return (message) => {
     if (message.broken) {
       if (message.blocks) ({ blocks, backWalls } = message);
+      if (message.daylight !== undefined) daylight = message.daylight;
       version = message.version;
       const broken = message.broken.length ? new Set(message.broken) : undefined;
       geometry = compileTerrain({ terrainBlocks: blocks, brokenBlocks: broken });
@@ -938,7 +990,7 @@ export function chunkPainterThread() {
     // A request made before the terrain changed would be thrown away.
     if (message.version !== version) return null;
     const { key, column, row } = message;
-    const canvas = blockImage(geometry, column * CHUNK_SIZE, row * CHUNK_SIZE, CHUNK_PIXELS, CHUNK_PIXELS, backWalls);
+    const canvas = blockImage(geometry, column * CHUNK_SIZE, row * CHUNK_SIZE, CHUNK_PIXELS, CHUNK_PIXELS, backWalls, daylight);
     return { version, key, image: canvas?.transferToImageBitmap() ?? null };
   };
 }
@@ -946,13 +998,15 @@ export function chunkPainterThread() {
 /**
  * Paints a renderer's chunks on a worker thread (js/terrain-worker.js), so
  * the frame that first needs one doesn't have to. `setTerrain` gives it the
- * trail to paint, `paint` asks for a chunk while fewer than PAINTS_IN_FLIGHT
- * are being painted, and `take` hands over the chunks painted since.
+ * trail to paint and the daylight back walls are shaded by, `paint` asks for
+ * a chunk while fewer than PAINTS_IN_FLIGHT are being painted, and `take`
+ * hands over the chunks painted since.
  */
 function createChunkPainter(backWalls) {
   const worker = new Worker(new URL("./terrain-worker.js", import.meta.url), { type: "module" });
   let version = 0,
-    source = null;
+    source = null,
+    sentDaylight = undefined;
   const painting = new Set();
   let painted = [];
   worker.onmessage = ({ data }) => {
@@ -961,8 +1015,8 @@ function createChunkPainter(backWalls) {
     painted.push(data);
   };
   return {
-    /** A trail, or a ride's copy of one with panes broken. */
-    setTerrain(trail) {
+    /** A trail, or a ride's copy of one with panes broken, and its daylight. */
+    setTerrain(trail, daylight) {
       version++;
       painting.clear();
       for (const { image } of painted) image?.close();
@@ -973,7 +1027,10 @@ function createChunkPainter(backWalls) {
       const blocks = from === source ? undefined : backWalls ? trailBackWalls(from) : trailTerrainBlocks(from);
       source = from;
       const broken = backWalls ? [] : [...(trail.brokenBlocks?.keys() ?? [])];
-      worker.postMessage({ version, backWalls, blocks, broken });
+      // The daylight too goes over only when it changes.
+      const sent = daylight === sentDaylight ? undefined : daylight;
+      sentDaylight = daylight;
+      worker.postMessage({ version, backWalls, blocks, broken, daylight: sent });
     },
     painting: (key) => painting.has(key),
     paint(key, column, row) {
@@ -992,17 +1049,26 @@ function createChunkPainter(backWalls) {
 
 /**
  * Draws a trail's terrain blocks in cached chunks, or with `backWalls` its
- * back-layer blocks instead, darkened and without the start sign. With
- * `still`, for scenes drawn once, it draws exactly the view instead. With
- * `worker`, the chunks around the view are painted ahead on a worker thread;
- * without, one at a time on frames that have every chunk in view ready.
+ * back-layer blocks instead, shaded by the daylight on them and without the
+ * start sign. With `still`, for scenes drawn once, it draws exactly the view
+ * instead. With `worker`, the chunks around the view are painted ahead on a
+ * worker thread; without, one at a time on frames that have every chunk in
+ * view ready. After an edit, back walls follow the daylight a moment later,
+ * and `redraw` is called then, for a caller that draws only when something
+ * changes.
  */
-export function createTerrainRenderer({ backWalls = false, still = false, worker = false } = {}) {
+export function createTerrainRenderer({ backWalls = false, still = false, worker = false, redraw = null } = {}) {
   const geometryOf = backWalls ? backWallGeometry : terrainGeometry;
   const painter = worker ? createChunkPainter(backWalls) : null;
   let currentTrail = null;
   let currentGeometry = null;
   let chunks = new Map();
+  // Back walls: the daylight they are shaded by, the terrain and back walls
+  // it was baked for, and an edit waiting for the daylight to follow it.
+  let daylight = null,
+    litTerrain = null,
+    litWalls = null,
+    pending = null;
 
   // The sign follows the start, which the editor moves without touching the
   // terrain, so it is drawn live rather than baked in.
@@ -1029,7 +1095,7 @@ export function createTerrainRenderer({ backWalls = false, still = false, worker
     const originX = column * CHUNK_SIZE,
       originY = row * CHUNK_SIZE;
     const built = currentGeometry
-      ? blockImage(currentGeometry, originX, originY, CHUNK_PIXELS, CHUNK_PIXELS, backWalls)
+      ? blockImage(currentGeometry, originX, originY, CHUNK_PIXELS, CHUNK_PIXELS, backWalls, daylight)
       : null;
     remember(key, built);
     return built;
@@ -1059,6 +1125,7 @@ export function createTerrainRenderer({ backWalls = false, still = false, worker
     if ((trail?.terrainSource || trail) !== currentTrail) invalidate(trail);
     else refresh(trail);
     if (!currentGeometry) return;
+    if (backWalls) followDaylight(trail);
     if (still) drawView(ctx, viewX, viewY, width, height);
     else drawChunks(ctx, viewX, viewY, width, height);
     const sign = startSign(trail);
@@ -1072,7 +1139,7 @@ export function createTerrainRenderer({ backWalls = false, still = false, worker
       top = Math.floor(viewY / ART_PIXEL) * ART_PIXEL;
     const columns = Math.floor((viewX + width - left) / ART_PIXEL) + 1,
       rows = Math.floor((viewY + height - top) / ART_PIXEL) + 1;
-    const image = blockImage(currentGeometry, left, top, columns, rows, backWalls);
+    const image = blockImage(currentGeometry, left, top, columns, rows, backWalls, daylight);
     if (image) ctx.drawImage(image, left, top, columns * ART_PIXEL, rows * ART_PIXEL);
   }
 
@@ -1147,7 +1214,7 @@ export function createTerrainRenderer({ backWalls = false, still = false, worker
     const previous = currentGeometry;
     currentGeometry = geometry;
     signKey = "";
-    painter?.setTerrain(trail);
+    painter?.setTerrain(trail, daylight);
     // An edit rebuilt in place says where it changed; anything else is
     // compared body by body.
     invalidateColumns(geometry.update?.from === previous ? geometry.update.ranges : changedColumns(previous, geometry));
@@ -1169,7 +1236,44 @@ export function createTerrainRenderer({ backWalls = false, still = false, worker
     currentGeometry = trail ? geometryOf(trail) : null;
     for (const key of [...chunks.keys()]) forget(key);
     signKey = "";
-    if (currentGeometry) painter?.setTerrain(trail);
+    clearTimeout(pending?.timer);
+    pending = null;
+    if (backWalls && currentGeometry) bakeDaylight(trail);
+    if (currentGeometry) painter?.setTerrain(trail, daylight);
+  }
+
+  // A ride's copy of a trail, with panes broken, is lit as the trail is.
+  function bakeDaylight(trail) {
+    const source = trail.terrainSource || trail;
+    litTerrain = terrainGeometry(source);
+    litWalls = backWallGeometry(source);
+    daylight = daylightField(source);
+  }
+
+  // The daylight is baked again once an edit's terrain has been left alone for
+  // DAYLIGHT_SETTLE, rather than on every step of a drag, and only the back
+  // walls whose light changed are painted again.
+  function followDaylight(trail) {
+    const source = trail.terrainSource || trail;
+    const terrain = terrainGeometry(source),
+      walls = backWallGeometry(source);
+    if (terrain === litTerrain && walls === litWalls) {
+      clearTimeout(pending?.timer);
+      pending = null;
+      return;
+    }
+    if (pending?.terrain === terrain && pending.walls === walls) return;
+    clearTimeout(pending?.timer);
+    const timer = setTimeout(() => {
+      pending = null;
+      if (source !== currentTrail) return;
+      const before = daylight;
+      bakeDaylight(trail);
+      painter?.setTerrain(trail, daylight);
+      invalidateColumns(daylightChanges(before, daylight));
+      redraw?.();
+    }, DAYLIGHT_SETTLE);
+    pending = { terrain, walls, timer };
   }
 
   return { draw, invalidate };

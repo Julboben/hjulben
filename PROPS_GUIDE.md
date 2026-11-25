@@ -90,8 +90,9 @@ Write functions as `export function drawThing({ pixelRect, pixelPath }, …)` an
 | `riderX`, `riderY` | The rider (or ragdoll) position, or `null` |
 | `weather` | The trail's weather, resolved (see `js/weather.js`); read the wind on a prop with `propWind` |
 | `landing` | The last hard landing `{ x, y, time, strength }`, or `null` |
-| `flight` | A startled animal's `{ age, dir }` (birds, bats, fish, squirrels) |
+| `flight` | A startled animal's `{ age, dir }` (birds, bats, fish, squirrels, rabbits, crabs), with `knocked`, the age at which a wheel bowled a crab over |
 | `corgi` | Coda's state from `corgiStep`, kept per prop by render.js |
+| `ball` | A beach ball's state from `ballStep`, `{ x, y, vx, vy, turn }`, kept per prop by render.js |
 | `swoop` | A vulture's pose while it comes down to a crash |
 | `coconuts` | The coconuts knocked off a palm this ride, `{ time, dir }` each, kept per prop by render.js |
 

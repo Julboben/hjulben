@@ -184,7 +184,7 @@ assert.equal(propAlignmentSlope(hillTrail, tiltedFence), 0, "a rotated prop igno
 assert.equal(propGroundOffset(hillTrail, { ...tree, rotation: -20 })(8), 0, "a rotated prop has a flat base");
 assert.ok(Math.abs(propRotation(tiltedFence) - Math.PI / 6) < 1e-9, "rotation is read in degrees");
 assert.equal(propRotation({ ...fence, rotation: 0 }), 0, "no rotation is no rotation");
-for (const type of ["stalactites", "beams", "minecart", "lily", "fish", "squirrel", "corgi", "rabbit", "tumbleweed", "vulture", "bird", "heat-haze", "ski-lift", "icicles", "moss"]) {
+for (const type of ["stalactites", "beams", "minecart", "lily", "fish", "squirrel", "corgi", "rabbit", "crab", "tumbleweed", "vulture", "bird", "heat-haze", "ski-lift", "icicles", "moss"]) {
   assert.ok(!canRotate(type), `${type} keeps its own angle`);
   assert.equal(propRotation({ x: 0, y: 0, type, rotation: 45 }), 0, `${type} ignores rotation`);
 }

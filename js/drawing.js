@@ -414,6 +414,39 @@ import {
   rabbitIdle,
   rabbitPhase,
 } from "./rabbit-props.js";
+import {
+  BALL_RADIUS,
+  BUNTING,
+  CRAB_HEIGHT,
+  CRAB_RANGE,
+  CRAB_STEP,
+  CRAB_STEP_UP,
+  DECOR_BOUNDS,
+  DRIFTWOOD_BOUNDS,
+  PAIL_BOUNDS,
+  PENNANT,
+  SHELLS_BOUNDS,
+  SHIPWRECK_BOUNDS,
+  buntingSwing,
+  crabColors,
+  crabFlee,
+  crabIdle,
+  crabPhase,
+  decorLayout,
+  drawBeachBall,
+  drawBunting,
+  drawCrab,
+  drawCrabDig,
+  drawDriftwood,
+  drawPail,
+  drawPennant,
+  drawShellDecor,
+  drawShells,
+  drawShipwreck,
+  pailColors,
+  pennantCloth,
+  shellsLayout,
+} from "./coast-props.js";
 
 const GROUND_ALIGNED_PROP_SPANS = {
   bush: [-28, 28],
@@ -429,6 +462,8 @@ const GROUND_ALIGNED_PROP_SPANS = {
   dumpster: [-26, 26],
   skull: [-14, 14],
   "car-wreck": [-48, 48],
+  driftwood: [-30, 30],
+  shipwreck: [-90, 90],
   "tyre-wall": [-44, 44],
   "hay-bales": [-34, 34],
   "petrol-can": [-10, 10],
@@ -1628,7 +1663,7 @@ const CAVE_FITTED_PROPS = new Set([...CEILING_PROPS, "beams", "dungeon-bars", "m
 // that wander, fly or shimmer, and the ski lift, whose chair hangs plumb, and
 // moss, which lies along whatever surface it finds. Other wall props and
 // graffiti turn about their anchor.
-const UNROTATABLE_PROPS = new Set(["squirrel", "corgi", "rabbit", "tumbleweed", "vulture", "bird", "heat-haze", "ski-lift", "smoke", "moss"]);
+const UNROTATABLE_PROPS = new Set(["squirrel", "corgi", "rabbit", "crab", "beach-ball", "tumbleweed", "vulture", "bird", "heat-haze", "ski-lift", "smoke", "moss"]);
 export const canRotate = (type) =>
   !CAVE_FITTED_PROPS.has(type) &&
   !WATER_PROPS.has(type) &&
@@ -1665,6 +1700,7 @@ export function propWallFit(trail, prop) {
   if (prop.type === "squirrel") return squirrelFit(trail, prop);
   if (prop.type === "corgi") return corgiFit(trail, prop);
   if (prop.type === "rabbit") return rabbitFit(trail, prop);
+  if (prop.type === "crab") return crabFit(trail, prop);
   if (prop.type === "tumbleweed") return tumbleweedFit(trail, prop);
   // A vulture with no y of its own circles high over the ground.
   if (prop.type === "vulture") return { centre: Number.isFinite(prop.y) ? 0 : -VULTURE_HEIGHT };
@@ -1982,6 +2018,20 @@ export function rabbitPropAt(trail, prop, time) {
   return { x: prop.x + at.dx, y: y + at.dy, from: at.dx };
 }
 
+/** The ground a crab can scuttle along (see coast-props.js). */
+const crabFit = (trail, prop) => walkFit(trail, prop, CRAB_STEP, CRAB_RANGE, CRAB_STEP_UP);
+
+/**
+ * Where a crab has scuttled to at `time`, for startling it: its world `x` and
+ * `y`, and its offset `from` its anchor, where it digs in.
+ */
+export function crabPropAt(trail, prop, time) {
+  const fit = propWallFit(trail, prop);
+  const y = Number.isFinite(prop.y) ? prop.y : terrainAt(trail, prop.x).y;
+  const at = crabIdle(time, crabPhase(prop.x), fit);
+  return { x: prop.x + at.dx, y: y + at.dy, from: at.dx };
+}
+
 // Trees a squirrel hides in, with how far above the base the leaves start to
 // cover the trunk; it climbs on until it is out of sight above that line.
 export const SQUIRREL_TREES = { tree: -90, pine: -28, "snow-pine": -28, sapling: -46, "pine-small": -16 };
@@ -2093,6 +2143,11 @@ export function propSpan(type, fit) {
     // Room for it sat up, as tall as it gets, at the top of a bound.
     const top = RABBIT_HEIGHT + RABBIT_BOUND_HEIGHT + 4;
     return [Math.max(0, -Math.min(...ground)) + top, Math.max(0, ...ground) + 4];
+  }
+  if (type === "crab") {
+    const ground = [...(fit?.left ?? [0]), ...(fit?.right ?? [0])];
+    // Room for it tumbling through the air, bowled over.
+    return [Math.max(0, -Math.min(...ground)) + CRAB_HEIGHT * 3, Math.max(0, ...ground) + 4];
   }
   if (type === "tumbleweed") {
     const path = fit?.path ?? [0];
@@ -4576,6 +4631,8 @@ const CANOPY_SPRITES = {
   minecart: { bounds: [-26, -38, 26, 0], draw: drawMinecart },
   skull: { bounds: [-22, -26, 22, 0], draw: drawCowSkull },
   "car-wreck": { bounds: [-70, -44, 70, WRECK_SINK], draw: drawCarWreck },
+  driftwood: { bounds: DRIFTWOOD_BOUNDS, draw: drawDriftwood },
+  shipwreck: { bounds: SHIPWRECK_BOUNDS, draw: drawShipwreck },
   "water-tower": { bounds: [-38, -178, 40, TOWER_BODY_BOTTOM], draw: drawWaterTower },
   windmill: { bounds: [-62, -172, 24, WINDMILL_BODY_BOTTOM], draw: drawWindmillTower },
   "snow-pine": { bounds: [-54, -188, 54, PINE_CANOPY_BOTTOM], draw: drawSnowPineCanopy },
@@ -4757,6 +4814,19 @@ const PROP_EXTENTS = {
   // It rolls downwind, either way.
   tumbleweed: [-TUMBLEWEED_RUN - 16, -TUMBLEWEED_RADIUS * 2 - 12, TUMBLEWEED_RUN + 16],
   "car-wreck": [-70, -46, 70],
+  shells: [SHELLS_BOUNDS[0], SHELLS_BOUNDS[1] - 2, SHELLS_BOUNDS[2]],
+  driftwood: [DRIFTWOOD_BOUNDS[0], DRIFTWOOD_BOUNDS[1], DRIFTWOOD_BOUNDS[2]],
+  // It scuttles and is bowled about either side of its anchor.
+  crab: [-CRAB_RANGE - 14, -CRAB_HEIGHT * 3, CRAB_RANGE + 14],
+  // The flags swing out a little past the poles in a gale.
+  bunting: [-BUNTING.half - 6, -BUNTING.pole - 6, BUNTING.half + 6],
+  shipwreck: [SHIPWRECK_BOUNDS[0], SHIPWRECK_BOUNDS[1], SHIPWRECK_BOUNDS[2]],
+  pail: [PAIL_BOUNDS[0], PAIL_BOUNDS[1], PAIL_BOUNDS[2]],
+  // The flag flies out either way, downwind.
+  pennant: [-PENNANT.columns * 2 - 4, PENNANT.top - 4, PENNANT.columns * 2 + 4],
+  "shell-decor": [DECOR_BOUNDS[0], DECOR_BOUNDS[1], DECOR_BOUNDS[2]],
+  // Where it rests before the wheels push it anywhere.
+  "beach-ball": [-BALL_RADIUS, -BALL_RADIUS * 2, BALL_RADIUS],
   "water-tower": [-38, -178, 42],
   windmill: [-62, ROTOR.y - ROTOR.radius - 4, ROTOR.radius + 4],
   "heat-haze": [-HAZE_HALF - 4, -HAZE_RISE - 8, HAZE_HALF + 4],
@@ -4906,6 +4976,8 @@ function propBounds(type, angle, groundOffset, text, flip = false) {
   );
   if (type === "tyre") bottom = Math.max(bottom, TYRE_SINK);
   if (type === "car-wreck") bottom = Math.max(bottom, WRECK_SINK);
+  if (type === "driftwood") bottom = Math.max(bottom, DRIFTWOOD_BOUNDS[3]);
+  if (type === "shipwreck") bottom = Math.max(bottom, SHIPWRECK_BOUNDS[3]);
   if (type === "vulture") bottom = Math.max(bottom, VULTURE_ORBIT.y + 12);
   if (PAINTED_PROPS.has(type)) bottom = Math.max(bottom, paintedBounds(type)[3]);
   if (CEILING_HANG[type]) bottom = Math.max(bottom, CEILING_HANG[type]);
@@ -6681,7 +6753,7 @@ export function createGameArt(ctx) {
         const time = scene.time || 0;
         drawSquirrelSitting(tools, time > 0 && (time + propNoise(x, 2) * 9) % 5 < 1.2);
       }
-    } else if (type === "skull" || type === "car-wreck") {
+    } else if (type === "skull" || type === "car-wreck" || type === "driftwood" || type === "shipwreck") {
       drawCanopy(type);
     } else if (type === "tumbleweed") {
       // Blown along downwind, turning the way it rolls.
@@ -6719,6 +6791,45 @@ export function createGameArt(ctx) {
       ctx.translate(snap(hop.dx), snap(hop.dy));
       ctx.scale(hop.dir, 1);
       drawRabbit({ pixelRect }, hop.pose, wall?.material === "snow");
+    } else if (type === "crab") {
+      // Scuttles about; startled, it digs in, unless a wheel bowls it over
+      // first (scene.flight.knocked), when it tumbles onto its back.
+      const snap = (value) => Math.round(value / ART_PIXEL) * ART_PIXEL;
+      const flight = scene.flight;
+      const crab = flight
+        ? crabFlee(wall, flight.from ?? 0, flight.dir, flight.age, flight.knocked ?? null)
+        : { ...crabIdle(scene.time || 0, crabPhase(x), wall), sink: 0, angle: 0, digging: false, hidden: false };
+      if (crab.hidden) {
+        ctx.restore();
+        return;
+      }
+      ctx.translate(snap(crab.dx), snap(crab.dy));
+      if (crab.digging) drawCrabDig({ pixelRect }, scene.time || 0);
+      // It turns about its middle as it tumbles.
+      if (crab.angle) {
+        ctx.translate(0, -CRAB_HEIGHT / 2);
+        ctx.rotate(crab.angle);
+        ctx.translate(0, CRAB_HEIGHT / 2);
+      }
+      drawCrab({ pixelRect }, crab.pose, crabColors(x), crab.sink);
+    } else if (type === "shells") {
+      drawShells({ pixelRect }, shellsLayout(x), groundOffset);
+    } else if (type === "pail") {
+      drawPail({ pixelRect }, pailColors(x));
+    } else if (type === "pennant") {
+      // Flies downwind, like the flagpole's flag.
+      const { wind, downwind } = propWind(scene, mirrored);
+      drawPennant({ pixelRect }, groundOffset, pennantCloth(x), scene.time || 0, wind, propNoise(x, 65), downwind);
+    } else if (type === "shell-decor") {
+      drawShellDecor({ pixelRect }, decorLayout(x));
+    } else if (type === "beach-ball") {
+      // render.js moves it about and draws it where it is (scene.ball).
+      drawBeachBall({ pixelRect }, scene.ball?.turn ?? 0, scene.ball?.squash ?? 0);
+    } else if (type === "bunting") {
+      // Each flag flutters in its own time and leans downwind.
+      const { wind, downwind } = propWind(scene, mirrored);
+      const phase = propNoise(x, 64);
+      drawBunting({ pixelRect, pixelPath }, groundOffset, (index) => buntingSwing(scene.time || 0, wind, downwind, phase, index));
     } else if (type === "water-tower") {
       drawCanopy(type);
       // Legs and ladder run down from the platform to the ground.

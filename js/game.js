@@ -1277,6 +1277,8 @@ export function startGame({ shared = null } = {}) {
         restoreGhost?.();
         restore();
         if (renderer.takeWoofs()) sounds.woof();
+        const knock = renderer.takeBallKnock();
+        if (knock) sounds.beachBall(knock);
       }
     }
     fpsMeter?.drawn(now);
