@@ -1,17 +1,14 @@
 {
   "name": "Hoodoo Crossing",
+  "finish": {
+    "x": 5680,
+    "y": 255
+  },
   "description": "A canyon crossing in the morning, and the first open gaps: fall in and the run is over. Gap 1 (90) is the meeting: a long run, a low kicker and a lower landing, so speed is enough, with the apple floating over it. The first climb ends on a crest and a 90 gap. Then the double: a short table between a 90 gap and a 100 gap, with an apple over the table. Land on its downslope and take the second kicker from there. The jump up: the tallest kicker throws you across onto a ledge higher than the lip. Lean forward in the air, or you land nose-up. The second climb takes you to the canyon rim and the hoodoos: five sandstone pillars over a bottomless canyon, 90 apart, at different heights. Two of the hops are up, the fourth pillar is narrow, and the apples float over the tops. The big drop: off the last pillar, across 100, to a mesa far below. Keep the bike level all the way down. Then the shelves: two narrow ledges on the canyon wall, each lower than the last, with 100 gaps and no room to gather speed in between, and the last gap onto the finish mesa. A climb takes you to the flower, floating over the mesa's lip. Intended apple order 1 to 9.",
-  "lesson": "The first open gaps, across a canyon: climbs, a jump up, sandstone hoodoos to hop between and a big drop. Falling in ends the run.",
-  "alsoNew": "Red sandstone under the sand, sandstone hoodoos, a broken rope bridge, and morning light.",
-  "world": "The Desert",
   "start": {
     "x": 90,
     "y": null,
     "facing": 1
-  },
-  "finish": {
-    "x": 5680,
-    "y": 255
   },
   "terrainBlocks": [
     {
@@ -72,7 +69,7 @@
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "floor-1-6",
@@ -142,7 +139,7 @@
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "floor-2-2",
@@ -203,7 +200,7 @@
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "floor-2-rock-2",
@@ -300,7 +297,7 @@
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "floor-3-6",
@@ -324,7 +321,7 @@
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "floor-3-8",
@@ -348,7 +345,7 @@
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "floor-3-10",
@@ -418,7 +415,7 @@
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "floor-4-2",
@@ -479,7 +476,7 @@
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "floor-4-rock-2",
@@ -540,7 +537,7 @@
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "canyon-floor-2",
@@ -564,7 +561,7 @@
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "canyon-floor-4",
@@ -588,7 +585,7 @@
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "canyon-floor-6",
@@ -612,7 +609,7 @@
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "canyon-floor-8",
@@ -690,7 +687,7 @@
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "canyon-floor-16",
@@ -750,7 +747,7 @@
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "canyon-floor-22",
@@ -774,7 +771,7 @@
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "canyon-floor-24",
@@ -852,7 +849,7 @@
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "canyon-floor-32",
@@ -876,7 +873,7 @@
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "canyon-floor-34",
@@ -900,7 +897,7 @@
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "canyon-floor-36",
@@ -924,7 +921,7 @@
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "canyon-floor-38",
@@ -1002,7 +999,7 @@
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "canyon-floor-46",
@@ -1044,7 +1041,7 @@
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "canyon-floor-50",
@@ -1104,7 +1101,7 @@
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "canyon-floor-56",
@@ -1128,7 +1125,7 @@
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "canyon-floor-58",
@@ -1152,7 +1149,7 @@
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "canyon-floor-60",
@@ -1194,7 +1191,7 @@
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "canyon-floor-64",
@@ -1218,7 +1215,7 @@
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "canyon-floor-66",
@@ -1288,7 +1285,7 @@
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "floor-6-2",
@@ -1349,7 +1346,7 @@
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "floor-6-rock-2",
@@ -1410,7 +1407,7 @@
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "floor-7-2",
@@ -1488,7 +1485,7 @@
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "floor-7-10",
@@ -1576,7 +1573,7 @@
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "floor-8-2",
@@ -1637,7 +1634,7 @@
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "floor-8-rock-2",
@@ -1698,7 +1695,7 @@
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "mesa-1-2",
@@ -1782,7 +1779,7 @@
               316
             ],
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "mesa-1-8",
@@ -1879,7 +1876,7 @@
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "mesa-1-rock-2",
@@ -1963,7 +1960,7 @@
               324
             ],
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "mesa-1-rock-8",
@@ -2051,7 +2048,7 @@
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "mesa-2-1",
@@ -2195,7 +2192,7 @@
               220
             ],
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "mesa-2-11",
@@ -2283,7 +2280,7 @@
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "mesa-2-rock-1",
@@ -2427,7 +2424,7 @@
               228
             ],
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "mesa-2-rock-11",
@@ -2515,7 +2512,7 @@
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "mesa-3-1",
@@ -2629,7 +2626,7 @@
               245
             ],
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "mesa-3-9",
@@ -2732,7 +2729,7 @@
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "mesa-3-rock-1",
@@ -2846,7 +2843,7 @@
               253
             ],
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "mesa-3-rock-9",
@@ -2949,7 +2946,7 @@
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "mesa-4-1",
@@ -3108,7 +3105,7 @@
               306
             ],
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "mesa-4-12",
@@ -3196,7 +3193,7 @@
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "mesa-4-rock-1",
@@ -3355,7 +3352,7 @@
               316
             ],
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "mesa-4-rock-12",
@@ -3513,7 +3510,7 @@
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "mesa-5-1",
@@ -3657,7 +3654,7 @@
               148
             ],
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "mesa-5-11",
@@ -3745,7 +3742,7 @@
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "mesa-5-rock-1",
@@ -3889,7 +3886,7 @@
               156
             ],
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "mesa-5-rock-11",
@@ -3977,7 +3974,7 @@
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "hoodoo-1-1",
@@ -4124,7 +4121,7 @@
               163
             ],
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "hoodoo-1-11",
@@ -4257,7 +4254,7 @@
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "hoodoo-1-rock-1",
@@ -4404,7 +4401,7 @@
               173
             ],
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "hoodoo-1-rock-11",
@@ -4537,7 +4534,7 @@
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "hoodoo-2-1",
@@ -4684,7 +4681,7 @@
               147
             ],
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "hoodoo-2-11",
@@ -4817,7 +4814,7 @@
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "hoodoo-2-rock-1",
@@ -4964,7 +4961,7 @@
               157
             ],
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "hoodoo-2-rock-11",
@@ -5097,7 +5094,7 @@
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "hoodoo-3-1",
@@ -5244,7 +5241,7 @@
               180
             ],
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "hoodoo-3-11",
@@ -5377,7 +5374,7 @@
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "hoodoo-3-rock-1",
@@ -5524,7 +5521,7 @@
               190
             ],
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "hoodoo-3-rock-11",
@@ -5657,7 +5654,7 @@
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "hoodoo-4-1",
@@ -5804,7 +5801,7 @@
               161
             ],
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "hoodoo-4-11",
@@ -5937,7 +5934,7 @@
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "hoodoo-4-rock-1",
@@ -6084,7 +6081,7 @@
               169
             ],
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "hoodoo-4-rock-11",
@@ -6217,7 +6214,7 @@
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "hoodoo-5-1",
@@ -6364,7 +6361,7 @@
               191
             ],
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "hoodoo-5-11",
@@ -6497,7 +6494,7 @@
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "hoodoo-5-rock-1",
@@ -6644,7 +6641,7 @@
               201
             ],
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "hoodoo-5-rock-11",
@@ -6777,7 +6774,7 @@
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "mesa-6-1",
@@ -6891,7 +6888,7 @@
               379
             ],
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "mesa-6-9",
@@ -6979,7 +6976,7 @@
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "mesa-6-rock-1",
@@ -7093,7 +7090,7 @@
               387
             ],
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "mesa-6-rock-9",
@@ -7181,7 +7178,7 @@
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "shelf-1-1",
@@ -7295,7 +7292,7 @@
               392
             ],
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "shelf-1-9",
@@ -7383,7 +7380,7 @@
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "shelf-1-rock-1",
@@ -7497,7 +7494,7 @@
               400
             ],
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "shelf-1-rock-9",
@@ -7585,7 +7582,7 @@
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "shelf-2-1",
@@ -7699,7 +7696,7 @@
               428
             ],
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "shelf-2-9",
@@ -7787,7 +7784,7 @@
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "shelf-2-rock-1",
@@ -7901,7 +7898,7 @@
               436
             ],
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "shelf-2-rock-9",
@@ -7989,7 +7986,7 @@
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "mesa-7-1",
@@ -8188,7 +8185,7 @@
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "mesa-7-rock-1",
@@ -8389,7 +8386,7 @@
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "canyon-wall-1",
@@ -8518,7 +8515,7 @@
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "chasm-1-2",
@@ -8596,7 +8593,7 @@
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "chasm-2-2",
@@ -8674,7 +8671,7 @@
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "chasm-3-2",
@@ -8752,7 +8749,7 @@
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "chasm-4-2",
@@ -8830,7 +8827,7 @@
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "chasm-5-2",
@@ -8908,7 +8905,7 @@
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "chasm-6-2",
@@ -8986,7 +8983,7 @@
             "mode": "corner",
             "in": null,
             "out": null,
-            "edge": "curve"
+            "edge": "straight"
           },
           {
             "id": "chasm-7-2",
@@ -9707,10 +9704,17 @@
     "windDirection": "left"
   },
   "timeOfDay": 8,
+  "lesson": "The first open gaps, across a canyon: climbs, a jump up, sandstone hoodoos to hop between and a big drop. Falling in ends the run.",
+  "alsoNew": "Red sandstone under the sand, sandstone hoodoos, a broken rope bridge, and morning light.",
+  "world": "The Desert",
   "backdrop": "desert",
   "medals": {
     "gold": 21,
     "silver": 27.5,
     "bronze": 37
+  },
+  "preview": {
+    "x": 3581,
+    "y": 176
   }
 }
