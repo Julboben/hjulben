@@ -1086,7 +1086,7 @@ export function startGame({ shared = null } = {}) {
         suspensionSoundCooldown = .06;
         break;
       case 'splash':
-        effects.splash(event.x, event.y, event.speed);
+        effects.splash(event.x, event.y, event.speed, event.rider);
         if (splashSoundCooldown <= 0) {
           sounds.splash(event.speed);
           splashSoundCooldown = .15;

@@ -242,6 +242,34 @@ const errors = trail => validateTrail(trail).filter(message => message.type === 
   assert.ok(stirred, 'the wheels leave ripples');
 }
 
+// Going into deep water lets go of bubbles, which rise and pop at the surface;
+// wading through a ford doesn't, and with reduced motion they stay put and fade.
+{
+  const bubblesFrom = (trail, still = false) => {
+    const ride = createRide(normalizeTrail(trail)), effects = createEffects();
+    effects.reset(ride.trail);
+    let most = 0, popped = 0, highest = Infinity;
+    for (let step = 0; step < 900; step++) {
+      const speed = bikeSpeed(ride);
+      for (const event of stepRide(ride, ride.ragdoll ? {} : { accelerating: true, leanInput: 0 }))
+        if (event.type === 'splash') effects.splash(event.x, event.y, event.speed, event.rider);
+      effects.waterWake(ride, speed);
+      effects.update(STEP, still);
+      most = Math.max(most, effects.bubbles.length);
+      popped += effects.bubbles.filter(bubble => bubble.popped && bubble.life > 0).length;
+      for (const bubble of effects.bubbles) highest = Math.min(highest, bubble.y);
+    }
+    return { most, popped, highest, left: effects.bubbles.length };
+  };
+  const deep = bubblesFrom(pitTrail([{ x: 600, y: 330, width: 400, depth: 110 }]));
+  assert.ok(deep.most > 10, `a crash into deep water lets go of bubbles (${deep.most})`);
+  assert.ok(deep.popped > 0 && deep.highest >= 330 - 6, 'they pop at the surface, not above it');
+  const ford = bubblesFrom(flatTrail({ water: [{ x: 400, y: 296, width: 300, depth: 24 }] }));
+  assert.equal(ford.most, 0, 'wading through a ford makes none');
+  const still = bubblesFrom(pitTrail([{ x: 600, y: 330, width: 400, depth: 110 }]), true);
+  assert.ok(still.most > 0 && still.popped === 0, 'with reduced motion they fade where they are');
+}
+
 // Riding through a ford soaks the rider's boots and legs, not their head;
 // out of it they drip, and dry off slowly.
 {

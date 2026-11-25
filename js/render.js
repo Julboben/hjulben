@@ -57,7 +57,7 @@ import { SEARCHLIGHT, SEARCHLIGHT_BEAM } from "./prison-props.js";
 import { drawNisse, nisseWiggle } from "./nisse.js";
 import { TORCH_FLAME } from "./dungeon-props.js";
 import { FARMHOUSE, FLAGPOLE, MILL, STALL, STALL_COIN_DROP, TURBINE, farmhouseWindowCentre } from "./countryside-props.js";
-import { WATER_PROPS, FISH_DART, FISH_RANGE } from "./water-props.js";
+import { WATER_PROPS, FISH_DART, FISH_RANGE, drawBubbles } from "./water-props.js";
 import { FIRE, IVY, SQUIRREL_HIDE_MAX, SQUIRREL_RANGE, TENT_DOOR_CENTRE } from "./forest-props.js";
 import {
   COCONUTS,
@@ -2126,7 +2126,7 @@ export function createRenderer(canvas, { still = false } = {}) {
     frameSun = { ...frameSun, clouded, strength: frameSun.strength * (1 - clouded) };
     ctx.save();
     ctx.translate(-cameraX, -cameraY);
-    effects.update(animationDt);
+    effects.update(animationDt, reducedMotion);
     wheelDirt = effects.wheelDirt;
     wheelSquish = effects.tyreSquish;
     riderWet = effects.riderWet;
@@ -2165,6 +2165,8 @@ export function createRenderer(canvas, { still = false } = {}) {
     // surface looks wet.
     drawProps("front", full, gameArt, null, true);
     drawWater(ride, effects.water);
+    // Over the water's tint, not under it: the air in a bubble catches the light.
+    drawBubbles({ pixelRect }, effects.bubbles);
     drawProps("front", full, gameArt, null, false);
     drawXray(ride, look, ride.ragdoll ? "ragdoll" : state, full);
     drawParticles(effects.particles, false);

@@ -466,12 +466,23 @@ export function risingBubbles(time, rise, phase = 0) {
 
 const BUBBLE = { rim: "#d9ffff", core: "#83d1ce" };
 
-/** Bubbles as risingBubbles gives them: little rings, and flecks where they pop. */
+/**
+ * Bubbles as risingBubbles gives them, or the ones a splash lets go of:
+ * little rings 2, 4 or 6 across with (x, y) at their lower left, and flecks
+ * where they pop.
+ */
 export function drawBubbles({ pixelRect }, bubbles) {
   for (const { x, y, size, popped } of bubbles) {
     if (popped) {
       pixelRect(x - 2, y - 2, 2, 2, BUBBLE.rim, 2);
       pixelRect(x + 2, y - 2, 2, 2, BUBBLE.rim, 2);
+    } else if (size > 4) {
+      // A big one: a ring, lit at the top left.
+      pixelRect(x, y - 6, 6, 2, BUBBLE.rim, 2);
+      pixelRect(x - 2, y - 4, 2, 4, BUBBLE.rim, 2);
+      pixelRect(x + 6, y - 4, 2, 4, BUBBLE.core, 2);
+      pixelRect(x, y, 6, 2, BUBBLE.core, 2);
+      pixelRect(x + 2, y - 4, 2, 2, BUBBLE.rim, 2);
     } else if (size > 2) {
       pixelRect(x, y - 4, 4, 4, BUBBLE.core, 2);
       pixelRect(x + 2, y - 4, 2, 2, BUBBLE.rim, 2);

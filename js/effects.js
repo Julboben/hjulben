@@ -7,13 +7,25 @@ import { terrainMaterials } from './materials.js';
 import { terrainAt, terrainGeometry } from './terrain.js';
 import { inGlass } from './glass.js';
 import { ringArea } from './terrain-geometry.js';
-import { WATER_COLORS, createWaterSurface, submergedFraction, waterAt, waterBodies } from './water.js';
+import { WATER_COLORS, createWaterSurface, deepWater, submergedFraction, waterAt, waterBodies } from './water.js';
+import { terrainSolidAt } from './terrain-runtime.js';
 import { RIDER_HAND, RIDER_HEAD, RIDER_PEG, riderKnee } from './bike-lamps.js';
 import { riderBodyFrame } from './rider-hair.js';
 import { rainSlant, resolveWeather, windSign } from './weather.js';
 import { weatherGroundAt } from './weather-fall.js';
 
 const MAX_PARTICLES = 400;
+const MAX_BUBBLES = 160;
+// Bubbles after something goes into deep water. The air dragged under comes
+// off the rider in a rush for BUBBLE_RUSH seconds, then in a thinning trail
+// until BUBBLE_TRAIL; the bike lets go of its own rush, then burps now and
+// then as it sinks, until BUBBLE_GURGLE. Rates are bubbles a second for the
+// hardest entry.
+const BUBBLE_RUSH = .35, BUBBLE_TRAIL = 1.4, BUBBLE_GURGLE = 7;
+const RIDER_RUSH = 70, RIDER_TRAIL = 14, BIKE_RUSH = 40;
+// How long a bubble's pop shows at the surface, and how long a bubble lasts
+// where it appears with reduced motion, when it doesn't rise.
+const BUBBLE_POP = .18, BUBBLE_STILL = .6;
 const MAX_SKID_MARKS = 120;
 const MAX_TYRE_TRACKS = 600;
 /** How long (s) a tyre track takes to fade, and how far apart (px) its pieces are laid. */
@@ -72,10 +84,23 @@ export function createEffects() {
   const rain = { strength: 0, drift: 0 };
   /** The water's drawn surface, which the bike, the rider and splashes stir up. */
   const water = createWaterSurface();
+  /** Bubbles rising in the water, and the deep water the ride has in it. @type {any[]} */
+  const bubbles = [];
+  let deepBodies = [];
+  /**
+   * How hard the rider and the bike went into deep water and how long ago,
+   * and when the bike next burps, or null while they haven't; and whether a
+   * helmet knocked off has let go of its bubbles.
+   * @type {{ rider: any, bike: any, helmet: boolean }}
+   */
+  const dunks = { rider: null, bike: null, helmet: false };
 
   function reset(nextTrail) {
     trail = nextTrail;
     water.reset(waterBodies(trail), terrainGeometry(trail));
+    deepBodies = waterBodies(trail).filter(body => deepWater(body.depth));
+    bubbles.length = 0;
+    dunks.rider = null; dunks.bike = null; dunks.helmet = false;
     particles.length = 0; skidMarks.length = 0; tyreTracks.length = 0;
     trackFrom.rear = null; trackFrom.front = null;
     sprayAccumulator = 0; skidAccumulator = 0; wakeAccumulator = 0;
@@ -218,9 +243,21 @@ export function createEffects() {
     }
   }
 
-  /** Droplets thrown up where something hits the water, more the harder it hits. */
-  function splash(x, y, speed) {
+  /**
+   * Droplets thrown up where something hits the water, more the harder it
+   * hits. In deep water it starts the bubbles off the `rider` (or the bike,
+   * when false) as well.
+   */
+  function splash(x, y, speed, rider = false) {
     water.disturb(x, y, clamp(speed / 60, 1.5, 6), 6);
+    const deep = waterAt(deepBodies, x, y + 1);
+    const key = rider ? 'rider' : 'bike';
+    if (deep && !dunks[key]) {
+      const power = clamp(speed / 500, .15, 1);
+      dunks[key] = { age: 0, power, burp: 0 };
+      for (let index = Math.round(3 + 5 * power); index > 0; index--)
+        addBubble(deep, x + (Math.random() - .5) * 16, y + 2 + Math.random() * 10, power);
+    }
     const count = Math.round(clamp(speed / 22, 5, 18));
     for (let index = 0; index < count; index++) {
       const side = index % 2 ? 1 : -1;
@@ -283,6 +320,7 @@ export function createEffects() {
     const bodies = ride.water;
     if (!bodies?.length) return;
     stirWater(ride);
+    releaseBubbles(ride);
     if (ride.status !== 'running') return;
     const magnitude = Math.abs(speed);
     let surface = null, x = 0;
@@ -304,6 +342,85 @@ export function createEffects() {
         life, max: life, color: WATER_COLORS.splash[Math.floor(Math.random() * 3)], size: 2, drag: 2
       });
     }
+  }
+
+  // A bubble in `body` at (x, y): mostly small, a big one now and then, more
+  // often the harder (`power`, 0…1) whatever let it go went in.
+  function addBubble(body, x, y, power, size = Math.random() < .1 * power ? 6 : Math.random() < .35 ? 4 : 2) {
+    if (y <= body.y + 2) return;
+    bubbles.push({ x, y, size, body, speed: 6 + size * 2 + Math.random() * 4, phase: Math.random() * TAU, age: 0, popped: false, life: 0 });
+  }
+
+  // Lets go of bubbles from what went into deep water, every physics step:
+  // the rider's rush and trail, the sinking bike's rush and burps, and a few
+  // from a helmet knocked off under water.
+  function releaseBubbles(ride) {
+    const rider = dunks.rider, bike = dunks.bike;
+    if (rider && ride.ragdoll) {
+      rider.age += STEP;
+      const rate = rider.age < BUBBLE_RUSH ? RIDER_RUSH * rider.power
+        : RIDER_TRAIL * (1 - rider.age / BUBBLE_TRAIL) * (.4 + rider.power);
+      if (rider.age < BUBBLE_TRAIL && Math.random() < rate * STEP) {
+        const point = ride.ragdoll.list[Math.floor(Math.random() * ride.ragdoll.list.length)];
+        const body = waterAt(deepBodies, point.x, point.y);
+        if (body) addBubble(body, point.x + (Math.random() - .5) * 6, point.y + (Math.random() - .5) * 6, rider.power);
+      }
+      const helmet = ride.ragdoll.helmet;
+      if (helmet && !dunks.helmet) {
+        const body = waterAt(deepBodies, helmet.x, helmet.y);
+        dunks.helmet = true;
+        if (body) for (let index = 0; index < 3; index++)
+          addBubble(body, helmet.x + (Math.random() - .5) * 8, helmet.y + index * 4, rider.power, index ? 2 : 4);
+      }
+    }
+    if (bike && bike.age < BUBBLE_GURGLE) {
+      bike.age += STEP;
+      const x = (ride.rear.x + ride.front.x) / 2, y = (ride.rear.y + ride.front.y) / 2;
+      const body = waterAt(deepBodies, x, y);
+      if (!body) return;
+      if (bike.age < BUBBLE_RUSH * 1.5 && Math.random() < BIKE_RUSH * bike.power * STEP)
+        addBubble(body, x + (Math.random() - .5) * 24, y + (Math.random() - .5) * 8, bike.power);
+      // Air escaping from the tank and the tyres: big burps at first, then
+      // smaller and further apart.
+      bike.burp -= STEP;
+      if (bike.burp <= 0) {
+        bike.burp = .35 + bike.age * .25 + Math.random() * .4;
+        const big = bike.age < 3 && Math.random() < .5;
+        addBubble(body, x + 4, y - 4, bike.power, big ? 6 : 4);
+        if (Math.random() < .6) addBubble(body, x + 6, y + 4, bike.power, 2);
+      }
+    }
+  }
+
+  // Bubbles wobble up, small ones slowly and big ones faster, as real ones
+  // do, and pop at the drawn surface with a fleck and a ripple. With reduced
+  // motion (`still`) they stay where they appear and fade.
+  function stepBubbles(dt, still) {
+    const compiled = terrainGeometry(trail);
+    for (const bubble of bubbles) {
+      bubble.age += dt;
+      if (bubble.popped) { bubble.life -= dt; continue; }
+      if (still) {
+        if (bubble.age > BUBBLE_STILL) bubble.popped = true;
+        continue;
+      }
+      bubble.speed = Math.min(bubble.speed + 20 * dt, 12 + bubble.size * 4);
+      bubble.y -= bubble.speed * dt;
+      bubble.x += Math.sin(bubble.age * 7 + bubble.phase) * (bubble.size > 2 ? 10 : 6) * dt;
+      const { body } = bubble;
+      const surface = body.y + water.offset(bubble.x, body.y);
+      // Rock over the water, under an overhang or in a cave, holds them.
+      if (compiled && terrainSolidAt(compiled, bubble.x, bubble.y - bubble.size)) { bubble.popped = true; bubble.life = 0; continue; }
+      if (bubble.y - bubble.size > surface) continue;
+      bubble.popped = true;
+      bubble.y = surface;
+      bubble.life = BUBBLE_POP;
+      water.disturb(bubble.x, body.y, .08 * bubble.size, 2);
+    }
+    let kept = 0;
+    for (const bubble of bubbles) if (!bubble.popped || bubble.life > 0) bubbles[kept++] = bubble;
+    bubbles.length = kept;
+    if (bubbles.length > MAX_BUBBLES) bubbles.splice(0, bubbles.length - MAX_BUBBLES);
   }
 
   // Anything moving along through the surface pushes up a bow wave ahead of
@@ -478,7 +595,9 @@ export function createEffects() {
     return { intensity, distance: weather.distance, x: weather.x };
   }
 
-  function update(dt) {
+  /** Moves the effects on by `dt` seconds; `still` is for reduced motion. */
+  function update(dt, still = false) {
+    stepBubbles(dt, still);
     for (const mark of skidMarks) mark.life -= dt;
     for (const track of tyreTracks) track.life -= dt;
     for (const p of particles) {
@@ -505,7 +624,7 @@ export function createEffects() {
     removeExpired(tyreTracks, MAX_TYRE_TRACKS);
   }
 
-  return { particles, skidMarks, tyreTracks, wheelDirt, tyreSquish, riderWet, weather, water, reset, burst, dustPuff, exhaustPuff, crashDebris, brakeMarks, layTracks, terrainSpray, splash, shatter, crack, waterWake, wheelGrime, squishTyres, riderWetness, stepWeather, update, prune };
+  return { particles, skidMarks, tyreTracks, wheelDirt, tyreSquish, riderWet, weather, water, bubbles, reset, burst, dustPuff, exhaustPuff, crashDebris, brakeMarks, layTracks, terrainSpray, splash, shatter, crack, waterWake, wheelGrime, squishTyres, riderWetness, stepWeather, update, prune };
 }
 
 const midpoint = (a, b) => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
