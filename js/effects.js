@@ -192,7 +192,7 @@ export function createEffects() {
       const length = clamp(magnitude * .035 * ride.brakePressure, 3, 10);
       skidMarks.push({
         x: ground.pointX ?? wheel.x, y: (ground.pointY ?? ground.y) - 1, slope: ground.slope,
-        direction, length, life: 1.6, max: 1.6
+        direction, length, life: 1.6, max: 1.6, step: ride.steps
       });
     }
   }
@@ -209,7 +209,7 @@ export function createEffects() {
       const from = trackFrom[name];
       if (!colors || from === null) { trackFrom[name] = colors ? contact.pointX : null; continue; }
       if (Math.abs(contact.pointX - from) < TRACK_PIECE) continue;
-      tyreTracks.push({ from, to: contact.pointX, y: contact.pointY, slope: contact.slope, colors, life: TRACK_LIFE, max: TRACK_LIFE });
+      tyreTracks.push({ from, to: contact.pointX, y: contact.pointY, slope: contact.slope, colors, life: TRACK_LIFE, max: TRACK_LIFE, step: ride.steps });
       trackFrom[name] = contact.pointX;
     }
   }
@@ -628,13 +628,25 @@ export function createEffects() {
     }
   }
 
+  /**
+   * Takes back what the ride left after `step`, for a rewind passing back
+   * over it: the tracks and skid marks laid since, and whatever was flying.
+   */
+  function rewindTo(step) {
+    for (const marks of [tyreTracks, skidMarks]) {
+      const kept = marks.filter(mark => mark.step <= step);
+      marks.splice(0, marks.length, ...kept);
+    }
+    particles.length = 0;
+  }
+
   function prune() {
     removeExpired(particles, MAX_PARTICLES);
     removeExpired(skidMarks, MAX_SKID_MARKS);
     removeExpired(tyreTracks, MAX_TYRE_TRACKS);
   }
 
-  return { particles, skidMarks, tyreTracks, wheelDirt, tyreSquish, riderWet, weather, water, bubbles, reset, burst, dustPuff, exhaustPuff, crashDebris, brakeMarks, layTracks, terrainSpray, splash, shatter, crack, waterWake, wheelGrime, squishTyres, riderWetness, stepWeather, carryWeather, update, prune };
+  return { particles, skidMarks, tyreTracks, wheelDirt, tyreSquish, riderWet, weather, water, bubbles, reset, burst, dustPuff, exhaustPuff, crashDebris, brakeMarks, layTracks, terrainSpray, splash, shatter, crack, waterWake, wheelGrime, squishTyres, riderWetness, stepWeather, carryWeather, rewindTo, update, prune };
 }
 
 const midpoint = (a, b) => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });

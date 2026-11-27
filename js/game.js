@@ -18,7 +18,8 @@ import { bikeBroken, createFeatTracker, editorProgress, eggAchievements, eventAc
 import { createLimWatcher, installConsoleCheats } from './easter-eggs.js';
 import { submitOnlineRun, fetchWorldGhost, fetchRiderGhost, refreshOnlineBoard, cachedOnlineBoard, queuePendingRun, dropPendingRun, flushPendingRuns, useBoardViewer } from './online-leaderboard.js';
 import { queueSaveSync, SIGNED_OUT_EVENT, SESSION_RENEWED_EVENT } from './account.js';
-import { createInput, keyLabel, shortcutName } from './input.js';
+import { createInput, HOLD_ACTIONS, keyLabel, shortcutName } from './input.js';
+import { createRewindRecorder, FLOURISH_SECONDS, REWIND_SECONDS, SHORTEST_REWIND, rewindStep } from './rewind.js';
 import { createHaptics } from './haptics.js';
 import { createCamera } from './camera.js';
 import { createEffects } from './effects.js';
@@ -85,7 +86,9 @@ export function startGame({ shared = null } = {}) {
     element: game,
     buttons: [...document.querySelectorAll('[data-action]')],
     indicators: [...document.querySelectorAll('[data-shows]')],
-    isActive: () => session.state === 'running' && !menu.isOpen(),
+    // A rewind counts too: a ride control pressed during it skips to the run
+    // and is held as it starts.
+    isActive: () => (session.state === 'running' || session.state === 'rewinding') && !menu.isOpen(),
     onPress: handlePress,
     onDevice: () => syncDevice(),
   });
@@ -597,6 +600,8 @@ export function startGame({ shared = null } = {}) {
     // ride after. Replays still show the run as it was ridden.
     if (!replay && nisseFound()) ride.nisse = null;
     session.ride = ride;
+    if (replay) rewindable.clear();
+    else rewindable.start(ride, seed);
     recorded = []; startStep = 0; flips = 0; broken = false; simulatedTime = 0; passedTime = 0;
     accumulator = 0; landingSoundCooldown = 0; splashSoundCooldown = 0; suspensionSoundCooldown = 0;
     effects.reset(trail);
@@ -756,6 +761,23 @@ export function startGame({ shared = null } = {}) {
   function startFresh() {
     // Retry means riding: during or after a replay it starts the rider's own run.
     if (replay) { rideAfterReplay(); return; }
+    // Pressed again during a rewind, it skips to the run.
+    if (rewind) { restartRewound(rewind.shown); return; }
+    if (reducedMotion || rewindable.steps * STEP < SHORTEST_REWIND) { restartRide(); return; }
+    // A run worth rewinding is played back to the start first, unless a
+    // hand is on the controls, ready to go again: then it starts at once.
+    if (HOLD_ACTIONS.some(action => input.down(action))) {
+      sounds.rewind(FLOURISH_SECONDS);
+      restartRewound(session.ride.elapsed);
+    } else startRewind();
+  }
+
+  /** Starts the run again from the start line, after its rewind if it had one. */
+  function restartRide() {
+    rewind = null;
+    flourish = null;
+    delete game.dataset.rewinding;
+    delete game.dataset.rewound;
     if (session.trailSource === 'playtest') loadPlaytestTrail();
     else if (session.trailSource === 'bonus') loadBonusTrail(session.bonusTrailIndex);
     else if (session.trailSource === 'custom') loadCustomTrail(session.customTrailIndex);
@@ -780,6 +802,8 @@ export function startGame({ shared = null } = {}) {
 
   function showMainMenu() {
     if (session.trailSource === 'playtest') { exitPlaytest(); return; }
+    // The menu opens over the new run, not the old one going back.
+    if (rewind) restartRide();
     if (session.state !== 'menu') session.stateBeforeMenu = session.state;
     session.state = 'menu';
     // Keys still held carry on when the ride does, so gas held through the
@@ -1243,6 +1267,7 @@ export function startGame({ shared = null } = {}) {
     const speed = bikeSpeed(ride);
     const facingBefore = ride.facing;
     const events = stepRide(ride, stepInput, debugHooks);
+    if (!replay) rewindable.note(ride, stepInput);
     if (ride.facing !== facingBefore) overlay.setDirection(ride.facing);
     physicsDebug.capture('afterVelocityConstraint', ride.rear, ride.front);
     physicsDebug.setIteration(-1);
@@ -1268,6 +1293,72 @@ export function startGame({ shared = null } = {}) {
       broken = true;
       egg('kraken');
     }
+  }
+
+  // --- Rewind ----------------------------------------------------------------
+
+  // Restarting with the hands off the controls plays the run back to the
+  // start first (see js/rewind.js): the run as kept, and the rewind under
+  // way, with how far it has got and the time it shows. With a hand on them,
+  // or once one is pressed, the run starts again at once under the flourish:
+  // how far it has got, and the time the timer spins down from.
+  const rewindable = createRewindRecorder();
+  /** @type {{ time: number, shown: number } | null} */
+  let rewind = null;
+  /** @type {{ time: number, from: number } | null} */
+  let flourish = null;
+  // The tape look keeps the rewind's time, and the flourish's.
+  game.style.setProperty('--rewind-seconds', `${REWIND_SECONDS}s`);
+  game.style.setProperty('--flourish-seconds', `${FLOURISH_SECONDS}s`);
+
+  function startRewind() {
+    rewind = { time: 0, shown: session.ride.elapsed };
+    setState('rewinding');
+    // The rider is getting back on: no more `Rider down`.
+    overlay.clearToast();
+    game.dataset.rewinding = '';
+    sounds.rewind(REWIND_SECONDS);
+    focusGame();
+  }
+
+  /**
+   * Starts the run again at once, under the flourish of the tape look, the
+   * timer spinning down from `from`.
+   */
+  function restartRewound(from) {
+    restartRide();
+    flourish = { time: 0, from };
+    game.dataset.rewound = '';
+  }
+
+  /** Spins the timer down with the flourish `dt` seconds on, over `ride`, the new run, and ends it. */
+  function stepFlourish(dt, ride) {
+    flourish.time += dt;
+    const left = Math.max(0, 1 - flourish.time / FLOURISH_SECONDS);
+    overlay.setTimer(Math.max(ride.elapsed, flourish.from * left ** 2));
+    if (left) return;
+    flourish = null;
+    delete game.dataset.rewound;
+  }
+
+  /** Draws the rewind `dt` seconds on, and starts the run once it is back at the start or a ride control is pressed. */
+  function stepRewind(dt) {
+    rewind.time += dt;
+    if (rewind.time >= REWIND_SECONDS) { restartRide(); return; }
+    if (HOLD_ACTIONS.some(action => input.held(action))) { restartRewound(rewind.shown); return; }
+    const ride = rewindable.at(rewindStep(rewindable.steps, rewind.time / REWIND_SECONDS));
+    effects.rewindTo(ride.steps);
+    // The weather carries on, as everything around the ride does.
+    for (accumulator += dt; accumulator >= STEP; accumulator -= STEP) effects.stepWeather();
+    // The camera keeps up with the ride going back, however fast.
+    camera.snap = true;
+    renderer.draw({
+      ride, ghost: null, camera, effects, look: shownLook(), state: ride.ragdoll ? 'ragdoll' : 'running',
+      full: session.preferences.scenery === 'full', dt, debug: debugEnabled
+    });
+    overlay.setTimer(ride.elapsed);
+    overlay.setApples(ride.collected, ride.apples.length);
+    rewind.shown = ride.elapsed;
   }
 
   // --- Frame loop ----------------------------------------------------------
@@ -1296,7 +1387,8 @@ export function startGame({ shared = null } = {}) {
     // Toasts time out in the menu too, where achievements can still be earned.
     overlay.tick(now);
     const ride = session.ride;
-    if (ride && !menu.isOpen()) {
+    if (ride && !menu.isOpen() && rewind) stepRewind(dt);
+    else if (ride && !menu.isOpen()) {
       const { state } = session;
       if (state === 'running' || state === 'ragdoll') {
         accumulator += dt;
@@ -1328,6 +1420,7 @@ export function startGame({ shared = null } = {}) {
       const alpha = stepping ? accumulator / STEP : 1;
       const ghostAlpha = stepping || ghostRiding() ? accumulator / STEP : 1;
       overlay.setTimer(ride.elapsed);
+      if (flourish) stepFlourish(dt, ride);
       const still = session.state === 'paused' || (session.state === 'won' && renderer.settled() && !fireworks.active() && !ghostRiding());
       if (!still || redraw) {
         redraw = false;

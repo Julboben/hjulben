@@ -42,7 +42,7 @@ It runs in the browser with no build step and no runtime dependencies, built wit
 | Open / close the main menu       | `Escape`                                  | In-game menu button                          |
 | Toggle fullscreen                | `F`                                       | Fullscreen On/Off in Settings                |
 
-Every keyboard action can be rebound under **Settings → Keys**. Holding restart freezes the bike until you let go, so you can line up a clean start.
+Every keyboard action can be rebound under **Settings → Keys**. Restart with your hands off the controls and the run rewinds back to the start line; with gas, brake or lean held, or pressed during the rewind, it starts again at once. Holding restart freezes the bike until you let go, so you can line up a clean start.
 
 Phones play upright with the touch controls. With a controller, a phone or a gaming handheld plays sideways too: press any button on the "Turn your phone upright" screen.
 

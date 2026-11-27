@@ -100,6 +100,18 @@ export function createInput({ element, buttons, indicators = [], isActive, onPre
     return pad.held.has(action);
   }
 
+  /**
+   * Whether the control for `action` is down, whether or not the game is
+   * taking it (see held): a key, pad button or on-screen button pressed
+   * while the rider is down is only shown, but a hand is on it all the same.
+   */
+  function down(action) {
+    if (held(action) || pad.shown.has(action)) return true;
+    for (const code of shownKeys) if (codeActions.get(code) === action) return true;
+    for (const button of touching.values()) if (button.dataset.action === action) return true;
+    return false;
+  }
+
   /** Lean in screen direction: −1 left … 1 right. */
   function leanInput() {
     const digital = Number(held('forward')) - Number(held('back'));
@@ -126,8 +138,6 @@ export function createInput({ element, buttons, indicators = [], isActive, onPre
 
   function paint() {
     const touched = new Set(touching.values());
-    const shownActions = new Set([...shownKeys].map(code => codeActions.get(code)));
-    const down = action => held(action) || pad.shown.has(action) || shownActions.has(action);
     for (const button of buttons) button.classList.toggle('held', touched.has(button) || down(button.dataset.action || ''));
     for (const button of indicators) button.classList.toggle('held', down(button.dataset.shows || ''));
   }
@@ -282,7 +292,7 @@ export function createInput({ element, buttons, indicators = [], isActive, onPre
   }
 
   return {
-    held, leanInput, clear, clearTouches, paint, keyDown, holdKey, keyUp, pollGamepad, setBindings, captureNextKey,
+    held, down, leanInput, clear, clearTouches, paint, keyDown, holdKey, keyUp, pollGamepad, setBindings, captureNextKey,
     get gamepadConnected() { return pad.connected; },
     /** What the player is using, for prompts. */
     get device() { return device; },

@@ -201,6 +201,16 @@ export default {
     .#.....#.
     ..#####..
   `,
+  // The timer's clock while a restart rewinds the run (see js/rewind.js).
+  rewind: `
+    ...#...#.
+    ..##..##.
+    .###.###.
+    ####.####
+    .###.###.
+    ..##..##.
+    ...#...#.
+  `,
   apple: {
     palette: { r: '#ec7044', h: '#f6a17b', g: '#4b7952', s: '#6b4a2b' },
     grid: `

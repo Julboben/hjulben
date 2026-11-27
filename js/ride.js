@@ -405,6 +405,17 @@ export function bikeSpeed(ride) {
   return (rear.x - rear.ox + (front.x - front.ox)) / (2 * STEP);
 }
 
+/**
+ * A copy of `ride` to step on its own, to look ahead or to go back to. The
+ * trail is shared rather than copied, apart from its broken glass, so a pane
+ * one copy breaks is still whole for the next; so are the random numbers,
+ * which only a crash draws (see the rewind's recorder in rewind.js).
+ */
+export function cloneRide(ride) {
+  const { trail, random, ...rest } = ride;
+  return { ...structuredClone(rest), trail: copyRideTerrain(trail), random };
+}
+
 /** The point a camera follows on `ride`: the bike, or the rider once thrown off it. */
 export const rideFocus = ride => (ride.ragdoll ? ragdollCenter(ride.ragdoll) : vehicleMetrics(ride.vehicle).center);
 

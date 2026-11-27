@@ -5,8 +5,9 @@
 // keys, the narrower layout that gives home's buttons way to the screen,
 // the trails' thumbnails, drawn ahead, the previews drawn in the game,
 // which wait until their screen opens, the flights between the backdrop and
-// the ride (Continue and Resume ride into it, and Escape out of it), and
-// where the Garage keeps its buttons.
+// the ride (Continue and Resume ride into it, and Escape out of it), the
+// rewind a restart plays (see test-rewind.mjs for its recorder), and where
+// the Garage keeps its buttons.
 //
 //   node scripts/test-menu.mjs
 //
@@ -227,6 +228,38 @@ const stilled = await page(`
   return { landed: screen.hidden, usable: !screen.inert, riding: !document.getElementById('game').classList.contains('menu-open') };`);
 await chrome.send('Emulation.setEmulatedMedia', { features: [] }, session);
 check('reduced motion turned on mid-flight lands it', stilled.landed && stilled.usable && stilled.riding, JSON.stringify(stilled));
+
+// --- Restarting: hands off the controls, the run rewinds to the start; with a
+// hand on them, or once one is pressed, it starts again at once under a flourish
+const RIDE = `
+  const game = document.getElementById('game');
+  const { session } = await import('/js/state.js');
+  const ride = (type, code) => (type === 'keyup' ? window : game).dispatchEvent(new KeyboardEvent(type, { code, key: code, bubbles: true }));
+  ride('keydown', 'ArrowUp');
+  for (let i = 0; i < 300 && session.ride.elapsed < 1.3; i++) await t.frames(1);`;
+const RIDE_AND_RESTART = `${RIDE}
+  ride('keyup', 'ArrowUp');
+  ride('keydown', 'KeyR'); ride('keyup', 'KeyR');
+  const rewinding = 'rewinding' in game.dataset;`;
+const rewound = await page(`${RIDE_AND_RESTART}
+  let frames = 0;
+  for (; frames < 120 && 'rewinding' in game.dataset; frames++) await t.frames(1);
+  return { rewinding, frames, back: !('rewinding' in game.dataset), elapsed: session.ride.elapsed, state: session.state };`);
+check('R rewinds a run to the start', rewound.rewinding && rewound.back && rewound.frames > 10 && rewound.elapsed === 0 && rewound.state === 'running', JSON.stringify(rewound));
+const skipped = await page(`${RIDE_AND_RESTART}
+  await t.frames(2);
+  ride('keydown', 'ArrowUp'); await t.frames(2);
+  const result = { rewinding, back: !('rewinding' in game.dataset), flourish: 'rewound' in game.dataset, gas: session.ride.throttle };
+  ride('keyup', 'ArrowUp');
+  return result;`);
+check('and gas pressed during it skips to the run, gas held, under the flourish', skipped.rewinding && skipped.back && skipped.flourish && skipped.gas > 0, JSON.stringify(skipped));
+const instant = await page(`${RIDE}
+  ride('keydown', 'KeyR'); ride('keyup', 'KeyR');
+  const at = { rewinding: 'rewinding' in game.dataset, flourish: 'rewound' in game.dataset, steps: session.ride.steps };
+  for (let i = 0; i < 60 && 'rewound' in game.dataset; i++) await t.frames(1);
+  ride('keyup', 'ArrowUp');
+  return { ...at, ended: !('rewound' in game.dataset) };`);
+check('gas held at R starts the run again at once, under the flourish', !instant.rewinding && instant.flourish && instant.steps === 0 && instant.ended, JSON.stringify(instant));
 
 // --- Buttons for a whole screen: in its head on a wide screen, where the page
 // has them on a phone. A screen starts on what it shows, not on them.
