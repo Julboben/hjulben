@@ -109,6 +109,16 @@ export function createInput({ element, buttons, indicators = [], isActive, onPre
   function clear() {
     keys.clear();
     shownKeys.clear();
+    clearTouches();
+  }
+
+  /**
+   * Lets go of the on-screen controls, which hide as the menu opens, but not
+   * of keys still held: they carry on held when the ride does, and a key let
+   * go of in the menu is still heard (see keyUp). See holdKey for one
+   * pressed in the menu.
+   */
+  function clearTouches() {
     pointers.clear();
     touching.clear();
     paint();
@@ -134,9 +144,7 @@ export function createInput({ element, buttons, indicators = [], isActive, onPre
       done(event.code === 'Escape' || RESERVED.has(event.code) ? null : event.code);
       return true;
     }
-    // On macOS a key released while Cmd is down never reports its release,
-    // so Cmd lets go of everything rather than leave a key stuck.
-    if (event.code === 'MetaLeft' || event.code === 'MetaRight') { keys.clear(); shownKeys.clear(); paint(); return false; }
+    if (letGoForCmd(event)) return false;
     const action = codeActions.get(event.code);
     if (!action) return false;
     event.preventDefault();
@@ -149,6 +157,33 @@ export function createInput({ element, buttons, indicators = [], isActive, onPre
     (isActive() ? keys : shownKeys).add(event.code);
     paint();
     return true;
+  }
+
+  /**
+   * On macOS a key released while Cmd is down never reports its release, so
+   * Cmd lets go of every key rather than leave one stuck. True for Cmd.
+   */
+  function letGoForCmd(event) {
+    if (event.code !== 'MetaLeft' && event.code !== 'MetaRight') return false;
+    keys.clear();
+    shownKeys.clear();
+    paint();
+    return true;
+  }
+
+  /**
+   * Notes a key for a held control (gas, brake, leaning) pressed while the
+   * menu is open, without acting on it, so it is held when the ride carries
+   * on: the ride stood still meanwhile, and nothing else tells it of a key
+   * that is held now. A key held down doesn't always repeat its press: on
+   * macOS another key stops it, and a letter held for its accents never does.
+   */
+  function holdKey(event) {
+    if (letGoForCmd(event)) return;
+    if (HOLD_ACTIONS.includes(codeActions.get(event.code))) {
+      keys.add(event.code);
+      paint();
+    }
   }
 
   function keyUp(event) {
@@ -247,7 +282,7 @@ export function createInput({ element, buttons, indicators = [], isActive, onPre
   }
 
   return {
-    held, leanInput, clear, paint, keyDown, keyUp, pollGamepad, setBindings, captureNextKey,
+    held, leanInput, clear, clearTouches, paint, keyDown, holdKey, keyUp, pollGamepad, setBindings, captureNextKey,
     get gamepadConnected() { return pad.connected; },
     /** What the player is using, for prompts. */
     get device() { return device; },

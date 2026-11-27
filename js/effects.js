@@ -595,6 +595,16 @@ export function createEffects() {
     return { intensity, distance: weather.distance, x: weather.x };
   }
 
+  /**
+   * Carries the weather on from `time`, another scene's weather clock, as if
+   * it had been stepping all along: the rain falls on where that scene's
+   * was, and the next lightning keeps its distance.
+   */
+  function carryWeather(time) {
+    weather.nextLightning += time - weather.time;
+    weather.time = time;
+  }
+
   /** Moves the effects on by `dt` seconds; `still` is for reduced motion. */
   function update(dt, still = false) {
     stepBubbles(dt, still);
@@ -624,7 +634,7 @@ export function createEffects() {
     removeExpired(tyreTracks, MAX_TYRE_TRACKS);
   }
 
-  return { particles, skidMarks, tyreTracks, wheelDirt, tyreSquish, riderWet, weather, water, bubbles, reset, burst, dustPuff, exhaustPuff, crashDebris, brakeMarks, layTracks, terrainSpray, splash, shatter, crack, waterWake, wheelGrime, squishTyres, riderWetness, stepWeather, update, prune };
+  return { particles, skidMarks, tyreTracks, wheelDirt, tyreSquish, riderWet, weather, water, bubbles, reset, burst, dustPuff, exhaustPuff, crashDebris, brakeMarks, layTracks, terrainSpray, splash, shatter, crack, waterWake, wheelGrime, squishTyres, riderWetness, stepWeather, carryWeather, update, prune };
 }
 
 const midpoint = (a, b) => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });

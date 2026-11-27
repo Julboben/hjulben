@@ -1,0 +1,189 @@
+{
+  "code": "255f28a20a13af38d67508d63f71af469f470c956e08265ed348812f23ec9974",
+  "trails": {
+    "official:the-orchard": {
+      "file": "thumbnails/official/the-orchard-13f61c0e.webp",
+      "from": "e30910a6ceed05d5dba1aa488e88975b38567d5fb7ebb0832a7753f7c511068f"
+    },
+    "official:apple-valley": {
+      "file": "thumbnails/official/apple-valley-4463ca09.webp",
+      "from": "e0f6b2dbb0c2f873a54eccb9ab2fcc2d6b3fdefae4fe3de453720a80c85225dc"
+    },
+    "official:windfall": {
+      "file": "thumbnails/official/windfall-2ce6a557.webp",
+      "from": "db3364c0682b769c8602bcfafbd97f8479e871c13a6e29c685e2053bbdcf8987"
+    },
+    "official:hay-lane": {
+      "file": "thumbnails/official/hay-lane-475fc913.webp",
+      "from": "70a3ad050b88d38414335523ee880a165475a099ec687b1481ba6b331c65e615"
+    },
+    "official:windmill-hills": {
+      "file": "thumbnails/official/windmill-hills-a24ab301.webp",
+      "from": "5a1ed6d68e31e261798e91a0aa46a5796d19134a5695b48181d0d7b6d77a26e0"
+    },
+    "official:sky-ladder": {
+      "file": "thumbnails/official/sky-ladder-c3b64fd0.webp",
+      "from": "356488d05eb6890faae0026725f052fbbfe3a06e5df856ddf87ffa19ecda608a"
+    },
+    "official:windmill-hill": {
+      "file": "thumbnails/official/windmill-hill-c72e091c.webp",
+      "from": "10ffb6c37ecff8274d277bc7228ea1c10640d4801844e908cfda8fe2353ecb98"
+    },
+    "official:floating-fields": {
+      "file": "thumbnails/official/floating-fields-438b4424.webp",
+      "from": "881ded01a4b6a630c1e17ebbb42a8fa259dd3928e46527cc0d7049d0ef879deb"
+    },
+    "official:high-orchard": {
+      "file": "thumbnails/official/high-orchard-060240f9.webp",
+      "from": "c4d10587bf8357d0623d48b9d70b682fd622a9da0ba75028859b683878200fad"
+    },
+    "official:splinter-ridge": {
+      "file": "thumbnails/official/splinter-ridge-2f30cf4e.webp",
+      "from": "b5f433d4f280369a55aa0fbe4fd10548ae4d68ce6fae4d37f4a428c329d61acd"
+    },
+    "official:kickback": {
+      "file": "thumbnails/official/kickback-10ce3ad0.webp",
+      "from": "83f6738f6f102187f2e818679fe02495e98e3f4d3fe4d87a2341ec6f09a1280e"
+    },
+    "official:stoppie-slope": {
+      "file": "thumbnails/official/stoppie-slope-0d5b3b5b.webp",
+      "from": "e4df916590ba787d020837a1c29cf7fa8b2da010c7fc955018aa121687a34493"
+    },
+    "official:stump-drops": {
+      "file": "thumbnails/official/stump-drops-22e945ca.webp",
+      "from": "af69d35de3e98bf9150099f427af63d823752bd017d291c46bc77989218fad03"
+    },
+    "official:switchback": {
+      "file": "thumbnails/official/switchback-928c4fc5.webp",
+      "from": "fd9685acef21bbbd8bfe6210e48ea43c1d263e8921810b5eb9c8e1c49fa2ea40"
+    },
+    "official:dune-sea": {
+      "file": "thumbnails/official/dune-sea-f9689bc9.webp",
+      "from": "806848eb8cc64270fbdb29870749650d178cc5a4c2f7fa05ac2d7006125e35cf"
+    },
+    "official:kicker-canyon": {
+      "file": "thumbnails/official/kicker-canyon-9b3f4258.webp",
+      "from": "146d745867a966f10b0daa3b14d2149dcedcff5dd50c6f641e0572d03c2d30d9"
+    },
+    "official:the-sandpits": {
+      "file": "thumbnails/official/the-sandpits-76e2835f.webp",
+      "from": "49be54257829d985aeda129fe9578d975fbdb2d033c3a7c4f39b77e1da7686bf"
+    },
+    "official:hoodoo-crossing": {
+      "file": "thumbnails/official/hoodoo-crossing-906707bc.webp",
+      "from": "91c63ee74bf309a6acc5166a5532c12998d6104342b98fe6135aa70933940fdd"
+    },
+    "official:mirage": {
+      "file": "thumbnails/official/mirage-a4a57822.webp",
+      "from": "0f8dbdb073fdda06720fd9b4e5a9088d70022dd51bcdf80fb417de2aafb40939"
+    },
+    "official:wet-feet": {
+      "file": "thumbnails/official/wet-feet-36f985ad.webp",
+      "from": "82a724dbd1ae9ba1cc5ff65725582adc35ec1f756fd0b03482724e867c2aa4d9"
+    },
+    "official:deep-end": {
+      "file": "thumbnails/official/deep-end-c58686b5.webp",
+      "from": "d78227907d5bb33aca14b644440730f573fc1aebab0650253c0b05d823fa09ac"
+    },
+    "official:jetty-jump": {
+      "file": "thumbnails/official/jetty-jump-4e055d97.webp",
+      "from": "366f6a01bce28adf1e4408449edfc90f204958e8abc9d576eb33d5551b2c5ffa"
+    },
+    "official:boomerang": {
+      "file": "thumbnails/official/boomerang-43039b3c.webp",
+      "from": "5da24c615010e18dfb87609de199da91d3a3adfe5c0e49a3fa87143d7eb70bed"
+    },
+    "official:out-and-back": {
+      "file": "thumbnails/official/out-and-back-9bca7baf.webp",
+      "from": "8408aee0aa3a39aee4e68d1322d7dc13499a514782f219127f18083541883db5"
+    },
+    "official:low-bridge": {
+      "file": "thumbnails/official/low-bridge-bd6010bc.webp",
+      "from": "8842d925f48fdc9dc884f768b3b96a1e062cba8f6d99df2cdca1ea4c2189d201"
+    },
+    "official:lantern-mine": {
+      "file": "thumbnails/official/lantern-mine-047ee828.webp",
+      "from": "bd46c7fe3465c71bb34e0d211fc583a528518b2635fcea9d15b370b807db553e"
+    },
+    "official:sinkhole": {
+      "file": "thumbnails/official/sinkhole-bb15eb33.webp",
+      "from": "aa971b409f8f22ab45ec4e641d0a6f4a19f732a982a9ced90695384419218974"
+    },
+    "official:the-shaft": {
+      "file": "thumbnails/official/the-shaft-19ab9149.webp",
+      "from": "999704e4de2167b2860246dd0c650ccb60d348e3d9368a6d73df772414054a28"
+    },
+    "official:the-ring": {
+      "file": "thumbnails/official/the-ring-27ea636e.webp",
+      "from": "1e0a40d58c19f941187d9a97a9062691b7bb15a8ba1179ab5a18d101584e3e62"
+    },
+    "official:kerbside": {
+      "file": "thumbnails/official/kerbside-f6391607.webp",
+      "from": "868c3718eafd07342066b9d4eaf4a0e8ac3be0b6d4774dea795184c70eceffe4"
+    },
+    "official:killer-street": {
+      "file": "thumbnails/official/killer-street-9fcac2e8.webp",
+      "from": "220ac039d633547b5ed196ee2c31dda19a19b0fc025c4656eb8db932bca08f82"
+    },
+    "official:spin-cycle": {
+      "file": "thumbnails/official/spin-cycle-a7d20001.webp",
+      "from": "37d6efedcff188ad91ab2216c5be817b7ec8ad3ecebab3738fe7bca92e252541"
+    },
+    "official:night-shift": {
+      "file": "thumbnails/official/night-shift-573c3939.webp",
+      "from": "d0dd386146ea74ace354c6be51e0d468cfd90c130f067ab260596b6c4b080edc"
+    },
+    "official:brake-point": {
+      "file": "thumbnails/official/brake-point-a2fbee14.webp",
+      "from": "04e8fd4791c1b852f6ef48716366be0770a6f45497d812b96032addc3c8499bc"
+    },
+    "official:rooftops": {
+      "file": "thumbnails/official/rooftops-77aaebfe.webp",
+      "from": "1a34c44745ae5afb7a422b9c516957c4439dc6bccb9eba8babb0fc02b15572d6"
+    },
+    "official:copenhagen-rooftops": {
+      "file": "thumbnails/official/copenhagen-rooftops-d763bff0.webp",
+      "from": "d020600d2ee5ae31b8a8f1c78962f4b5fc5280d3de95b0b868d21ec7e9c85fca"
+    },
+    "official:sandcastle": {
+      "file": "thumbnails/official/sandcastle-3e626f8d.webp",
+      "from": "ac94efe35b7e38f42c90e2b0b5314176d491940d1f51bb63e32c22d5e2da71d6"
+    },
+    "official:long-way-up": {
+      "file": "thumbnails/official/long-way-up-d7c8c128.webp",
+      "from": "ba6b5ab918e80b941ca8401891e23a3faecbf36edfc6809de5891cbbb137e361"
+    },
+    "official:whiteout": {
+      "file": "thumbnails/official/whiteout-e502930a.webp",
+      "from": "cfa2005221f06489973625d5e5912ab84fe7d631b974e90ed20406cdef53b3bb"
+    },
+    "official:big-air": {
+      "file": "thumbnails/official/big-air-e59a8d6f.webp",
+      "from": "8ed059f043693cab31faf3a56fb88026d9540bc8c7311324a5cfe81cff4f02dd"
+    },
+    "official:thunderhead": {
+      "file": "thumbnails/official/thunderhead-7af1777b.webp",
+      "from": "0c0abd4090ffe9244ef35b2b8f21b47e4d26f8769b534a61c001b2d325419b92"
+    },
+    "official:elastic-summit": {
+      "file": "thumbnails/official/elastic-summit-bf2e1eb5.webp",
+      "from": "a42f2a981f3f47449fed2d7f62fdfa1fb6c68273661e09f18e9429e144776587"
+    },
+    "official:high-hopes": {
+      "file": "thumbnails/official/high-hopes-a4aca200.webp",
+      "from": "77d1ba625a63814ac1fb4203cb0aa1dd29d1ead541bcbd19dda5d697d185c65b"
+    },
+    "bonus:the-bonny-tyler": {
+      "file": "thumbnails/bonus/the-bonny-tyler-6af06727.webp",
+      "from": "8213083ed5a5e2310b3e43c58338f271bc0913dc6072acf63204eafb53c34650"
+    },
+    "bonus:the-mining-cave": {
+      "file": "thumbnails/bonus/the-mining-cave-d479b56e.webp",
+      "from": "875f7a79b14f15942a4cb3f18d674ab354655d0393b1be3f4167d7be053d23df"
+    },
+    "bonus:proving-ground-i": {
+      "file": "thumbnails/bonus/proving-ground-i-848128fc.webp",
+      "from": "6f7b70c12dd13717a2f71b030d51d81630d077ab58e0c11d5240f6f8c4860417"
+    }
+  }
+}

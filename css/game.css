@@ -1739,6 +1739,9 @@ h2 {
 .settings-reset {
     justify-self: start;
     margin-top: 6px;
+    .menu-view-head > & {
+        margin: 0;
+    }
 }
 
 .setting-label {
@@ -1869,7 +1872,7 @@ h2 {
             calc(14px + env(safe-area-inset-left, 0px));
         /* Room for the look buttons pinned at the bottom (.look-actions),
            so the last looks and a picked control scroll clear of them. */
-        &:has(.look-actions:not([hidden] *)) {
+        &:has(.look-actions:not([hidden], [hidden] *)) {
             padding-bottom: calc(
                 24px + var(--look-actions-bar) + var(--menu-inset-bottom)
             );
@@ -1883,9 +1886,13 @@ h2 {
     }
     /* The bar starts at the very top, and a control picked with the keys or
        a gamepad scrolls into view below it rather than under it. */
-    &:has(#menu-home[hidden]) {
-        padding-top: 0;
-        scroll-padding-top: calc(var(--menu-bar) + var(--menu-inset-top) + 12px);
+    @media not all and (min-width: 1080px) and (min-height: 760px) {
+        .menu-screen:not([data-view="home"]) & {
+            padding-top: 0;
+            scroll-padding-top: calc(
+                var(--menu-bar) + var(--menu-inset-top) + 12px
+            );
+        }
     }
 }
 .menu-background {
@@ -1917,6 +1924,10 @@ h2 {
 .menu-view {
     width: min(560px, 100%);
     margin-inline: auto;
+}
+/* The logo and home's buttons; only the column layout boxes them together. */
+.menu-column {
+    display: contents;
 }
 #menu-home {
     @media (max-width: 520px) and (min-height: 600px) {
@@ -1954,67 +1965,276 @@ h2 {
         margin-bottom: 18px;
     }
 }
-/* Away from home, the title shrinks into a bar that stays at the top while the
-   screen scrolls, with the screen's own title and Back beside it. The title
-   floats, so the screen's header (a flex box, which keeps clear of floats)
-   starts wherever the title ends. The version and changelog stay on home. */
-.menu-dashboard:has(#menu-home[hidden]) {
-    width: min(560px, 100%);
-    /* Portrait phones stack home in a column; other screens need the float. */
-    display: block;
-    & .menu-hero {
-        position: sticky;
-        z-index: 3;
-        top: 0;
-        float: left;
-        width: auto;
-        height: calc(var(--menu-bar) + var(--menu-inset-top));
-        box-sizing: border-box;
-        margin: 0 18px 0 0;
-        padding-top: var(--menu-inset-top);
-        grid-template-columns: auto auto;
-        gap: 12px;
-        /* Paints the bar across the whole menu, notch included, without
-           widening what scrolls. */
-        border-image: linear-gradient(
-                var(--color-shell) calc(100% - 3px),
-                var(--color-shadow) 0
-            )
-            0 fill / / 100vmax 100vmax 0;
-        & h2 {
-            font-size: calc(var(--font-display-step) * 1.5);
-            line-height: 1;
-        }
-        & .app-version {
-            display: none;
-        }
-        /* Phones keep the wheel and give the width to the screen's title. */
-        @media (max-width: 520px) {
-            margin-right: 14px;
-            & > div {
+/* Short of the column layout, home's buttons give way to the open screen, and
+   the title shrinks into a bar that stays at the top while the screen
+   scrolls, with the screen's own title and Back beside it. The title floats,
+   so the screen's header (a flex box, which keeps clear of floats) starts
+   wherever the title ends. The version and changelog stay on home. */
+@media not all and (min-width: 1080px) and (min-height: 760px) {
+    .menu-screen:not([data-view="home"]) #menu-home {
+        display: none;
+    }
+    .menu-screen:not([data-view="home"]) .menu-dashboard {
+        width: min(560px, 100%);
+        /* Portrait phones stack home in a column; other screens need the float. */
+        display: block;
+        & .menu-hero {
+            position: sticky;
+            z-index: 3;
+            top: 0;
+            float: left;
+            width: auto;
+            height: calc(var(--menu-bar) + var(--menu-inset-top));
+            box-sizing: border-box;
+            margin: 0 18px 0 0;
+            padding-top: var(--menu-inset-top);
+            grid-template-columns: auto auto;
+            gap: 12px;
+            /* Paints the bar across the whole menu, notch included, without
+               widening what scrolls. */
+            border-image: linear-gradient(
+                    var(--color-shell) calc(100% - 3px),
+                    var(--color-shadow) 0
+                )
+                0 fill / / 100vmax 100vmax 0;
+            & h2 {
+                font-size: calc(var(--font-display-step) * 1.5);
+                line-height: 1;
+            }
+            & .app-version {
                 display: none;
             }
-        }
-    }
-    & .menu-logo {
-        --px: 1.5px;
-    }
-    & .menu-view-head {
-        position: sticky;
-        z-index: 4;
-        top: 0;
-        height: calc(var(--menu-bar) + var(--menu-inset-top));
-        box-sizing: border-box;
-        margin-bottom: 24px;
-        padding-top: var(--menu-inset-top);
-        & h3 {
-            --px: 2px;
-            font-size: calc(var(--font-display-step) * 1.5);
-            @media (min-width: 521px) {
-                padding-left: 18px;
-                border-left: 2px solid var(--color-border);
+            /* Phones keep the wheel and give the width to the screen's title. */
+            @media (max-width: 520px) {
+                margin-right: 14px;
+                & > div {
+                    display: none;
+                }
             }
         }
+        & .menu-logo {
+            --px: 1.5px;
+        }
+        & .menu-view-head {
+            position: sticky;
+            z-index: 4;
+            top: 0;
+            height: calc(var(--menu-bar) + var(--menu-inset-top));
+            box-sizing: border-box;
+            margin-bottom: 24px;
+            padding-top: var(--menu-inset-top);
+            & h3 {
+                --px: 2px;
+                font-size: calc(var(--font-display-step) * 1.5);
+                @media (min-width: 521px) {
+                    padding-left: 18px;
+                    border-left: 2px solid var(--color-border);
+                }
+            }
+        }
+    }
+}
+@keyframes menu-view-in {
+    from {
+        opacity: 0;
+        translate: 16px 0;
+    }
+}
+/* Wide screens: the logo, Continue and home's buttons stay in a column on the
+   left of every screen, over the live trail (see js/ui/menu-scene.js). Home
+   leaves the space beside the column to the trail; another screen opens
+   there, over a darker veil, and closes with the ✕ in its header, Escape or
+   its button in the column. menu.js reads --menu-layout to aim the camera at
+   that space and to move the selection between the column and the screen. */
+@media (min-width: 1080px) and (min-height: 760px) {
+    .menu-screen {
+        --menu-layout: column;
+        --menu-gutter: 48px;
+        --menu-column: 380px;
+        --menu-column-gap: 56px;
+        /* Home's veil (::after) fades out to the right, leaving the trail
+           clear. An open screen fades in the rest of an even veil over it
+           (::before): clear on the left, which home's already covers, so
+           the column never lightens on the way, and as dark as the veil on
+           the right. The stop at 30% tops up home's there. */
+        &::before {
+            content: "";
+            position: absolute;
+            z-index: 1;
+            inset: 0;
+            pointer-events: none;
+            background: linear-gradient(
+                90deg,
+                transparent 0%,
+                #10222642 30%,
+                var(--color-scenery-veil) 62%
+            );
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            @media (prefers-reduced-motion: reduce) {
+                transition: none;
+            }
+        }
+        &::after {
+            background: linear-gradient(
+                90deg,
+                var(--color-scenery-veil) 0%,
+                var(--color-scenery-veil-mid) 30%,
+                transparent 62%
+            );
+        }
+        &:not([data-view="home"])::before {
+            opacity: 1;
+        }
+    }
+    .menu-scroll {
+        /* The column and the open screen are as tall as the menu (see
+           .menu-column), so only the screen's body scrolls. */
+        container-type: size;
+        padding: 0 var(--menu-gutter);
+    }
+    .menu-dashboard {
+        width: auto;
+        margin: 0;
+        display: grid;
+        grid-template-columns: var(--menu-column) minmax(0, 1fr);
+        column-gap: var(--menu-column-gap);
+    }
+    .menu-column {
+        position: sticky;
+        top: 0;
+        height: 100cqh;
+        box-sizing: border-box;
+        /* Room either side for the selection ring, which the scrolling below
+           would clip otherwise, taken back out of the gaps around it. */
+        margin-inline: -8px;
+        padding: 40px 8px;
+        display: flex;
+        flex-direction: column;
+        /* A short window scrolls the column rather than cutting it off. */
+        overflow-y: auto;
+        /* The wheel and the name span the column: 32 blocks of 3px, a 16px
+           gap and the name in five steps of the pixel font, 3px shadow
+           included, come to --menu-column's 380px. */
+        & .menu-hero {
+            width: auto;
+            margin: 0 0 24px;
+            gap: 16px;
+            & h2 {
+                font-size: calc(var(--font-display-step) * 5);
+                line-height: 0.9;
+            }
+        }
+        & .menu-logo {
+            --px: 3px;
+        }
+    }
+    .menu-screen:not([data-view="home"]) .menu-hero {
+        cursor: pointer;
+    }
+    /* The buttons sit at the foot of the column, by their names alone; the
+       trail behind shows what Continue's picture would. */
+    #menu-home {
+        width: auto;
+        margin: auto 0 0;
+        & .menu-actions {
+            width: auto;
+            margin: 0;
+        }
+        & .menu-action-row,
+        & .menu-action-compact {
+            min-height: 48px;
+            padding-block: 10px;
+        }
+        & .menu-action-row small,
+        & .active-rider-art {
+            display: none;
+        }
+        & .continue-save {
+            grid-template-columns: minmax(0, 1fr) 28px;
+            min-height: 84px;
+            padding: 14px 18px;
+        }
+        /* The button of the open screen. */
+        & .menu-action[aria-current="page"] {
+            border-color: var(--color-accent);
+            box-shadow:
+                inset 4px 0 0 var(--color-accent),
+                var(--shadow-pixel);
+        }
+    }
+    /* The screen's title and ✕ stay at the top, and its body scrolls below
+       them, fading out at its top edge rather than passing under the title. */
+    .menu-dashboard > .menu-view {
+        grid-column: 2;
+        grid-row: 1;
+        width: auto;
+        max-width: 720px;
+        height: 100cqh;
+        box-sizing: border-box;
+        margin: 0;
+        padding-top: 52px;
+        display: flex;
+        flex-direction: column;
+        /* A screen opening slides in beside the column. */
+        animation: menu-view-in 0.2s ease-out;
+        @media (prefers-reduced-motion: reduce) {
+            animation: none;
+        }
+        & > .menu-view-head {
+            flex: none;
+            margin-bottom: 16px;
+        }
+    }
+    .menu-view-body {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        /* Room either side for the selection ring, which the scrolling would
+           clip otherwise, and at the top for the fade to start in. */
+        margin-inline: -8px;
+        padding: 20px 8px 44px;
+        mask-image: linear-gradient(transparent, black 20px);
+    }
+    /* Back closes the screen, so it shows as a ✕. */
+    .menu-view-head [data-menu-back] {
+        position: relative;
+        width: 36px;
+        height: 36px;
+        padding: 0;
+        font-size: 0;
+        &::before {
+            --icon: var(--icon-close);
+            --icon-w: 7;
+            --icon-h: 7;
+            position: absolute;
+            inset: 0;
+            margin: auto;
+        }
+    }
+}
+/* Flying between the menu and a ride (see startFlight in js/ui/menu.js),
+   the trail narrows to the ride's view or widens from it, leaving the
+   game's frame around it. Into the ride the menu and its veils fade off
+   it, and the ride's overlays fade in once it lands; out of it the menu
+   shows at once, over the flight. */
+.menu-screen[data-flying] {
+    background: transparent;
+}
+.menu-screen[data-flying="in"] {
+    &::before,
+    &::after,
+    & > :not(.menu-background) {
+        opacity: 0;
+        transition: opacity 0.3s ease-out;
+    }
+}
+.game[data-arrived] :is(.hud, .control-area) {
+    animation: arrive 0.3s ease-out;
+}
+@keyframes arrive {
+    from {
+        opacity: 0;
     }
 }
 .app-version {
@@ -2448,6 +2668,11 @@ h2 {
     & > div {
         min-width: 0;
     }
+    /* Buttons beside Back (see placeHeadButtons in js/ui/menu.js) line up
+       with it on the right. */
+    & > :first-child {
+        margin-right: auto;
+    }
     & h3 {
         --px: 3px;
         margin: 0;
@@ -2518,7 +2743,7 @@ h2 {
         margin-top: 0;
     }
     /* Right under the screen's header, it names what the whole screen is for. */
-    .menu-view-head + & {
+    .menu-view-body > &:first-child {
         margin: -4px 0 12px;
     }
     & strong {
@@ -3121,6 +3346,12 @@ h2 {
         background: var(--color-shell);
     }
 }
+/* Wide screens put them in the head, beside the ✕ (see placeHeadButtons in
+   js/ui/menu.js). */
+.menu-view-head > .look-actions .primary {
+    flex: none;
+    width: auto;
+}
 .look-history,
 .look-random {
     --px: 2px;
@@ -3358,7 +3589,7 @@ h2 {
     inset: var(--drop-top) var(--drop-right) auto auto;
     width: min(360px, calc(100% - 2 * var(--drop-right)));
     max-width: none;
-    max-height: calc(100dvh - var(--drop-top) - 14px);
+    max-height: calc(100dvh - var(--drop-top) - var(--drop-bottom));
     margin: 0;
     padding: 0;
     border: 1px solid var(--color-border);

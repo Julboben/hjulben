@@ -78,7 +78,7 @@ export function startGame({ shared = null } = {}) {
       ignition: kick === null ? 'on' : kick < KICK_CATCHES ? 'off' : 'kicked',
       brakePressure: ride?.brakePressure ?? 0, weather: session.trail?.weather, trail: session.trail,
       // A replay sounds like the bike it was ridden on.
-      bike: ride ? lookParts(replay?.look ?? session.look).bike : undefined,
+      bike: ride ? lookParts(shownLook()).bike : undefined,
     };
   });
   const input = createInput({
@@ -95,6 +95,8 @@ export function startGame({ shared = null } = {}) {
     onStartBonus: index => startSelectedTrail(() => loadBonusTrail(index), false),
     onStartCustom: index => startSelectedTrail(() => loadCustomTrail(index), false),
     onClose: closeMainMenu,
+    // The ride the menu was opened from, for its backdrop.
+    leftRide: () => ({ ...rideScene(), trails: renderer.trails }),
     // The back gesture mid-ride: the menu, which pauses the ride, as Escape does.
     onBack: () => { sounds.escape(); showMainMenu(); },
     riderOnScreen: () => renderer.riderOnScreen(),
@@ -199,6 +201,12 @@ export function startGame({ shared = null } = {}) {
    * @type {{ source: string, index: number, data: any, inputs: any[], step: number, look: any, name: string } | null}
    */
   let replay = null;
+  /** The look of whoever is riding: a replay's rider, or the player. */
+  const shownLook = () => replay?.look ?? session.look;
+  /** The ride as the renderer draws it: the rider, the ghost and their looks, and the effects around them. */
+  const rideScene = () => ({ ride: session.ride, ghost: ghost?.ride ?? null, look: shownLook(), ghostLook: ghost?.look, effects });
+  /** Where the ride is drawn, for the menu to fly from or to: the game's canvas, its last view and the scene's clock. */
+  const rideView = () => ({ canvas: $('canvas'), view: renderer.lastView(), clock: renderer.clock });
   /** The last finished run, for Watch Replay on the results. */
   let lastRun = null;
   /** The world rider just ahead of the last finished run, for Race on the results. @type {{ key: string, name: string, time: number } | null} */
@@ -584,7 +592,7 @@ export function startGame({ shared = null } = {}) {
     feats.reset();
     session.trail = trail;
     const seed = replay ? replay.data.seed : (Math.random() * 2 ** 31) >>> 0;
-    const ride = createRide(trail, { seed, helmet: lookParts(replay?.look ?? session.look).helmet });
+    const ride = createRide(trail, { seed, helmet: lookParts(shownLook()).helmet });
     // Once found, the nisse is gone from the trail for this rider, on every
     // ride after. Replays still show the run as it was ridden.
     if (!replay && nisseFound()) ride.nisse = null;
@@ -732,9 +740,9 @@ export function startGame({ shared = null } = {}) {
   function setState(next) {
     session.state = next;
     redraw = true;
-    // Held controls stay held through a restart or a crash; only leaving the
-    // ride (the menu, losing focus) lets go of them, so a key released while
-    // the game wasn't listening can't stay stuck.
+    // Held controls stay held through a restart, a crash and the menu; only
+    // losing focus lets go of them, so a key released while the page wasn't
+    // listening can't stay stuck.
     input.paint();
     if (next !== 'won') { overlay.hide(); fireworks.stop(); }
     $('crash-retry').hidden = next !== 'ragdoll';
@@ -774,14 +782,17 @@ export function startGame({ shared = null } = {}) {
     if (session.trailSource === 'playtest') { exitPlaytest(); return; }
     if (session.state !== 'menu') session.stateBeforeMenu = session.state;
     session.state = 'menu';
-    input.clear();
+    // Keys still held carry on when the ride does, so gas held through the
+    // menu keeps the bike going; the on-screen controls hide with the ride.
+    input.clearTouches();
     haptics.stop();
     overlay.hide();
     fireworks.stop();
     $('crash-retry').hidden = true;
     holdWakeLock(false);
     setMenuOpen(true);
-    menu.open();
+    // Over a ride, the backdrop flies out of it behind the menu.
+    menu.open(session.ride ? rideView() : null);
     offerUpdate();
     // A good moment to send runs that couldn't be posted when they were ridden.
     flushPendingRuns(tokenFor).then(sent => { if (sent) overlay.toast(sent === 1 ? 'Posted a waiting run to the world board' : `Posted ${sent} waiting runs to the world board`, 4000); });
@@ -794,10 +805,20 @@ export function startGame({ shared = null } = {}) {
 
   function setMenuOpen(open) {
     game.classList.toggle('menu-open', open);
+    if (open) delete game.dataset.arrived;
   }
 
+  // While the menu flies into a ride, which nothing may interrupt.
+  let flying = false;
+
   function closeMainMenu() {
-    if (!menu.canResume()) return;
+    if (!menu.canResume() || flying) return;
+    // The backdrop shows the ride as it was left, so it is flown back into.
+    if (menu.showsTrail(session.trail)) flyIn(returnToRide);
+    else returnToRide();
+  }
+
+  function returnToRide() {
     menu.close();
     setMenuOpen(false);
     focusGame();
@@ -813,17 +834,47 @@ export function startGame({ shared = null } = {}) {
   function startSelectedTrail(load, requiresSave = true) {
     if (requiresSave && !session.saveGame) return;
     endReplay();
-    menu.close();
-    setMenuOpen(false);
     menu.markRideStarted();
     openingTrail = true;
     load();
+    // The trail the menu's backdrop shows is flown into.
+    if (menu.showsTrail(session.trail)) flyIn(enterRide);
+    else enterRide();
+  }
+
+  /**
+   * Flies from the menu's backdrop, which shows the trail, into the ride,
+   * then `land`s in it. The ride is drawn first, behind the menu, which sets
+   * the camera's view to land on and readies the trail.
+   */
+  function flyIn(land) {
+    // The menu, which goes inert, gives the focus back first: focus lost from
+    // the game would let go of keys still held.
+    focusGame();
+    flying = true;
+    drawRide(0);
+    menu.flyInto(rideView()).then(clocks => {
+      flying = false;
+      // The ride's clouds, animals and rain carry on from the backdrop's, and
+      // it is drawn again with them, so nothing jumps as the menu goes.
+      renderer.clock = clocks.scene;
+      effects.carryWeather(clocks.weather);
+      drawRide(0);
+      game.dataset.arrived = '';
+      land();
+    });
+  }
+
+  function enterRide() {
+    menu.close();
+    setMenuOpen(false);
     setState('running');
     focusGame();
     session.gameLoopStarted = true;
   }
 
   function handlePress(action) {
+    if (flying) return;
     // A new release waits for its reload; a pad can only confirm it.
     if (updatePromptOpen()) {
       if (action === 'confirm') reloadNow();
@@ -1122,7 +1173,7 @@ export function startGame({ shared = null } = {}) {
         break;
       }
       case 'helmet':
-        effects.burst(event.x, event.y, riderPalette(replay?.look ?? session.look).helmet, 8);
+        effects.burst(event.x, event.y, riderPalette(shownLook()).helmet, 8);
         sounds.helmet(event.speed);
         haptics.play('jolt', { phonePattern: 25 });
         overlay.announce('The helmet came off.');
@@ -1221,6 +1272,21 @@ export function startGame({ shared = null } = {}) {
 
   // --- Frame loop ----------------------------------------------------------
 
+  /** Draws the ride `dt` seconds on, the ride and the ghost each `alpha` of the way to their next step. */
+  function drawRide(dt, alpha = 1, ghostAlpha = 1) {
+    const scene = rideScene();
+    const restore = interpolateRide(scene.ride, alpha);
+    // A finished ghost is no longer stepped: hold it where it stopped.
+    const restoreGhost = scene.ghost ? interpolateRide(scene.ghost, scene.ghost.status === 'won' ? 1 : ghostAlpha) : null;
+    renderer.draw({
+      ...scene, camera, state: session.state,
+      full: session.preferences.scenery === 'full', dt, debug: debugEnabled, fireworks,
+      kick: kick === null ? null : kick / KICK_SECONDS
+    });
+    restoreGhost?.();
+    restore();
+  }
+
   function frame(now) {
     fpsMeter?.frame(now);
     const elapsed = lastTime ? (now - lastTime) / 1000 : 1 / 60;
@@ -1265,17 +1331,7 @@ export function startGame({ shared = null } = {}) {
       const still = session.state === 'paused' || (session.state === 'won' && renderer.settled() && !fireworks.active() && !ghostRiding());
       if (!still || redraw) {
         redraw = false;
-        const restore = interpolateRide(ride, alpha);
-        const ghostRide = ghost?.ride;
-        // A finished ghost is no longer stepped: hold it where it stopped.
-        const restoreGhost = ghostRide ? interpolateRide(ghostRide, ghostRide.status === 'won' ? 1 : ghostAlpha) : null;
-        renderer.draw({
-          ride, ghost: ghostRide, camera, effects, look: replay?.look ?? session.look, ghostLook: ghost?.look, state: session.state,
-          full: session.preferences.scenery === 'full', dt, debug: debugEnabled, fireworks,
-          kick: kick === null ? null : kick / KICK_SECONDS
-        });
-        restoreGhost?.();
-        restore();
+        drawRide(dt, alpha, ghostAlpha);
         if (renderer.takeWoofs()) sounds.woof();
         const knock = renderer.takeBallKnock();
         if (knock) sounds.beachBall(knock);
@@ -1294,6 +1350,9 @@ export function startGame({ shared = null } = {}) {
 
   game.addEventListener('keydown', event => {
     if (input.capturing) { input.keyDown(event); return; }
+    // Held controls pressed in the menu, or on the way back to the ride, are
+    // held when it carries on.
+    if (flying) { event.preventDefault(); input.holdKey(event); return; }
     if (event.code === 'Escape') {
       event.preventDefault();
       // With the keyboard lock held, Esc can repeat; one press must be one action.
@@ -1304,7 +1363,7 @@ export function startGame({ shared = null } = {}) {
       else showMainMenu();
       return;
     }
-    if (menu.isOpen()) return;
+    if (menu.isOpen()) { input.holdKey(event); return; }
     input.keyDown(event);
   });
   // Auto-pause fires when focus leaves the game, so resuming must not need it.
@@ -1313,7 +1372,9 @@ export function startGame({ shared = null } = {}) {
     if (game.contains(/** @type {Node} */ (event.target)) || session.state !== 'paused') return;
     if (session.preferences.bindings.pause.includes(event.code) || event.code === 'Escape') { event.preventDefault(); resumeGame(); }
   });
-  window.addEventListener('keyup', event => input.keyUp(event));
+  // On the way down, so a release that a field keeps to itself (the rider's
+  // name) still lets go of a control held through the menu.
+  window.addEventListener('keyup', event => input.keyUp(event), { capture: true });
   game.addEventListener('focusout', event => {
     if (!game.contains(/** @type {Node} */ (event.relatedTarget))) { input.clear(); pauseGame(); }
   });
@@ -1456,6 +1517,7 @@ export function startGame({ shared = null } = {}) {
     if (shared?.error) menu.showTrailsStatus(`Could not open the shared trail: ${shared.error.message}`, true);
   }
   requestAnimationFrame(frame);
-  // Queued after the first frame, so the reveal shows a fully drawn screen.
-  requestAnimationFrame(() => game.removeAttribute('data-booting'));
+  // Queued after the first two frames, so the reveal shows a fully drawn
+  // screen, and the menu's backdrop has done the slow first draw of its trail.
+  requestAnimationFrame(() => requestAnimationFrame(() => game.removeAttribute('data-booting')));
 }

@@ -17,7 +17,7 @@ import {
   clamp,
   lerp,
 } from "./config.js";
-import { createVehicle, stepVehicle } from "./vehicle-physics.js";
+import { createVehicle, stepVehicle, vehicleMetrics } from "./vehicle-physics.js";
 import {
   fallLine,
   terrainAt,
@@ -30,7 +30,7 @@ import { playerTouchesApple } from "./apple.js";
 import { NISSE_GROUND_LIFT, playerTouchesNisse } from "./nisse.js";
 import { playerTouch } from "./player-shape.js";
 import { spikeShape } from "./spike.js";
-import { createRagdoll, stepRagdoll } from "./ragdoll.js";
+import { createRagdoll, ragdollCenter, stepRagdoll } from "./ragdoll.js";
 import { atan2, cos, exp, hypot, sin } from "./det-math.js";
 import { copyRideTerrain, rideTerrain, shatterGlass } from "./glass.js";
 import {
@@ -404,6 +404,9 @@ export function bikeSpeed(ride) {
   const { rear, front } = ride;
   return (rear.x - rear.ox + (front.x - front.ox)) / (2 * STEP);
 }
+
+/** The point a camera follows on `ride`: the bike, or the rider once thrown off it. */
+export const rideFocus = ride => (ride.ragdoll ? ragdollCenter(ride.ragdoll) : vehicleMetrics(ride.vehicle).center);
 
 export function trackAirRotation(ride, events) {
   const { rear, front } = ride;

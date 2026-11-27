@@ -6,7 +6,7 @@
 // reload it can't skip (see update-prompt.js): files it loads after that come
 // from the new release, so it can't safely keep running the old one. Trail files and anything
 // else are network-first, and kept so the game also starts offline.
-const CACHE = 'hjulben-b0c696d9';
+const CACHE = 'hjulben-c601a0e5';
 const CORE = [
   './',
   './css/editor.css',
@@ -32,6 +32,7 @@ const CORE = [
   './js/cave-props.js',
   './js/changelog.js',
   './js/city-props.js',
+  './js/clouds.js',
   './js/coast-props.js',
   './js/config.js',
   './js/corgi-props.js',
@@ -139,6 +140,7 @@ const CORE = [
   './js/ui/customizer.js',
   './js/ui/gamepad-diagram.js',
   './js/ui/key-text.js',
+  './js/ui/menu-scene.js',
   './js/ui/menu.js',
   './js/ui/overlay.js',
   './js/ui/turn-upright.js',
@@ -177,8 +179,11 @@ self.addEventListener('install', event => {
       if (!response.ok) throw new Error('catalog.json ' + response.status);
       await cache.put('./trails/catalog.json', response.clone());
       const catalog = await response.json();
+      // Thumbnails too, so the Trails screen shows them all offline.
       await Promise.allSettled(
-        catalog.trails.map(entry => cache.add(fresh('./trails/' + entry.file))),
+        catalog.trails.flatMap(entry => [entry.file, entry.thumbnail])
+          .filter(Boolean)
+          .map(file => cache.add(fresh('./trails/' + file))),
       );
       // Custom trails only exist on the dev server, where everything is
       // network-first anyway (see LOCAL), so they are not kept.

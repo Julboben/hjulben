@@ -12,3 +12,8 @@
 
 /api/*
   Cache-Control: no-store
+
+# A trail's thumbnail is named by a hash of what it shows, so a changed one
+# gets a new name and a browser can keep each for good.
+/trails/thumbnails/*
+  Cache-Control: public, max-age=31536000, immutable

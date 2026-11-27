@@ -20,6 +20,7 @@ import { RIDE_VERSION } from '../ride.js';
 import { normalizeAuthor, normalizeTrail, validateTrail, medalFor } from '../trail-schema.js';
 import { ACTION_LABELS, keyLabel } from '../input.js';
 import { createGamepadDiagram } from './gamepad-diagram.js';
+import { createMenuScene } from './menu-scene.js';
 import { keyChoices, keyTextNodes } from './key-text.js';
 import { canRumble } from '../haptics.js';
 import { VERSION } from '../version.js';
@@ -103,11 +104,12 @@ export function loadStoredState() {
  *   onStartBonus: (index: number) => void,
  *   onStartCustom: (index: number) => void,
  *   onClose: () => void,
+ *   leftRide: () => { ride: any, ghost: any, ghostLook: any, effects: any, look: any, trails: any },
  *   riderOnScreen: () => { x: number, y: number },
  *   onPreferences: () => void
  * }} hooks
  */
-export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartCustom, onClose, onBack, riderOnScreen, onPreferences, onWatchReplay, onRiderChange }) {
+export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartCustom, onClose, onBack, leftRide, riderOnScreen, onPreferences, onWatchReplay, onRiderChange }) {
   /**
    * The best time shown on a trail's card or in the trail picker: the world's
    * if the board has been fetched, else this device's. Asks for the world
@@ -130,6 +132,37 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
   let accountBusy = false;
 
   const isOpen = () => !$('menu-screen').hidden;
+
+  // The screens, by name: the element of each, and the home button that
+  // opens it, marked in the column while it is open. Home's buttons stay on
+  // screen beside the others in the column layout, so the stylesheet shows
+  // and hides them by the menu's data-view rather than the hidden attribute.
+  const VIEWS = {
+    home: { element: 'menu-home' },
+    riders: { element: 'menu-riders-view', button: 'menu-riders' },
+    trails: { element: 'menu-trail-view', button: 'menu-trails' },
+    leaderboard: { element: 'menu-leaderboard-view', button: 'menu-leaderboard' },
+    save: { element: 'menu-save-view' },
+    look: { element: 'menu-look-view', button: 'menu-garage' },
+    how: { element: 'menu-how-view', button: 'menu-how-to' },
+    settings: { element: 'menu-settings-view', button: 'menu-settings' },
+    changelog: { element: 'menu-changelog-view' },
+    credits: { element: 'menu-credits-view' },
+    achievements: { element: 'menu-achievements-view', button: 'menu-achievements' }
+  };
+  let currentView = 'home';
+  const onHome = () => currentView === 'home';
+  const viewElement = view => $(VIEWS[view].element);
+
+  /** The home button that opens `view`, or led to it: Credits from Settings, a new rider from Riders. */
+  function viewButton(view) {
+    if (view === 'credits') return creditsFrom === 'settings' ? $('menu-settings') : null;
+    if (view === 'save') return creatorFromRiders ? $('menu-riders') : null;
+    return VIEWS[view].button ? $(VIEWS[view].button) : null;
+  }
+
+  /** Whether the stylesheet lays the menu out as a column beside the open screen (see .menu-screen in css/game.css). */
+  const columnLayout = () => getComputedStyle($('menu-screen')).getPropertyValue('--menu-layout').trim() === 'column';
 
   // Fresh world results rebuild the board while the menu is on screen.
   window.addEventListener(ONLINE_LEADERBOARD_EVENT, () => {
@@ -218,8 +251,9 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
   }
 
   // Menu art is drawn by the game's renderer from the trails themselves, a
-  // frame at a time, and kept until the rider or scenery changes.
-  // Room for the trail cards plus a slot's worth of look swatches and avatars.
+  // frame at a time, and kept until the rider or scenery changes; only the
+  // official and bonus trails' thumbnails come drawn ahead (see trailPreview).
+  // Room for the custom trails' cards plus a slot's worth of look swatches and avatars.
   const PREVIEW_CACHE_SIZE = 96;
   const previewCache = new Map();
   let previewQueue = [], previewFrame = 0;
@@ -270,14 +304,28 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     previewFrame ||= requestAnimationFrame(drainPreviews);
   }
 
+  // A preview paints a frame, and only one shown on the open screen or about
+  // to be scrolled into view. The first of a trail costs a good part of a
+  // second, so previews nobody sees never hold up the frames of the moving
+  // backdrop: they wait until their screen opens or scrolls near (see
+  // paintShownPreviews and the scroll listener).
+  const onScreen = job => {
+    const box = job.target.getBoundingClientRect();
+    return box.width > 0 && box.bottom > -innerHeight && box.top < 2 * innerHeight;
+  };
   function drainPreviews() {
     previewFrame = 0;
     if (!isOpen()) { previewQueue = []; return; }
-    let job;
-    while ((job = previewQueue.shift()) && !job.target.isConnected);
-    if (job) copyPreview(renderPreview(job.key, job.render), job.target);
-    if (previewQueue.length) previewFrame = requestAnimationFrame(drainPreviews);
+    previewQueue = previewQueue.filter(job => job.target.isConnected);
+    const job = previewQueue.find(onScreen);
+    if (!job) return;
+    previewQueue.splice(previewQueue.indexOf(job), 1);
+    copyPreview(renderPreview(job.key, job.render), job.target);
+    if (previewQueue.some(onScreen)) previewFrame = requestAnimationFrame(drainPreviews);
   }
+  const paintShownPreviews = () => {
+    if (previewQueue.length) previewFrame ||= requestAnimationFrame(drainPreviews);
+  };
 
   /** A rider's head, as a round avatar for the rider list and leaderboard. */
   function riderAvatar(look) {
@@ -384,9 +432,34 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
   });
   garage.actions.append($('save-look'));
 
+  // Buttons for the whole of a screen, which wide screens put in its head,
+  // beside the ✕, in reach however far it scrolls: a customizer's (Random,
+  // Undo, Redo and its Save) and Settings' Reset and Credits. Narrower
+  // windows keep them where the page has them, which for a customizer's is
+  // under the looks, and phones pin those to the bottom (see .look-actions).
+  // By button: its screen, and where it goes back to.
+  const HEAD_BUTTONS = [
+    [garage.actions, 'menu-look-view'], [creator.actions, 'menu-save-view'],
+    [$('reset-settings'), 'menu-settings-view'], [$('show-credits'), 'menu-settings-view'],
+  ].map(([button, view]) => ({ button, view, parent: button.parentElement, before: button.nextSibling }));
+  function placeHeadButtons() {
+    const column = columnLayout();
+    for (const { button, view, parent, before } of HEAD_BUTTONS) {
+      const head = $(view).querySelector('.menu-view-head');
+      if (column === (button.parentElement === head)) continue;
+      if (column) head.insertBefore(button, head.querySelector('[data-menu-back]'));
+      else parent.insertBefore(button, before);
+    }
+    // Credits was all the About section had.
+    $('settings-about').hidden = column;
+  }
+  placeHeadButtons();
+  window.addEventListener('resize', placeHeadButtons);
+
   function showSaveStep(step) {
     $('new-save-identity-step').hidden = step !== 1;
     $('new-save-style-step').hidden = step !== 2;
+    creator.actions.hidden = step !== 2;
     $('new-save-step-1').classList.toggle('active', step === 1);
     $('new-save-step-2').classList.toggle('active', step === 2);
     $('new-save-title').textContent = step === 1 ? 'Who are you?' : 'Pick your style';
@@ -723,43 +796,171 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     return art;
   };
 
-  function drawBackground() {
-    const backgroundCanvas = $('menu-background');
-    const bounds = backgroundCanvas.getBoundingClientRect();
-    if (!bounds.width || !bounds.height) return;
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    // Resizing clears and reallocates the canvas, so it is only done when the
-    // size changes, not on every frame of the drifting clouds.
-    const width = Math.round(bounds.width * dpr), height = Math.round(bounds.height * dpr);
-    if (backgroundCanvas.width !== width) backgroundCanvas.width = width;
-    if (backgroundCanvas.height !== height) backgroundCanvas.height = height;
-    const backgroundContext = backgroundCanvas.getContext('2d');
-    backgroundContext.setTransform(dpr, 0, 0, dpr, 0, 0);
-    backgroundContext.imageSmoothingEnabled = false;
-    gameArtFor(backgroundContext).drawBackground({
-      width: bounds.width, height: bounds.height,
-      palette: trails[session.saveGame?.trail || 0],
-      cameraX: 260, cameraY: 0,
-      full: session.preferences.scenery === 'full',
-      // Moves land on device pixels rather than art pixels, as in the game,
-      // so the drifting clouds glide instead of stepping.
-      smooth: true,
-      sceneTime: reducedMotion ? 0 : performance.now() / 1000
+  // Behind the menu, the ride it was opened from, as it was left, or else the
+  // rider waiting at the start of the career's next trail while the camera
+  // glides along it (see menu-scene.js).
+  const menuScene = createMenuScene(/** @type {HTMLCanvasElement} */ ($('menu-background')));
+
+  /** Shows the backdrop's scene: over a ride that can be resumed, the ride as it was left; else the rider's next trail. */
+  function showBackdrop() {
+    const left = canResume() ? leftRide() : null;
+    const trail = left ? session.trail : trails[session.savedTrail] ?? trails[0];
+    menuScene.show(trail, left?.look ?? session.look, session.preferences.headlight !== 'off', left);
+  }
+
+  /**
+   * The camera's point across the backdrop, as a fraction of its width: in
+   * the column layout the trail is seen beside the column, so the middle of
+   * that part of the screen.
+   */
+  function backdropFocus(bounds) {
+    const column = columnLayout() ? document.querySelector('.menu-column')?.getBoundingClientRect() : null;
+    return column ? (column.right - bounds.left + bounds.width) / 2 / bounds.width : 0.5;
+  }
+
+  /** Draws the backdrop `dt` seconds on from the last frame, or the flight it is part of. */
+  function drawBackground(dt = 0) {
+    if (flight) { fly(dt); return; }
+    showBackdrop();
+    const bounds = $('menu-background').getBoundingClientRect();
+    menuScene.draw({
+      viewWidth: Math.round(bounds.width), viewHeight: Math.round(bounds.height),
+      dt, focus: backdropFocus(bounds), full: session.preferences.scenery === 'full',
+      // Only home beside the column shows the trail clearly; everywhere else
+      // it sits behind a veil, drawn more coarsely, and behind an open screen
+      // it drifts slower too.
+      sharp: columnLayout() && onHome(), pace: onHome() ? 1 : 0.5
     });
   }
 
-  // The clouds drift in the trail's wind while the menu is open. The browser
-  // holds animation frames in a hidden tab, so the loop pauses there too.
+  // The trail moves while the menu is open. The browser holds animation
+  // frames in a hidden tab, so the loop pauses there too, and the frame after
+  // a long pause steps on as little as any other.
   let backgroundFrame = 0;
   function animateBackground() {
     if (backgroundFrame || reducedMotion) return;
-    const step = () => {
+    let last = performance.now();
+    const step = now => {
       backgroundFrame = 0;
-      if (!isOpen() || reducedMotion) return;
-      drawBackground();
+      if (!isOpen()) return;
+      if (reducedMotion) {
+        // Turned on mid-flight, it lands the flight at once rather than leave it hanging.
+        if (flight) { flight.time = flight.duration; fly(0); }
+        return;
+      }
+      drawBackground(Math.min(0.05, Math.max(0, now - last) / 1000));
+      last = now;
       backgroundFrame = requestAnimationFrame(step);
     };
     backgroundFrame = requestAnimationFrame(step);
+  }
+
+  // The camera flies between the backdrop and the ride's own view: into the
+  // ride when the trail the backdrop shows is started or gone back to, with
+  // the menu fading off it, and out of a ride behind the menu as it opens
+  // over it, which can be used at once. The renderer only draws whole device
+  // pixels per art pixel, so the backdrop is drawn at its own and its canvas
+  // stretched to the zoom between. It draws just the world its part of the
+  // screen shows, which narrows from the whole menu to the ride's canvas or
+  // widens back, as the sky, sun and stars are placed by the view's size.
+  let flight = null;
+  // The seconds a flight takes: longer the farther the backdrop's camera has
+  // glided from the rider, up to the most.
+  const FLIGHT = { least: 0.7, most: 1.4, perWorldUnit: 1 / 3000 };
+
+  /** Whether the backdrop shows `trail`, so starting it can fly into the ride. */
+  const showsTrail = trail => isOpen() && !reducedMotion && menuScene.trail === trail;
+
+  /**
+   * Where a canvas drawn with `view` (see the renderer's lastView) is on
+   * screen, and where it puts the world there: the CSS pixels per world
+   * unit, and the world's origin on screen.
+   */
+  function placement(canvas, view) {
+    const box = canvas.getBoundingClientRect();
+    const scale = view.worldToDevice * box.width / canvas.width;
+    return { box, scale, x: box.left - view.x * scale, y: box.top - view.y * scale };
+  }
+
+  /**
+   * Starts a flight from placement `from` to `to`, turning on the middle of
+   * `ride`, the ride's placement; `out` of the ride or into it, which the
+   * menu can't be used during. Resolves with the backdrop's clocks (see the
+   * menu scene's) once it has landed. It takes over from a flight out that
+   * hasn't landed yet, from where that has got to.
+   */
+  function startFlight(from, to, ride, out) {
+    const anchor = { x: ride.box.left + ride.box.width / 2, y: ride.box.top + ride.box.height / 2 };
+    const start = { x: (anchor.x - from.x) / from.scale, y: (anchor.y - from.y) / from.scale };
+    const end = { x: (anchor.x - to.x) / to.scale, y: (anchor.y - to.y) / to.scale };
+    const duration = clamp(FLIGHT.least + Math.hypot(end.x - start.x, end.y - start.y) * FLIGHT.perWorldUnit, FLIGHT.least, FLIGHT.most);
+    $('menu-screen').dataset.flying = out ? 'out' : 'in';
+    $('menu-screen').inert = !out;
+    return new Promise(resolve => {
+      flight = { from, to, anchor, start, end, duration, out, time: 0, screen: $('menu-screen').getBoundingClientRect(), resolve };
+    });
+  }
+
+  /**
+   * Flies from the backdrop into `view`, the ride as drawn on `canvas`
+   * (see the game's rideView), which the menu covers; resolves with the
+   * backdrop's clocks when the ride can take over, and the menu closes.
+   */
+  function flyInto({ canvas, view }) {
+    const ride = placement(canvas, view);
+    return startFlight(placement($('menu-background'), menuScene.lastView()), ride, ride, false);
+  }
+
+  /**
+   * Flies out of a ride, `view` as drawn on `canvas` at `clock` (see the
+   * game's rideView), to the backdrop resting on it, behind the menu as it opens.
+   */
+  function flyOutOf({ canvas, view, clock }) {
+    showBackdrop();
+    menuScene.setClock(clock);
+    const screen = $('menu-screen').getBoundingClientRect();
+    const rest = menuScene.restingView(Math.round(screen.width), Math.round(screen.height), backdropFocus(screen));
+    const scale = screen.width / rest.width;
+    const ride = placement(canvas, view);
+    return startFlight(ride, { box: screen, scale, x: screen.left - rest.x * scale, y: screen.top - rest.y * scale }, ride, true);
+  }
+
+  /** Puts the backdrop back as the menu shows it, after a flight. */
+  function endFlight() {
+    flight = null;
+    delete $('menu-screen').dataset.flying;
+    $('menu-screen').inert = false;
+    $('menu-background').removeAttribute('style');
+  }
+
+  /** Draws the flight `dt` seconds on, and lands it once it is there. */
+  function fly(dt) {
+    const { from, to, anchor, start, end, duration, out, screen, resolve } = flight;
+    if (flight.time >= duration) {
+      resolve(menuScene.clocks());
+      // Into the ride, the menu waits to close; out of it, the backdrop is the menu's again.
+      if (out) { endFlight(); drawBackground(); }
+      return;
+    }
+    flight.time = Math.min(duration, flight.time + dt);
+    const t = flight.time / duration;
+    const eased = t < 0.5 ? 4 * t ** 3 : 1 - (-2 * t + 2) ** 3 / 2;
+    const along = (a, b) => a + (b - a) * eased;
+    // The zoom grows by the same factor every frame, so it feels even.
+    const scale = from.scale * (to.scale / from.scale) ** eased;
+    const centre = { x: along(start.x, end.x), y: along(start.y, end.y) };
+    const left = along(from.box.left, to.box.left), top = along(from.box.top, to.box.top);
+    menuScene.draw({
+      viewWidth: Math.ceil(along(from.box.width, to.box.width) / scale),
+      viewHeight: Math.ceil(along(from.box.height, to.box.height) / scale),
+      dt, full: session.preferences.scenery === 'full', sharp: true,
+      at: { x: centre.x - (anchor.x - left) / scale, y: centre.y - (anchor.y - top) / scale }
+    });
+    const backdrop = $('menu-background'), drawn = menuScene.lastView().worldToDevice;
+    Object.assign(backdrop.style, {
+      inset: 'auto', left: `${left - screen.left}px`, top: `${top - screen.top}px`,
+      width: `${backdrop.width / drawn * scale}px`, height: `${backdrop.height / drawn * scale}px`
+    });
   }
 
   function updateDashboard() {
@@ -767,18 +968,19 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     drawActiveSaveIllustration();
     // One orange card: resume the ride going on, else continue the save, else
     // Start riding takes its place. Retry is in the game's own controls.
+    // Either way it names the trail it leads to, the one behind the menu.
     const resumable = canResume();
     const slot = hasSave ? 'SLOT ' + (session.activeSaveSlot + 1) : '';
     $('active-save-label').textContent = resumable ? 'RESUME RIDE' : 'CONTINUE';
     $('active-save-slot').textContent = slot;
     $('active-save-slot').hidden = !slot;
     if (resumable) {
-      $('active-save-rider').textContent = session.trail?.name ?? 'Your ride';
+      $('active-save-title').textContent = session.trail?.name ?? 'Your ride';
       $('active-save-progress').textContent = [hasSave ? session.saveGame.name : '', session.stateBeforeMenu === 'paused' ? 'Paused' : 'Back to the trail']
         .filter(Boolean).join(' · ');
     } else {
-      $('active-save-rider').textContent = hasSave ? session.saveGame.name : '';
-      $('active-save-progress').textContent = hasSave ? (session.unlockedTrail + 1) + ' / ' + trails.length + ' trails · ' + trails[session.savedTrail].name : '';
+      $('active-save-title').textContent = hasSave ? trails[session.savedTrail].name : '';
+      $('active-save-progress').textContent = hasSave ? session.saveGame.name + ' · ' + (session.unlockedTrail + 1) + ' / ' + trails.length + ' trails' : '';
     }
     $('menu-trails').disabled = !hasSave && customTrailEntries.length === 0
       && !bonusTrailEntries.some(entry => bonusUnlock(entry).open);
@@ -797,32 +999,57 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     syncBell();
   }
 
+  /**
+   * The controls in `area` the keys and a gamepad can pick. Skips those in
+   * hidden parts, such as another tab's panel, and ones the stylesheet hides,
+   * such as the trail editor on touch screens.
+   */
+  const pickable = area => [...area.querySelectorAll('button:not([disabled]), input:not([disabled])')]
+    .filter(control => !control.closest('[hidden]') && control.getClientRects().length > 0);
+
   function controls() {
     if (isLookConfirmOpen()) return [...$('look-confirm').querySelectorAll('button')];
     if (panel.open) return [...panel.querySelectorAll('button')];
-    const visibleView = document.querySelector('.menu-view:not([hidden])');
-    // Skips controls in hidden parts of the view, such as another tab's panel,
-    // and ones the stylesheet hides, such as the trail editor on touch screens.
-    const list = visibleView ? [...visibleView.querySelectorAll('button:not([disabled]), input:not([disabled])')]
-      .filter(control => !control.closest('[hidden]') && control.getClientRects().length > 0) : [];
+    const list = pickable(viewElement(currentView));
     // The bell sits above the home view's buttons, so up from the first reaches it.
     return $('notification-bell').hidden ? list : [$('notification-bell'), ...list];
   }
 
-  function selectControl(control) {
+  const selectedControl = () => $('menu-screen').querySelector('.menu-selected');
+
+  /** Picks `control`, scrolling it into view unless `scroll` is false, as for the mouse pointing at it. */
+  function selectControl(control, { scroll = true } = {}) {
     document.querySelectorAll('.menu-selected').forEach(item => item.classList.remove('menu-selected'));
     if (!control) return;
     control.classList.add('menu-selected');
-    control.focus({ preventScroll: false });
+    control.focus({ preventScroll: !scroll });
   }
 
+  // In the column layout home's buttons stay beside the open screen: up and
+  // down move within the side the selection is on, left and right cross over.
+  const inColumn = control => columnLayout() && !onHome() && Boolean(control) && $('menu-home').contains(control);
+
   function moveSelection(direction) {
-    const list = controls();
+    const selected = selectedControl();
+    const list = inColumn(selected) ? pickable($('menu-home')) : controls();
     if (!list.length) return false;
-    const selected = $('menu-screen').querySelector('.menu-selected');
     const current = list.indexOf(selected);
     const next = current < 0 ? 0 : (current + direction + list.length) % list.length;
     selectControl(list[next]);
+    sounds.menuMove();
+    return true;
+  }
+
+  /** Crosses to the column (`toColumn`) or to the open screen; false when the selection is already there. */
+  function crossOver(toColumn) {
+    if (!columnLayout() || onHome() || isLookConfirmOpen() || panel.open) return false;
+    if (inColumn(selectedControl()) === toColumn) return false;
+    const opener = viewButton(currentView);
+    const target = toColumn
+      ? (opener && !opener.hidden ? opener : pickable($('menu-home'))[0])
+      : controls().find(control => !control.closest('.menu-view-head')) ?? controls()[0];
+    if (!target) return false;
+    selectControl(target);
     sounds.menuMove();
     return true;
   }
@@ -876,13 +1103,15 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     else history.pushState(historyTag('menu'), '');
   }
   window.addEventListener('popstate', () => {
+    // A flight into the ride lands in it whatever happens on the way.
+    if (flight && !flight.out) return;
     // Mid-ride, a phone's back gesture opens the menu, as Escape does.
     if (!isOpen()) { if (session.gameLoopStarted) onBack?.(); return; }
     fromHistory = true;
     try {
       if (closeNotifications()) return;
       if (closeTrailPicker(true)) return;
-      if ($('menu-home').hidden) goBack();
+      if (!onHome()) goBack();
       else onClose();
     } finally {
       fromHistory = false;
@@ -895,44 +1124,60 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     setLookConfirm(false);
     if (panel.open) panel.close();
     if (view !== 'home') pushView(view);
-    $('menu-home').hidden = view !== 'home';
-    $('menu-riders-view').hidden = view !== 'riders';
-    $('menu-trail-view').hidden = view !== 'trails';
-    $('menu-leaderboard-view').hidden = view !== 'leaderboard';
-    $('menu-save-view').hidden = view !== 'save';
-    $('menu-look-view').hidden = view !== 'look';
-    $('menu-how-view').hidden = view !== 'how';
-    $('menu-settings-view').hidden = view !== 'settings';
-    $('menu-changelog-view').hidden = view !== 'changelog';
-    $('menu-credits-view').hidden = view !== 'credits';
+    const closing = currentView;
+    currentView = view;
+    $('menu-screen').dataset.view = view;
+    for (const name of Object.keys(VIEWS)) if (name !== 'home') viewElement(name).hidden = name !== view;
     if (view !== 'credits') stopCredits();
-    $('menu-achievements-view').hidden = view !== 'achievements';
+    document.querySelectorAll('#menu-home [aria-current]').forEach(button => button.removeAttribute('aria-current'));
+    viewButton(view)?.setAttribute('aria-current', 'page');
     // Opened by hand, How to play has no ride waiting; either way it has been seen.
     rideAfterHowTo = null;
     $('how-ride').hidden = true;
     if (view === 'how') { syncHowTo(); saveSeenHowTo(); }
     syncBell();
+    // Previews waiting for this screen paint now, or once it has slid in
+    // beside the column, so the first, slow ones never catch the slide.
+    const opened = viewElement(view);
+    if (getComputedStyle(opened).animationName === 'none') paintShownPreviews();
+    else opened.addEventListener('animationend', paintShownPreviews, { once: true });
+    // Each screen opens at its top, whichever of the two scrolls it.
     $('menu-scroll').scrollTop = 0;
+    const body = opened.querySelector('.menu-view-body');
+    if (body) body.scrollTop = 0;
     requestAnimationFrame(() => {
+      // Back home, the button of the screen just closed stays picked, so the
+      // keys and a gamepad carry on from where they were.
+      const opener = view === 'home' ? viewButton(closing) : null;
+      if (opener && !opener.hidden) { selectControl(opener); return; }
       const list = controls();
-      // The login shortcut is for returning riders, so a new rider starts on the form.
-      selectControl(list.find(button => !button.matches('[data-menu-back], #save-login-button, #notification-bell')) || list[0]);
+      // A screen starts on what it shows, past the buttons in its head. The
+      // login shortcut is for returning riders, so a new rider starts on the form.
+      selectControl(list.find(button => !button.closest('.menu-view-head') && !button.matches('#save-login-button, #notification-bell')) || list[0]);
     });
   }
 
-  function open() {
+  /**
+   * Opens the menu, over `ride` if it is opened from one: its canvas, view
+   * and clock (see flyOutOf), which the backdrop flies out of.
+   */
+  function open(ride = null) {
     $('menu-screen').hidden = false;
     markMenuOpen();
     // Catches up with a cloud look that arrived while riding.
     if (session.saveGame) session.look = riderLook();
     syncWhatsNew();
+    if (ride && canResume() && !reducedMotion) flyOutOf(ride);
     updateDashboard();
     showView('home');
     animateBackground();
-    requestAnimationFrame(() => selectControl($(canResume() || session.saveGame ? 'menu-continue' : 'menu-first-ride')));
+    requestAnimationFrame(selectFirst);
     refreshCloudSave();
     refreshNotifications();
   }
+
+  /** Selects home's first button: back to the ride, or on with the rider. */
+  const selectFirst = () => selectControl($(canResume() || session.saveGame ? 'menu-continue' : 'menu-first-ride'));
 
   /**
    * Pulls the active online rider's look and progress from the cloud, so a
@@ -973,6 +1218,8 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     setLookConfirm(false);
     if (panel.open) panel.close();
     $('menu-screen').hidden = true;
+    if (flight) endFlight();
+    menuScene.forgetRide();
   }
 
   // Riders from an earlier version get a NEW badge on What's new until they
@@ -1055,7 +1302,7 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
 
   function syncBell() {
     const count = unreadCount(riderId());
-    $('notification-bell').hidden = !isOpen() || $('menu-home').hidden;
+    $('notification-bell').hidden = !isOpen() || !onHome();
     $('notification-bell').setAttribute('aria-label', count ? `Notifications, ${count} unread` : 'Notifications');
     $('notification-count').hidden = !count;
     $('notification-count').textContent = count > 9 ? '9+' : String(count);
@@ -1090,10 +1337,13 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
   function openNotifications() {
     newInPanel = new Set();
     buildNotifications();
-    // The panel hangs from the bell, wherever the menu's frame puts it.
+    // The panel hangs from the bell, wherever the menu's frame puts it, and
+    // ends inside the frame.
     const bell = $('notification-bell').getBoundingClientRect();
+    const frame = $('menu-screen').getBoundingClientRect();
     panel.style.setProperty('--drop-top', `${bell.bottom + 12}px`);
     panel.style.setProperty('--drop-right', `${innerWidth - bell.right}px`);
+    panel.style.setProperty('--drop-bottom', `${innerHeight - frame.bottom + 14}px`);
     panel.style.setProperty('--notch-right', `${bell.width / 2 - 7}px`);
     panel.showModal();
     pushView('notifications');
@@ -1183,7 +1433,7 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
   panel.addEventListener('click', event => { if (event.target === panel) closeNotifications(); });
   panel.addEventListener('close', () => {
     syncBell();
-    if (isOpen() && !$('menu-home').hidden) selectControl($('notification-bell'));
+    if (isOpen() && onHome()) selectControl($('notification-bell'));
   });
   window.addEventListener(NOTIFICATIONS_EVENT, () => {
     syncBell();
@@ -1382,17 +1632,13 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     return heading;
   }
 
-  function trailCard({ trail, key, number, status, best = null, locked = false, kind = 'official', nisse = false, onSelect }) {
+  function trailCard({ entry, number, status, best = null, locked = false, kind = 'official', nisse = false, onSelect }) {
+    const { trail } = entry;
     const button = document.createElement('button');
     button.className = `trail-card${kind === 'official' ? '' : ` ${kind}-trail-card`}`;
     button.disabled = locked;
-    const preview = document.createElement('canvas');
+    const preview = trailPreview(entry);
     preview.className = 'trail-preview';
-    preview.setAttribute('aria-hidden', 'true');
-    // Where the author framed it, else its most eventful stretch; zoomed
-    // out, without a rider. The framing is in the key: it doesn't change the hash.
-    const framing = trail.preview ? `${trail.preview.x},${trail.preview.y}` : 'auto';
-    paintPreview(preview, previewKey('trail', key, framing), image => drawTrailPreview(image, trail, sceneOptions()));
     const numberLabel = document.createElement('span');
     numberLabel.className = 'trail-number';
     numberLabel.textContent = number;
@@ -1432,21 +1678,42 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     return button;
   }
 
+  // Where the author framed it, else its most eventful stretch; zoomed out,
+  // without a rider. Official and bonus trails come with it drawn (see
+  // scripts/lib/thumbnails.mjs), so the Trails screen opens without drawing
+  // them; others are drawn here. The framing is in the cache key, as it
+  // doesn't change the trail's hash.
+  function trailPreview(entry) {
+    if (entry.thumbnail) {
+      const image = document.createElement('img');
+      image.alt = '';
+      image.decoding = 'async';
+      image.loading = 'lazy';
+      image.src = `trails/${entry.thumbnail}`;
+      return image;
+    }
+    const { trail } = entry;
+    const canvas = document.createElement('canvas');
+    canvas.setAttribute('aria-hidden', 'true');
+    const framing = trail.preview ? `${trail.preview.x},${trail.preview.y}` : 'auto';
+    paintPreview(canvas, sceneKey('trail', trailKey(entry), framing), image => drawTrailPreview(image, trail, sceneOptions()));
+    return canvas;
+  }
+
   /** Whether the active rider has found a trail's nisse; never, without a rider. */
   const nisseFound = entry => Boolean(session.saveGame) && hasNisse(session.activeSaveSlot, nisseKey(entry), trails.length);
 
   function buildTrailCards() {
     const cards = [menuSection('OFFICIAL TRAILS', 'Career progression and official best times')];
-    trails.forEach((trail, index) => {
+    officialTrailEntries.forEach((entry, index) => {
       const locked = !session.saveGame || index > session.unlockedTrail;
       cards.push(trailCard({
-        trail,
-        key: trailKey(officialTrailEntries[index]),
+        entry,
         number: String(index + 1).padStart(2, '0'),
         status: locked ? 'LOCKED' : (index === session.savedTrail ? 'CURRENT TRAIL' : 'UNLOCKED'),
-        best: readBest(session.activeSaveSlot, trailKey(officialTrailEntries[index]), trails.length),
+        best: readBest(session.activeSaveSlot, trailKey(entry), trails.length),
         locked,
-        nisse: nisseFound(officialTrailEntries[index]),
+        nisse: nisseFound(entry),
         onSelect: () => startTrail(index)
       }));
     });
@@ -1456,8 +1723,7 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
         const key = trailKey(entry);
         const { open, hint } = bonusUnlock(entry);
         cards.push(trailCard({
-          trail: entry.trail,
-          key,
+          entry,
           number: `B${String(index + 1).padStart(2, '0')}`,
           status: open ? 'BONUS TRAIL' : hint,
           best: session.saveGame ? readBest(session.activeSaveSlot, key, trails.length) : topTime(key),
@@ -1471,8 +1737,7 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     if (customTrailEntries.length) {
       cards.push(menuSection('CUSTOM TRAILS', 'Local trails outside career progression'));
       customTrailEntries.forEach((entry, index) => cards.push(trailCard({
-        trail: entry.trail,
-        key: trailKey(entry),
+        entry,
         number: `C${String(index + 1).padStart(2, '0')}`,
         status: entry.storage === 'browser' ? 'CUSTOM · SAVED IN BROWSER' : 'CUSTOM TRAIL',
         best: topTime(trailKey(entry)),
@@ -1990,17 +2255,26 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     buildKeyBindings();
   }
 
+  /** What scrolls the open screen: its body beside the column, the whole menu otherwise. */
+  const scroller = () => (columnLayout() && viewElement(currentView).querySelector('.menu-view-body')) || $('menu-scroll');
+
+  /** Whether left and right step the leaderboard's trail: on its screen, unless the selection is in the column. */
+  const stepsLeaderboard = () => !$('menu-leaderboard-view').hidden && !isTrailPickerOpen() && !inColumn(selectedControl());
+
   /** Gamepad navigation while the menu is open. */
   function handlePad(action) {
     if (scrollsWithArrows() && (action === 'nav-up' || action === 'nav-down')) {
-      $('menu-scroll').scrollBy({ top: action === 'nav-up' ? -160 : 160, behavior: reducedMotion ? 'auto' : 'smooth' });
+      scroller().scrollBy({ top: action === 'nav-up' ? -160 : 160, behavior: reducedMotion ? 'auto' : 'smooth' });
       return;
     }
+    const stepsTrail = stepsLeaderboard();
     if (action === 'nav-up' || action === 'nav-left') {
-      if (action === 'nav-left' && !$('menu-leaderboard-view').hidden && !isTrailPickerOpen()) { stepLeaderboard(-1); sounds.menuMove(); return; }
+      if (action === 'nav-left' && stepsTrail) { stepLeaderboard(-1); sounds.menuMove(); return; }
+      if (action === 'nav-left' && crossOver(true)) return;
       moveSelection(-1);
     } else if (action === 'nav-down' || action === 'nav-right') {
-      if (action === 'nav-right' && !$('menu-leaderboard-view').hidden && !isTrailPickerOpen()) { stepLeaderboard(1); sounds.menuMove(); return; }
+      if (action === 'nav-right' && stepsTrail) { stepLeaderboard(1); sounds.menuMove(); return; }
+      if (action === 'nav-right' && crossOver(false)) return;
       moveSelection(1);
     } else if (action === 'confirm') {
       const selected = $('menu-screen').querySelector('.menu-selected');
@@ -2009,11 +2283,36 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
       stepTab(action === 'tab-prev' ? -1 : 1);
     } else if (action === 'cancel') {
       if (closeNotifications() || closeTrailPicker(true)) sounds.menuBack();
-      else if ($('menu-home').hidden) { sounds.menuBack(); goBack(); } else onClose();
+      else if (!onHome()) { sounds.menuBack(); goBack(); } else onClose();
     }
   }
 
   // Wiring.
+  // Previews scrolled near paint (see drainPreviews); scrolling doesn't
+  // bubble, so this listens on the way down for whatever scrolls the screen.
+  $('menu-screen').addEventListener('scroll', paintShownPreviews, { capture: true, passive: true });
+  // With the column beside an open screen, the button of that screen closes
+  // it, and another (Changelog included) asks first if the Garage holds an
+  // unsaved look. Caught on the way down, before the button's own handler
+  // opens its screen.
+  document.querySelector('.menu-column').addEventListener('click', event => {
+    const button = event.target.closest('button');
+    if (!button || onHome()) return;
+    if (button === viewButton(currentView)) {
+      event.stopPropagation();
+      sounds.menuBack();
+      goBack();
+    } else if (garageUnsaved()) {
+      event.stopPropagation();
+      setLookConfirm(true);
+    }
+  }, true);
+  // The logo and name lead back too, as a shortcut for the mouse.
+  document.querySelector('.menu-hero').addEventListener('click', event => {
+    if (event.target.closest('button') || onHome()) return;
+    sounds.menuBack();
+    goBack();
+  });
   $('menu-how-to').addEventListener('click', () => showView('how'));
   $('menu-whats-new').addEventListener('click', showChangelog);
   $('show-credits').addEventListener('click', () => showCredits('settings'));
@@ -2031,10 +2330,14 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     // Left and right adjust a focused slider instead of moving the selection.
     if (event.target.type === 'range' && (event.code === 'ArrowLeft' || event.code === 'ArrowRight')) return;
     const trailStep = { ArrowLeft: -1, KeyA: -1, ArrowRight: 1, KeyD: 1 }[event.code];
-    if (trailStep && !$('menu-leaderboard-view').hidden && !isTrailPickerOpen()) {
+    if (trailStep && stepsLeaderboard()) {
       event.preventDefault();
       stepLeaderboard(trailStep);
       sounds.menuMove();
+      return;
+    }
+    if (trailStep && crossOver(trailStep < 0)) {
+      event.preventDefault();
       return;
     }
     const direction = { ArrowUp: -1, ArrowLeft: -1, KeyW: -1, KeyA: -1, ArrowDown: 1, ArrowRight: 1, KeyS: 1, KeyD: 1 }[event.code];
@@ -2051,7 +2354,7 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
   $('menu-screen').addEventListener('pointerover', event => {
     const button = event.target.closest('button');
     if (event.pointerType === 'mouse' && button && !button.contains(event.relatedTarget)) {
-      if (button.closest('.menu-view, .menu-confirm, .notification-panel, .notification-bell')) selectControl(button);
+      if (button.closest('.menu-view, .menu-confirm, .notification-panel, .notification-bell')) selectControl(button, { scroll: false });
       sounds.menuMove();
     }
   });
@@ -2196,8 +2499,8 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
   const back = () => {
     if (closeNotifications()) return true;
     if (closeTrailPicker(true)) return true;
-    if ($('menu-home').hidden) { goBack(); return true; }
+    if (!onHome()) { goBack(); return true; }
     return false;
   };
-  return { open, close, isOpen, syncHowTo, showTrailsStatus, updateDashboard, drawBackground, syncSettings, handlePad, showView, showCredits, canResume, back, refreshCloudSave, refreshNotifications, markRideStarted };
+  return { open, close, isOpen, showsTrail, flyInto, syncHowTo, showTrailsStatus, updateDashboard, drawBackground, syncSettings, handlePad, showView, showCredits, canResume, back, refreshCloudSave, refreshNotifications, markRideStarted };
 }
