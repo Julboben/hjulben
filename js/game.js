@@ -14,7 +14,7 @@ import {
   saveProgress as persistProgress, savePreferences, clearSaveToken, renewSaveToken, recordAchievements, recordNisse,
   pruneStaleTrailData, STORAGE_FAILED_EVENT
 } from './storage.js';
-import { bikeBroken, createFeatTracker, editorProgress, eggAchievements, eventAchievements, finishAchievements, finishGains, interactAchievements, newlyEarned, statGains } from './achievements.js';
+import { ballAtFlag, bikeBroken, createFeatTracker, editorProgress, eggAchievements, eventAchievements, finishAchievements, finishGains, interactAchievements, newlyEarned, statGains } from './achievements.js';
 import { createLimWatcher, installConsoleCheats } from './easter-eggs.js';
 import { submitOnlineRun, fetchWorldGhost, fetchRiderGhost, refreshOnlineBoard, cachedOnlineBoard, queuePendingRun, dropPendingRun, flushPendingRuns, useBoardViewer } from './online-leaderboard.js';
 import { queueSaveSync, SIGNED_OUT_EVENT, SESSION_RENEWED_EVENT } from './account.js';
@@ -178,6 +178,8 @@ export function startGame({ shared = null } = {}) {
   let recorded = [], startStep = 0, flips = 0;
   /** Whether the current attempt's physics has come apart, for Here Be Kraken. */
   let broken = false;
+  // Whether a beach ball has been brought to the flag this run (see king-of-the-castle).
+  let ballAtFinish = false;
   // Attempts that got going since the trail was opened from the menu or Next
   // Trail, for achievements such as First Try.
   let attempts = 0, openingTrail = false;
@@ -602,7 +604,7 @@ export function startGame({ shared = null } = {}) {
     session.ride = ride;
     if (replay) rewindable.clear();
     else rewindable.start(ride, seed);
-    recorded = []; startStep = 0; flips = 0; broken = false; simulatedTime = 0; passedTime = 0;
+    recorded = []; startStep = 0; flips = 0; broken = false; ballAtFinish = false; simulatedTime = 0; passedTime = 0;
     accumulator = 0; landingSoundCooldown = 0; splashSoundCooldown = 0; suspensionSoundCooldown = 0;
     effects.reset(trail);
     renderer.reset(trail, ride.facing);
@@ -1425,6 +1427,10 @@ export function startGame({ shared = null } = {}) {
       if (!still || redraw) {
         redraw = false;
         drawRide(dt, alpha, ghostAlpha);
+        if (!replay && !ballAtFinish && renderer.beachBalls().some(ball => ballAtFlag(ball, ride.flower))) {
+          ballAtFinish = true;
+          trackAchievements({ type: 'ball-at-flag' });
+        }
         if (renderer.takeWoofs()) sounds.woof();
         const knock = renderer.takeBallKnock();
         if (knock) sounds.beachBall(knock);

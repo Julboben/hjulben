@@ -5,7 +5,9 @@
 import { RADIUS, TAU, clamp, lerp } from "./config.js";
 import {
   ART_PIXEL,
+  birdFlight,
   createCanvas,
+  duckFlight,
   createDrawingTools,
   createGameArt,
   fogAmount,
@@ -273,11 +275,12 @@ const PROP_REACH = {
 // Perched birds and ducks take off, roosting bats scatter, fish dart off,
 // rabbits bound away, crabs dig in and squirrels run for a tree when the rider
 // comes within `x` and `y` of them; they are gone `flight` seconds later (a
-// squirrel as soon as it has hidden, a crab once it has buried itself).
+// squirrel as soon as it has hidden, a crab once it has buried itself), or,
+// for birds and ducks, which fly on along FLIGHT_PATHS, once out of view.
 const STARTLE = {
-  bird: { x: 110, y: 140, flight: 2.5 },
+  bird: { x: 110, y: 140, flight: Infinity },
   bats: { x: 160, y: 200, flight: 2.2 },
-  duck: { x: 130, y: 140, flight: 2.5 },
+  duck: { x: 130, y: 140, flight: Infinity },
   // A frog's pad stays after it leaps, so its flight never ends.
   frog: { x: 110, y: 120, flight: Infinity },
   fish: { x: 90, y: 70, flight: FISH_DART },
@@ -285,6 +288,10 @@ const STARTLE = {
   rabbit: { x: 130, y: 110, flight: RABBIT_FLEE },
   crab: { x: 70, y: 50, flight: CRAB_FLEE },
 };
+// The paths startled birds and ducks fly off along (see flyingOff).
+const FLIGHT_PATHS = { bird: birdFlight, duck: duckFlight };
+// How far a flying bird or duck reaches either side of where it is, for culling.
+const FLIGHT_REACH = 30;
 // Heat haze shimmers the scene behind it, so it stays out of the x-ray mask,
 // and it is left out with reduced motion and in the lighter graphics mode.
 const HAZE_PROPS = new Set(["heat-haze"]);
@@ -678,6 +685,22 @@ export function createRenderer(canvas, { still = false } = {}) {
     }
   }
 
+  /**
+   * Where a startled bird or duck flying off is, or null for any other prop
+   * or one still perched. It flies on along its path until it has left the
+   * view, and is `gone` from then on, even if the view comes back to it.
+   */
+  function flyingOff(prop) {
+    const path = FLIGHT_PATHS[prop.type], flight = flights.get(prop);
+    if (!path || !flight || reducedMotion) return null;
+    if (!flight.gone) {
+      const at = path((frameNow - flight.start) / 1000, flight.dir);
+      if (inView(flight.x + at.x, FLIGHT_REACH, flight.y + at.y, FLIGHT_REACH)) return { x: flight.x + at.x, y: flight.y + at.y };
+      flight.gone = true;
+    }
+    return { gone: true };
+  }
+
   // Coda trots about and runs over to greet the rider. Purely visual, like the
   // startled animals; with reduced motion (time 0) he sits still.
   function walkCorgis(ride, focus, dt) {
@@ -1058,11 +1081,15 @@ export function createRenderer(canvas, { still = false } = {}) {
         drawn++;
         continue;
       }
+      // A bird or duck flying off is in view wherever its perch is.
+      const flying = flyingOff(prop);
+      if (flying?.gone) continue;
       if (
-        (!full && (prop.type === "tree" || prop.type === "pine" || prop.type === "snow-pine" || prop.type === "palm")) ||
-        (HAZE_PROPS.has(prop.type) && (reducedMotion || !full || area)) ||
-        !inView(prop.x, reach) ||
-        (area && (prop.x < area.left - reach || prop.x > area.right + reach))
+        !flying &&
+        ((!full && (prop.type === "tree" || prop.type === "pine" || prop.type === "snow-pine" || prop.type === "palm")) ||
+          (HAZE_PROPS.has(prop.type) && (reducedMotion || !full || area)) ||
+          !inView(prop.x, reach) ||
+          (area && (prop.x < area.left - reach || prop.x > area.right + reach)))
       )
         continue;
       const ground = terrainAt(trail, prop.x);
@@ -1073,8 +1100,8 @@ export function createRenderer(canvas, { still = false } = {}) {
       let rise = span ? span[0] : PROP_RISE[prop.type] ?? 90;
       let hang = span ? span[1] : PROP_HANG[prop.type] ?? 0;
       if (rotation) rise = hang = Math.max(rise, hang, reach);
-      if (!inView(prop.x, reach, y + hang, rise + hang)) continue;
-      if (area && (y - rise > area.bottom || y + hang + 70 < area.top)) continue;
+      if (!flying && !inView(prop.x, reach, y + hang, rise + hang)) continue;
+      if (!flying && area && (y - rise > area.bottom || y + hang + 70 < area.top)) continue;
       let scene = propScene;
       const corgi = corgis.get(prop);
       if (corgi) scene = { ...propScene, corgi };
@@ -2379,6 +2406,8 @@ export function createRenderer(canvas, { still = false } = {}) {
     set trails(trails) {
       ({ rider: hair, ghost: ghostHair } = trails);
     },
+    /** Where the beach balls are, as rolled about this ride: their centres. */
+    beachBalls: () => [...balls.values()],
     /** The last frame's view: its top left in world units, and device pixels per world unit. */
     lastView: () => ({ x: cameraX, y: cameraY, worldToDevice: pixelScale / ART_PIXEL }),
     /** The scene's clock in milliseconds, which moves the clouds, props and animals. */

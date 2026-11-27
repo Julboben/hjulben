@@ -308,10 +308,13 @@ canvas {
             ),
             rgb(127 180 204 / 0.16);
     }
+    /* Two pixels wider than the clock, it reaches into the pill's padding
+       rather than push the time along. */
     & .timer-icon {
         --icon: var(--icon-rewind);
-        --icon-w: 9;
+        --icon-w: 11;
         --icon-h: 7;
+        margin-left: calc(-2 * var(--px, 2px));
         color: var(--color-accent);
     }
 }
