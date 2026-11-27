@@ -3,14 +3,19 @@
 // camera rests on the rider, glides along the trail to near the finish,
 // rests there and glides back, rising and falling with the ground, smoothed
 // so it never bobs over bumps. Clouds, rain, water and animals move as they
-// do on a ride. Starting the trail, the menu flies the camera into the
-// ride's own view instead (see flyInto in menu.js).
+// do on a ride. Over a ride left for the menu, it shows that ride as it was
+// left, ghost, tracks and all, with the camera resting on the rider. The
+// menu flies the camera between the backdrop and the ride's own view as it
+// opens over a ride and goes back to it (see startFlight in menu.js).
 import { STEP } from '../config.js';
+import { ART_PIXEL } from '../drawing.js';
 import { createRenderer } from '../render.js';
 import { createEffects } from '../effects.js';
 import { posedRide } from '../scene-preview.js';
 import { surfaceProfile } from '../trail-preview.js';
 import { sameLook } from '../cosmetics.js';
+import { ragdollCenter } from '../ragdoll.js';
+import { vehicleMetrics } from '../vehicle-physics.js';
 
 // Device pixels per art pixel on a screen of one device pixel per CSS
 // pixel: half the ride's, so twice the trail is in view.
@@ -26,7 +31,8 @@ const REST = 3;
 const TURN_BEFORE_FINISH = 0.2;
 // How far either side of the camera the ground is averaged for its height.
 const GROUND_REACH = 300;
-// Where the ground sits, as a fraction of the view's height from the top.
+// Where the ground sits, or the rider of a ride left for the menu, as a
+// fraction of the view's height from the top.
 const GROUND_LINE = 0.7;
 // The spacing of the ground samples, in world units.
 const GROUND_STEP = 8;
@@ -67,19 +73,38 @@ export function createMenuScene(canvas) {
 
   return {
     /**
-     * Shows `trail` with the rider in `look` at its start. Calls with the
-     * same trail and look keep the camera where it is.
+     * Shows `trail` with the rider in `look` at its start, or `left`, a ride
+     * left for the menu, as it was: its `ride`, `ghost` and `ghostLook`, the
+     * `effects` it was drawn with, which carry on here, and the `trails` behind
+     * its riders (see the renderer's), held as they were. Calls with the same
+     * trail, look and ride keep the camera where it is.
      */
-    show(trail, look, headlights) {
-      if (scene?.trail === trail && sameLook(scene.look, look) && scene.headlights === headlights) return;
-      const ride = posedRide(trail);
-      scene = { trail, ride, look, headlights, ground: smoothedGround(trail), riderX: (ride.rear.x + ride.front.x) / 2 };
+    show(trail, look, headlights, left = null) {
+      if (scene?.trail === trail && sameLook(scene.look, look) && scene.headlights === headlights && scene.left?.ride === left?.ride) return;
+      const ride = left?.ride ?? posedRide(trail);
+      scene = {
+        trail, ride, look, headlights, left, effects: left?.effects ?? effects,
+        ground: smoothedGround(trail), riderX: (ride.rear.x + ride.front.x) / 2,
+        // The point the camera rests on over a ride left for the menu, as the ride's own follows.
+        held: left && (ride.ragdoll ? ragdollCenter(ride.ragdoll) : vehicleMetrics(ride.vehicle).center),
+      };
       renderer.reset(trail, ride.facing);
       renderer.setHeadlights(headlights);
-      renderer.settleHair(ride, look);
-      effects.reset(trail);
+      if (left) renderer.trails = left.trails;
+      else {
+        renderer.settleHair(ride, look);
+        effects.reset(trail);
+      }
       time = 0;
       weatherTime = 0;
+    },
+
+    /**
+     * Forgets a ride left for the menu, which moves on once the menu closes,
+     * so it is shown afresh, where it is then, the next time.
+     */
+    forgetRide() {
+      if (scene?.left) scene = null;
     },
 
     /** The trail shown, or null before the first. */
@@ -91,7 +116,22 @@ export function createMenuScene(canvas) {
     lastView: () => renderer.lastView(),
 
     /** The scene's clock and weather clock, for a ride to carry on from. */
-    clocks: () => ({ scene: renderer.clock, weather: effects.weather.time }),
+    clocks: () => ({ scene: renderer.clock, weather: scene.effects.weather.time }),
+
+    /** Sets the scene's clock (see clocks), to carry on from a ride's. */
+    setClock(ms) {
+      renderer.clock = ms;
+    },
+
+    /**
+     * The view a left ride's backdrop rests in, drawn `viewWidth` ×
+     * `viewHeight` CSS pixels with the camera's point `focus` of the way
+     * across (see draw): its top left and size, in world units.
+     */
+    restingView(viewWidth, viewHeight, focus) {
+      const width = Math.ceil(viewWidth / ART_PIXEL) * ART_PIXEL, height = Math.ceil(viewHeight / ART_PIXEL) * ART_PIXEL;
+      return { x: scene.held.x - width * focus, y: scene.held.y - height * GROUND_LINE, width, height };
+    },
 
     /**
      * Draws the scene `dt` seconds on, `viewWidth` × `viewHeight` CSS pixels,
@@ -114,15 +154,15 @@ export function createMenuScene(canvas) {
         renderer.setViewport(width, height, scale);
       }
       time += dt * pace;
-      for (weatherTime += dt; weatherTime >= STEP; weatherTime -= STEP) effects.stepWeather();
-      effects.update(dt);
-      const { trail, ride, riderX } = scene;
+      for (weatherTime += dt; weatherTime >= STEP; weatherTime -= STEP) scene.effects.stepWeather();
+      scene.effects.update(dt);
+      const { trail, ride, riderX, held, left } = scene;
       const direction = Math.sign(trail.finish.x - trail.start.x) || 1;
       const turn = trail.finish.x - direction * renderer.width * TURN_BEFORE_FINISH;
       // Short trails, whose turn comes before the rider, keep still on the rider.
       const span = (turn - riderX) * direction > 0 ? turn - riderX : 0;
-      let x = riderX;
-      if (span) {
+      let x = held ? held.x : riderX;
+      if (span && !held) {
         // Rest, glide out, rest, glide back.
         const glide = glideTime(Math.abs(span));
         const t = time % (2 * (REST + glide));
@@ -132,8 +172,11 @@ export function createMenuScene(canvas) {
         else if (back >= 0) x += span - Math.sign(span) * glided(back, Math.abs(span));
       }
       view.x = at ? at.x : x - renderer.width * focus;
-      view.y = at ? at.y : groundAt(x) - renderer.height * GROUND_LINE;
-      renderer.draw({ ride, ghost: null, camera, effects, look: scene.look, state: 'ready', full, dt, debug: false });
+      view.y = at ? at.y : (held ? held.y : groundAt(x)) - renderer.height * GROUND_LINE;
+      renderer.draw({
+        ride, ghost: left?.ghost ?? null, ghostLook: left?.ghostLook, camera, effects: scene.effects, look: scene.look,
+        state: 'ready', full, dt, debug: false, held: Boolean(left)
+      });
     }
   };
 }

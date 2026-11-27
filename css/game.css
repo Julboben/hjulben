@@ -1869,7 +1869,7 @@ h2 {
             calc(14px + env(safe-area-inset-left, 0px));
         /* Room for the look buttons pinned at the bottom (.look-actions),
            so the last looks and a picked control scroll clear of them. */
-        &:has(.look-actions:not([hidden] *)) {
+        &:has(.look-actions:not([hidden], [hidden] *)) {
             padding-bottom: calc(
                 24px + var(--look-actions-bar) + var(--menu-inset-bottom)
             );
@@ -2210,11 +2210,15 @@ h2 {
         }
     }
 }
-/* Flying into a ride (see flyInto in js/ui/menu.js), the menu and its veils
-   fade off the trail, which narrows to the ride's view, leaving the game's
-   frame around it, and the ride's overlays fade in once it lands. */
+/* Flying between the menu and a ride (see startFlight in js/ui/menu.js),
+   the trail narrows to the ride's view or widens from it, leaving the
+   game's frame around it. Into the ride the menu and its veils fade off
+   it, and the ride's overlays fade in once it lands; out of it the menu
+   shows at once, over the flight. */
 .menu-screen[data-flying] {
     background: transparent;
+}
+.menu-screen[data-flying="in"] {
     &::before,
     &::after,
     & > :not(.menu-background) {
@@ -3332,6 +3336,15 @@ h2 {
             );
         border-top: 3px solid var(--color-shadow);
         background: var(--color-shell);
+    }
+}
+/* Wide screens put them in the head, beside the ✕ (see placeLookActions in
+   js/ui/menu.js). */
+.menu-view-head > .look-actions {
+    margin-left: auto;
+    & .primary {
+        flex: none;
+        width: auto;
     }
 }
 .look-history,

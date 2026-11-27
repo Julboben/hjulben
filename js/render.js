@@ -2106,10 +2106,12 @@ export function createRenderer(canvas, { still = false } = {}) {
    * @param {{
    *   ride: any, ghost: any, camera: any, effects: any, state: string,
    *   look?: import('./cosmetics.js').Look | null, ghostLook?: import('./cosmetics.js').Look | null,
-   *   full: boolean, dt: number, debug: boolean, kick?: number | null
+   *   full: boolean, dt: number, debug: boolean, kick?: number | null, held?: boolean
    * }} frame  `look` is the rider's, `ghostLook` the ghost's (the rider's by default);
    *   `dt` is the seconds since the last frame, 0 for a still scene; `kick`
-   *   is how far through kick-starting the engine the rider is, 0 to 1
+   *   is how far through kick-starting the engine the rider is, 0 to 1; `held`
+   *   keeps the rider's and the ghost's hair as it is, for a ride held where
+   *   it was left while the scene around it moves on
    */
   function draw({
     ride,
@@ -2124,6 +2126,7 @@ export function createRenderer(canvas, { still = false } = {}) {
     debug,
     fireworks = null,
     kick = null,
+    held = false,
   }) {
     const paused = state === "paused";
     wonFor = state === "won" ? wonFor + dt : 0;
@@ -2136,7 +2139,7 @@ export function createRenderer(canvas, { still = false } = {}) {
     const now = sceneClock;
     // A ghost the player beat rides on to the finish at full speed while the
     // rest of the scene settles, and stops once it gets there.
-    const ghostDt = paused || ghost?.status === "won" ? 0 : state === "won" ? dt : animationDt;
+    const ghostDt = paused || held || ghost?.status === "won" ? 0 : state === "won" ? dt : animationDt;
     // Posed scenes for the menu ("ready") hold the rider still, and the
     // rider's feet stop on the pedals at the finish, as the hair does.
     if (state !== "ready") {
@@ -2237,7 +2240,7 @@ export function createRenderer(canvas, { still = false } = {}) {
     drawNisseInRide(ride);
     if (fog) drawFog(fog, focus, ride.facing);
     drawGhost(ghost, ghostLook ?? look, ghostDt);
-    hair = updateHair(hair, ride, look, ride.status === "won" ? 0 : animationDt);
+    hair = updateHair(hair, ride, look, held || ride.status === "won" ? 0 : animationDt);
     if (hair) hair.draw(pixelPath, currentHairRoot(ride, false, flipVisual, look), riderParts(look));
     drawBike(ride, look, flipVisual, ride.ragdoll ? "ragdoll" : state);
     if (debug) drawPhysicsOverlay(ride.vehicle, ride);
@@ -2374,6 +2377,16 @@ export function createRenderer(canvas, { still = false } = {}) {
     },
     /** Where the rider was in the last frame, as fractions of the view's width and height. */
     riderOnScreen: () => riderOnScreen,
+    /**
+     * What trails behind the rider and the ghost (their hair and capes), as
+     * they are now, for another renderer to draw the same ride as it was left.
+     */
+    get trails() {
+      return { rider: hair, ghost: ghostHair };
+    },
+    set trails(trails) {
+      ({ rider: hair, ghost: ghostHair } = trails);
+    },
     /** The last frame's view: its top left in world units, and device pixels per world unit. */
     lastView: () => ({ x: cameraX, y: cameraY, worldToDevice: pixelScale / ART_PIXEL }),
     /** The scene's clock in milliseconds, which moves the clouds, props and animals. */

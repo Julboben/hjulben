@@ -4,8 +4,9 @@
 // back, moving the selection between the column and the screen with the
 // keys, the narrower layout that gives home's buttons way to the screen,
 // the trails' thumbnails, drawn ahead, the previews drawn in the game,
-// which wait until their screen opens, and Continue flying from the backdrop
-// into the ride.
+// which wait until their screen opens, the flights between the backdrop and
+// the ride (Continue and Resume ride into it, and Escape out of it), and
+// where the Garage keeps its buttons.
 //
 //   node scripts/test-menu.mjs
 //
@@ -171,12 +172,47 @@ const flight = await page(`
   for (let i = 0; i < 180 && !screen.hidden; i++) await t.frames(1);
   return { flying, landed: screen.hidden, riding: !game.classList.contains('menu-open'), arrived: 'arrived' in game.dataset };`);
 check('Continue flies from the backdrop into the ride', flight.flying && flight.landed && flight.riding && flight.arrived, JSON.stringify(flight));
+// Escape mid-ride opens the menu at once, usable, while the backdrop flies
+// out of the ride behind it.
 const reopened = await page(`
+  const menu = document.getElementById('menu-screen'), backdrop = document.getElementById('menu-background');
   t.key('Escape'); await t.frames(2);
-  const screen = document.getElementById('menu-screen').getBoundingClientRect(), backdrop = document.getElementById('menu-background');
-  const box = backdrop.getBoundingClientRect();
-  return { open: !document.getElementById('menu-screen').hidden, styled: backdrop.hasAttribute('style'), fits: box.width === screen.width && box.height === screen.height };`);
-check('the menu opens again over a whole backdrop', reopened.open && !reopened.styled && reopened.fits, JSON.stringify(reopened));
+  const at = { flying: menu.dataset.flying, open: !menu.hidden, usable: !menu.inert, selected: t.selected() };
+  for (let i = 0; i < 180 && 'flying' in menu.dataset; i++) await t.frames(1);
+  const screen = menu.getBoundingClientRect(), box = backdrop.getBoundingClientRect();
+  return { ...at, landed: !('flying' in menu.dataset), styled: backdrop.hasAttribute('style'), fits: box.width === screen.width && box.height === screen.height };`);
+check('Escape opens the menu at once, Resume ride picked', reopened.open && reopened.usable && reopened.selected === 'menu-continue', JSON.stringify(reopened));
+check('while the backdrop flies out of the ride, to land over the whole menu', reopened.flying === 'out' && reopened.landed && !reopened.styled && reopened.fits, JSON.stringify(reopened));
+// Resume ride flies back into the ride the backdrop shows; Escape on the
+// way can't stop it. Gas pressed in the menu is held when the ride carries on.
+const resumed = await page(`
+  const screen = document.getElementById('menu-screen'), game = document.getElementById('game');
+  const { session } = await import('/js/state.js');
+  t.key('ArrowUp');
+  t.click('menu-continue'); await t.frames(2);
+  const flying = 'flying' in screen.dataset;
+  t.key('Escape');
+  for (let i = 0; i < 180 && !screen.hidden; i++) await t.frames(1);
+  await t.frames(20);
+  const throttle = session.ride.throttle;
+  window.dispatchEvent(new KeyboardEvent('keyup', { code: 'ArrowUp', key: 'ArrowUp' }));
+  return { flying, landed: screen.hidden, riding: !game.classList.contains('menu-open'), throttle };`);
+check('Resume ride flies back into the ride, past an Escape', resumed.flying && resumed.landed && resumed.riding, JSON.stringify(resumed));
+check('gas pressed in the menu is held in the ride', resumed.throttle > 0.5, JSON.stringify(resumed));
+
+// --- The Garage's buttons: in its head on a wide screen, along the bottom on a phone
+const garagePlace = `
+  t.click('menu-garage'); await t.frames(2);
+  const save = document.getElementById('save-look');
+  return { view: t.view(), inHead: Boolean(save.closest('.menu-view-head')), pinned: getComputedStyle(save.closest('.look-actions')).position === 'fixed' };`;
+await load(1280, 800, 2);
+await evaluate(PAGE_HELPERS);
+const wideGarage = await page(garagePlace);
+check('wide: the Garage\'s buttons sit in its head', wideGarage.view === 'look' && wideGarage.inHead && !wideGarage.pinned, JSON.stringify(wideGarage));
+await load(390, 844);
+await evaluate(PAGE_HELPERS);
+const phoneGarage = await page(garagePlace);
+check('phone: and in a bar along the bottom', phoneGarage.view === 'look' && !phoneGarage.inHead && phoneGarage.pinned, JSON.stringify(phoneGarage));
 
 clearTimeout(timer);
 await chrome.close();

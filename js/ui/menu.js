@@ -104,11 +104,12 @@ export function loadStoredState() {
  *   onStartBonus: (index: number) => void,
  *   onStartCustom: (index: number) => void,
  *   onClose: () => void,
+ *   leftRide: () => { ride: any, ghost: any, ghostLook: any, effects: any, look: any, trails: any },
  *   riderOnScreen: () => { x: number, y: number },
  *   onPreferences: () => void
  * }} hooks
  */
-export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartCustom, onClose, onBack, riderOnScreen, onPreferences, onWatchReplay, onRiderChange }) {
+export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartCustom, onClose, onBack, leftRide, riderOnScreen, onPreferences, onWatchReplay, onRiderChange }) {
   /**
    * The best time shown on a trail's card or in the trail picker: the world's
    * if the board has been fetched, else this device's. Asks for the world
@@ -425,9 +426,29 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
   });
   garage.actions.append($('save-look'));
 
+  // A customizer's buttons (Random, Undo, Redo and its Save): wide screens
+  // put them in its screen's head, beside the ✕, in reach however far the
+  // looks scroll; narrower ones keep them under the looks, which phones pin
+  // to the bottom (see .look-actions). By customizer: its buttons, the
+  // customizer and its screen.
+  const LOOK_ACTIONS = [[garage.actions, 'garage-look', 'menu-look-view'], [creator.actions, 'new-save-look', 'menu-save-view']];
+  function placeLookActions() {
+    const column = columnLayout();
+    for (const [actions, customizer, view] of LOOK_ACTIONS) {
+      const head = $(view).querySelector('.menu-view-head');
+      const place = column ? head : $(customizer);
+      if (actions.parentElement === place) continue;
+      if (column) head.insertBefore(actions, head.querySelector('[data-menu-back]'));
+      else place.append(actions);
+    }
+  }
+  placeLookActions();
+  window.addEventListener('resize', placeLookActions);
+
   function showSaveStep(step) {
     $('new-save-identity-step').hidden = step !== 1;
     $('new-save-style-step').hidden = step !== 2;
+    creator.actions.hidden = step !== 2;
     $('new-save-step-1').classList.toggle('active', step === 1);
     $('new-save-step-2').classList.toggle('active', step === 2);
     $('new-save-title').textContent = step === 1 ? 'Who are you?' : 'Pick your style';
@@ -770,22 +791,34 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
   const menuScene = createMenuScene(/** @type {HTMLCanvasElement} */ ($('menu-background')));
 
   /** Draws the backdrop `dt` seconds on from the last frame. */
+  /** Shows the backdrop's scene: over a ride that can be resumed, the ride as it was left; else the rider's next trail. */
+  function showBackdrop() {
+    const left = canResume() ? leftRide() : null;
+    const trail = left ? session.trail : trails[session.savedTrail] ?? trails[0];
+    menuScene.show(trail, left?.look ?? session.look, session.preferences.headlight !== 'off', left);
+  }
+
+  /**
+   * The camera's point across the backdrop, as a fraction of its width: in
+   * the column layout the trail is seen beside the column, so the middle of
+   * that part of the screen.
+   */
+  function backdropFocus(bounds) {
+    const column = columnLayout() ? document.querySelector('.menu-column')?.getBoundingClientRect() : null;
+    return column ? (column.right - bounds.left + bounds.width) / 2 / bounds.width : 0.5;
+  }
+
   function drawBackground(dt = 0) {
     if (flight) { fly(dt); return; }
+    showBackdrop();
     const bounds = $('menu-background').getBoundingClientRect();
-    const trail = (canResume() && session.trail) || (trails[session.savedTrail] ?? trails[0]);
-    menuScene.show(trail, session.look, session.preferences.headlight !== 'off');
-    // In the column layout the trail is seen beside the column, so the camera
-    // centres on that part of the screen.
-    const column = columnLayout() ? document.querySelector('.menu-column')?.getBoundingClientRect() : null;
-    const focus = column ? (column.right - bounds.left + bounds.width) / 2 / bounds.width : 0.5;
     menuScene.draw({
       viewWidth: Math.round(bounds.width), viewHeight: Math.round(bounds.height),
-      dt, focus, full: session.preferences.scenery === 'full',
+      dt, focus: backdropFocus(bounds), full: session.preferences.scenery === 'full',
       // Only home beside the column shows the trail clearly; everywhere else
       // it sits behind a veil, drawn more coarsely, and behind an open screen
       // it drifts slower too.
-      sharp: Boolean(column) && onHome(), pace: onHome() ? 1 : 0.5
+      sharp: columnLayout() && onHome(), pace: onHome() ? 1 : 0.5
     });
   }
 
@@ -806,13 +839,14 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     backgroundFrame = requestAnimationFrame(step);
   }
 
-  // Starting the trail the backdrop shows, the menu fades and the camera
-  // flies from the backdrop's view into the ride's first, zooming to the
-  // ride's scale, and the ride takes over where it lands. The renderer only
-  // draws whole device pixels per art pixel, so the backdrop is drawn at its
-  // own and its canvas stretched to the zoom between. It draws just the world
-  // its part of the screen shows, which narrows from the whole menu to the
-  // ride's canvas, as the sky, sun and stars are placed by the view's size.
+  // The camera flies between the backdrop and the ride's own view: into the
+  // ride when the trail the backdrop shows is started or gone back to, with
+  // the menu fading off it, and out of a ride behind the menu as it opens
+  // over it, which can be used at once. The renderer only draws whole device pixels per
+  // art pixel, so the backdrop is drawn at its own and its canvas stretched
+  // to the zoom between. It draws just the world its part of the screen
+  // shows, which narrows from the whole menu to the ride's canvas or widens
+  // back, as the sky, sun and stars are placed by the view's size.
   let flight = null;
   // The seconds a flight takes: longer the farther the backdrop's camera has
   // glided from the rider, up to the most.
@@ -833,28 +867,65 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
   }
 
   /**
-   * Flies from the backdrop into `view`, the ride's first frame as drawn on
-   * `canvas`, which the menu covers; resolves with the backdrop's clocks
-   * (see the menu scene's) when the ride can take over.
+   * Starts a flight from placement `from` to `to`, turning on the middle of
+   * `ride`, the ride's placement; `out` of the ride or into it, which the
+   * menu can't be used during. Resolves with the backdrop's clocks (see the
+   * menu scene's) once it has landed. It takes over from a flight out that
+   * hasn't landed yet, from where that has got to.
    */
-  function flyInto(canvas, view) {
-    const from = placement($('menu-background'), menuScene.lastView()), to = placement(canvas, view);
-    // The point the flight turns on: the middle of the ride's view.
-    const anchor = { x: to.box.left + to.box.width / 2, y: to.box.top + to.box.height / 2 };
+  function startFlight(from, to, ride, out) {
+    const anchor = { x: ride.box.left + ride.box.width / 2, y: ride.box.top + ride.box.height / 2 };
     const start = { x: (anchor.x - from.x) / from.scale, y: (anchor.y - from.y) / from.scale };
     const end = { x: (anchor.x - to.x) / to.scale, y: (anchor.y - to.y) / to.scale };
     const duration = clamp(FLIGHT.least + Math.hypot(end.x - start.x, end.y - start.y) * FLIGHT.perWorldUnit, FLIGHT.least, FLIGHT.most);
-    $('menu-screen').dataset.flying = '';
-    $('menu-screen').inert = true;
+    $('menu-screen').dataset.flying = out ? 'out' : 'in';
+    $('menu-screen').inert = !out;
     return new Promise(resolve => {
-      flight = { from, to, anchor, start, end, duration, time: 0, screen: $('menu-screen').getBoundingClientRect(), resolve };
+      flight = { from, to, anchor, start, end, duration, out, time: 0, screen: $('menu-screen').getBoundingClientRect(), resolve };
     });
   }
 
-  /** Draws the flight `dt` seconds on, and hands over to the ride once it has landed. */
+  /**
+   * Flies from the backdrop into `view`, the ride as drawn on `canvas`,
+   * which the menu covers; resolves with the backdrop's clocks when the ride
+   * can take over, and the menu closes.
+   */
+  function flyInto(canvas, view) {
+    const ride = placement(canvas, view);
+    return startFlight(placement($('menu-background'), menuScene.lastView()), ride, ride, false);
+  }
+
+  /**
+   * Flies out of a ride, `view` as drawn on `canvas` at `clock` (the
+   * renderer's), to the backdrop resting on it, behind the menu as it opens.
+   */
+  function flyOutOf({ canvas, view, clock }) {
+    showBackdrop();
+    menuScene.setClock(clock);
+    const screen = $('menu-screen').getBoundingClientRect();
+    const rest = menuScene.restingView(Math.round(screen.width), Math.round(screen.height), backdropFocus(screen));
+    const scale = screen.width / rest.width;
+    const ride = placement(canvas, view);
+    return startFlight(ride, { box: screen, scale, x: screen.left - rest.x * scale, y: screen.top - rest.y * scale }, ride, true);
+  }
+
+  /** Puts the backdrop back as the menu shows it, after a flight. */
+  function endFlight() {
+    flight = null;
+    delete $('menu-screen').dataset.flying;
+    $('menu-screen').inert = false;
+    $('menu-background').removeAttribute('style');
+  }
+
+  /** Draws the flight `dt` seconds on, and lands it once it is there. */
   function fly(dt) {
-    const { from, to, anchor, start, end, duration, screen, resolve } = flight;
-    if (flight.time >= duration) { resolve(menuScene.clocks()); return; }
+    const { from, to, anchor, start, end, duration, out, screen, resolve } = flight;
+    if (flight.time >= duration) {
+      resolve(menuScene.clocks());
+      // Into the ride, the menu waits to close; out of it, the backdrop is the menu's again.
+      if (out) { endFlight(); drawBackground(); }
+      return;
+    }
     flight.time = Math.min(duration, flight.time + dt);
     const t = flight.time / duration;
     const eased = t < 0.5 ? 4 * t ** 3 : 1 - (-2 * t + 2) ** 3 / 2;
@@ -1016,8 +1087,8 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     else history.pushState(historyTag('menu'), '');
   }
   window.addEventListener('popstate', () => {
-    // A flight lands in the ride whatever happens on the way.
-    if (flight) return;
+    // A flight into the ride lands in it whatever happens on the way.
+    if (flight && !flight.out) return;
     // Mid-ride, a phone's back gesture opens the menu, as Escape does.
     if (!isOpen()) { if (session.gameLoopStarted) onBack?.(); return; }
     fromHistory = true;
@@ -1069,19 +1140,27 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     });
   }
 
-  function open() {
+  /**
+   * Opens the menu, over `ride` if it is opened from one: its canvas, view
+   * and clock (see flyOutOf), which the backdrop flies out of.
+   */
+  function open(ride = null) {
     $('menu-screen').hidden = false;
     markMenuOpen();
     // Catches up with a cloud look that arrived while riding.
     if (session.saveGame) session.look = riderLook();
     syncWhatsNew();
+    if (ride && canResume() && !reducedMotion) flyOutOf(ride);
     updateDashboard();
     showView('home');
     animateBackground();
-    requestAnimationFrame(() => selectControl($(canResume() || session.saveGame ? 'menu-continue' : 'menu-first-ride')));
+    requestAnimationFrame(selectFirst);
     refreshCloudSave();
     refreshNotifications();
   }
+
+  /** Selects home's first button: back to the ride, or on with the rider. */
+  const selectFirst = () => selectControl($(canResume() || session.saveGame ? 'menu-continue' : 'menu-first-ride'));
 
   /**
    * Pulls the active online rider's look and progress from the cloud, so a
@@ -1122,11 +1201,8 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     setLookConfirm(false);
     if (panel.open) panel.close();
     $('menu-screen').hidden = true;
-    if (!flight) return;
-    flight = null;
-    delete $('menu-screen').dataset.flying;
-    $('menu-screen').inert = false;
-    $('menu-background').removeAttribute('style');
+    if (flight) endFlight();
+    menuScene.forgetRide();
   }
 
   // Riders from an earlier version get a NEW badge on What's new until they

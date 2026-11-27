@@ -95,6 +95,8 @@ export function startGame({ shared = null } = {}) {
     onStartBonus: index => startSelectedTrail(() => loadBonusTrail(index), false),
     onStartCustom: index => startSelectedTrail(() => loadCustomTrail(index), false),
     onClose: closeMainMenu,
+    // The ride the menu was opened from, for its backdrop.
+    leftRide: () => ({ ride: session.ride, ghost: ghost?.ride ?? null, ghostLook: ghost?.look, effects, look: replay?.look ?? session.look, trails: renderer.trails }),
     // The back gesture mid-ride: the menu, which pauses the ride, as Escape does.
     onBack: () => { sounds.escape(); showMainMenu(); },
     riderOnScreen: () => renderer.riderOnScreen(),
@@ -732,9 +734,9 @@ export function startGame({ shared = null } = {}) {
   function setState(next) {
     session.state = next;
     redraw = true;
-    // Held controls stay held through a restart or a crash; only leaving the
-    // ride (the menu, losing focus) lets go of them, so a key released while
-    // the game wasn't listening can't stay stuck.
+    // Held controls stay held through a restart, a crash and the menu; only
+    // losing focus lets go of them, so a key released while the page wasn't
+    // listening can't stay stuck.
     input.paint();
     if (next !== 'won') { overlay.hide(); fireworks.stop(); }
     $('crash-retry').hidden = next !== 'ragdoll';
@@ -774,14 +776,17 @@ export function startGame({ shared = null } = {}) {
     if (session.trailSource === 'playtest') { exitPlaytest(); return; }
     if (session.state !== 'menu') session.stateBeforeMenu = session.state;
     session.state = 'menu';
-    input.clear();
+    // Keys still held carry on when the ride does, so gas held through the
+    // menu keeps the bike going; the on-screen controls hide with the ride.
+    input.clearTouches();
     haptics.stop();
     overlay.hide();
     fireworks.stop();
     $('crash-retry').hidden = true;
     holdWakeLock(false);
     setMenuOpen(true);
-    menu.open();
+    // Over a ride, the backdrop flies out of it behind the menu.
+    menu.open(session.ride ? { canvas: $('canvas'), view: renderer.lastView(), clock: renderer.clock } : null);
     offerUpdate();
     // A good moment to send runs that couldn't be posted when they were ridden.
     flushPendingRuns(tokenFor).then(sent => { if (sent) overlay.toast(sent === 1 ? 'Posted a waiting run to the world board' : `Posted ${sent} waiting runs to the world board`, 4000); });
@@ -797,8 +802,17 @@ export function startGame({ shared = null } = {}) {
     if (open) delete game.dataset.arrived;
   }
 
+  // While the menu flies into a ride, which nothing may interrupt.
+  let flying = false;
+
   function closeMainMenu() {
-    if (!menu.canResume()) return;
+    if (!menu.canResume() || flying) return;
+    // The backdrop shows the ride as it was left, so it is flown back into.
+    if (menu.showsTrail(session.trail)) flyIn(returnToRide);
+    else returnToRide();
+  }
+
+  function returnToRide() {
     menu.close();
     setMenuOpen(false);
     focusGame();
@@ -811,19 +825,26 @@ export function startGame({ shared = null } = {}) {
     } else setState(previous === 'paused' ? 'paused' : 'running');
   }
 
-  // While the menu flies into a ride, which nothing may interrupt.
-  let flying = false;
-
   function startSelectedTrail(load, requiresSave = true) {
     if (requiresSave && !session.saveGame) return;
     endReplay();
     menu.markRideStarted();
     openingTrail = true;
     load();
-    if (!menu.showsTrail(session.trail)) { enterRide(); return; }
-    // The trail the menu's backdrop shows is flown into: the ride's first
-    // frame is drawn now, behind the menu, which sets the camera's opening
-    // view to land on and readies the trail.
+    // The trail the menu's backdrop shows is flown into.
+    if (menu.showsTrail(session.trail)) flyIn(enterRide);
+    else enterRide();
+  }
+
+  /**
+   * Flies from the menu's backdrop, which shows the trail, into the ride,
+   * then `land`s in it. The ride is drawn first, behind the menu, which sets
+   * the camera's view to land on and readies the trail.
+   */
+  function flyIn(land) {
+    // The menu, which goes inert, gives the focus back first: focus lost from
+    // the game would let go of keys still held.
+    focusGame();
     flying = true;
     drawRide(0);
     menu.flyInto($('canvas'), renderer.lastView()).then(clocks => {
@@ -834,7 +855,7 @@ export function startGame({ shared = null } = {}) {
       effects.carryWeather(clocks.weather);
       drawRide(0);
       game.dataset.arrived = '';
-      enterRide();
+      land();
     });
   }
 
@@ -1324,7 +1345,9 @@ export function startGame({ shared = null } = {}) {
 
   game.addEventListener('keydown', event => {
     if (input.capturing) { input.keyDown(event); return; }
-    if (flying) { event.preventDefault(); return; }
+    // Held controls pressed in the menu, or on the way back to the ride, are
+    // held when it carries on.
+    if (flying) { event.preventDefault(); input.holdKey(event); return; }
     if (event.code === 'Escape') {
       event.preventDefault();
       // With the keyboard lock held, Esc can repeat; one press must be one action.
@@ -1335,7 +1358,7 @@ export function startGame({ shared = null } = {}) {
       else showMainMenu();
       return;
     }
-    if (menu.isOpen()) return;
+    if (menu.isOpen()) { input.holdKey(event); return; }
     input.keyDown(event);
   });
   // Auto-pause fires when focus leaves the game, so resuming must not need it.
