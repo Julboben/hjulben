@@ -179,8 +179,11 @@ self.addEventListener('install', event => {
       if (!response.ok) throw new Error('catalog.json ' + response.status);
       await cache.put('./trails/catalog.json', response.clone());
       const catalog = await response.json();
+      // Thumbnails too, so the Trails screen shows them all offline.
       await Promise.allSettled(
-        catalog.trails.map(entry => cache.add(fresh('./trails/' + entry.file))),
+        catalog.trails.flatMap(entry => [entry.file, entry.thumbnail])
+          .filter(Boolean)
+          .map(file => cache.add(fresh('./trails/' + file))),
       );
       // Custom trails only exist on the dev server, where everything is
       // network-first anyway (see LOCAL), so they are not kept.
