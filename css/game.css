@@ -2172,15 +2172,15 @@ h2 {
         max-width: 720px;
         height: 100cqh;
         box-sizing: border-box;
+        margin: 0;
+        padding-top: 52px;
+        display: flex;
+        flex-direction: column;
         /* A screen opening slides in beside the column. */
         animation: menu-view-in 0.2s ease-out;
         @media (prefers-reduced-motion: reduce) {
             animation: none;
         }
-        margin: 0;
-        padding-top: 52px;
-        display: flex;
-        flex-direction: column;
         & > .menu-view-head {
             flex: none;
             margin-bottom: 16px;

@@ -32,10 +32,9 @@ import { finishHeight } from "./trail-schema.js";
 import { submergedFraction, waterBodies, waterColumns } from "./water.js";
 import { WEATHER_COLUMN, weatherGroundAt } from "./weather-fall.js";
 import { createTerrainRenderer } from "./terrain-render.js";
-import { riderCollisionPoints } from "./ride.js";
+import { rideFocus, riderCollisionPoints } from "./ride.js";
 import { probeClearance } from "./debug-hud.js";
 import { vehicleMetrics } from "./vehicle-physics.js";
-import { ragdollCenter } from "./ragdoll.js";
 import { appleShine } from "./apple.js";
 import { spikeAngle } from "./spike.js";
 import {
@@ -2095,13 +2094,6 @@ export function createRenderer(canvas, { still = false } = {}) {
     }
   }
 
-  /** Where the camera should look: the bike, or the tumbling rider after a crash. */
-  function focusOf(ride) {
-    return ride.ragdoll
-      ? ragdollCenter(ride.ragdoll)
-      : vehicleMetrics(ride.vehicle).center;
-  }
-
   /**
    * @param {{
    *   ride: any, ghost: any, camera: any, effects: any, state: string,
@@ -2146,7 +2138,7 @@ export function createRenderer(canvas, { still = false } = {}) {
       stepFoot(ride, ride.status === "won" ? 0 : animationDt, kick);
       if (ghost) stepFoot(ghost, ghostDt);
     }
-    const focus = focusOf(ride);
+    const focus = rideFocus(ride);
     // The ride is already interpolated for this frame, and nothing here feeds
     // back into the simulation, so replays are unaffected.
     if (!ride.ragdoll) crashStart = null;

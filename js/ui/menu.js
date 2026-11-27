@@ -133,26 +133,32 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
 
   const isOpen = () => !$('menu-screen').hidden;
 
-  // The open screen, by name, and the element of each. Home's buttons stay on
+  // The screens, by name: the element of each, and the home button that
+  // opens it, marked in the column while it is open. Home's buttons stay on
   // screen beside the others in the column layout, so the stylesheet shows
   // and hides them by the menu's data-view rather than the hidden attribute.
   const VIEWS = {
-    home: 'menu-home', riders: 'menu-riders-view', trails: 'menu-trail-view', leaderboard: 'menu-leaderboard-view',
-    save: 'menu-save-view', look: 'menu-look-view', how: 'menu-how-view', settings: 'menu-settings-view',
-    changelog: 'menu-changelog-view', credits: 'menu-credits-view', achievements: 'menu-achievements-view'
+    home: { element: 'menu-home' },
+    riders: { element: 'menu-riders-view', button: 'menu-riders' },
+    trails: { element: 'menu-trail-view', button: 'menu-trails' },
+    leaderboard: { element: 'menu-leaderboard-view', button: 'menu-leaderboard' },
+    save: { element: 'menu-save-view' },
+    look: { element: 'menu-look-view', button: 'menu-garage' },
+    how: { element: 'menu-how-view', button: 'menu-how-to' },
+    settings: { element: 'menu-settings-view', button: 'menu-settings' },
+    changelog: { element: 'menu-changelog-view' },
+    credits: { element: 'menu-credits-view' },
+    achievements: { element: 'menu-achievements-view', button: 'menu-achievements' }
   };
   let currentView = 'home';
   const onHome = () => currentView === 'home';
+  const viewElement = view => $(VIEWS[view].element);
 
-  /** The home button that opens `view`, marked in the column while it is open. */
+  /** The home button that opens `view`, or led to it: Credits from Settings, a new rider from Riders. */
   function viewButton(view) {
     if (view === 'credits') return creditsFrom === 'settings' ? $('menu-settings') : null;
     if (view === 'save') return creatorFromRiders ? $('menu-riders') : null;
-    const id = {
-      trails: 'menu-trails', leaderboard: 'menu-leaderboard', look: 'menu-garage', achievements: 'menu-achievements',
-      riders: 'menu-riders', settings: 'menu-settings', how: 'menu-how-to'
-    }[view];
-    return id ? $(id) : null;
+    return VIEWS[view].button ? $(VIEWS[view].button) : null;
   }
 
   /** Whether the stylesheet lays the menu out as a column beside the open screen (see .menu-screen in css/game.css). */
@@ -790,12 +796,11 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     return art;
   };
 
-  // Behind the menu, the rider waits at the start of the ride paused under
-  // it, or else of the career's next trail, while the camera glides along it
-  // (see menu-scene.js).
+  // Behind the menu, the ride it was opened from, as it was left, or else the
+  // rider waiting at the start of the career's next trail while the camera
+  // glides along it (see menu-scene.js).
   const menuScene = createMenuScene(/** @type {HTMLCanvasElement} */ ($('menu-background')));
 
-  /** Draws the backdrop `dt` seconds on from the last frame. */
   /** Shows the backdrop's scene: over a ride that can be resumed, the ride as it was left; else the rider's next trail. */
   function showBackdrop() {
     const left = canResume() ? leftRide() : null;
@@ -813,6 +818,7 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     return column ? (column.right - bounds.left + bounds.width) / 2 / bounds.width : 0.5;
   }
 
+  /** Draws the backdrop `dt` seconds on from the last frame, or the flight it is part of. */
   function drawBackground(dt = 0) {
     if (flight) { fly(dt); return; }
     showBackdrop();
@@ -847,18 +853,18 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
   // The camera flies between the backdrop and the ride's own view: into the
   // ride when the trail the backdrop shows is started or gone back to, with
   // the menu fading off it, and out of a ride behind the menu as it opens
-  // over it, which can be used at once. The renderer only draws whole device pixels per
-  // art pixel, so the backdrop is drawn at its own and its canvas stretched
-  // to the zoom between. It draws just the world its part of the screen
-  // shows, which narrows from the whole menu to the ride's canvas or widens
-  // back, as the sky, sun and stars are placed by the view's size.
+  // over it, which can be used at once. The renderer only draws whole device
+  // pixels per art pixel, so the backdrop is drawn at its own and its canvas
+  // stretched to the zoom between. It draws just the world its part of the
+  // screen shows, which narrows from the whole menu to the ride's canvas or
+  // widens back, as the sky, sun and stars are placed by the view's size.
   let flight = null;
   // The seconds a flight takes: longer the farther the backdrop's camera has
   // glided from the rider, up to the most.
   const FLIGHT = { least: 0.7, most: 1.4, perWorldUnit: 1 / 3000 };
 
   /** Whether the backdrop shows `trail`, so starting it can fly into the ride. */
-  const showsTrail = trail => isOpen() && !reducedMotion && Boolean(backgroundFrame) && menuScene.trail === trail;
+  const showsTrail = trail => isOpen() && !reducedMotion && menuScene.trail === trail;
 
   /**
    * Where a canvas drawn with `view` (see the renderer's lastView) is on
@@ -891,18 +897,18 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
   }
 
   /**
-   * Flies from the backdrop into `view`, the ride as drawn on `canvas`,
-   * which the menu covers; resolves with the backdrop's clocks when the ride
-   * can take over, and the menu closes.
+   * Flies from the backdrop into `view`, the ride as drawn on `canvas`
+   * (see the game's rideView), which the menu covers; resolves with the
+   * backdrop's clocks when the ride can take over, and the menu closes.
    */
-  function flyInto(canvas, view) {
+  function flyInto({ canvas, view }) {
     const ride = placement(canvas, view);
     return startFlight(placement($('menu-background'), menuScene.lastView()), ride, ride, false);
   }
 
   /**
-   * Flies out of a ride, `view` as drawn on `canvas` at `clock` (the
-   * renderer's), to the backdrop resting on it, behind the menu as it opens.
+   * Flies out of a ride, `view` as drawn on `canvas` at `clock` (see the
+   * game's rideView), to the backdrop resting on it, behind the menu as it opens.
    */
   function flyOutOf({ canvas, view, clock }) {
     showBackdrop();
@@ -999,7 +1005,7 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
   function controls() {
     if (isLookConfirmOpen()) return [...$('look-confirm').querySelectorAll('button')];
     if (panel.open) return [...panel.querySelectorAll('button')];
-    const list = pickable($(VIEWS[currentView]));
+    const list = pickable(viewElement(currentView));
     // The bell sits above the home view's buttons, so up from the first reaches it.
     return $('notification-bell').hidden ? list : [$('notification-bell'), ...list];
   }
@@ -1116,7 +1122,7 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     const closing = currentView;
     currentView = view;
     $('menu-screen').dataset.view = view;
-    for (const [name, id] of Object.entries(VIEWS)) if (name !== 'home') $(id).hidden = name !== view;
+    for (const name of Object.keys(VIEWS)) if (name !== 'home') viewElement(name).hidden = name !== view;
     if (view !== 'credits') stopCredits();
     document.querySelectorAll('#menu-home [aria-current]').forEach(button => button.removeAttribute('aria-current'));
     viewButton(view)?.setAttribute('aria-current', 'page');
@@ -1127,12 +1133,12 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     syncBell();
     // Previews waiting for this screen paint now, or once it has slid in
     // beside the column, so the first, slow ones never catch the slide.
-    const opened = $(VIEWS[view]);
+    const opened = viewElement(view);
     if (getComputedStyle(opened).animationName === 'none') paintShownPreviews();
     else opened.addEventListener('animationend', paintShownPreviews, { once: true });
     // Each screen opens at its top, whichever of the two scrolls it.
     $('menu-scroll').scrollTop = 0;
-    const body = $(VIEWS[view]).querySelector('.menu-view-body');
+    const body = opened.querySelector('.menu-view-body');
     if (body) body.scrollTop = 0;
     requestAnimationFrame(() => {
       // Back home, the button of the screen just closed stays picked, so the
@@ -2245,7 +2251,7 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
   }
 
   /** What scrolls the open screen: its body beside the column, the whole menu otherwise. */
-  const scroller = () => (columnLayout() && $(VIEWS[currentView]).querySelector('.menu-view-body')) || $('menu-scroll');
+  const scroller = () => (columnLayout() && viewElement(currentView).querySelector('.menu-view-body')) || $('menu-scroll');
 
   /** Whether left and right step the leaderboard's trail: on its screen, unless the selection is in the column. */
   const stepsLeaderboard = () => !$('menu-leaderboard-view').hidden && !isTrailPickerOpen() && !inColumn(selectedControl());

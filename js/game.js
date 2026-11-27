@@ -78,7 +78,7 @@ export function startGame({ shared = null } = {}) {
       ignition: kick === null ? 'on' : kick < KICK_CATCHES ? 'off' : 'kicked',
       brakePressure: ride?.brakePressure ?? 0, weather: session.trail?.weather, trail: session.trail,
       // A replay sounds like the bike it was ridden on.
-      bike: ride ? lookParts(replay?.look ?? session.look).bike : undefined,
+      bike: ride ? lookParts(shownLook()).bike : undefined,
     };
   });
   const input = createInput({
@@ -96,7 +96,7 @@ export function startGame({ shared = null } = {}) {
     onStartCustom: index => startSelectedTrail(() => loadCustomTrail(index), false),
     onClose: closeMainMenu,
     // The ride the menu was opened from, for its backdrop.
-    leftRide: () => ({ ride: session.ride, ghost: ghost?.ride ?? null, ghostLook: ghost?.look, effects, look: replay?.look ?? session.look, trails: renderer.trails }),
+    leftRide: () => ({ ...rideScene(), trails: renderer.trails }),
     // The back gesture mid-ride: the menu, which pauses the ride, as Escape does.
     onBack: () => { sounds.escape(); showMainMenu(); },
     riderOnScreen: () => renderer.riderOnScreen(),
@@ -201,6 +201,12 @@ export function startGame({ shared = null } = {}) {
    * @type {{ source: string, index: number, data: any, inputs: any[], step: number, look: any, name: string } | null}
    */
   let replay = null;
+  /** The look of whoever is riding: a replay's rider, or the player. */
+  const shownLook = () => replay?.look ?? session.look;
+  /** The ride as the renderer draws it: the rider, the ghost and their looks, and the effects around them. */
+  const rideScene = () => ({ ride: session.ride, ghost: ghost?.ride ?? null, look: shownLook(), ghostLook: ghost?.look, effects });
+  /** Where the ride is drawn, for the menu to fly from or to: the game's canvas, its last view and the scene's clock. */
+  const rideView = () => ({ canvas: $('canvas'), view: renderer.lastView(), clock: renderer.clock });
   /** The last finished run, for Watch Replay on the results. */
   let lastRun = null;
   /** The world rider just ahead of the last finished run, for Race on the results. @type {{ key: string, name: string, time: number } | null} */
@@ -586,7 +592,7 @@ export function startGame({ shared = null } = {}) {
     feats.reset();
     session.trail = trail;
     const seed = replay ? replay.data.seed : (Math.random() * 2 ** 31) >>> 0;
-    const ride = createRide(trail, { seed, helmet: lookParts(replay?.look ?? session.look).helmet });
+    const ride = createRide(trail, { seed, helmet: lookParts(shownLook()).helmet });
     // Once found, the nisse is gone from the trail for this rider, on every
     // ride after. Replays still show the run as it was ridden.
     if (!replay && nisseFound()) ride.nisse = null;
@@ -786,7 +792,7 @@ export function startGame({ shared = null } = {}) {
     holdWakeLock(false);
     setMenuOpen(true);
     // Over a ride, the backdrop flies out of it behind the menu.
-    menu.open(session.ride ? { canvas: $('canvas'), view: renderer.lastView(), clock: renderer.clock } : null);
+    menu.open(session.ride ? rideView() : null);
     offerUpdate();
     // A good moment to send runs that couldn't be posted when they were ridden.
     flushPendingRuns(tokenFor).then(sent => { if (sent) overlay.toast(sent === 1 ? 'Posted a waiting run to the world board' : `Posted ${sent} waiting runs to the world board`, 4000); });
@@ -847,7 +853,7 @@ export function startGame({ shared = null } = {}) {
     focusGame();
     flying = true;
     drawRide(0);
-    menu.flyInto($('canvas'), renderer.lastView()).then(clocks => {
+    menu.flyInto(rideView()).then(clocks => {
       flying = false;
       // The ride's clouds, animals and rain carry on from the backdrop's, and
       // it is drawn again with them, so nothing jumps as the menu goes.
@@ -1167,7 +1173,7 @@ export function startGame({ shared = null } = {}) {
         break;
       }
       case 'helmet':
-        effects.burst(event.x, event.y, riderPalette(replay?.look ?? session.look).helmet, 8);
+        effects.burst(event.x, event.y, riderPalette(shownLook()).helmet, 8);
         sounds.helmet(event.speed);
         haptics.play('jolt', { phonePattern: 25 });
         overlay.announce('The helmet came off.');
@@ -1268,13 +1274,12 @@ export function startGame({ shared = null } = {}) {
 
   /** Draws the ride `dt` seconds on, the ride and the ghost each `alpha` of the way to their next step. */
   function drawRide(dt, alpha = 1, ghostAlpha = 1) {
-    const ride = session.ride;
-    const restore = interpolateRide(ride, alpha);
-    const ghostRide = ghost?.ride;
+    const scene = rideScene();
+    const restore = interpolateRide(scene.ride, alpha);
     // A finished ghost is no longer stepped: hold it where it stopped.
-    const restoreGhost = ghostRide ? interpolateRide(ghostRide, ghostRide.status === 'won' ? 1 : ghostAlpha) : null;
+    const restoreGhost = scene.ghost ? interpolateRide(scene.ghost, scene.ghost.status === 'won' ? 1 : ghostAlpha) : null;
     renderer.draw({
-      ride, ghost: ghostRide, camera, effects, look: replay?.look ?? session.look, ghostLook: ghost?.look, state: session.state,
+      ...scene, camera, state: session.state,
       full: session.preferences.scenery === 'full', dt, debug: debugEnabled, fireworks,
       kick: kick === null ? null : kick / KICK_SECONDS
     });

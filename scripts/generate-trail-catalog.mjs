@@ -85,10 +85,10 @@ const json = value => `${JSON.stringify(value, null, 2)}\n`;
 
 /**
  * Whether each official and bonus trail's thumbnail is fresh: drawn from the
- * trail's file and the drawing code as they are now, and still there.
+ * trail's file as it is now and the drawing code whose hash is `code`, and
+ * still there.
  */
-function freshness(drawn) {
-  const code = drawingHash();
+function freshness(drawn, code) {
   return entry => {
     const image = drawn.trails[entry.id];
     return drawn.code === code && image?.from === trailFileHash(entry.file) && existsSync(path.join(trailsRoot, image.file));
@@ -104,20 +104,21 @@ function freshness(drawn) {
  */
 export async function generateTrailCatalog({ draw = false } = {}) {
   const { catalog, customCatalog, warnings, trails } = await readCatalogs();
+  const code = drawingHash();
   let drawn = readDrawn();
-  let fresh = freshness(drawn);
+  let fresh = freshness(drawn, code);
   const stale = catalog.trails.filter(entry => !fresh(entry));
   if (draw && stale.length) {
     const files = await drawThumbnails(stale.map(entry => ({ id: entry.id, trail: trails.get(entry.file) })));
     if (files) {
       drawn = {
-        code: drawingHash(),
+        code,
         trails: Object.fromEntries(catalog.trails.map(entry => [
           entry.id, files.has(entry.id) ? { file: files.get(entry.id), from: trailFileHash(entry.file) } : drawn.trails[entry.id],
         ])),
       };
       writeDrawn(drawn);
-      fresh = freshness(drawn);
+      fresh = freshness(drawn, code);
       console.log(`Drew ${stale.length} thumbnail${stale.length === 1 ? '' : 's'}.`);
     } else warnings.push('Could not draw the thumbnails: they need Chrome (set CHROME_PATH). The game draws those trails itself until then.');
   }
@@ -147,8 +148,9 @@ export async function generateTrailCatalog({ draw = false } = {}) {
 /** Fails if catalog.json isn't what the trail files make, or a thumbnail is out of date. */
 async function checkTrailCatalog() {
   const { catalog } = await readCatalogs();
+  const code = drawingHash();
   const drawn = readDrawn();
-  const fresh = freshness(drawn);
+  const fresh = freshness(drawn, code);
   const stale = catalog.trails.filter(entry => !fresh(entry));
   for (const entry of catalog.trails) if (fresh(entry)) entry.thumbnail = drawn.trails[entry.id].file;
   const committed = await readFile(path.join(trailsRoot, 'catalog.json'), 'utf8').catch(() => '');
@@ -156,7 +158,7 @@ async function checkTrailCatalog() {
     console.log(`trails/catalog.json: up to date, ${catalog.trails.length} trails, each with its thumbnail.`);
     return;
   }
-  if (drawn.code !== drawingHash()) console.error('The code that draws trails has changed since their thumbnails were drawn.');
+  if (drawn.code !== code) console.error('The code that draws trails has changed since their thumbnails were drawn.');
   else if (stale.length) console.error(`The thumbnails of ${stale.map(entry => entry.name).join(', ')} are out of date with their trails.`);
   else console.error('trails/catalog.json is out of date with the trail files.');
   console.error('Run `npm run trails` and commit the result.');

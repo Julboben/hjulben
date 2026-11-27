@@ -14,8 +14,7 @@ import { createEffects } from '../effects.js';
 import { posedRide } from '../scene-preview.js';
 import { surfaceProfile } from '../trail-preview.js';
 import { sameLook } from '../cosmetics.js';
-import { ragdollCenter } from '../ragdoll.js';
-import { vehicleMetrics } from '../vehicle-physics.js';
+import { rideFocus } from '../ride.js';
 
 // Device pixels per art pixel on a screen of one device pixel per CSS
 // pixel: half the ride's, so twice the trail is in view.
@@ -61,6 +60,30 @@ export function createMenuScene(canvas) {
     }).sort((a, b) => a.x - b.x);
   }
 
+  /**
+   * The view's top left, `width` × `height` world units, resting on the
+   * rider of a ride left for the menu, `focus` of the way across.
+   */
+  const restOn = (held, width, height, focus) => ({ x: held.x - width * focus, y: held.y - height * GROUND_LINE });
+
+  /** Where the glide has the camera, by x: resting on the rider, gliding or resting near the finish. */
+  function glideX() {
+    const { trail, riderX } = scene;
+    const direction = Math.sign(trail.finish.x - trail.start.x) || 1;
+    const turn = trail.finish.x - direction * renderer.width * TURN_BEFORE_FINISH;
+    // Short trails, whose turn comes before the rider, keep still on the rider.
+    const span = (turn - riderX) * direction > 0 ? turn - riderX : 0;
+    if (!span) return riderX;
+    // Rest, glide out, rest, glide back.
+    const glide = glideTime(Math.abs(span));
+    const t = time % (2 * (REST + glide));
+    const out = t - REST, back = t - 2 * REST - glide;
+    if (out >= 0 && out < glide) return riderX + Math.sign(span) * glided(out, Math.abs(span));
+    if (out >= glide && back < 0) return riderX + span;
+    if (back >= 0) return riderX + span - Math.sign(span) * glided(back, Math.abs(span));
+    return riderX;
+  }
+
   /** The smoothed ground's height at `x`, between the samples either side. */
   function groundAt(x) {
     const { ground, ride } = scene;
@@ -84,9 +107,10 @@ export function createMenuScene(canvas) {
       const ride = left?.ride ?? posedRide(trail);
       scene = {
         trail, ride, look, headlights, left, effects: left?.effects ?? effects,
-        ground: smoothedGround(trail), riderX: (ride.rear.x + ride.front.x) / 2,
-        // The point the camera rests on over a ride left for the menu, as the ride's own follows.
-        held: left && (ride.ragdoll ? ragdollCenter(ride.ragdoll) : vehicleMetrics(ride.vehicle).center),
+        // The camera rests on a ride left for the menu, at the point the
+        // ride's own camera follows, and glides along the ground otherwise.
+        held: left ? rideFocus(ride) : null,
+        ground: left ? null : smoothedGround(trail), riderX: (ride.rear.x + ride.front.x) / 2,
       };
       renderer.reset(trail, ride.facing);
       renderer.setHeadlights(headlights);
@@ -130,7 +154,7 @@ export function createMenuScene(canvas) {
      */
     restingView(viewWidth, viewHeight, focus) {
       const width = Math.ceil(viewWidth / ART_PIXEL) * ART_PIXEL, height = Math.ceil(viewHeight / ART_PIXEL) * ART_PIXEL;
-      return { x: scene.held.x - width * focus, y: scene.held.y - height * GROUND_LINE, width, height };
+      return { ...restOn(scene.held, width, height, focus), width, height };
     },
 
     /**
@@ -156,23 +180,13 @@ export function createMenuScene(canvas) {
       time += dt * pace;
       for (weatherTime += dt; weatherTime >= STEP; weatherTime -= STEP) scene.effects.stepWeather();
       scene.effects.update(dt);
-      const { trail, ride, riderX, held, left } = scene;
-      const direction = Math.sign(trail.finish.x - trail.start.x) || 1;
-      const turn = trail.finish.x - direction * renderer.width * TURN_BEFORE_FINISH;
-      // Short trails, whose turn comes before the rider, keep still on the rider.
-      const span = (turn - riderX) * direction > 0 ? turn - riderX : 0;
-      let x = held ? held.x : riderX;
-      if (span && !held) {
-        // Rest, glide out, rest, glide back.
-        const glide = glideTime(Math.abs(span));
-        const t = time % (2 * (REST + glide));
-        const out = t - REST, back = t - 2 * REST - glide;
-        if (out >= 0 && out < glide) x += Math.sign(span) * glided(out, Math.abs(span));
-        else if (out >= glide && back < 0) x += span;
-        else if (back >= 0) x += span - Math.sign(span) * glided(back, Math.abs(span));
+      const { ride, held, left } = scene;
+      if (at) Object.assign(view, at);
+      else if (held) Object.assign(view, restOn(held, renderer.width, renderer.height, focus));
+      else {
+        const x = glideX();
+        Object.assign(view, { x: x - renderer.width * focus, y: groundAt(x) - renderer.height * GROUND_LINE });
       }
-      view.x = at ? at.x : x - renderer.width * focus;
-      view.y = at ? at.y : (held ? held.y : groundAt(x)) - renderer.height * GROUND_LINE;
       renderer.draw({
         ride, ghost: left?.ghost ?? null, ghostLook: left?.ghostLook, camera, effects: scene.effects, look: scene.look,
         state: 'ready', full, dt, debug: false, held: Boolean(left)

@@ -109,9 +109,7 @@ export function createInput({ element, buttons, indicators = [], isActive, onPre
   function clear() {
     keys.clear();
     shownKeys.clear();
-    pointers.clear();
-    touching.clear();
-    paint();
+    clearTouches();
   }
 
   /**

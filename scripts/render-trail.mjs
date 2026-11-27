@@ -40,10 +40,8 @@
 import { existsSync, mkdirSync, readFileSync, readdirSync, unlinkSync, writeFileSync } from 'node:fs';
 import { STEP } from '../js/config.js';
 import { createCamera } from '../js/camera.js';
-import { bikeSpeed, createRide, stepRide } from '../js/ride.js';
-import { ragdollCenter } from '../js/ragdoll.js';
+import { bikeSpeed, createRide, rideFocus, stepRide } from '../js/ride.js';
 import { fallLine } from '../js/terrain.js';
-import { vehicleMetrics } from '../js/vehicle-physics.js';
 import { decodeInputs } from '../js/replay-codec.js';
 import { normalizeTrail } from '../js/trail-schema.js';
 import { surfaceProfile } from '../js/trail-preview.js';
@@ -110,7 +108,7 @@ function loadRun() {
     if (index % 3 === 0 || ride.status !== 'running') {
       points.push({ ...mid(), speed: Math.abs(bikeSpeed(ride)), air: !ride.rear.grounded && !ride.front.grounded });
     }
-    const focus = ride.ragdoll ? ragdollCenter(ride.ragdoll) : vehicleMetrics(ride.vehicle).center;
+    const focus = rideFocus(ride);
     camera.follow(focus, { facing: ride.facing, loose: Boolean(ride.ragdoll), ...CAMERA_VIEW, dt: STEP, fallY });
     const view = { x: Math.round(camera.x), y: Math.round(camera.y), ...CAMERA_VIEW };
     if (index % 12 === 0) seen.push(view);
