@@ -1739,6 +1739,9 @@ h2 {
 .settings-reset {
     justify-self: start;
     margin-top: 6px;
+    .menu-view-head > & {
+        margin: 0;
+    }
 }
 
 .setting-label {
@@ -2665,6 +2668,11 @@ h2 {
     & > div {
         min-width: 0;
     }
+    /* Buttons beside Back (see placeHeadButtons in js/ui/menu.js) line up
+       with it on the right. */
+    & > :first-child {
+        margin-right: auto;
+    }
     & h3 {
         --px: 3px;
         margin: 0;
@@ -3338,14 +3346,11 @@ h2 {
         background: var(--color-shell);
     }
 }
-/* Wide screens put them in the head, beside the ✕ (see placeLookActions in
+/* Wide screens put them in the head, beside the ✕ (see placeHeadButtons in
    js/ui/menu.js). */
-.menu-view-head > .look-actions {
-    margin-left: auto;
-    & .primary {
-        flex: none;
-        width: auto;
-    }
+.menu-view-head > .look-actions .primary {
+    flex: none;
+    width: auto;
 }
 .look-history,
 .look-random {

@@ -426,24 +426,29 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
   });
   garage.actions.append($('save-look'));
 
-  // A customizer's buttons (Random, Undo, Redo and its Save): wide screens
-  // put them in its screen's head, beside the ✕, in reach however far the
-  // looks scroll; narrower ones keep them under the looks, which phones pin
-  // to the bottom (see .look-actions). By customizer: its buttons, the
-  // customizer and its screen.
-  const LOOK_ACTIONS = [[garage.actions, 'garage-look', 'menu-look-view'], [creator.actions, 'new-save-look', 'menu-save-view']];
-  function placeLookActions() {
+  // Buttons for the whole of a screen, which wide screens put in its head,
+  // beside the ✕, in reach however far it scrolls: a customizer's (Random,
+  // Undo, Redo and its Save) and Settings' Reset and Credits. Narrower
+  // windows keep them where the page has them, which for a customizer's is
+  // under the looks, and phones pin those to the bottom (see .look-actions).
+  // By button: its screen, and where it goes back to.
+  const HEAD_BUTTONS = [
+    [garage.actions, 'menu-look-view'], [creator.actions, 'menu-save-view'],
+    [$('reset-settings'), 'menu-settings-view'], [$('show-credits'), 'menu-settings-view'],
+  ].map(([button, view]) => ({ button, view, parent: button.parentElement, before: button.nextSibling }));
+  function placeHeadButtons() {
     const column = columnLayout();
-    for (const [actions, customizer, view] of LOOK_ACTIONS) {
+    for (const { button, view, parent, before } of HEAD_BUTTONS) {
       const head = $(view).querySelector('.menu-view-head');
-      const place = column ? head : $(customizer);
-      if (actions.parentElement === place) continue;
-      if (column) head.insertBefore(actions, head.querySelector('[data-menu-back]'));
-      else place.append(actions);
+      if (column === (button.parentElement === head)) continue;
+      if (column) head.insertBefore(button, head.querySelector('[data-menu-back]'));
+      else parent.insertBefore(button, before);
     }
+    // Credits was all the About section had.
+    $('settings-about').hidden = column;
   }
-  placeLookActions();
-  window.addEventListener('resize', placeLookActions);
+  placeHeadButtons();
+  window.addEventListener('resize', placeHeadButtons);
 
   function showSaveStep(step) {
     $('new-save-identity-step').hidden = step !== 1;
@@ -1031,7 +1036,7 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     const opener = viewButton(currentView);
     const target = toColumn
       ? (opener && !opener.hidden ? opener : pickable($('menu-home'))[0])
-      : controls().find(control => !control.matches('[data-menu-back]')) ?? controls()[0];
+      : controls().find(control => !control.closest('.menu-view-head')) ?? controls()[0];
     if (!target) return false;
     selectControl(target);
     sounds.menuMove();
@@ -1135,8 +1140,9 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
       const opener = view === 'home' ? viewButton(closing) : null;
       if (opener && !opener.hidden) { selectControl(opener); return; }
       const list = controls();
-      // The login shortcut is for returning riders, so a new rider starts on the form.
-      selectControl(list.find(button => !button.matches('[data-menu-back], #save-login-button, #notification-bell')) || list[0]);
+      // A screen starts on what it shows, past the buttons in its head. The
+      // login shortcut is for returning riders, so a new rider starts on the form.
+      selectControl(list.find(button => !button.closest('.menu-view-head') && !button.matches('#save-login-button, #notification-bell')) || list[0]);
     });
   }
 

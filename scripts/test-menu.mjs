@@ -200,19 +200,28 @@ const resumed = await page(`
 check('Resume ride flies back into the ride, past an Escape', resumed.flying && resumed.landed && resumed.riding, JSON.stringify(resumed));
 check('gas pressed in the menu is held in the ride', resumed.throttle > 0.5, JSON.stringify(resumed));
 
-// --- The Garage's buttons: in its head on a wide screen, along the bottom on a phone
-const garagePlace = `
+// --- Buttons for a whole screen: in its head on a wide screen, where the page
+// has them on a phone. A screen starts on what it shows, not on them.
+const placed = `
+  const inHead = id => Boolean(document.getElementById(id).closest('.menu-view-head'));
+  const startsInHead = () => Boolean(document.querySelector('.menu-selected')?.closest('.menu-view-head'));
+  t.click('menu-garage'); await t.frames(3);
+  const garage = { view: t.view(), inHead: inHead('save-look'), pinned: getComputedStyle(document.querySelector('#save-look').closest('.look-actions')).position === 'fixed', startsInHead: startsInHead() };
   t.click('menu-garage'); await t.frames(2);
-  const save = document.getElementById('save-look');
-  return { view: t.view(), inHead: Boolean(save.closest('.menu-view-head')), pinned: getComputedStyle(save.closest('.look-actions')).position === 'fixed' };`;
+  t.click('menu-settings'); await t.frames(3);
+  const settings = { view: t.view(), reset: inHead('reset-settings'), credits: inHead('show-credits'), about: !document.getElementById('settings-about').hidden, startsInHead: startsInHead() };
+  return { garage, settings };`;
 await load(1280, 800, 2);
 await evaluate(PAGE_HELPERS);
-const wideGarage = await page(garagePlace);
-check('wide: the Garage\'s buttons sit in its head', wideGarage.view === 'look' && wideGarage.inHead && !wideGarage.pinned, JSON.stringify(wideGarage));
+const wideScreens = await page(placed);
+check('wide: the Garage\'s buttons sit in its head', wideScreens.garage.view === 'look' && wideScreens.garage.inHead && !wideScreens.garage.pinned, JSON.stringify(wideScreens.garage));
+check('wide: and Settings\' Reset and Credits, without the About heading', wideScreens.settings.view === 'settings' && wideScreens.settings.reset && wideScreens.settings.credits && !wideScreens.settings.about, JSON.stringify(wideScreens.settings));
+check('wide: the screens start on what they show, past those buttons', !wideScreens.garage.startsInHead && !wideScreens.settings.startsInHead, JSON.stringify(wideScreens));
 await load(390, 844);
 await evaluate(PAGE_HELPERS);
-const phoneGarage = await page(garagePlace);
-check('phone: and in a bar along the bottom', phoneGarage.view === 'look' && !phoneGarage.inHead && phoneGarage.pinned, JSON.stringify(phoneGarage));
+const phoneScreens = await page(placed);
+check('phone: the Garage\'s buttons make a bar along the bottom', phoneScreens.garage.view === 'look' && !phoneScreens.garage.inHead && phoneScreens.garage.pinned, JSON.stringify(phoneScreens.garage));
+check('phone: and Reset and Credits stay in Settings', !phoneScreens.settings.reset && !phoneScreens.settings.credits && phoneScreens.settings.about, JSON.stringify(phoneScreens.settings));
 
 clearTimeout(timer);
 await chrome.close();
