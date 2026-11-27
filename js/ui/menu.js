@@ -842,7 +842,12 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     let last = performance.now();
     const step = now => {
       backgroundFrame = 0;
-      if (!isOpen() || reducedMotion) return;
+      if (!isOpen()) return;
+      if (reducedMotion) {
+        // Turned on mid-flight, it lands the flight at once rather than leave it hanging.
+        if (flight) { flight.time = flight.duration; fly(0); }
+        return;
+      }
       drawBackground(Math.min(0.05, Math.max(0, now - last) / 1000));
       last = now;
       backgroundFrame = requestAnimationFrame(step);
@@ -2286,10 +2291,11 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
   // Previews scrolled near paint (see drainPreviews); scrolling doesn't
   // bubble, so this listens on the way down for whatever scrolls the screen.
   $('menu-screen').addEventListener('scroll', paintShownPreviews, { capture: true, passive: true });
-  // With home's buttons beside an open screen, the button of that screen
-  // closes it, and another asks first if the Garage holds an unsaved look.
-  // Caught on the way down, before the button's own handler opens its screen.
-  $('menu-home').addEventListener('click', event => {
+  // With the column beside an open screen, the button of that screen closes
+  // it, and another (Changelog included) asks first if the Garage holds an
+  // unsaved look. Caught on the way down, before the button's own handler
+  // opens its screen.
+  document.querySelector('.menu-column').addEventListener('click', event => {
     const button = event.target.closest('button');
     if (!button || onHome()) return;
     if (button === viewButton(currentView)) {

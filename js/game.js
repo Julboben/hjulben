@@ -1372,7 +1372,9 @@ export function startGame({ shared = null } = {}) {
     if (game.contains(/** @type {Node} */ (event.target)) || session.state !== 'paused') return;
     if (session.preferences.bindings.pause.includes(event.code) || event.code === 'Escape') { event.preventDefault(); resumeGame(); }
   });
-  window.addEventListener('keyup', event => input.keyUp(event));
+  // On the way down, so a release that a field keeps to itself (the rider's
+  // name) still lets go of a control held through the menu.
+  window.addEventListener('keyup', event => input.keyUp(event), { capture: true });
   game.addEventListener('focusout', event => {
     if (!game.contains(/** @type {Node} */ (event.relatedTarget))) { input.clear(); pauseGame(); }
   });

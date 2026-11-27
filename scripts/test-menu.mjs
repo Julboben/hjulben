@@ -199,6 +199,34 @@ const resumed = await page(`
   return { flying, landed: screen.hidden, riding: !game.classList.contains('menu-open'), throttle };`);
 check('Resume ride flies back into the ride, past an Escape', resumed.flying && resumed.landed && resumed.riding, JSON.stringify(resumed));
 check('gas pressed in the menu is held in the ride', resumed.throttle > 0.5, JSON.stringify(resumed));
+// Gas let go of in the rider's name field, which keeps its keys to itself, is
+// let go of in the ride too.
+const letGo = await page(`
+  const screen = document.getElementById('menu-screen');
+  const { session } = await import('/js/state.js');
+  t.key('Escape');
+  for (let i = 0; i < 180 && 'flying' in screen.dataset; i++) await t.frames(1);
+  t.key('ArrowUp');
+  document.getElementById('new-save-name').dispatchEvent(new KeyboardEvent('keyup', { code: 'ArrowUp', key: 'ArrowUp', bubbles: true }));
+  t.click('menu-continue');
+  for (let i = 0; i < 180 && !screen.hidden; i++) await t.frames(1);
+  await t.frames(30);
+  return { throttle: session.ride.throttle };`);
+check('gas let go of in the name field is let go of in the ride', letGo.throttle < 0.5, JSON.stringify(letGo));
+// Reduced motion turned on mid-flight lands the flight rather than leave the
+// menu stuck over the ride.
+await page(`
+  const screen = document.getElementById('menu-screen');
+  t.key('Escape');
+  for (let i = 0; i < 180 && 'flying' in screen.dataset; i++) await t.frames(1);
+  t.click('menu-continue'); await t.frames(2);`);
+await chrome.send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'reduce' }] }, session);
+const stilled = await page(`
+  const screen = document.getElementById('menu-screen');
+  for (let i = 0; i < 30 && !screen.hidden; i++) await t.frames(1);
+  return { landed: screen.hidden, usable: !screen.inert, riding: !document.getElementById('game').classList.contains('menu-open') };`);
+await chrome.send('Emulation.setEmulatedMedia', { features: [] }, session);
+check('reduced motion turned on mid-flight lands it', stilled.landed && stilled.usable && stilled.riding, JSON.stringify(stilled));
 
 // --- Buttons for a whole screen: in its head on a wide screen, where the page
 // has them on a phone. A screen starts on what it shows, not on them.
@@ -217,6 +245,16 @@ const wideScreens = await page(placed);
 check('wide: the Garage\'s buttons sit in its head', wideScreens.garage.view === 'look' && wideScreens.garage.inHead && !wideScreens.garage.pinned, JSON.stringify(wideScreens.garage));
 check('wide: and Settings\' Reset and Credits, without the About heading', wideScreens.settings.view === 'settings' && wideScreens.settings.reset && wideScreens.settings.credits && !wideScreens.settings.about, JSON.stringify(wideScreens.settings));
 check('wide: the screens start on what they show, past those buttons', !wideScreens.garage.startsInHead && !wideScreens.settings.startsInHead, JSON.stringify(wideScreens));
+// Changelog, in the column beside the Garage, asks first about an unsaved look.
+const guarded = await page(`
+  t.click('menu-garage'); await t.frames(3);
+  [...document.querySelectorAll('#garage-look .look-option')].find(option => option.getAttribute('aria-checked') === 'false' && !option.classList.contains('locked')).click();
+  await t.frames(2);
+  t.click('menu-whats-new'); await t.frames(2);
+  const asked = document.getElementById('look-confirm').open, view = t.view();
+  document.getElementById('look-confirm-discard').click(); await t.frames(2);
+  return { asked, view };`);
+check('wide: Changelog asks first about an unsaved look', guarded.asked && guarded.view === 'look', JSON.stringify(guarded));
 await load(390, 844);
 await evaluate(PAGE_HELPERS);
 const phoneScreens = await page(placed);
