@@ -6,7 +6,7 @@
 // reload it can't skip (see update-prompt.js): files it loads after that come
 // from the new release, so it can't safely keep running the old one. Trail files and anything
 // else are network-first, and kept so the game also starts offline.
-const CACHE = 'hjulben-5d86e7f4';
+const CACHE = 'hjulben-065bae20';
 const CORE = [
   './',
   './css/editor.css',
@@ -32,6 +32,7 @@ const CORE = [
   './js/cave-props.js',
   './js/changelog.js',
   './js/city-props.js',
+  './js/clouds.js',
   './js/coast-props.js',
   './js/config.js',
   './js/corgi-props.js',

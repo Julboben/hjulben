@@ -392,6 +392,7 @@ import {
   turbineAngle,
 } from "./countryside-props.js";
 import { WEATHER_DEFAULTS, resolveWeather, windSign } from "./weather.js";
+import { CLOUD_CELL, cloudSky, drawCloudGlow } from "./clouds.js";
 import { dayBlend, normalizeHour } from "./time-of-day.js";
 import {
   CORGI_BOUNDS,
@@ -592,178 +593,9 @@ const SUN_CLIMB_LIMIT = 600;
 // their flat colour, so past this camera height they stop: a trail that runs
 // far below the usual ground would otherwise lose its sky and hills.
 const BACKDROP_SINK_LIMIT = 300;
-// Vertical spacing, in cloud-parallax space, of the cloud rows repeated above
-// the first one as the camera climbs.
-const CLOUD_ROW_SPACING = 180;
-// Clouds are painted one cell per 4 world units into a small layer that is
-// drawn with one alpha, so shapes that touch merge instead of darkening.
-const CLOUD_CELL = 4;
-// Each row of cloud banks has one bank, or none, per slot this wide.
-const CLOUD_SLOT = 170;
 // How fast, in world units a second, the clouds drift across the sky in a
 // gale; a lighter wind moves them in proportion, and still air not at all.
 const CLOUD_DRIFT = 24;
-const cloudLayers = new Map();
-
-/**
- * The sky's cloud cover as one opaque layer. Cover builds up in stages:
- * small cumulus that grow into big banks, then from 30% a deck that fills in from the top of the sky on
- * a lumpy underside, with banks and thin streaks below it, lowering until,
- * at full cover, it fills the sky. The sun shows as a pale glow through cloud.
- * Returns the canvas, how far left and up of the view to draw it, and how
- * much of the sun's disc (`sunRadius` across) the cloud covers, 0…1.
- */
-function cloudLayer({ width, height, scrollX, cloudShift, cloudiness, color, glow, glowSize = 1, sunX, sunY, sunRadius }) {
-  const cell = CLOUD_CELL;
-  const gx0 = Math.floor(scrollX / cell),
-    gy0 = Math.floor(-cloudShift / cell);
-  const offsetX = scrollX - gx0 * cell,
-    offsetY = -cloudShift - gy0 * cell;
-  const cols = Math.ceil(width / cell) + 1,
-    rows = Math.ceil(height / cell) + 1;
-  // The sun in cloud space.
-  const sunU = sunX + scrollX,
-    sunV = sunY - cloudShift;
-  const key = [gx0, gy0, cols, rows, cloudiness, color, glow, glowSize, Math.round(sunU / cell), Math.round(sunV / cell), Math.round(sunRadius)].join("|");
-  const cached = cloudLayers.get(key);
-  if (cached) return { ...cached, offsetX, offsetY };
-
-  const canvas = createCanvas(cols, rows);
-  const g = canvas.getContext("2d");
-  g.fillStyle = color;
-  const uLeft = gx0 * cell,
-    vTop = gy0 * cell,
-    vBottom = (gy0 + rows) * cell;
-  const rowOf = (v) => Math.round(v / cell) - gy0;
-  // The sun's disc in the layer's cells, and which of them the cloud covers.
-  const sc = Math.round(sunU / cell) - gx0,
-    sr = Math.round(sunV / cell) - gy0,
-    reach = Math.ceil(sunRadius / cell),
-    side = reach * 2 + 1;
-  const covered = new Uint8Array(side * side);
-  // The clouds are shaped over the view and the sun's disc both, so the sun
-  // is covered as much off screen as on it; the canvas keeps only the view.
-  const iFrom = Math.min(0, sc - reach),
-    iTo = Math.max(cols, sc + reach + 1),
-    uFrom = uLeft + iFrom * cell,
-    uTo = uLeft + iTo * cell,
-    vFrom = Math.min(vTop, (gy0 + sr - reach) * cell),
-    vTo = Math.max(vBottom, (gy0 + sr + reach + 1) * cell);
-  const fill = (i, r, w, h) => {
-    g.fillRect(i, r, w, h);
-    for (let y = Math.max(r, sr - reach); y < Math.min(r + h, sr + reach + 1); y++)
-      for (let x = Math.max(i, sc - reach); x < Math.min(i + w, sc + reach + 1); x++)
-        covered[(y - sr + reach) * side + x - sc + reach] = 1;
-  };
-  // Fills column i of the layer from v0 down to v1.
-  const span = (i, v0, v1) => {
-    const r0 = rowOf(v0),
-      r1 = rowOf(v1);
-    if (r1 > r0) fill(i, r0, 1, r1 - r0);
-  };
-
-  // The deck: from 30% it hangs in from the top on a lumpy underside of
-  // overlapping round lobes, and lowers steadily until at 100% it is the
-  // whole sky.
-  const deck = cloudiness >= 1 ? Infinity : Math.max(0, (cloudiness - 0.3) / 0.7);
-  const deckBottom = (u) => {
-    const line = -40 + deck * (height * 0.6 + 40) + Math.sin(u * 0.0045 + 1) * 12;
-    let bottom = -Infinity;
-    for (let k = Math.floor(u / 36) - 1; k <= Math.floor(u / 36) + 1; k++) {
-      const r = 22 + backdropNoise(k + 3) * 14;
-      const d = u - (k * 36 + 18);
-      if (Math.abs(d) < r)
-        bottom = Math.max(bottom, line + (backdropNoise(k + 9) - 0.5) * 12 + Math.sqrt(r * r - d * d) * 0.8);
-    }
-    return bottom;
-  };
-  if (deck === Infinity) fill(iFrom, rowOf(vFrom), iTo - iFrom, rowOf(vTo) - rowOf(vFrom));
-  else if (deck > 0)
-    for (let i = iFrom; i < iTo; i++) span(i, vFrom, deckBottom(uLeft + i * cell));
-
-  if (deck !== Infinity) {
-    const firstRow = Math.max(0, Math.ceil((64 - vTo - 120) / CLOUD_ROW_SPACING));
-    const lastRow = Math.max(0, Math.floor((64 - vFrom + 120) / CLOUD_ROW_SPACING));
-    // Thin high streaks come in with broken cloud and go once it is overcast.
-    const streaks = cloudiness > 0.35 && cloudiness < 0.9 ? Math.sin((Math.PI * (cloudiness - 0.35)) / 0.55) : 0;
-    for (let row = firstRow; row <= lastRow; row++) {
-      // Higher rows are inside the deck once there is one.
-      if (deck > 0 && row > 0) break;
-      const rowV = 64 - row * CLOUD_ROW_SPACING;
-      for (let k = Math.floor(uFrom / CLOUD_SLOT) - 1; k <= Math.ceil(uTo / CLOUD_SLOT); k++) {
-        const n = (j) => backdropNoise(k * 7 + row * 131 + j * 17);
-        // A bank: rounded puffs on one flat base. Up to 40% cover they grow
-        // from small puffs into big banks; the deck does the rest.
-        const w = (22 + 340 * Math.min(cloudiness, 0.4)) * (0.7 + 0.3 * n(1));
-        const h = Math.max(12, w * (0.26 + 0.1 * n(2)));
-        const left = k * CLOUD_SLOT + (CLOUD_SLOT - w) * (0.05 + 0.9 * n(3));
-        // As the deck lowers it pushes the banks down ahead of it, so they
-        // keep clear of its edge.
-        const deckAbove = deck > 0 ? Math.max(deckBottom(left), deckBottom(left + w / 2), deckBottom(left + w)) : -Infinity;
-        const base = Math.max(rowV + 40 + (n(4) - 0.5) * 56, deckAbove + 8 + h * 1.4);
-        if (n(0) < 0.3 + Math.min(cloudiness, 0.4) * 1.2) {
-          const count = 2 + Math.floor(w / 56);
-          const puffs = [];
-          for (let p = 0; p < count; p++) {
-            // Biggest a little left of centre, smaller towards the ends.
-            const middle = 1 - Math.abs((p + 0.5) / count - 0.4) * 1.6;
-            const r = Math.max(8, h * (0.45 + 0.55 * backdropNoise(k * 13 + p + row * 7)) * (0.4 + 0.6 * middle));
-            const c = left + r * 0.8 + (w - r * 1.6) * (count > 1 ? p / (count - 1) : 0.5);
-            puffs.push({ c, r });
-          }
-          const first = puffs[0].c,
-            last = puffs[puffs.length - 1].c;
-          for (let i = iFrom; i < iTo; i++) {
-            const u = uLeft + i * cell;
-            if (u < left - 4 || u > left + w + 4) continue;
-            let top = u >= first && u <= last ? 8 : 0;
-            // Each puff is a dome raised a little above the base.
-            for (const { c, r } of puffs)
-              if (Math.abs(u - c) < r) top = Math.max(top, r * 0.35 + Math.sqrt(r * r - (u - c) ** 2));
-            if (top > 0) span(i, base - top, base);
-          }
-        }
-        // A pair of long thin streaks, high above the banks.
-        if (streaks && n(5) < streaks * 0.75) {
-          const length = 40 + n(6) * 120;
-          const u0 = k * CLOUD_SLOT + n(7) * (CLOUD_SLOT - length);
-          const v = rowV - 4 - n(8) * 16;
-          const r = rowOf(v),
-            c0 = Math.round(u0 / cell) - gx0;
-          fill(c0, r, Math.round(length / cell), 1);
-          fill(c0 + 3, r + 1, Math.round((length * 0.6) / cell), 1);
-        }
-      }
-    }
-  }
-
-  // The sun or moon lights the cloud in front of it: a pale disc painted
-  // only over cloud. There is none when it is turned off.
-  if (glow) {
-    g.globalCompositeOperation = "source-atop";
-    for (const [size, amount] of [[13, 0.45], [9, 1]]) {
-      const radius = Math.round(size * glowSize);
-      g.fillStyle = mixHex(color, glow, amount);
-      for (let dy = -radius; dy <= radius; dy++) {
-        const reach = Math.floor(Math.sqrt(radius * radius - dy * dy));
-        g.fillRect(sc - reach, sr + dy, reach * 2 + 1, 1);
-      }
-    }
-  }
-
-  let inside = 0,
-    hidden = 0;
-  for (let dy = -reach; dy <= reach; dy++)
-    for (let dx = -reach; dx <= reach; dx++) {
-      if (dx * dx + dy * dy > reach * reach) continue;
-      inside++;
-      hidden += covered[(dy + reach) * side + dx + reach];
-    }
-  const layer = { canvas, sunCover: hidden / inside };
-  cloudLayers.set(key, layer);
-  if (cloudLayers.size > 4) cloudLayers.delete(cloudLayers.keys().next().value);
-  return { ...layer, offsetX, offsetY };
-}
 
 // The colour set every look of the day starts from and overrides.
 const BASE_TIME = {
@@ -5728,43 +5560,50 @@ export function createGameArt(ctx) {
     if (cloudiness > 0) {
       // The clouds drift downwind, so the view moves through them upwind.
       const drift = resolveWeather(weather);
-      const scrollX = cameraX * 0.07 - windSign(drift) * drift.wind * CLOUD_DRIFT * sceneTime;
-      // Rows above the first only come into view once the camera climbs.
-      const cloudShift = -cameraY * 0.08;
+      const stormy = storminess > 0.15;
       const overcast = Math.max(0, (cloudiness - 0.8) / 0.2);
-      const cloudColor =
-        storminess > 0.15
-          ? time.stormCloud
-          : mixHex(time.cloud, time.stormCloud, overcast * 0.5);
-      const layer = cloudLayer({
+      // A closing overcast shuts out the sunset's colours, greying the cloud.
+      const tinted = stormy ? time.stormCloud : mixHex(time.cloud, time.stormCloud, overcast * 0.5);
+      const [r, g, b] = parseColor(tinted);
+      const grey = Math.round(r * 0.3 + g * 0.59 + b * 0.11)
+        .toString(16)
+        .padStart(2, "0");
+      const cloudColor = mixHex(tinted, `#${grey}${grey}${grey}`, overcast * 0.6);
+      const sky = cloudSky({
         width,
         height,
-        scrollX,
-        cloudShift,
-        cloudiness,
-        color: cloudColor,
-        // Fades with the sun setting; the moon gives a smaller, fainter glow.
-        glow:
-          light.sunshine > 0
-            ? mixHex(cloudColor, time.sun, (0.3 - time.moon * 0.18) * light.sunshine)
-            : null,
-        glowSize: 1 - time.moon * 0.3,
-        sunX: light.x,
-        sunY: light.y,
-        sunRadius: light.radius,
+        cameraX,
+        cameraY,
+        drift: windSign(drift) * drift.wind * CLOUD_DRIFT * sceneTime,
+        cover: cloudiness,
+        colors: {
+          cloud: cloudColor,
+          storm: time.stormCloud,
+          sky: time.sky,
+          skyTop: time.skyTop,
+          sun: time.sun,
+          stormy,
+          // A low sun tints the clouds and lights them from below.
+          warmth: Math.max(0, Math.min(1, time.sunDrop / LOW_SUN_DROP)) * (1 - time.moon),
+          night: time.moon > 0.5,
+        },
+        sun: light,
       });
-      const alpha = 0.7 + cloudiness * 0.3;
-      sunCover = layer.sunCover * alpha;
-      ctx.save();
-      ctx.globalAlpha = alpha;
-      ctx.drawImage(
-        layer.canvas,
-        snap(-layer.offsetX),
-        snap(-layer.offsetY),
-        layer.canvas.width * CLOUD_CELL,
-        layer.canvas.height * CLOUD_CELL,
-      );
-      ctx.restore();
+      sunCover = sky.sunCover;
+      // The sun or moon shows through the clouds in front of it. The glow
+      // fades with the sun setting; the moon's is smaller and fainter.
+      const glow =
+        light.sunshine > 0
+          ? mixHex(mixHex(cloudColor, "#ffffff", 0.4), time.sun, (0.45 - time.moon * 0.25) * light.sunshine)
+          : null;
+      const glowAt = { x: snap(light.x), y: snap(light.y), radius: light.radius * (1 - time.moon * 0.3) };
+      for (const layer of sky.layers) {
+        const x = snap(-layer.offsetX),
+          y = snap(-layer.offsetY);
+        ctx.drawImage(layer.canvas, x, y, layer.canvas.width * CLOUD_CELL, layer.canvas.height * CLOUD_CELL);
+        // Through a thick overcast or rain the light is only a faint smudge.
+        if (glow) drawCloudGlow(ctx, layer.canvas, x, y, glowAt, glow, Math.max(0.2, 1 - overcast * 0.55 - storminess * 0.35));
+      }
     }
 
     if (full) {

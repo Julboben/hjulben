@@ -397,6 +397,7 @@ globalThis.Worker = class {
       get(object, property) {
         if (property in object) return object[property];
         if (property === 'fillRect') return (...args) => object.fills.push(args);
+        if (property === 'clearRect') return () => { object.fills.length = 0; object.images.length = 0; };
         if (property === 'drawImage') return (...args) => object.images.push(args);
         if (property === 'getTransform') return () => ({ a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 });
         if (property === 'createLinearGradient' || property === 'createRadialGradient') return () => ({ addColorStop() {} });
@@ -412,21 +413,23 @@ globalThis.Worker = class {
   };
   const view = recorder();
   const art = createGameArt(view);
-  const cell = 4;
-  // Every cloud cell on screen, as "x,y", from the one-cell-wide spans the
-  // cloud layer is painted with. With no sun there is no glow over them.
+  const cell = 2;
+  // Every cloud cell on screen, as "x,y", for each layer back to front: the
+  // clouds are painted in runs of cells into their own canvases, and those
+  // placed in the layer.
   const cloudsAt = (sceneTime, wind, windDirection = 'right') => {
     view.images.length = 0;
     art.drawBackground({
       width: 800, height: 400, full: false, sceneTime,
       palette: { timeOfDay: 12, weather: { sun: 0, clouds: 0.4, wind, windDirection } },
     });
-    const [[layer, left, top]] = view.images.filter(([image]) => image.context);
-    const cells = new Set();
-    for (const [column, row, width, height] of layer.context.fills)
-      if (width === 1)
-        for (let r = row; r < row + height; r++) cells.add(`${left + column * cell},${top + r * cell}`);
-    return cells;
+    return view.images.filter(([image]) => image.context).map(([layer, left, top]) => {
+      const cells = new Set();
+      for (const [cloud, x, y] of layer.context.images)
+        for (const [column, row, width] of cloud.context.fills)
+          for (let c = column; c < column + width; c++) cells.add(`${left + (x + c) * cell},${top + (y + row) * cell}`);
+      return cells;
+    });
   };
   // Of the cells in the middle of the view that are cloud before or after
   // (`shift` along), the share that are cloud both times.
@@ -440,14 +443,18 @@ globalThis.Worker = class {
       }
     return either ? both / either : 1;
   };
+  // The far layer drifts at 0.6 of the main one's speed, for depth.
+  const drifts = [0.6, 1];
+  const allMoved = (before, after, shift) =>
+    before.length === drifts.length && before.every((cells, i) => moved(cells, after[i], shift * drifts[i]) === 1);
   const still = cloudsAt(0, 1);
-  check('there are clouds to drift', moved(still, new Set(), 0) === 0);
-  check('a gale blows the clouds right, 24 units a second', moved(still, cloudsAt(5, 1), 120) === 1);
-  check('and left when it blows the other way', moved(cloudsAt(0, 1, 'left'), cloudsAt(5, 1, 'left'), -120) === 1);
-  check('a lighter wind moves them in proportion', moved(cloudsAt(0, 0.5), cloudsAt(5, 0.5), 60) === 1);
-  check('the clouds stand still in still air', moved(cloudsAt(0, 0), cloudsAt(5, 0), 0) === 1);
-  // The banks sit in regular slots, so some still overlap where they were.
-  check('the clouds really moved', moved(still, cloudsAt(5, 1), 0) < 0.9);
+  check('there are clouds to drift in both layers', still.length === 2 && still.every((cells) => moved(cells, new Set(), 0) === 0));
+  check('a gale blows the clouds right, 24 units a second', allMoved(still, cloudsAt(5, 1), 120));
+  check('and left when it blows the other way', allMoved(cloudsAt(0, 1, 'left'), cloudsAt(5, 1, 'left'), -120));
+  check('a lighter wind moves them in proportion', allMoved(cloudsAt(0, 0.5), cloudsAt(5, 0.5), 60));
+  check('the clouds stand still in still air', allMoved(cloudsAt(0, 0), cloudsAt(5, 0), 0));
+  // Clouds sit in regular slots, so some still overlap where they were.
+  check('the clouds really moved', moved(still[1], cloudsAt(5, 1)[1], 0) < 0.9);
 
   // The sky says how much of the sun the clouds hide: none in a clear sky,
   // all of it when overcast, and as broken cloud drifts past, sometimes none
