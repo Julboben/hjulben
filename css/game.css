@@ -2031,6 +2031,12 @@ h2 {
         }
     }
 }
+@keyframes menu-view-in {
+    from {
+        opacity: 0;
+        translate: 16px 0;
+    }
+}
 /* Wide screens: the logo, Continue and home's buttons stay in a column on the
    left of every screen, over the live trail (see js/ui/menu-scene.js). Home
    leaves the space beside the column to the trail; another screen opens
@@ -2043,7 +2049,30 @@ h2 {
         --menu-gutter: 48px;
         --menu-column: 380px;
         --menu-column-gap: 56px;
-        &[data-view="home"]::after {
+        /* Home's veil (::after) fades out to the right, leaving the trail
+           clear. An open screen fades in the rest of an even veil over it
+           (::before): clear on the left, which home's already covers, so
+           the column never lightens on the way, and as dark as the veil on
+           the right. The stop at 30% tops up home's there. */
+        &::before {
+            content: "";
+            position: absolute;
+            z-index: 1;
+            inset: 0;
+            pointer-events: none;
+            background: linear-gradient(
+                90deg,
+                transparent 0%,
+                #10222642 30%,
+                var(--color-scenery-veil) 62%
+            );
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            @media (prefers-reduced-motion: reduce) {
+                transition: none;
+            }
+        }
+        &::after {
             background: linear-gradient(
                 90deg,
                 var(--color-scenery-veil) 0%,
@@ -2051,8 +2080,8 @@ h2 {
                 transparent 62%
             );
         }
-        &:not([data-view="home"])::after {
-            background: var(--color-scenery-veil);
+        &:not([data-view="home"])::before {
+            opacity: 1;
         }
     }
     .menu-scroll {
@@ -2097,13 +2126,8 @@ h2 {
             --px: 3px;
         }
     }
-    .menu-screen:not([data-view="home"]) {
-        & .menu-hero {
-            cursor: pointer;
-        }
-        & .app-version {
-            display: none;
-        }
+    .menu-screen:not([data-view="home"]) .menu-hero {
+        cursor: pointer;
     }
     /* The buttons sit at the foot of the column, by their names alone; the
        trail behind shows what Continue's picture would. */
@@ -2145,6 +2169,11 @@ h2 {
         max-width: 720px;
         height: 100cqh;
         box-sizing: border-box;
+        /* A screen opening slides in beside the column. */
+        animation: menu-view-in 0.2s ease-out;
+        @media (prefers-reduced-motion: reduce) {
+            animation: none;
+        }
         margin: 0;
         padding-top: 52px;
         display: flex;

@@ -1,8 +1,9 @@
 // The menu's backdrop: the rider's next trail, drawn live by the game's own
 // renderer at half the ride's zoom, with the rider waiting at the start. The
-// camera starts on the rider, glides along the trail to near the finish and
-// back, and rises and falls with the ground, smoothed so it never bobs over
-// bumps. Clouds, rain, water and animals move as they do on a ride.
+// camera rests on the rider, glides along the trail to near the finish,
+// rests there and glides back, rising and falling with the ground, smoothed
+// so it never bobs over bumps. Clouds, rain, water and animals move as they
+// do on a ride.
 import { STEP } from '../config.js';
 import { createRenderer } from '../render.js';
 import { createEffects } from '../effects.js';
@@ -14,8 +15,12 @@ import { sameLook } from '../cosmetics.js';
 // pixel: half the ride's, so twice the trail is in view.
 const PIXEL_SCALE = 2;
 // World units a second along the trail: one device pixel a frame at 60 frames
-// a second on a sharp screen, so the glide never steps unevenly.
+// a second when drawn sharp, so the glide never steps unevenly.
 const GLIDE_SPEED = 30;
+// Seconds the glide takes to reach that speed, and to stop again.
+const GLIDE_RAMP = 2;
+// Seconds the camera rests at each end.
+const REST = 3;
 // The camera turns this far short of the finish, in view widths.
 const TURN_BEFORE_FINISH = 0.2;
 // How far either side of the camera the ground is averaged for its height.
@@ -79,20 +84,23 @@ export function createMenuScene(canvas) {
     /**
      * Draws the scene `dt` seconds on, `viewWidth` × `viewHeight` CSS pixels,
      * with the camera's point `focus` of the way across: the middle of the
-     * part of the menu the trail is seen in.
+     * part of the menu the trail is seen in. `sharp` draws it at the screen's
+     * own resolution, for when it is the view itself rather than a backdrop
+     * behind a veil; `pace` speeds the camera up or slows it down.
      */
-    draw({ viewWidth, viewHeight, dt, focus, full }) {
+    draw({ viewWidth, viewHeight, dt, focus, full, sharp, pace }) {
       if (!scene || !viewWidth || !viewHeight) return;
-      // Drawn at the screen's own resolution, so the camera moves by device
-      // pixels, as on a ride, rather than in steps of several.
-      const deviceScale = Math.max(1, Math.round(PIXEL_SCALE * Math.min(window.devicePixelRatio || 1, 2.5)));
+      // Sharp, the camera moves by device pixels, as on a ride, rather than
+      // in steps of several; behind a veil, a quarter of the pixels will do.
+      const pixelRatio = sharp ? Math.min(window.devicePixelRatio || 1, 2.5) : 1;
+      const deviceScale = Math.max(1, Math.round(PIXEL_SCALE * pixelRatio));
       if (viewWidth !== width || viewHeight !== height || deviceScale !== scale) {
         width = viewWidth;
         height = viewHeight;
         scale = deviceScale;
         renderer.setViewport(width, height, scale);
       }
-      time += dt;
+      time += dt * pace;
       for (weatherTime += dt; weatherTime >= STEP; weatherTime -= STEP) effects.stepWeather();
       effects.update(dt);
       const { trail, ride, riderX } = scene;
@@ -102,15 +110,30 @@ export function createMenuScene(canvas) {
       const span = (turn - riderX) * direction > 0 ? turn - riderX : 0;
       let x = riderX;
       if (span) {
-        // Out and back, easing at both ends.
-        const period = 2 * Math.abs(span) / GLIDE_SPEED;
-        const phase = (time % period) / period;
-        const there = phase < 0.5 ? phase * 2 : 2 - phase * 2;
-        x += span * there * there * (3 - 2 * there);
+        // Rest, glide out, rest, glide back.
+        const glide = glideTime(Math.abs(span));
+        const t = time % (2 * (REST + glide));
+        const out = t - REST, back = t - 2 * REST - glide;
+        if (out >= 0 && out < glide) x += Math.sign(span) * glided(out, Math.abs(span));
+        else if (out >= glide && back < 0) x += span;
+        else if (back >= 0) x += span - Math.sign(span) * glided(back, Math.abs(span));
       }
       view.x = x - renderer.width * focus;
       view.y = groundAt(x) - renderer.height * GROUND_LINE;
       renderer.draw({ ride, ghost: null, camera, effects, look: scene.look, state: 'ready', full, dt, debug: false });
     }
   };
+}
+
+// A glide of `distance` gathers speed over GLIDE_RAMP seconds, holds it and
+// slows to a stop over GLIDE_RAMP again; a short one never reaches full speed.
+const glideSpeed = distance => Math.min(GLIDE_SPEED, distance / GLIDE_RAMP);
+/** The seconds a glide of `distance` takes. */
+const glideTime = distance => distance / glideSpeed(distance) + GLIDE_RAMP;
+/** How far a glide of `distance` has gone after `t` seconds. */
+function glided(t, distance) {
+  const speed = glideSpeed(distance), total = glideTime(distance), rate = speed / GLIDE_RAMP;
+  if (t < GLIDE_RAMP) return rate * t * t / 2;
+  if (t > total - GLIDE_RAMP) return distance - rate * (total - t) ** 2 / 2;
+  return speed * (t - GLIDE_RAMP / 2);
 }

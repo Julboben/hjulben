@@ -21,6 +21,7 @@ const FAST = [
   test('replays'),
   test('groups'),
   test('console'),
+  test('menu'),
   test('editor-dom'),
   test('editor-storage'),
   test('vehicle-physics'),

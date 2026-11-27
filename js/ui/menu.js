@@ -296,10 +296,15 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     previewFrame ||= requestAnimationFrame(drainPreviews);
   }
 
-  // One preview paints a frame, and only one on the open screen: the others
-  // wait until theirs opens (see showView), so previews nobody sees never
-  // hold up the frames of the moving backdrop.
-  const onScreen = job => job.target.getClientRects().length > 0;
+  // A preview paints a frame, and only one shown on the open screen or about
+  // to be scrolled into view. The first of a trail costs a good part of a
+  // second, so previews nobody sees never hold up the frames of the moving
+  // backdrop: they wait until their screen opens or scrolls near (see
+  // paintShownPreviews and the scroll listener).
+  const onScreen = job => {
+    const box = job.target.getBoundingClientRect();
+    return box.width > 0 && box.bottom > -innerHeight && box.top < 2 * innerHeight;
+  };
   function drainPreviews() {
     previewFrame = 0;
     if (!isOpen()) { previewQueue = []; return; }
@@ -310,6 +315,9 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     copyPreview(renderPreview(job.key, job.render), job.target);
     if (previewQueue.some(onScreen)) previewFrame = requestAnimationFrame(drainPreviews);
   }
+  const paintShownPreviews = () => {
+    if (previewQueue.length) previewFrame ||= requestAnimationFrame(drainPreviews);
+  };
 
   /** A rider's head, as a round avatar for the rider list and leaderboard. */
   function riderAvatar(look) {
@@ -771,7 +779,11 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     const focus = column ? (column.right - bounds.left + bounds.width) / 2 / bounds.width : 0.5;
     menuScene.draw({
       viewWidth: Math.round(bounds.width), viewHeight: Math.round(bounds.height),
-      dt, focus, full: session.preferences.scenery === 'full'
+      dt, focus, full: session.preferences.scenery === 'full',
+      // Only home beside the column shows the trail clearly; everywhere else
+      // it sits behind a veil, drawn more coarsely, and behind an open screen
+      // it drifts slower too.
+      sharp: Boolean(column) && onHome(), pace: onHome() ? 1 : 0.5
     });
   }
 
@@ -797,18 +809,19 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     drawActiveSaveIllustration();
     // One orange card: resume the ride going on, else continue the save, else
     // Start riding takes its place. Retry is in the game's own controls.
+    // Either way it names the trail it leads to, the one behind the menu.
     const resumable = canResume();
     const slot = hasSave ? 'SLOT ' + (session.activeSaveSlot + 1) : '';
     $('active-save-label').textContent = resumable ? 'RESUME RIDE' : 'CONTINUE';
     $('active-save-slot').textContent = slot;
     $('active-save-slot').hidden = !slot;
     if (resumable) {
-      $('active-save-rider').textContent = session.trail?.name ?? 'Your ride';
+      $('active-save-title').textContent = session.trail?.name ?? 'Your ride';
       $('active-save-progress').textContent = [hasSave ? session.saveGame.name : '', session.stateBeforeMenu === 'paused' ? 'Paused' : 'Back to the trail']
         .filter(Boolean).join(' · ');
     } else {
-      $('active-save-rider').textContent = hasSave ? session.saveGame.name : '';
-      $('active-save-progress').textContent = hasSave ? (session.unlockedTrail + 1) + ' / ' + trails.length + ' trails · ' + trails[session.savedTrail].name : '';
+      $('active-save-title').textContent = hasSave ? trails[session.savedTrail].name : '';
+      $('active-save-progress').textContent = hasSave ? session.saveGame.name + ' · ' + (session.unlockedTrail + 1) + ' / ' + trails.length + ' trails' : '';
     }
     $('menu-trails').disabled = !hasSave && customTrailEntries.length === 0
       && !bonusTrailEntries.some(entry => bonusUnlock(entry).open);
@@ -962,8 +975,11 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     $('how-ride').hidden = true;
     if (view === 'how') { syncHowTo(); saveSeenHowTo(); }
     syncBell();
-    // Previews waiting for this screen paint now (see drainPreviews).
-    if (previewQueue.length) previewFrame ||= requestAnimationFrame(drainPreviews);
+    // Previews waiting for this screen paint now, or once it has slid in
+    // beside the column, so the first, slow ones never catch the slide.
+    const opened = $(VIEWS[view]);
+    if (getComputedStyle(opened).animationName === 'none') paintShownPreviews();
+    else opened.addEventListener('animationend', paintShownPreviews, { once: true });
     // Each screen opens at its top, whichever of the two scrolls it.
     $('menu-scroll').scrollTop = 0;
     const body = $(VIEWS[view]).querySelector('.menu-view-body');
@@ -2085,6 +2101,9 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
   }
 
   // Wiring.
+  // Previews scrolled near paint (see drainPreviews); scrolling doesn't
+  // bubble, so this listens on the way down for whatever scrolls the screen.
+  $('menu-screen').addEventListener('scroll', paintShownPreviews, { capture: true, passive: true });
   // With home's buttons beside an open screen, the button of that screen
   // closes it, and another asks first if the Garage holds an unsaved look.
   // Caught on the way down, before the button's own handler opens its screen.

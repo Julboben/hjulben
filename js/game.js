@@ -1456,6 +1456,7 @@ export function startGame({ shared = null } = {}) {
     if (shared?.error) menu.showTrailsStatus(`Could not open the shared trail: ${shared.error.message}`, true);
   }
   requestAnimationFrame(frame);
-  // Queued after the first frame, so the reveal shows a fully drawn screen.
-  requestAnimationFrame(() => game.removeAttribute('data-booting'));
+  // Queued after the first two frames, so the reveal shows a fully drawn
+  // screen, and the menu's backdrop has done the slow first draw of its trail.
+  requestAnimationFrame(() => requestAnimationFrame(() => game.removeAttribute('data-booting')));
 }
