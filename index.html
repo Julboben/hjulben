@@ -337,6 +337,7 @@
             <section
                 class="menu-screen"
                 id="menu-screen"
+                data-view="home"
                 aria-labelledby="menu-title"
             >
                 <canvas
@@ -346,141 +347,144 @@
                 ></canvas>
                 <div class="menu-scroll" id="menu-scroll">
                     <div class="menu-dashboard">
-                        <div class="menu-hero">
-                            <span
-                                class="menu-logo"
-                                data-icon="logo"
-                                aria-hidden="true"
-                            ></span>
+                        <!-- The logo and home's buttons, which wide screens keep beside every screen (see .menu-column in css/game.css). -->
+                        <div class="menu-column">
+                            <div class="menu-hero">
+                                <span
+                                    class="menu-logo"
+                                    data-icon="logo"
+                                    aria-hidden="true"
+                                ></span>
 
-                            <div>
-                                <h2 id="menu-title">Hjulben</h2>
-                                <button
-                                    class="app-version"
-                                    id="menu-whats-new"
-                                    type="button"
-                                >
-                                    <span id="app-version"></span> ·
-                                    CHANGELOG<b
-                                        class="whats-new-badge"
-                                        id="whats-new-badge"
-                                        hidden
-                                        >NEW</b
+                                <div>
+                                    <h2 id="menu-title">Hjulben</h2>
+                                    <button
+                                        class="app-version"
+                                        id="menu-whats-new"
+                                        type="button"
                                     >
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="menu-view" id="menu-home">
-                            <div class="menu-actions">
-                                <button
-                                    class="menu-action menu-action-primary continue-save"
-                                    id="menu-continue"
-                                    hidden
-                                >
-                                    <span
-                                        class="active-rider-art"
-                                        aria-hidden="true"
-                                        ><canvas
-                                            id="active-save-bike"
-                                            width="240"
-                                            height="168"
-                                        ></canvas
-                                    ></span>
-                                    <span class="continue-save-copy"
-                                        ><span class="save-label"
-                                            ><span id="active-save-label">CONTINUE</span
-                                            ><b id="active-save-slot"></b></span
-                                        ><strong id="active-save-rider"></strong
-                                        ><small
-                                            id="active-save-progress"
-                                        ></small
-                                    ></span>
-                                    <span
-                                        class="continue-arrow"
-                                        data-icon="arrow-right"
-                                        aria-hidden="true"
-                                    ></span>
-                                </button>
-                                <button
-                                    class="menu-action"
-                                    id="menu-first-ride"
-                                    hidden
-                                >
-                                    <span>START RIDING</span
-                                    ><small
-                                        >Name your rider and take on the first
-                                        trail</small
-                                    >
-                                </button>
-                                <button
-                                    class="menu-action menu-action-row"
-                                    id="menu-trails"
-                                >
-                                    <span>TRAILS</span
-                                    ><small>Browse unlocked trails</small>
-                                </button>
-                                <button
-                                    class="menu-action menu-action-row"
-                                    id="menu-leaderboard"
-                                >
-                                    <span>LEADERBOARD</span
-                                    ><small>Fastest runs on every trail</small>
-                                </button>
-                                <button
-                                    class="menu-action menu-action-row"
-                                    id="menu-garage"
-                                    hidden
-                                >
-                                    <span
-                                        >GARAGE<b
+                                        <span id="app-version"></span> ·
+                                        CHANGELOG<b
                                             class="whats-new-badge"
-                                            id="garage-new-badge"
+                                            id="whats-new-badge"
                                             hidden
                                             >NEW</b
-                                        ></span
-                                    ><small
-                                        >Change your rider’s look and
-                                        bike</small
+                                        >
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="menu-view" id="menu-home">
+                                <div class="menu-actions">
+                                    <button
+                                        class="menu-action menu-action-primary continue-save"
+                                        id="menu-continue"
+                                        hidden
                                     >
-                                </button>
-                                <button
-                                    class="menu-action menu-action-row"
-                                    id="menu-achievements"
-                                    hidden
-                                >
-                                    <span>ACHIEVEMENTS</span
-                                    ><small id="menu-achievements-detail"
-                                        >Feats and milestones</small
+                                        <span
+                                            class="active-rider-art"
+                                            aria-hidden="true"
+                                            ><canvas
+                                                id="active-save-bike"
+                                                width="240"
+                                                height="168"
+                                            ></canvas
+                                        ></span>
+                                        <span class="continue-save-copy"
+                                            ><span class="save-label"
+                                                ><span id="active-save-label">CONTINUE</span
+                                                ><b id="active-save-slot"></b></span
+                                            ><strong id="active-save-rider"></strong
+                                            ><small
+                                                id="active-save-progress"
+                                            ></small
+                                        ></span>
+                                        <span
+                                            class="continue-arrow"
+                                            data-icon="arrow-right"
+                                            aria-hidden="true"
+                                        ></span>
+                                    </button>
+                                    <button
+                                        class="menu-action"
+                                        id="menu-first-ride"
+                                        hidden
                                     >
-                                </button>
-                                <button
-                                    class="menu-action menu-action-row"
-                                    id="menu-riders"
-                                    hidden
-                                >
-                                    <span>RIDERS</span
-                                    ><small>Switch or add a rider</small>
-                                </button>
-                                <button
-                                    class="menu-action menu-action-row menu-editor"
-                                    id="menu-editor"
-                                >
-                                    <span data-icon-before="pencil">TRAIL EDITOR</span
-                                    ><small>Build your own trails and share them</small>
-                                </button>
-                                <button
-                                    class="menu-action menu-action-half menu-action-compact"
-                                    id="menu-settings"
-                                >
-                                    <span>SETTINGS</span>
-                                </button>
-                                <button
-                                    class="menu-action menu-action-half menu-action-compact"
-                                    id="menu-how-to"
-                                >
-                                    <span>HOW TO PLAY</span>
-                                </button>
+                                        <span>START RIDING</span
+                                        ><small
+                                            >Name your rider and take on the first
+                                            trail</small
+                                        >
+                                    </button>
+                                    <button
+                                        class="menu-action menu-action-row"
+                                        id="menu-trails"
+                                    >
+                                        <span>TRAILS</span
+                                        ><small>Browse unlocked trails</small>
+                                    </button>
+                                    <button
+                                        class="menu-action menu-action-row"
+                                        id="menu-leaderboard"
+                                    >
+                                        <span>LEADERBOARD</span
+                                        ><small>Fastest runs on every trail</small>
+                                    </button>
+                                    <button
+                                        class="menu-action menu-action-row"
+                                        id="menu-garage"
+                                        hidden
+                                    >
+                                        <span
+                                            >GARAGE<b
+                                                class="whats-new-badge"
+                                                id="garage-new-badge"
+                                                hidden
+                                                >NEW</b
+                                            ></span
+                                        ><small
+                                            >Change your rider’s look and
+                                            bike</small
+                                        >
+                                    </button>
+                                    <button
+                                        class="menu-action menu-action-row"
+                                        id="menu-achievements"
+                                        hidden
+                                    >
+                                        <span>ACHIEVEMENTS</span
+                                        ><small id="menu-achievements-detail"
+                                            >Feats and milestones</small
+                                        >
+                                    </button>
+                                    <button
+                                        class="menu-action menu-action-row"
+                                        id="menu-riders"
+                                        hidden
+                                    >
+                                        <span>RIDERS</span
+                                        ><small>Switch or add a rider</small>
+                                    </button>
+                                    <button
+                                        class="menu-action menu-action-row menu-editor"
+                                        id="menu-editor"
+                                    >
+                                        <span data-icon-before="pencil">TRAIL EDITOR</span
+                                        ><small>Build your own trails and share them</small>
+                                    </button>
+                                    <button
+                                        class="menu-action menu-action-half menu-action-compact"
+                                        id="menu-settings"
+                                    >
+                                        <span>SETTINGS</span>
+                                    </button>
+                                    <button
+                                        class="menu-action menu-action-half menu-action-compact"
+                                        id="menu-how-to"
+                                    >
+                                        <span>HOW TO PLAY</span>
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
@@ -497,13 +501,15 @@
                                     BACK
                                 </button>
                             </div>
-                            <!-- The roll is filled in by menu.js, so the bonus trail makers come from the trails. -->
-                            <div class="credits" id="credits" tabindex="-1">
-                                <div class="credits-roll" id="credits-roll"></div>
+                            <div class="menu-view-body">
+                                <!-- The roll is filled in by menu.js, so the bonus trail makers come from the trails. -->
+                                <div class="credits" id="credits" tabindex="-1">
+                                    <div class="credits-roll" id="credits-roll"></div>
+                                </div>
+                                <p class="load-game-help credits-hint" id="credits-hint">
+                                    Hold to pause · Back to leave
+                                </p>
                             </div>
-                            <p class="load-game-help credits-hint" id="credits-hint">
-                                Hold to pause · Back to leave
-                            </p>
                         </div>
 
                         <div class="menu-view" id="menu-changelog-view" hidden>
@@ -519,7 +525,9 @@
                                     BACK
                                 </button>
                             </div>
-                            <div class="changelog" id="changelog-list"></div>
+                            <div class="menu-view-body">
+                                <div class="changelog" id="changelog-list"></div>
+                            </div>
                         </div>
 
                         <div
@@ -539,14 +547,16 @@
                                     BACK
                                 </button>
                             </div>
-                            <p
-                                class="load-game-help"
-                                id="achievements-summary"
-                            ></p>
-                            <div
-                                class="achievement-list"
-                                id="achievement-list"
-                            ></div>
+                            <div class="menu-view-body">
+                                <p
+                                    class="load-game-help"
+                                    id="achievements-summary"
+                                ></p>
+                                <div
+                                    class="achievement-list"
+                                    id="achievement-list"
+                                ></div>
+                            </div>
                         </div>
 
                         <div class="menu-view" id="menu-riders-view" hidden>
@@ -562,33 +572,35 @@
                                     BACK
                                 </button>
                             </div>
-                            <p class="load-game-help">
-                                Pick who rides. Each rider keeps their own
-                                progress and best times. Delete a rider to free
-                                up their slot.
-                            </p>
-                            <div
-                                class="save-slots"
-                                id="save-slots"
-                                aria-label="Riders"
-                            ></div>
-                            <p
-                                class="account-status"
-                                id="riders-status"
-                                role="status"
-                            ></p>
-                            <div class="account-login" id="riders-login">
-                                <small
-                                    >Have an online rider from another device or
-                                    browser?</small
-                                >
-                                <button
-                                    type="button"
-                                    class="menu-back"
-                                    id="riders-login-button"
-                                >
-                                    LOG IN WITH PASSKEY
-                                </button>
+                            <div class="menu-view-body">
+                                <p class="load-game-help">
+                                    Pick who rides. Each rider keeps their own
+                                    progress and best times. Delete a rider to free
+                                    up their slot.
+                                </p>
+                                <div
+                                    class="save-slots"
+                                    id="save-slots"
+                                    aria-label="Riders"
+                                ></div>
+                                <p
+                                    class="account-status"
+                                    id="riders-status"
+                                    role="status"
+                                ></p>
+                                <div class="account-login" id="riders-login">
+                                    <small
+                                        >Have an online rider from another device or
+                                        browser?</small
+                                    >
+                                    <button
+                                        type="button"
+                                        class="menu-back"
+                                        id="riders-login-button"
+                                    >
+                                        LOG IN WITH PASSKEY
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
@@ -605,27 +617,29 @@
                                     BACK
                                 </button>
                             </div>
-                            <div class="trail-grid" id="menu-trail-grid"></div>
-                            <div class="trail-import">
-                                <button
-                                    type="button"
-                                    class="menu-back"
-                                    id="import-trail"
-                                    data-icon-before="upload"
-                                >
-                                    IMPORT TRAIL (.JSON)
-                                </button>
-                                <input
-                                    type="file"
-                                    id="import-trail-file"
-                                    accept=".json,application/json"
-                                    hidden
-                                />
-                                <p
-                                    class="trail-import-status"
-                                    id="import-trail-status"
-                                    role="status"
-                                ></p>
+                            <div class="menu-view-body">
+                                <div class="trail-grid" id="menu-trail-grid"></div>
+                                <div class="trail-import">
+                                    <button
+                                        type="button"
+                                        class="menu-back"
+                                        id="import-trail"
+                                        data-icon-before="upload"
+                                    >
+                                        IMPORT TRAIL (.JSON)
+                                    </button>
+                                    <input
+                                        type="file"
+                                        id="import-trail-file"
+                                        accept=".json,application/json"
+                                        hidden
+                                    />
+                                    <p
+                                        class="trail-import-status"
+                                        id="import-trail-status"
+                                        role="status"
+                                    ></p>
+                                </div>
                             </div>
                         </div>
 
@@ -646,79 +660,81 @@
                                     BACK
                                 </button>
                             </div>
-                            <div class="leaderboard-trail">
-                                <button
-                                    type="button"
-                                    class="leaderboard-step"
-                                    id="leaderboard-prev"
-                                    aria-label="Previous trail"
-                                >
-                                    <span
-                                        data-icon="arrow-left"
-                                        aria-hidden="true"
-                                    ></span>
-                                </button>
-                                <button
-                                    type="button"
-                                    class="leaderboard-trail-copy"
-                                    id="leaderboard-trail-pick"
-                                    aria-expanded="false"
-                                    aria-controls="leaderboard-picker"
-                                    title="Choose a trail"
-                                >
-                                    <span
-                                        class="trail-number"
-                                        id="leaderboard-trail-number"
-                                        >01</span
+                            <div class="menu-view-body">
+                                <div class="leaderboard-trail">
+                                    <button
+                                        type="button"
+                                        class="leaderboard-step"
+                                        id="leaderboard-prev"
+                                        aria-label="Previous trail"
                                     >
-                                    <span class="trail-copy" aria-live="polite"
-                                        ><strong id="leaderboard-trail-name"
-                                            >THE ORCHARD</strong
-                                        ><small id="leaderboard-trail-meta"
-                                            >OFFICIAL TRAIL</small
-                                        ></span
+                                        <span
+                                            data-icon="arrow-left"
+                                            aria-hidden="true"
+                                        ></span>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        class="leaderboard-trail-copy"
+                                        id="leaderboard-trail-pick"
+                                        aria-expanded="false"
+                                        aria-controls="leaderboard-picker"
+                                        title="Choose a trail"
                                     >
-                                    <span
-                                        class="leaderboard-trail-chevron"
-                                        data-icon="chevron-down"
-                                        aria-hidden="true"
-                                    ></span>
-                                </button>
-                                <button
-                                    type="button"
-                                    class="leaderboard-step"
-                                    id="leaderboard-next"
-                                    aria-label="Next trail"
-                                >
-                                    <span
-                                        data-icon="arrow-right"
-                                        aria-hidden="true"
-                                    ></span>
-                                </button>
+                                        <span
+                                            class="trail-number"
+                                            id="leaderboard-trail-number"
+                                            >01</span
+                                        >
+                                        <span class="trail-copy" aria-live="polite"
+                                            ><strong id="leaderboard-trail-name"
+                                                >THE ORCHARD</strong
+                                            ><small id="leaderboard-trail-meta"
+                                                >OFFICIAL TRAIL</small
+                                            ></span
+                                        >
+                                        <span
+                                            class="leaderboard-trail-chevron"
+                                            data-icon="chevron-down"
+                                            aria-hidden="true"
+                                        ></span>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        class="leaderboard-step"
+                                        id="leaderboard-next"
+                                        aria-label="Next trail"
+                                    >
+                                        <span
+                                            data-icon="arrow-right"
+                                            aria-hidden="true"
+                                        ></span>
+                                    </button>
+                                </div>
+                                <div
+                                    class="leaderboard-picker"
+                                    id="leaderboard-picker"
+                                    role="group"
+                                    aria-label="Choose a trail"
+                                    hidden
+                                ></div>
+                                <ol
+                                    class="leaderboard-list"
+                                    id="leaderboard-list"
+                                    aria-label="Fastest runs"
+                                ></ol>
+                                <p
+                                    class="load-game-help leaderboard-offline"
+                                    id="leaderboard-offline"
+                                    role="status"
+                                    hidden
+                                ></p>
+                                <p class="load-game-help leaderboard-help">
+                                    Each rider’s best time. Official and bonus
+                                    trails use the world board; custom trails and
+                                    offline play show runs from this device.
+                                </p>
                             </div>
-                            <div
-                                class="leaderboard-picker"
-                                id="leaderboard-picker"
-                                role="group"
-                                aria-label="Choose a trail"
-                                hidden
-                            ></div>
-                            <ol
-                                class="leaderboard-list"
-                                id="leaderboard-list"
-                                aria-label="Fastest runs"
-                            ></ol>
-                            <p
-                                class="load-game-help leaderboard-offline"
-                                id="leaderboard-offline"
-                                role="status"
-                                hidden
-                            ></p>
-                            <p class="load-game-help leaderboard-help">
-                                Each rider’s best time. Official and bonus
-                                trails use the world board; custom trails and
-                                offline play show runs from this device.
-                            </p>
                         </div>
 
                         <div class="menu-view" id="menu-save-view" hidden>
@@ -736,101 +752,64 @@
                                     BACK
                                 </button>
                             </div>
-                            <h4 class="menu-section">
-                                <strong id="new-save-slot-label">SAVE SLOT 1</strong>
-                                <small>New rider</small>
-                            </h4>
-                            <div class="save-steps" aria-hidden="true">
-                                <span id="new-save-step-1" class="active"
-                                    >1 · RIDER</span
-                                >
-                                <span id="new-save-step-2">2 · STYLE</span>
-                            </div>
-                            <div id="new-save-identity-step">
-                                <div
-                                    class="account-login account-login-top"
-                                    id="save-login"
-                                >
-                                    <small>Already have an online rider?</small>
-                                    <button
-                                        type="button"
-                                        class="menu-back"
-                                        id="save-login-button"
+                            <div class="menu-view-body">
+                                <h4 class="menu-section">
+                                    <strong id="new-save-slot-label">SAVE SLOT 1</strong>
+                                    <small>New rider</small>
+                                </h4>
+                                <div class="save-steps" aria-hidden="true">
+                                    <span id="new-save-step-1" class="active"
+                                        >1 · RIDER</span
                                     >
-                                        LOG IN WITH PASSKEY
-                                    </button>
+                                    <span id="new-save-step-2">2 · STYLE</span>
                                 </div>
-                                <p
-                                    class="account-status"
-                                    id="save-login-status"
-                                    role="status"
-                                ></p>
-                                <p class="save-warning" id="save-warning">
-                                    Each slot keeps its own progress and best
-                                    times. Gender and skin tone are set once;
-                                    everything else can be changed any time in
-                                    the Garage.
-                                </p>
-                                <label
-                                    class="save-name-field"
-                                    for="new-save-name"
-                                >
-                                    <span class="save-label">RIDER NAME</span>
-                                    <input
-                                        id="new-save-name"
-                                        type="text"
-                                        maxlength="16"
-                                        autocomplete="nickname"
-                                        spellcheck="false"
-                                        placeholder="Your name"
-                                        required
-                                    />
-                                </label>
-                                <div id="new-save-identity"></div>
-                                <div
-                                    class="save-mode"
-                                    id="save-mode"
-                                    role="group"
-                                    aria-label="Online or offline"
-                                >
+                                <div id="new-save-identity-step">
                                     <div
-                                        class="setting-options"
-                                        style="--options: 2"
+                                        class="account-login account-login-top"
+                                        id="save-login"
                                     >
+                                        <small>Already have an online rider?</small>
                                         <button
                                             type="button"
-                                            class="setting-option"
-                                            data-save-mode="online"
-                                            aria-pressed="true"
+                                            class="menu-back"
+                                            id="save-login-button"
                                         >
-                                            Online
-                                        </button>
-                                        <button
-                                            type="button"
-                                            class="setting-option"
-                                            data-save-mode="offline"
-                                            aria-pressed="false"
-                                        >
-                                            Offline
+                                            LOG IN WITH PASSKEY
                                         </button>
                                     </div>
-                                    <small id="save-mode-help"
-                                        >Your name is yours alone on the world
-                                        leaderboard. Sign in with a passkey
-                                        (fingerprint, face or device PIN) to
-                                        back up your progress.</small
+                                    <p
+                                        class="account-status"
+                                        id="save-login-status"
+                                        role="status"
+                                    ></p>
+                                    <p class="save-warning" id="save-warning">
+                                        Each slot keeps its own progress and best
+                                        times. Gender and skin tone are set once;
+                                        everything else can be changed any time in
+                                        the Garage.
+                                    </p>
+                                    <label
+                                        class="save-name-field"
+                                        for="new-save-name"
                                     >
+                                        <span class="save-label">RIDER NAME</span>
+                                        <input
+                                            id="new-save-name"
+                                            type="text"
+                                            maxlength="16"
+                                            autocomplete="nickname"
+                                            spellcheck="false"
+                                            placeholder="Your name"
+                                            required
+                                        />
+                                    </label>
+                                    <div id="new-save-identity"></div>
                                     <div
-                                        class="save-ghost"
-                                        id="save-ghost"
+                                        class="save-mode"
+                                        id="save-mode"
                                         role="group"
-                                        aria-labelledby="save-ghost-label"
+                                        aria-label="Online or offline"
                                     >
-                                        <span
-                                            class="save-label"
-                                            id="save-ghost-label"
-                                            >GHOST TO RACE</span
-                                        >
                                         <div
                                             class="setting-options"
                                             style="--options: 2"
@@ -838,52 +817,91 @@
                                             <button
                                                 type="button"
                                                 class="setting-option"
-                                                data-save-ghost="on"
+                                                data-save-mode="online"
                                                 aria-pressed="true"
                                             >
-                                                Mine
+                                                Online
                                             </button>
                                             <button
                                                 type="button"
                                                 class="setting-option"
-                                                data-save-ghost="world"
+                                                data-save-mode="offline"
                                                 aria-pressed="false"
                                             >
-                                                World
+                                                Offline
                                             </button>
                                         </div>
-                                        <small
-                                            >Mine races your own best run.
-                                            World races the world's best
-                                            instead, when it is faster. You can
-                                            change it any time in
-                                            Settings.</small
+                                        <small id="save-mode-help"
+                                            >Your name is yours alone on the world
+                                            leaderboard. Sign in with a passkey
+                                            (fingerprint, face or device PIN) to
+                                            back up your progress.</small
                                         >
+                                        <div
+                                            class="save-ghost"
+                                            id="save-ghost"
+                                            role="group"
+                                            aria-labelledby="save-ghost-label"
+                                        >
+                                            <span
+                                                class="save-label"
+                                                id="save-ghost-label"
+                                                >GHOST TO RACE</span
+                                            >
+                                            <div
+                                                class="setting-options"
+                                                style="--options: 2"
+                                            >
+                                                <button
+                                                    type="button"
+                                                    class="setting-option"
+                                                    data-save-ghost="on"
+                                                    aria-pressed="true"
+                                                >
+                                                    Mine
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    class="setting-option"
+                                                    data-save-ghost="world"
+                                                    aria-pressed="false"
+                                                >
+                                                    World
+                                                </button>
+                                            </div>
+                                            <small
+                                                >Mine races your own best run.
+                                                World races the world's best
+                                                instead, when it is faster. You can
+                                                change it any time in
+                                                Settings.</small
+                                            >
+                                        </div>
                                     </div>
+                                    <button
+                                        class="primary create-save-button"
+                                        data-icon-after="arrow-right"
+                                        id="new-save-next"
+                                    >
+                                        Next: Style
+                                    </button>
                                 </div>
-                                <button
-                                    class="primary create-save-button"
-                                    data-icon-after="arrow-right"
-                                    id="new-save-next"
-                                >
-                                    Next: Style
-                                </button>
+                                <div id="new-save-style-step" hidden>
+                                    <div id="new-save-look"></div>
+                                    <button
+                                        class="primary"
+                                        data-icon-after="arrow-right"
+                                        id="create-save"
+                                    >
+                                        Create Passkey &amp; Ride
+                                    </button>
+                                </div>
+                                <p
+                                    class="account-status"
+                                    id="save-status"
+                                    role="status"
+                                ></p>
                             </div>
-                            <div id="new-save-style-step" hidden>
-                                <div id="new-save-look"></div>
-                                <button
-                                    class="primary"
-                                    data-icon-after="arrow-right"
-                                    id="create-save"
-                                >
-                                    Create Passkey &amp; Ride
-                                </button>
-                            </div>
-                            <p
-                                class="account-status"
-                                id="save-status"
-                                role="status"
-                            ></p>
                         </div>
 
                         <div class="menu-view" id="menu-look-view" hidden>
@@ -899,19 +917,21 @@
                                     BACK
                                 </button>
                             </div>
-                            <h4 class="menu-section">
-                                <strong id="garage-rider"></strong>
-                                <small id="garage-slot"></small>
-                            </h4>
-                            <div id="garage-look"></div>
-                            <button
-                                class="primary"
-                                data-icon-after="arrow-right"
-                                id="save-look"
-                                disabled
-                            >
-                                Save Look
-                            </button>
+                            <div class="menu-view-body">
+                                <h4 class="menu-section">
+                                    <strong id="garage-rider"></strong>
+                                    <small id="garage-slot"></small>
+                                </h4>
+                                <div id="garage-look"></div>
+                                <button
+                                    class="primary"
+                                    data-icon-after="arrow-right"
+                                    id="save-look"
+                                    disabled
+                                >
+                                    Save Look
+                                </button>
+                            </div>
                         </div>
 
                         <div class="menu-view" id="menu-how-view" hidden>
@@ -927,79 +947,81 @@
                                     BACK
                                 </button>
                             </div>
-                            <!-- The first three cards name the controls the player
-                                 is using; menu.js writes them (syncHowTo). -->
-                            <div class="how-grid">
-                                <article class="how-card">
-                                    <canvas
-                                        class="how-art"
-                                        data-how-art="drive"
-                                        width="480"
-                                        height="200"
-                                        aria-hidden="true"
-                                    ></canvas>
-                                    <div>
-                                        <span class="how-number">01</span>
-                                        <h4>Gas and brake</h4>
-                                        <p id="how-gas"></p>
-                                    </div>
-                                </article>
-                                <article class="how-card">
-                                    <canvas
-                                        class="how-art"
-                                        data-how-art="lean"
-                                        width="480"
-                                        height="200"
-                                        aria-hidden="true"
-                                    ></canvas>
-                                    <div>
-                                        <span class="how-number">02</span>
-                                        <h4>Shift your weight</h4>
-                                        <p id="how-lean"></p>
-                                    </div>
-                                </article>
-                                <article class="how-card">
-                                    <canvas
-                                        class="how-art"
-                                        data-how-art="air"
-                                        width="480"
-                                        height="200"
-                                        aria-hidden="true"
-                                    ></canvas>
-                                    <div>
-                                        <span class="how-number">03</span>
-                                        <h4>Control the air</h4>
-                                        <p id="how-air"></p>
-                                    </div>
-                                </article>
-                                <article class="how-card">
-                                    <canvas
-                                        class="how-art"
-                                        data-how-art="goal"
-                                        width="480"
-                                        height="200"
-                                        aria-hidden="true"
-                                    ></canvas>
-                                    <div>
-                                        <span class="how-number">04</span>
-                                        <h4>Finish the trail</h4>
-                                        <p>
-                                            Collect every apple to unlock the
-                                            finish flower. Missing one? Turn
-                                            around, track it down, and ride back
-                                            to the finish.
-                                        </p>
-                                    </div>
-                                </article>
+                            <div class="menu-view-body">
+                                <!-- The first three cards name the controls the player
+                                     is using; menu.js writes them (syncHowTo). -->
+                                <div class="how-grid">
+                                    <article class="how-card">
+                                        <canvas
+                                            class="how-art"
+                                            data-how-art="drive"
+                                            width="480"
+                                            height="200"
+                                            aria-hidden="true"
+                                        ></canvas>
+                                        <div>
+                                            <span class="how-number">01</span>
+                                            <h4>Gas and brake</h4>
+                                            <p id="how-gas"></p>
+                                        </div>
+                                    </article>
+                                    <article class="how-card">
+                                        <canvas
+                                            class="how-art"
+                                            data-how-art="lean"
+                                            width="480"
+                                            height="200"
+                                            aria-hidden="true"
+                                        ></canvas>
+                                        <div>
+                                            <span class="how-number">02</span>
+                                            <h4>Shift your weight</h4>
+                                            <p id="how-lean"></p>
+                                        </div>
+                                    </article>
+                                    <article class="how-card">
+                                        <canvas
+                                            class="how-art"
+                                            data-how-art="air"
+                                            width="480"
+                                            height="200"
+                                            aria-hidden="true"
+                                        ></canvas>
+                                        <div>
+                                            <span class="how-number">03</span>
+                                            <h4>Control the air</h4>
+                                            <p id="how-air"></p>
+                                        </div>
+                                    </article>
+                                    <article class="how-card">
+                                        <canvas
+                                            class="how-art"
+                                            data-how-art="goal"
+                                            width="480"
+                                            height="200"
+                                            aria-hidden="true"
+                                        ></canvas>
+                                        <div>
+                                            <span class="how-number">04</span>
+                                            <h4>Finish the trail</h4>
+                                            <p>
+                                                Collect every apple to unlock the
+                                                finish flower. Missing one? Turn
+                                                around, track it down, and ride back
+                                                to the finish.
+                                            </p>
+                                        </div>
+                                    </article>
+                                </div>
+                                <button
+                                    class="menu-action menu-action-primary how-ride"
+                                    id="how-ride"
+                                    hidden
+                                >
+                                    <span>LET’S RIDE</span
+                                    ><small>Start your first trail</small>
+                                </button>
                             </div>
-                            <button
-                                class="menu-action menu-action-primary how-ride"
-                                id="how-ride"
-                                hidden
-                            >
-                                <span>LET’S RIDE</span
-                                ><small>Start your first trail</small>
-                            </button>
                         </div>
 
                         <div class="menu-view" id="menu-settings-view" hidden>
@@ -1015,365 +1037,367 @@
                                     BACK
                                 </button>
                             </div>
-                            <div
-                                class="menu-tabs"
-                                role="tablist"
-                                aria-label="Settings"
-                            >
-                                <button
-                                    type="button"
-                                    class="menu-tab"
-                                    role="tab"
-                                    id="settings-tab-general"
-                                    aria-controls="settings-general"
-                                    aria-selected="true"
-                                    data-icon-before="sliders"
+                            <div class="menu-view-body">
+                                <div
+                                    class="menu-tabs"
+                                    role="tablist"
+                                    aria-label="Settings"
                                 >
-                                    GENERAL
-                                </button>
-                                <button
-                                    type="button"
-                                    class="menu-tab"
-                                    role="tab"
-                                    id="settings-tab-controls"
-                                    aria-controls="settings-controls"
-                                    aria-selected="false"
-                                    data-icon-before="keyboard"
-                                >
-                                    CONTROLS
-                                </button>
-                            </div>
-                            <div
-                                class="dashboard-settings"
-                                id="settings-general"
-                                role="tabpanel"
-                                aria-labelledby="settings-tab-general"
-                            >
-                                <h4 class="menu-section"><strong>DISPLAY</strong></h4>
-                                <label
-                                    class="setting-group setting-toggle"
-                                    for="setting-fullscreen"
-                                    id="setting-fullscreen-group"
-                                >
-                                    <span class="setting-label" id="setting-label-1">FULLSCREEN</span>
                                     <button
                                         type="button"
-                                        class="setting-switch"
-                                        id="setting-fullscreen"
-                                        role="switch"
-                                        aria-checked="false"
-                                        aria-labelledby="setting-label-1"
-                                        data-on="on"
-                                        data-off="off"
+                                        class="menu-tab"
+                                        role="tab"
+                                        id="settings-tab-general"
+                                        aria-controls="settings-general"
+                                        aria-selected="true"
+                                        data-icon-before="sliders"
                                     >
-                                        <span class="setting-switch-knob"></span>
+                                        GENERAL
                                     </button>
-                                </label>
-                                <label
-                                    class="setting-group setting-toggle"
-                                    for="setting-shake"
-                                >
-                                    <span class="setting-label" id="setting-label-3">SCREEN SHAKE</span>
                                     <button
                                         type="button"
-                                        class="setting-switch"
-                                        id="setting-shake"
-                                        role="switch"
-                                        aria-checked="false"
-                                        aria-labelledby="setting-label-3"
-                                        data-setting="shake"
-                                        data-on="on"
-                                        data-off="off"
+                                        class="menu-tab"
+                                        role="tab"
+                                        id="settings-tab-controls"
+                                        aria-controls="settings-controls"
+                                        aria-selected="false"
+                                        data-icon-before="keyboard"
                                     >
-                                        <span class="setting-switch-knob"></span>
+                                        CONTROLS
                                     </button>
-                                </label>
-                                <label
-                                    class="setting-group setting-toggle"
-                                    for="setting-controls"
+                                </div>
+                                <div
+                                    class="dashboard-settings"
+                                    id="settings-general"
+                                    role="tabpanel"
+                                    aria-labelledby="settings-tab-general"
                                 >
-                                    <span class="setting-label" id="setting-label-4">ON-SCREEN CONTROLS</span>
-                                    <button
-                                        type="button"
-                                        class="setting-switch"
-                                        id="setting-controls"
-                                        role="switch"
-                                        aria-checked="false"
-                                        aria-labelledby="setting-label-4"
-                                        data-setting="controls"
-                                        data-on="show"
-                                        data-off="hide"
+                                    <h4 class="menu-section"><strong>DISPLAY</strong></h4>
+                                    <label
+                                        class="setting-group setting-toggle"
+                                        for="setting-fullscreen"
+                                        id="setting-fullscreen-group"
                                     >
-                                        <span class="setting-switch-knob"></span>
-                                    </button>
-                                </label>
+                                        <span class="setting-label" id="setting-label-1">FULLSCREEN</span>
+                                        <button
+                                            type="button"
+                                            class="setting-switch"
+                                            id="setting-fullscreen"
+                                            role="switch"
+                                            aria-checked="false"
+                                            aria-labelledby="setting-label-1"
+                                            data-on="on"
+                                            data-off="off"
+                                        >
+                                            <span class="setting-switch-knob"></span>
+                                        </button>
+                                    </label>
+                                    <label
+                                        class="setting-group setting-toggle"
+                                        for="setting-shake"
+                                    >
+                                        <span class="setting-label" id="setting-label-3">SCREEN SHAKE</span>
+                                        <button
+                                            type="button"
+                                            class="setting-switch"
+                                            id="setting-shake"
+                                            role="switch"
+                                            aria-checked="false"
+                                            aria-labelledby="setting-label-3"
+                                            data-setting="shake"
+                                            data-on="on"
+                                            data-off="off"
+                                        >
+                                            <span class="setting-switch-knob"></span>
+                                        </button>
+                                    </label>
+                                    <label
+                                        class="setting-group setting-toggle"
+                                        for="setting-controls"
+                                    >
+                                        <span class="setting-label" id="setting-label-4">ON-SCREEN CONTROLS</span>
+                                        <button
+                                            type="button"
+                                            class="setting-switch"
+                                            id="setting-controls"
+                                            role="switch"
+                                            aria-checked="false"
+                                            aria-labelledby="setting-label-4"
+                                            data-setting="controls"
+                                            data-on="show"
+                                            data-off="hide"
+                                        >
+                                            <span class="setting-switch-knob"></span>
+                                        </button>
+                                    </label>
 
-                                <label
-                                    class="setting-group setting-toggle"
-                                    for="setting-scenery"
-                                >
-                                    <span class="setting-label" id="setting-label-2">PERFORMANCE MODE</span>
-                                    <button
-                                        type="button"
-                                        class="setting-switch"
-                                        id="setting-scenery"
-                                        role="switch"
-                                        aria-checked="false"
-                                        aria-labelledby="setting-label-2"
-                                        aria-describedby="setting-note-scenery"
-                                        data-setting="scenery"
-                                        data-on="reduced"
-                                        data-off="full"
+                                    <label
+                                        class="setting-group setting-toggle"
+                                        for="setting-scenery"
                                     >
-                                        <span class="setting-switch-knob"></span>
-                                    </button>
-                                    <span class="setting-note" id="setting-note-scenery">
-                                        Leaves out trees, shadows and heat haze, and thins out rain and snow, so the game runs smoothly on slower devices.
-                                    </span>
-                                </label>
-                                <div
-                                    class="setting-group"
-                                    role="group"
-                                    aria-labelledby="setting-label-theme"
-                                    aria-describedby="setting-note-theme"
-                                >
-                                    <span
-                                        class="setting-label"
-                                        id="setting-label-theme"
-                                        >THEME</span
-                                    >
+                                        <span class="setting-label" id="setting-label-2">PERFORMANCE MODE</span>
+                                        <button
+                                            type="button"
+                                            class="setting-switch"
+                                            id="setting-scenery"
+                                            role="switch"
+                                            aria-checked="false"
+                                            aria-labelledby="setting-label-2"
+                                            aria-describedby="setting-note-scenery"
+                                            data-setting="scenery"
+                                            data-on="reduced"
+                                            data-off="full"
+                                        >
+                                            <span class="setting-switch-knob"></span>
+                                        </button>
+                                        <span class="setting-note" id="setting-note-scenery">
+                                            Leaves out trees, shadows and heat haze, and thins out rain and snow, so the game runs smoothly on slower devices.
+                                        </span>
+                                    </label>
                                     <div
-                                        class="setting-options"
-                                        style="--options: 3"
+                                        class="setting-group"
+                                        role="group"
+                                        aria-labelledby="setting-label-theme"
+                                        aria-describedby="setting-note-theme"
                                     >
-                                        <button
-                                            type="button"
-                                            class="setting-option"
-                                            data-setting="theme"
-                                            data-value="system"
+                                        <span
+                                            class="setting-label"
+                                            id="setting-label-theme"
+                                            >THEME</span
                                         >
-                                            System
-                                        </button>
-                                        <button
-                                            type="button"
-                                            class="setting-option"
-                                            data-setting="theme"
-                                            data-value="light"
+                                        <div
+                                            class="setting-options"
+                                            style="--options: 3"
                                         >
-                                            Light
-                                        </button>
-                                        <button
-                                            type="button"
-                                            class="setting-option"
-                                            data-setting="theme"
-                                            data-value="dark"
-                                        >
-                                            Dark
-                                        </button>
+                                            <button
+                                                type="button"
+                                                class="setting-option"
+                                                data-setting="theme"
+                                                data-value="system"
+                                            >
+                                                System
+                                            </button>
+                                            <button
+                                                type="button"
+                                                class="setting-option"
+                                                data-setting="theme"
+                                                data-value="light"
+                                            >
+                                                Light
+                                            </button>
+                                            <button
+                                                type="button"
+                                                class="setting-option"
+                                                data-setting="theme"
+                                                data-value="dark"
+                                            >
+                                                Dark
+                                            </button>
+                                        </div>
+                                        <p class="setting-note" id="setting-note-theme">
+                                            Colours the page around the game on
+                                            larger screens, and the trail editor.
+                                            System follows your device.
+                                        </p>
                                     </div>
-                                    <p class="setting-note" id="setting-note-theme">
-                                        Colours the page around the game on
-                                        larger screens, and the trail editor.
-                                        System follows your device.
-                                    </p>
-                                </div>
-                                <h4 class="menu-section"><strong>AUDIO</strong></h4>
-                                <label
-                                    class="setting-group setting-toggle"
-                                    for="setting-sound"
-                                >
-                                    <span class="setting-label" id="setting-label-5">SOUND</span>
-                                    <button
-                                        type="button"
-                                        class="setting-switch"
-                                        id="setting-sound"
-                                        role="switch"
-                                        aria-checked="false"
-                                        aria-labelledby="setting-label-5"
-                                        data-setting="sound"
-                                        data-on="on"
-                                        data-off="off"
+                                    <h4 class="menu-section"><strong>AUDIO</strong></h4>
+                                    <label
+                                        class="setting-group setting-toggle"
+                                        for="setting-sound"
                                     >
-                                        <span class="setting-switch-knob"></span>
-                                    </button>
-                                </label>
-                                <label
-                                    class="setting-group setting-toggle"
-                                    for="setting-music"
-                                >
-                                    <span class="setting-label" id="setting-label-music">MUSIC</span>
-                                    <button
-                                        type="button"
-                                        class="setting-switch"
-                                        id="setting-music"
-                                        role="switch"
-                                        aria-checked="false"
-                                        aria-labelledby="setting-label-music"
-                                        data-setting="music"
-                                        data-on="on"
-                                        data-off="off"
-                                    >
-                                        <span class="setting-switch-knob"></span>
-                                    </button>
-                                </label>
-                                <div
-                                    class="setting-group"
-                                    role="group"
-                                    aria-labelledby="setting-label-6"
-                                >
-                                    <span
-                                        class="setting-label"
-                                        id="setting-label-6"
-                                        >VOLUME</span
-                                    >
-                                    <div class="setting-range">
-                                        <input
-                                            type="range"
-                                            id="setting-volume"
-                                            min="0"
-                                            max="100"
-                                            step="5"
-                                            aria-label="Volume"
-                                        />
-                                        <output
-                                            id="setting-volume-value"
-                                            for="setting-volume"
-                                            >80</output
+                                        <span class="setting-label" id="setting-label-5">SOUND</span>
+                                        <button
+                                            type="button"
+                                            class="setting-switch"
+                                            id="setting-sound"
+                                            role="switch"
+                                            aria-checked="false"
+                                            aria-labelledby="setting-label-5"
+                                            data-setting="sound"
+                                            data-on="on"
+                                            data-off="off"
                                         >
+                                            <span class="setting-switch-knob"></span>
+                                        </button>
+                                    </label>
+                                    <label
+                                        class="setting-group setting-toggle"
+                                        for="setting-music"
+                                    >
+                                        <span class="setting-label" id="setting-label-music">MUSIC</span>
+                                        <button
+                                            type="button"
+                                            class="setting-switch"
+                                            id="setting-music"
+                                            role="switch"
+                                            aria-checked="false"
+                                            aria-labelledby="setting-label-music"
+                                            data-setting="music"
+                                            data-on="on"
+                                            data-off="off"
+                                        >
+                                            <span class="setting-switch-knob"></span>
+                                        </button>
+                                    </label>
+                                    <div
+                                        class="setting-group"
+                                        role="group"
+                                        aria-labelledby="setting-label-6"
+                                    >
+                                        <span
+                                            class="setting-label"
+                                            id="setting-label-6"
+                                            >VOLUME</span
+                                        >
+                                        <div class="setting-range">
+                                            <input
+                                                type="range"
+                                                id="setting-volume"
+                                                min="0"
+                                                max="100"
+                                                step="5"
+                                                aria-label="Volume"
+                                            />
+                                            <output
+                                                id="setting-volume-value"
+                                                for="setting-volume"
+                                                >80</output
+                                            >
+                                        </div>
                                     </div>
-                                </div>
 
-                                <h4 class="menu-section"><strong>GAMEPLAY</strong></h4>
-                                <label
-                                    class="setting-group setting-toggle"
-                                    for="setting-haptics"
-                                    id="setting-haptics-group"
-                                >
-                                    <span class="setting-label" id="setting-label-7">VIBRATION</span>
+                                    <h4 class="menu-section"><strong>GAMEPLAY</strong></h4>
+                                    <label
+                                        class="setting-group setting-toggle"
+                                        for="setting-haptics"
+                                        id="setting-haptics-group"
+                                    >
+                                        <span class="setting-label" id="setting-label-7">VIBRATION</span>
+                                        <button
+                                            type="button"
+                                            class="setting-switch"
+                                            id="setting-haptics"
+                                            role="switch"
+                                            aria-checked="false"
+                                            aria-labelledby="setting-label-7"
+                                            aria-describedby="setting-note-haptics"
+                                            data-setting="haptics"
+                                            data-on="on"
+                                            data-off="off"
+                                        >
+                                            <span class="setting-switch-knob"></span>
+                                        </button>
+                                        <span class="setting-note" id="setting-note-haptics">
+                                            A buzz on landings and crashes, on your phone or controller.
+                                        </span>
+                                    </label>
+                                    <div
+                                        class="setting-group"
+                                        role="group"
+                                        aria-labelledby="setting-label-8"
+                                        aria-describedby="setting-note-ghost"
+                                    >
+                                        <span
+                                            class="setting-label"
+                                            id="setting-label-8"
+                                            >GHOST OF BEST RUN</span
+                                        >
+                                        <div
+                                            class="setting-options"
+                                            style="--options: 3"
+                                        >
+                                            <button
+                                                type="button"
+                                                class="setting-option"
+                                                data-setting="ghost"
+                                                data-value="on"
+                                            >
+                                                Mine
+                                            </button>
+                                            <button
+                                                type="button"
+                                                class="setting-option"
+                                                data-setting="ghost"
+                                                data-value="world"
+                                            >
+                                                World
+                                            </button>
+                                            <button
+                                                type="button"
+                                                class="setting-option"
+                                                data-setting="ghost"
+                                                data-value="off"
+                                            >
+                                                Off
+                                            </button>
+                                        </div>
+                                        <p class="setting-note" id="setting-note-ghost">
+                                            Mine races your own best run. World
+                                            races the world's best instead, when
+                                            it is faster.
+                                        </p>
+                                    </div>
                                     <button
                                         type="button"
-                                        class="setting-switch"
-                                        id="setting-haptics"
-                                        role="switch"
-                                        aria-checked="false"
-                                        aria-labelledby="setting-label-7"
-                                        aria-describedby="setting-note-haptics"
-                                        data-setting="haptics"
-                                        data-on="on"
-                                        data-off="off"
+                                        class="menu-back settings-reset"
+                                        id="reset-settings"
+                                        data-icon-before="undo"
                                     >
-                                        <span class="setting-switch-knob"></span>
+                                        RESET ALL SETTINGS
                                     </button>
-                                    <span class="setting-note" id="setting-note-haptics">
-                                        A buzz on landings and crashes, on your phone or controller.
-                                    </span>
-                                </label>
-                                <div
-                                    class="setting-group"
-                                    role="group"
-                                    aria-labelledby="setting-label-8"
-                                    aria-describedby="setting-note-ghost"
-                                >
-                                    <span
-                                        class="setting-label"
-                                        id="setting-label-8"
-                                        >GHOST OF BEST RUN</span
-                                    >
-                                    <div
-                                        class="setting-options"
-                                        style="--options: 3"
-                                    >
-                                        <button
-                                            type="button"
-                                            class="setting-option"
-                                            data-setting="ghost"
-                                            data-value="on"
-                                        >
-                                            Mine
-                                        </button>
-                                        <button
-                                            type="button"
-                                            class="setting-option"
-                                            data-setting="ghost"
-                                            data-value="world"
-                                        >
-                                            World
-                                        </button>
-                                        <button
-                                            type="button"
-                                            class="setting-option"
-                                            data-setting="ghost"
-                                            data-value="off"
-                                        >
-                                            Off
-                                        </button>
-                                    </div>
-                                    <p class="setting-note" id="setting-note-ghost">
-                                        Mine races your own best run. World
-                                        races the world's best instead, when
-                                        it is faster.
-                                    </p>
-                                </div>
-                                <button
-                                    type="button"
-                                    class="menu-back settings-reset"
-                                    id="reset-settings"
-                                    data-icon-before="undo"
-                                >
-                                    RESET ALL SETTINGS
-                                </button>
 
-                                <h4 class="menu-section"><strong>ABOUT</strong></h4>
-                                <button
-                                    type="button"
-                                    class="menu-back settings-reset"
-                                    id="show-credits"
-                                    data-icon-before="star"
-                                >
-                                    CREDITS
-                                </button>
-                            </div>
-                            <div
-                                class="dashboard-settings"
-                                id="settings-controls"
-                                role="tabpanel"
-                                aria-labelledby="settings-tab-controls"
-                                hidden
-                            >
-                                <div
-                                    class="setting-group setting-keys"
-                                    role="group"
-                                    aria-labelledby="setting-label-9"
-                                >
-                                    <span
-                                        class="setting-label"
-                                        id="setting-label-9"
-                                        >KEYBOARD</span
+                                    <h4 class="menu-section"><strong>ABOUT</strong></h4>
+                                    <button
+                                        type="button"
+                                        class="menu-back settings-reset"
+                                        id="show-credits"
+                                        data-icon-before="star"
                                     >
-                                    <div
-                                        class="key-bindings"
-                                        id="key-bindings"
-                                    ></div>
+                                        CREDITS
+                                    </button>
                                 </div>
                                 <div
-                                    class="setting-group setting-gamepad"
-                                    role="group"
-                                    aria-labelledby="setting-label-10"
+                                    class="dashboard-settings"
+                                    id="settings-controls"
+                                    role="tabpanel"
+                                    aria-labelledby="settings-tab-controls"
+                                    hidden
                                 >
-                                    <span
-                                        class="setting-label"
-                                        id="setting-label-10"
-                                        >GAMEPAD</span
-                                    >
                                     <div
-                                        class="gamepad-figure"
-                                        id="gamepad-diagram"
-                                    ></div>
-                                    <p class="setting-note">
-                                        In menus: stick or D-pad moves · A
-                                        selects · B goes back · LB / RB switch
-                                        tabs
-                                    </p>
+                                        class="setting-group setting-keys"
+                                        role="group"
+                                        aria-labelledby="setting-label-9"
+                                    >
+                                        <span
+                                            class="setting-label"
+                                            id="setting-label-9"
+                                            >KEYBOARD</span
+                                        >
+                                        <div
+                                            class="key-bindings"
+                                            id="key-bindings"
+                                        ></div>
+                                    </div>
+                                    <div
+                                        class="setting-group setting-gamepad"
+                                        role="group"
+                                        aria-labelledby="setting-label-10"
+                                    >
+                                        <span
+                                            class="setting-label"
+                                            id="setting-label-10"
+                                            >GAMEPAD</span
+                                        >
+                                        <div
+                                            class="gamepad-figure"
+                                            id="gamepad-diagram"
+                                        ></div>
+                                        <p class="setting-note">
+                                            In menus: stick or D-pad moves · A
+                                            selects · B goes back · LB / RB switch
+                                            tabs
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         </div>

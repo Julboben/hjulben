@@ -20,6 +20,7 @@ import { RIDE_VERSION } from '../ride.js';
 import { normalizeAuthor, normalizeTrail, validateTrail, medalFor } from '../trail-schema.js';
 import { ACTION_LABELS, keyLabel } from '../input.js';
 import { createGamepadDiagram } from './gamepad-diagram.js';
+import { createMenuScene } from './menu-scene.js';
 import { keyChoices, keyTextNodes } from './key-text.js';
 import { canRumble } from '../haptics.js';
 import { VERSION } from '../version.js';
@@ -130,6 +131,31 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
   let accountBusy = false;
 
   const isOpen = () => !$('menu-screen').hidden;
+
+  // The open screen, by name, and the element of each. Home's buttons stay on
+  // screen beside the others in the column layout, so the stylesheet shows
+  // and hides them by the menu's data-view rather than the hidden attribute.
+  const VIEWS = {
+    home: 'menu-home', riders: 'menu-riders-view', trails: 'menu-trail-view', leaderboard: 'menu-leaderboard-view',
+    save: 'menu-save-view', look: 'menu-look-view', how: 'menu-how-view', settings: 'menu-settings-view',
+    changelog: 'menu-changelog-view', credits: 'menu-credits-view', achievements: 'menu-achievements-view'
+  };
+  let currentView = 'home';
+  const onHome = () => currentView === 'home';
+
+  /** The home button that opens `view`, marked in the column while it is open. */
+  function viewButton(view) {
+    if (view === 'credits') return creditsFrom === 'settings' ? $('menu-settings') : null;
+    if (view === 'save') return creatorFromRiders ? $('menu-riders') : null;
+    const id = {
+      trails: 'menu-trails', leaderboard: 'menu-leaderboard', look: 'menu-garage', achievements: 'menu-achievements',
+      riders: 'menu-riders', settings: 'menu-settings', how: 'menu-how-to'
+    }[view];
+    return id ? $(id) : null;
+  }
+
+  /** Whether the stylesheet lays the menu out as a column beside the open screen (see .menu-screen in css/game.css). */
+  const columnLayout = () => getComputedStyle($('menu-screen')).getPropertyValue('--menu-layout').trim() === 'column';
 
   // Fresh world results rebuild the board while the menu is on screen.
   window.addEventListener(ONLINE_LEADERBOARD_EVENT, () => {
@@ -270,13 +296,19 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     previewFrame ||= requestAnimationFrame(drainPreviews);
   }
 
+  // One preview paints a frame, and only one on the open screen: the others
+  // wait until theirs opens (see showView), so previews nobody sees never
+  // hold up the frames of the moving backdrop.
+  const onScreen = job => job.target.getClientRects().length > 0;
   function drainPreviews() {
     previewFrame = 0;
     if (!isOpen()) { previewQueue = []; return; }
-    let job;
-    while ((job = previewQueue.shift()) && !job.target.isConnected);
-    if (job) copyPreview(renderPreview(job.key, job.render), job.target);
-    if (previewQueue.length) previewFrame = requestAnimationFrame(drainPreviews);
+    previewQueue = previewQueue.filter(job => job.target.isConnected);
+    const job = previewQueue.find(onScreen);
+    if (!job) return;
+    previewQueue.splice(previewQueue.indexOf(job), 1);
+    copyPreview(renderPreview(job.key, job.render), job.target);
+    if (previewQueue.some(onScreen)) previewFrame = requestAnimationFrame(drainPreviews);
   }
 
   /** A rider's head, as a round avatar for the rider list and leaderboard. */
@@ -723,40 +755,38 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     return art;
   };
 
-  function drawBackground() {
-    const backgroundCanvas = $('menu-background');
-    const bounds = backgroundCanvas.getBoundingClientRect();
-    if (!bounds.width || !bounds.height) return;
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    // Resizing clears and reallocates the canvas, so it is only done when the
-    // size changes, not on every frame of the drifting clouds.
-    const width = Math.round(bounds.width * dpr), height = Math.round(bounds.height * dpr);
-    if (backgroundCanvas.width !== width) backgroundCanvas.width = width;
-    if (backgroundCanvas.height !== height) backgroundCanvas.height = height;
-    const backgroundContext = backgroundCanvas.getContext('2d');
-    backgroundContext.setTransform(dpr, 0, 0, dpr, 0, 0);
-    backgroundContext.imageSmoothingEnabled = false;
-    gameArtFor(backgroundContext).drawBackground({
-      width: bounds.width, height: bounds.height,
-      palette: trails[session.saveGame?.trail || 0],
-      cameraX: 260, cameraY: 0,
-      full: session.preferences.scenery === 'full',
-      // Moves land on device pixels rather than art pixels, as in the game,
-      // so the drifting clouds glide instead of stepping.
-      smooth: true,
-      sceneTime: reducedMotion ? 0 : performance.now() / 1000
+  // Behind the menu, the rider waits at the start of the ride paused under
+  // it, or else of the career's next trail, while the camera glides along it
+  // (see menu-scene.js).
+  const menuScene = createMenuScene(/** @type {HTMLCanvasElement} */ ($('menu-background')));
+
+  /** Draws the backdrop `dt` seconds on from the last frame. */
+  function drawBackground(dt = 0) {
+    const bounds = $('menu-background').getBoundingClientRect();
+    const trail = (canResume() && session.trail) || (trails[session.savedTrail] ?? trails[0]);
+    menuScene.show(trail, session.look, session.preferences.headlight !== 'off');
+    // In the column layout the trail is seen beside the column, so the camera
+    // centres on that part of the screen.
+    const column = columnLayout() ? document.querySelector('.menu-column')?.getBoundingClientRect() : null;
+    const focus = column ? (column.right - bounds.left + bounds.width) / 2 / bounds.width : 0.5;
+    menuScene.draw({
+      viewWidth: Math.round(bounds.width), viewHeight: Math.round(bounds.height),
+      dt, focus, full: session.preferences.scenery === 'full'
     });
   }
 
-  // The clouds drift in the trail's wind while the menu is open. The browser
-  // holds animation frames in a hidden tab, so the loop pauses there too.
+  // The trail moves while the menu is open. The browser holds animation
+  // frames in a hidden tab, so the loop pauses there too, and the frame after
+  // a long pause steps on as little as any other.
   let backgroundFrame = 0;
   function animateBackground() {
     if (backgroundFrame || reducedMotion) return;
-    const step = () => {
+    let last = performance.now();
+    const step = now => {
       backgroundFrame = 0;
       if (!isOpen() || reducedMotion) return;
-      drawBackground();
+      drawBackground(Math.min(0.05, Math.max(0, now - last) / 1000));
+      last = now;
       backgroundFrame = requestAnimationFrame(step);
     };
     backgroundFrame = requestAnimationFrame(step);
@@ -797,32 +827,57 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     syncBell();
   }
 
+  /**
+   * The controls in `area` the keys and a gamepad can pick. Skips those in
+   * hidden parts, such as another tab's panel, and ones the stylesheet hides,
+   * such as the trail editor on touch screens.
+   */
+  const pickable = area => [...area.querySelectorAll('button:not([disabled]), input:not([disabled])')]
+    .filter(control => !control.closest('[hidden]') && control.getClientRects().length > 0);
+
   function controls() {
     if (isLookConfirmOpen()) return [...$('look-confirm').querySelectorAll('button')];
     if (panel.open) return [...panel.querySelectorAll('button')];
-    const visibleView = document.querySelector('.menu-view:not([hidden])');
-    // Skips controls in hidden parts of the view, such as another tab's panel,
-    // and ones the stylesheet hides, such as the trail editor on touch screens.
-    const list = visibleView ? [...visibleView.querySelectorAll('button:not([disabled]), input:not([disabled])')]
-      .filter(control => !control.closest('[hidden]') && control.getClientRects().length > 0) : [];
+    const list = pickable($(VIEWS[currentView]));
     // The bell sits above the home view's buttons, so up from the first reaches it.
     return $('notification-bell').hidden ? list : [$('notification-bell'), ...list];
   }
 
-  function selectControl(control) {
+  const selectedControl = () => $('menu-screen').querySelector('.menu-selected');
+
+  /** Picks `control`, scrolling it into view unless `scroll` is false, as for the mouse pointing at it. */
+  function selectControl(control, { scroll = true } = {}) {
     document.querySelectorAll('.menu-selected').forEach(item => item.classList.remove('menu-selected'));
     if (!control) return;
     control.classList.add('menu-selected');
-    control.focus({ preventScroll: false });
+    control.focus({ preventScroll: !scroll });
   }
 
+  // In the column layout home's buttons stay beside the open screen: up and
+  // down move within the side the selection is on, left and right cross over.
+  const inColumn = control => columnLayout() && !onHome() && Boolean(control) && $('menu-home').contains(control);
+
   function moveSelection(direction) {
-    const list = controls();
+    const selected = selectedControl();
+    const list = inColumn(selected) ? pickable($('menu-home')) : controls();
     if (!list.length) return false;
-    const selected = $('menu-screen').querySelector('.menu-selected');
     const current = list.indexOf(selected);
     const next = current < 0 ? 0 : (current + direction + list.length) % list.length;
     selectControl(list[next]);
+    sounds.menuMove();
+    return true;
+  }
+
+  /** Crosses to the column (`toColumn`) or to the open screen; false when the selection is already there. */
+  function crossOver(toColumn) {
+    if (!columnLayout() || onHome() || isLookConfirmOpen() || panel.open) return false;
+    if (inColumn(selectedControl()) === toColumn) return false;
+    const opener = viewButton(currentView);
+    const target = toColumn
+      ? (opener && !opener.hidden ? opener : pickable($('menu-home'))[0])
+      : controls().find(control => !control.matches('[data-menu-back]')) ?? controls()[0];
+    if (!target) return false;
+    selectControl(target);
     sounds.menuMove();
     return true;
   }
@@ -882,7 +937,7 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     try {
       if (closeNotifications()) return;
       if (closeTrailPicker(true)) return;
-      if ($('menu-home').hidden) goBack();
+      if (!onHome()) goBack();
       else onClose();
     } finally {
       fromHistory = false;
@@ -895,25 +950,29 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     setLookConfirm(false);
     if (panel.open) panel.close();
     if (view !== 'home') pushView(view);
-    $('menu-home').hidden = view !== 'home';
-    $('menu-riders-view').hidden = view !== 'riders';
-    $('menu-trail-view').hidden = view !== 'trails';
-    $('menu-leaderboard-view').hidden = view !== 'leaderboard';
-    $('menu-save-view').hidden = view !== 'save';
-    $('menu-look-view').hidden = view !== 'look';
-    $('menu-how-view').hidden = view !== 'how';
-    $('menu-settings-view').hidden = view !== 'settings';
-    $('menu-changelog-view').hidden = view !== 'changelog';
-    $('menu-credits-view').hidden = view !== 'credits';
+    const closing = currentView;
+    currentView = view;
+    $('menu-screen').dataset.view = view;
+    for (const [name, id] of Object.entries(VIEWS)) if (name !== 'home') $(id).hidden = name !== view;
     if (view !== 'credits') stopCredits();
-    $('menu-achievements-view').hidden = view !== 'achievements';
+    document.querySelectorAll('#menu-home [aria-current]').forEach(button => button.removeAttribute('aria-current'));
+    viewButton(view)?.setAttribute('aria-current', 'page');
     // Opened by hand, How to play has no ride waiting; either way it has been seen.
     rideAfterHowTo = null;
     $('how-ride').hidden = true;
     if (view === 'how') { syncHowTo(); saveSeenHowTo(); }
     syncBell();
+    // Previews waiting for this screen paint now (see drainPreviews).
+    if (previewQueue.length) previewFrame ||= requestAnimationFrame(drainPreviews);
+    // Each screen opens at its top, whichever of the two scrolls it.
     $('menu-scroll').scrollTop = 0;
+    const body = $(VIEWS[view]).querySelector('.menu-view-body');
+    if (body) body.scrollTop = 0;
     requestAnimationFrame(() => {
+      // Back home, the button of the screen just closed stays picked, so the
+      // keys and a gamepad carry on from where they were.
+      const opener = view === 'home' ? viewButton(closing) : null;
+      if (opener && !opener.hidden) { selectControl(opener); return; }
       const list = controls();
       // The login shortcut is for returning riders, so a new rider starts on the form.
       selectControl(list.find(button => !button.matches('[data-menu-back], #save-login-button, #notification-bell')) || list[0]);
@@ -1055,7 +1114,7 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
 
   function syncBell() {
     const count = unreadCount(riderId());
-    $('notification-bell').hidden = !isOpen() || $('menu-home').hidden;
+    $('notification-bell').hidden = !isOpen() || !onHome();
     $('notification-bell').setAttribute('aria-label', count ? `Notifications, ${count} unread` : 'Notifications');
     $('notification-count').hidden = !count;
     $('notification-count').textContent = count > 9 ? '9+' : String(count);
@@ -1090,10 +1149,13 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
   function openNotifications() {
     newInPanel = new Set();
     buildNotifications();
-    // The panel hangs from the bell, wherever the menu's frame puts it.
+    // The panel hangs from the bell, wherever the menu's frame puts it, and
+    // ends inside the frame.
     const bell = $('notification-bell').getBoundingClientRect();
+    const frame = $('menu-screen').getBoundingClientRect();
     panel.style.setProperty('--drop-top', `${bell.bottom + 12}px`);
     panel.style.setProperty('--drop-right', `${innerWidth - bell.right}px`);
+    panel.style.setProperty('--drop-bottom', `${innerHeight - frame.bottom + 14}px`);
     panel.style.setProperty('--notch-right', `${bell.width / 2 - 7}px`);
     panel.showModal();
     pushView('notifications');
@@ -1183,7 +1245,7 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
   panel.addEventListener('click', event => { if (event.target === panel) closeNotifications(); });
   panel.addEventListener('close', () => {
     syncBell();
-    if (isOpen() && !$('menu-home').hidden) selectControl($('notification-bell'));
+    if (isOpen() && onHome()) selectControl($('notification-bell'));
   });
   window.addEventListener(NOTIFICATIONS_EVENT, () => {
     syncBell();
@@ -1990,17 +2052,26 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     buildKeyBindings();
   }
 
+  /** What scrolls the open screen: its body beside the column, the whole menu otherwise. */
+  const scroller = () => (columnLayout() && $(VIEWS[currentView]).querySelector('.menu-view-body')) || $('menu-scroll');
+
+  /** Whether left and right step the leaderboard's trail: on its screen, unless the selection is in the column. */
+  const stepsLeaderboard = () => !$('menu-leaderboard-view').hidden && !isTrailPickerOpen() && !inColumn(selectedControl());
+
   /** Gamepad navigation while the menu is open. */
   function handlePad(action) {
     if (scrollsWithArrows() && (action === 'nav-up' || action === 'nav-down')) {
-      $('menu-scroll').scrollBy({ top: action === 'nav-up' ? -160 : 160, behavior: reducedMotion ? 'auto' : 'smooth' });
+      scroller().scrollBy({ top: action === 'nav-up' ? -160 : 160, behavior: reducedMotion ? 'auto' : 'smooth' });
       return;
     }
+    const stepsTrail = stepsLeaderboard();
     if (action === 'nav-up' || action === 'nav-left') {
-      if (action === 'nav-left' && !$('menu-leaderboard-view').hidden && !isTrailPickerOpen()) { stepLeaderboard(-1); sounds.menuMove(); return; }
+      if (action === 'nav-left' && stepsTrail) { stepLeaderboard(-1); sounds.menuMove(); return; }
+      if (action === 'nav-left' && crossOver(true)) return;
       moveSelection(-1);
     } else if (action === 'nav-down' || action === 'nav-right') {
-      if (action === 'nav-right' && !$('menu-leaderboard-view').hidden && !isTrailPickerOpen()) { stepLeaderboard(1); sounds.menuMove(); return; }
+      if (action === 'nav-right' && stepsTrail) { stepLeaderboard(1); sounds.menuMove(); return; }
+      if (action === 'nav-right' && crossOver(false)) return;
       moveSelection(1);
     } else if (action === 'confirm') {
       const selected = $('menu-screen').querySelector('.menu-selected');
@@ -2009,11 +2080,32 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
       stepTab(action === 'tab-prev' ? -1 : 1);
     } else if (action === 'cancel') {
       if (closeNotifications() || closeTrailPicker(true)) sounds.menuBack();
-      else if ($('menu-home').hidden) { sounds.menuBack(); goBack(); } else onClose();
+      else if (!onHome()) { sounds.menuBack(); goBack(); } else onClose();
     }
   }
 
   // Wiring.
+  // With home's buttons beside an open screen, the button of that screen
+  // closes it, and another asks first if the Garage holds an unsaved look.
+  // Caught on the way down, before the button's own handler opens its screen.
+  $('menu-home').addEventListener('click', event => {
+    const button = event.target.closest('button');
+    if (!button || onHome()) return;
+    if (button === viewButton(currentView)) {
+      event.stopPropagation();
+      sounds.menuBack();
+      goBack();
+    } else if (garageUnsaved()) {
+      event.stopPropagation();
+      setLookConfirm(true);
+    }
+  }, true);
+  // The logo and name lead back too, as a shortcut for the mouse.
+  document.querySelector('.menu-hero').addEventListener('click', event => {
+    if (event.target.closest('button') || onHome()) return;
+    sounds.menuBack();
+    goBack();
+  });
   $('menu-how-to').addEventListener('click', () => showView('how'));
   $('menu-whats-new').addEventListener('click', showChangelog);
   $('show-credits').addEventListener('click', () => showCredits('settings'));
@@ -2031,10 +2123,14 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     // Left and right adjust a focused slider instead of moving the selection.
     if (event.target.type === 'range' && (event.code === 'ArrowLeft' || event.code === 'ArrowRight')) return;
     const trailStep = { ArrowLeft: -1, KeyA: -1, ArrowRight: 1, KeyD: 1 }[event.code];
-    if (trailStep && !$('menu-leaderboard-view').hidden && !isTrailPickerOpen()) {
+    if (trailStep && stepsLeaderboard()) {
       event.preventDefault();
       stepLeaderboard(trailStep);
       sounds.menuMove();
+      return;
+    }
+    if (trailStep && crossOver(trailStep < 0)) {
+      event.preventDefault();
       return;
     }
     const direction = { ArrowUp: -1, ArrowLeft: -1, KeyW: -1, KeyA: -1, ArrowDown: 1, ArrowRight: 1, KeyS: 1, KeyD: 1 }[event.code];
@@ -2051,7 +2147,7 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
   $('menu-screen').addEventListener('pointerover', event => {
     const button = event.target.closest('button');
     if (event.pointerType === 'mouse' && button && !button.contains(event.relatedTarget)) {
-      if (button.closest('.menu-view, .menu-confirm, .notification-panel, .notification-bell')) selectControl(button);
+      if (button.closest('.menu-view, .menu-confirm, .notification-panel, .notification-bell')) selectControl(button, { scroll: false });
       sounds.menuMove();
     }
   });
@@ -2196,7 +2292,7 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
   const back = () => {
     if (closeNotifications()) return true;
     if (closeTrailPicker(true)) return true;
-    if ($('menu-home').hidden) { goBack(); return true; }
+    if (!onHome()) { goBack(); return true; }
     return false;
   };
   return { open, close, isOpen, syncHowTo, showTrailsStatus, updateDashboard, drawBackground, syncSettings, handlePad, showView, showCredits, canResume, back, refreshCloudSave, refreshNotifications, markRideStarted };
