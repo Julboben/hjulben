@@ -244,8 +244,9 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
   }
 
   // Menu art is drawn by the game's renderer from the trails themselves, a
-  // frame at a time, and kept until the rider or scenery changes.
-  // Room for the trail cards plus a slot's worth of look swatches and avatars.
+  // frame at a time, and kept until the rider or scenery changes; only the
+  // official and bonus trails' thumbnails come drawn ahead (see trailPreview).
+  // Room for the custom trails' cards plus a slot's worth of look swatches and avatars.
   const PREVIEW_CACHE_SIZE = 96;
   const previewCache = new Map();
   let previewQueue = [], previewFrame = 0;
@@ -1460,17 +1461,13 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     return heading;
   }
 
-  function trailCard({ trail, key, number, status, best = null, locked = false, kind = 'official', nisse = false, onSelect }) {
+  function trailCard({ entry, number, status, best = null, locked = false, kind = 'official', nisse = false, onSelect }) {
+    const { trail } = entry;
     const button = document.createElement('button');
     button.className = `trail-card${kind === 'official' ? '' : ` ${kind}-trail-card`}`;
     button.disabled = locked;
-    const preview = document.createElement('canvas');
+    const preview = trailPreview(entry);
     preview.className = 'trail-preview';
-    preview.setAttribute('aria-hidden', 'true');
-    // Where the author framed it, else its most eventful stretch; zoomed
-    // out, without a rider. The framing is in the key: it doesn't change the hash.
-    const framing = trail.preview ? `${trail.preview.x},${trail.preview.y}` : 'auto';
-    paintPreview(preview, previewKey('trail', key, framing), image => drawTrailPreview(image, trail, sceneOptions()));
     const numberLabel = document.createElement('span');
     numberLabel.className = 'trail-number';
     numberLabel.textContent = number;
@@ -1510,21 +1507,42 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     return button;
   }
 
+  // Where the author framed it, else its most eventful stretch; zoomed out,
+  // without a rider. Official and bonus trails come with it drawn (see
+  // scripts/lib/thumbnails.mjs), so the Trails screen opens without drawing
+  // them; others are drawn here. The framing is in the cache key, as it
+  // doesn't change the trail's hash.
+  function trailPreview(entry) {
+    if (entry.thumbnail) {
+      const image = document.createElement('img');
+      image.alt = '';
+      image.decoding = 'async';
+      image.loading = 'lazy';
+      image.src = `trails/${entry.thumbnail}`;
+      return image;
+    }
+    const { trail } = entry;
+    const canvas = document.createElement('canvas');
+    canvas.setAttribute('aria-hidden', 'true');
+    const framing = trail.preview ? `${trail.preview.x},${trail.preview.y}` : 'auto';
+    paintPreview(canvas, sceneKey('trail', trailKey(entry), framing), image => drawTrailPreview(image, trail, sceneOptions()));
+    return canvas;
+  }
+
   /** Whether the active rider has found a trail's nisse; never, without a rider. */
   const nisseFound = entry => Boolean(session.saveGame) && hasNisse(session.activeSaveSlot, nisseKey(entry), trails.length);
 
   function buildTrailCards() {
     const cards = [menuSection('OFFICIAL TRAILS', 'Career progression and official best times')];
-    trails.forEach((trail, index) => {
+    officialTrailEntries.forEach((entry, index) => {
       const locked = !session.saveGame || index > session.unlockedTrail;
       cards.push(trailCard({
-        trail,
-        key: trailKey(officialTrailEntries[index]),
+        entry,
         number: String(index + 1).padStart(2, '0'),
         status: locked ? 'LOCKED' : (index === session.savedTrail ? 'CURRENT TRAIL' : 'UNLOCKED'),
-        best: readBest(session.activeSaveSlot, trailKey(officialTrailEntries[index]), trails.length),
+        best: readBest(session.activeSaveSlot, trailKey(entry), trails.length),
         locked,
-        nisse: nisseFound(officialTrailEntries[index]),
+        nisse: nisseFound(entry),
         onSelect: () => startTrail(index)
       }));
     });
@@ -1534,8 +1552,7 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
         const key = trailKey(entry);
         const { open, hint } = bonusUnlock(entry);
         cards.push(trailCard({
-          trail: entry.trail,
-          key,
+          entry,
           number: `B${String(index + 1).padStart(2, '0')}`,
           status: open ? 'BONUS TRAIL' : hint,
           best: session.saveGame ? readBest(session.activeSaveSlot, key, trails.length) : topTime(key),
@@ -1549,8 +1566,7 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     if (customTrailEntries.length) {
       cards.push(menuSection('CUSTOM TRAILS', 'Local trails outside career progression'));
       customTrailEntries.forEach((entry, index) => cards.push(trailCard({
-        trail: entry.trail,
-        key: trailKey(entry),
+        entry,
         number: `C${String(index + 1).padStart(2, '0')}`,
         status: entry.storage === 'browser' ? 'CUSTOM · SAVED IN BROWSER' : 'CUSTOM TRAIL',
         best: topTime(trailKey(entry)),

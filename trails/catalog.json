@@ -5,277 +5,323 @@
       "id": "official:the-orchard",
       "source": "official",
       "file": "official/01-the-orchard.json",
-      "name": "The Orchard"
+      "name": "The Orchard",
+      "thumbnail": "thumbnails/official/the-orchard-1c429912.webp"
     },
     {
       "id": "official:apple-valley",
       "source": "official",
       "file": "official/02-apple-valley.json",
-      "name": "Apple Valley"
+      "name": "Apple Valley",
+      "thumbnail": "thumbnails/official/apple-valley-003308da.webp"
     },
     {
       "id": "official:windfall",
       "source": "official",
       "file": "official/03-windfall.json",
-      "name": "Windfall"
+      "name": "Windfall",
+      "thumbnail": "thumbnails/official/windfall-10e09ec6.webp"
     },
     {
       "id": "official:hay-lane",
       "source": "official",
       "file": "official/04-hay-lane.json",
-      "name": "Hay Lane"
+      "name": "Hay Lane",
+      "thumbnail": "thumbnails/official/hay-lane-1f4fba54.webp"
     },
     {
       "id": "official:windmill-hills",
       "source": "official",
       "file": "official/05-windmill-hills.json",
-      "name": "Windmill Hills"
+      "name": "Windmill Hills",
+      "thumbnail": "thumbnails/official/windmill-hills-15a0ea77.webp"
     },
     {
       "id": "official:sky-ladder",
       "source": "official",
       "file": "official/06-sky-ladder.json",
-      "name": "Sky Ladder"
+      "name": "Sky Ladder",
+      "thumbnail": "thumbnails/official/sky-ladder-b9f630af.webp"
     },
     {
       "id": "official:windmill-hill",
       "source": "official",
       "file": "official/07-windmill-hill.json",
-      "name": "Windmill Hill"
+      "name": "Windmill Hill",
+      "thumbnail": "thumbnails/official/windmill-hill-ef6e193e.webp"
     },
     {
       "id": "official:floating-fields",
       "source": "official",
       "file": "official/08-floating-fields.json",
-      "name": "Floating Fields"
+      "name": "Floating Fields",
+      "thumbnail": "thumbnails/official/floating-fields-dc09dc4e.webp"
     },
     {
       "id": "official:high-orchard",
       "source": "official",
       "file": "official/09-high-orchard.json",
-      "name": "High Orchard"
+      "name": "High Orchard",
+      "thumbnail": "thumbnails/official/high-orchard-587d6d82.webp"
     },
     {
       "id": "official:splinter-ridge",
       "source": "official",
       "file": "official/10-splinter-ridge.json",
-      "name": "Splinter Ridge"
+      "name": "Splinter Ridge",
+      "thumbnail": "thumbnails/official/splinter-ridge-f67c3e1c.webp"
     },
     {
       "id": "official:kickback",
       "source": "official",
       "file": "official/11-kickback.json",
-      "name": "Kickback"
+      "name": "Kickback",
+      "thumbnail": "thumbnails/official/kickback-3a1e6e74.webp"
     },
     {
       "id": "official:stoppie-slope",
       "source": "official",
       "file": "official/12-stoppie-slope.json",
-      "name": "Stoppie Slope"
+      "name": "Stoppie Slope",
+      "thumbnail": "thumbnails/official/stoppie-slope-a4015e02.webp"
     },
     {
       "id": "official:stump-drops",
       "source": "official",
       "file": "official/13-stump-drops.json",
-      "name": "Stump Drops"
+      "name": "Stump Drops",
+      "thumbnail": "thumbnails/official/stump-drops-e464fbb0.webp"
     },
     {
       "id": "official:switchback",
       "source": "official",
       "file": "official/14-switchback.json",
-      "name": "Switchback"
+      "name": "Switchback",
+      "thumbnail": "thumbnails/official/switchback-4983ae92.webp"
     },
     {
       "id": "official:dune-sea",
       "source": "official",
       "file": "official/15-dune-sea.json",
-      "name": "Dune Sea"
+      "name": "Dune Sea",
+      "thumbnail": "thumbnails/official/dune-sea-e63a3a72.webp"
     },
     {
       "id": "official:kicker-canyon",
       "source": "official",
       "file": "official/16-kicker-canyon.json",
-      "name": "Kicker Canyon"
+      "name": "Kicker Canyon",
+      "thumbnail": "thumbnails/official/kicker-canyon-cf5196a8.webp"
     },
     {
       "id": "official:the-sandpits",
       "source": "official",
       "file": "official/17-the-sandpits.json",
-      "name": "The Sandpits"
+      "name": "The Sandpits",
+      "thumbnail": "thumbnails/official/the-sandpits-3c37aebd.webp"
     },
     {
       "id": "official:hoodoo-crossing",
       "source": "official",
       "file": "official/18-hoodoo-crossing.json",
-      "name": "Hoodoo Crossing"
+      "name": "Hoodoo Crossing",
+      "thumbnail": "thumbnails/official/hoodoo-crossing-1b10c7c0.webp"
     },
     {
       "id": "official:mirage",
       "source": "official",
       "file": "official/19-mirage.json",
-      "name": "Mirage"
+      "name": "Mirage",
+      "thumbnail": "thumbnails/official/mirage-af250a72.webp"
     },
     {
       "id": "official:wet-feet",
       "source": "official",
       "file": "official/20-wet-feet.json",
-      "name": "Wet Feet"
+      "name": "Wet Feet",
+      "thumbnail": "thumbnails/official/wet-feet-8a5516a5.webp"
     },
     {
       "id": "official:deep-end",
       "source": "official",
       "file": "official/21-deep-end.json",
-      "name": "Deep End"
+      "name": "Deep End",
+      "thumbnail": "thumbnails/official/deep-end-7e65af63.webp"
     },
     {
       "id": "official:jetty-jump",
       "source": "official",
       "file": "official/22-jetty-jump.json",
-      "name": "Jetty Jump"
+      "name": "Jetty Jump",
+      "thumbnail": "thumbnails/official/jetty-jump-99815e8d.webp"
     },
     {
       "id": "official:boomerang",
       "source": "official",
       "file": "official/23-boomerang.json",
-      "name": "Boomerang"
+      "name": "Boomerang",
+      "thumbnail": "thumbnails/official/boomerang-700e3957.webp"
     },
     {
       "id": "official:out-and-back",
       "source": "official",
       "file": "official/24-out-and-back.json",
-      "name": "Out and Back"
+      "name": "Out and Back",
+      "thumbnail": "thumbnails/official/out-and-back-7c686cdc.webp"
     },
     {
       "id": "official:low-bridge",
       "source": "official",
       "file": "official/25-low-bridge.json",
-      "name": "Low Bridge"
+      "name": "Low Bridge",
+      "thumbnail": "thumbnails/official/low-bridge-9b50e280.webp"
     },
     {
       "id": "official:lantern-mine",
       "source": "official",
       "file": "official/26-lantern-mine.json",
-      "name": "Lantern Mine"
+      "name": "Lantern Mine",
+      "thumbnail": "thumbnails/official/lantern-mine-9c3f5b5c.webp"
     },
     {
       "id": "official:sinkhole",
       "source": "official",
       "file": "official/27-sinkhole.json",
-      "name": "Sinkhole"
+      "name": "Sinkhole",
+      "thumbnail": "thumbnails/official/sinkhole-9d3a2eac.webp"
     },
     {
       "id": "official:the-shaft",
       "source": "official",
       "file": "official/28-the-shaft.json",
-      "name": "The Shaft"
+      "name": "The Shaft",
+      "thumbnail": "thumbnails/official/the-shaft-b8286b8a.webp"
     },
     {
       "id": "official:the-ring",
       "source": "official",
       "file": "official/29-the-ring.json",
-      "name": "The Ring"
+      "name": "The Ring",
+      "thumbnail": "thumbnails/official/the-ring-0e22023e.webp"
     },
     {
       "id": "official:kerbside",
       "source": "official",
       "file": "official/30-kerbside.json",
-      "name": "Kerbside"
+      "name": "Kerbside",
+      "thumbnail": "thumbnails/official/kerbside-aec313d6.webp"
     },
     {
       "id": "official:killer-street",
       "source": "official",
       "file": "official/31-killer-street.json",
-      "name": "Killer Street"
+      "name": "Killer Street",
+      "thumbnail": "thumbnails/official/killer-street-ef3e4b7b.webp"
     },
     {
       "id": "official:spin-cycle",
       "source": "official",
       "file": "official/32-spin-cycle.json",
-      "name": "Spin Cycle"
+      "name": "Spin Cycle",
+      "thumbnail": "thumbnails/official/spin-cycle-43a6f579.webp"
     },
     {
       "id": "official:night-shift",
       "source": "official",
       "file": "official/33-night-shift.json",
-      "name": "Night Shift"
+      "name": "Night Shift",
+      "thumbnail": "thumbnails/official/night-shift-359ea819.webp"
     },
     {
       "id": "official:brake-point",
       "source": "official",
       "file": "official/34-brake-point.json",
-      "name": "Brake Point"
+      "name": "Brake Point",
+      "thumbnail": "thumbnails/official/brake-point-85471423.webp"
     },
     {
       "id": "official:rooftops",
       "source": "official",
       "file": "official/35-rooftops.json",
-      "name": "Rooftops"
+      "name": "Rooftops",
+      "thumbnail": "thumbnails/official/rooftops-1be42aae.webp"
     },
     {
       "id": "official:copenhagen-rooftops",
       "source": "official",
       "file": "official/36-copenhagen-rooftops.json",
-      "name": "Copenhagen Rooftops"
+      "name": "Copenhagen Rooftops",
+      "thumbnail": "thumbnails/official/copenhagen-rooftops-39b0ef85.webp"
     },
     {
       "id": "official:sandcastle",
       "source": "official",
       "file": "official/37-sandcastle.json",
-      "name": "Sandcastle"
+      "name": "Sandcastle",
+      "thumbnail": "thumbnails/official/sandcastle-f10c64b2.webp"
     },
     {
       "id": "official:long-way-up",
       "source": "official",
       "file": "official/38-long-way-up.json",
-      "name": "Long Way Up"
+      "name": "Long Way Up",
+      "thumbnail": "thumbnails/official/long-way-up-78499ad2.webp"
     },
     {
       "id": "official:whiteout",
       "source": "official",
       "file": "official/39-whiteout.json",
-      "name": "Whiteout"
+      "name": "Whiteout",
+      "thumbnail": "thumbnails/official/whiteout-4d1a62f9.webp"
     },
     {
       "id": "official:big-air",
       "source": "official",
       "file": "official/40-big-air.json",
-      "name": "Big Air"
+      "name": "Big Air",
+      "thumbnail": "thumbnails/official/big-air-ad71954a.webp"
     },
     {
       "id": "official:thunderhead",
       "source": "official",
       "file": "official/41-thunderhead.json",
-      "name": "Thunderhead"
+      "name": "Thunderhead",
+      "thumbnail": "thumbnails/official/thunderhead-075797c3.webp"
     },
     {
       "id": "official:elastic-summit",
       "source": "official",
       "file": "official/42-elastic-summit.json",
-      "name": "Elastic Summit"
+      "name": "Elastic Summit",
+      "thumbnail": "thumbnails/official/elastic-summit-39dcdbb3.webp"
     },
     {
       "id": "official:high-hopes",
       "source": "official",
       "file": "official/47-high-hopes.json",
-      "name": "High Hopes"
+      "name": "High Hopes",
+      "thumbnail": "thumbnails/official/high-hopes-ad70bd80.webp"
     },
     {
       "id": "bonus:the-bonny-tyler",
       "source": "bonus",
       "file": "bonus/01-the-bonny-tyler.json",
-      "name": "THE BONNY TYLER"
+      "name": "THE BONNY TYLER",
+      "thumbnail": "thumbnails/bonus/the-bonny-tyler-deb06a5c.webp"
     },
     {
       "id": "bonus:the-mining-cave",
       "source": "bonus",
       "file": "bonus/02-the-mining-cave.json",
-      "name": "The Mining Cave"
+      "name": "The Mining Cave",
+      "thumbnail": "thumbnails/bonus/the-mining-cave-40563f3c.webp"
     },
     {
       "id": "bonus:proving-ground-i",
       "source": "bonus",
       "file": "bonus/03-proving-ground-i.json",
-      "name": "Proving Ground I"
+      "name": "Proving Ground I",
+      "thumbnail": "thumbnails/bonus/proving-ground-i-16a8a644.webp"
     }
   ]
 }

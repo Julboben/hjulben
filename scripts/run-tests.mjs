@@ -39,6 +39,7 @@ const FAST = [
   check('icons', 'generate-icons.mjs'),
   { name: 'tokens', command: node('check-tokens.mjs') },
   check('sw', 'generate-sw-core.mjs'),
+  check('trails', 'generate-trail-catalog.mjs'),
   check('overview', 'generate-trails-overview.mjs'),
   check('context', 'generate-authoring-context.mjs'),
 ];

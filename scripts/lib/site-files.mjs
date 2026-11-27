@@ -6,8 +6,8 @@ import { cpSync, readFileSync, readdirSync, rmSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { repoRoot } from './trails.mjs';
 
-// Everything the two pages can request, besides the trail files (cached from
-// the catalog) and the service worker itself.
+// Everything the two pages can request, besides the trail files and their
+// thumbnails (cached from the catalog) and the service worker itself.
 const included = /\.(js|css|html|webmanifest)$|^icons\/.*\.(svg|png)$|^fonts\/.*\.woff2$/;
 // Top-level folders and files that are never served to players.
 const skipTop = new Set(['sw.js', 'scripts', 'trails', 'tests', 'node_modules', 'dist', 'coverage', 'netlify']);
@@ -35,10 +35,10 @@ export function pageFiles() {
   return walk(repoRoot).sort(byPath);
 }
 
-/** Every file the site serves: the pages' files, the shipped trails and their catalog, and the service worker and host files. */
+/** Every file the site serves: the pages' files, the shipped trails, their thumbnails and catalog, and the service worker and host files. */
 export function siteFiles() {
   const catalog = JSON.parse(readFileSync(join(repoRoot, 'trails/catalog.json'), 'utf8'));
-  const trails = catalog.trails.map(entry => `trails/${entry.file}`);
+  const trails = catalog.trails.flatMap(entry => [entry.file, entry.thumbnail].filter(Boolean).map(file => `trails/${file}`));
   return [...pageFiles(), 'trails/catalog.json', ...trails, ...SITE_ONLY];
 }
 

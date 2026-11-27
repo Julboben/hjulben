@@ -3,7 +3,8 @@
 // buttons and closing it again by its ✕, its button, Escape or the browser's
 // back, moving the selection between the column and the screen with the
 // keys, the narrower layout that gives home's buttons way to the screen,
-// and the previews that wait until their screen opens.
+// the trails' thumbnails, drawn ahead, and the previews drawn in the game,
+// which wait until their screen opens.
 //
 //   node scripts/test-menu.mjs
 //
@@ -65,7 +66,9 @@ const PAGE_HELPERS = `
     key: code => (document.querySelector('.menu-selected') ?? document.body)
       .dispatchEvent(new KeyboardEvent('keydown', { code, key: code, bubbles: true, cancelable: true })),
     frames: n => new Promise(resolve => { const step = () => (--n <= 0 ? resolve() : requestAnimationFrame(step)); requestAnimationFrame(step); }),
-    painted: canvas => canvas.width === ${576} && canvas.height === ${192},
+    // A canvas is clear until a preview, opaque sky and all, is painted into it.
+    painted: canvas => canvas.getContext('2d').getImageData(canvas.width / 2, canvas.height / 2, 1, 1).data[3] > 0,
+    howArt: () => [...document.querySelectorAll('[data-how-art]')],
   };`;
 const page = async expression => evaluate(`(async () => { ${expression} })()`);
 
@@ -76,7 +79,7 @@ check('wide: the column layout', await page(`return getComputedStyle(document.ge
 // Before any screen opens: their previews wait.
 check('wide: no preview of a closed screen paints on home', await page(`
   await t.frames(240);
-  return [...document.querySelectorAll('#menu-trail-view .trail-preview')].every(canvas => !t.painted(canvas));`));
+  return t.howArt().length > 0 && t.howArt().every(canvas => !t.painted(canvas));`));
 // The backdrop is sharp on home, where it is the view, and coarser behind a screen.
 const backdrop = await page(`
   const canvas = document.getElementById('menu-background'), width = canvas.getBoundingClientRect().width;
@@ -93,12 +96,10 @@ const trails = await page(`t.click('menu-trails'); await t.frames(2); return { v
 check('wide: Trails opens beside home\'s buttons', trails.view === 'trails' && trails.home, JSON.stringify(trails));
 check('wide: its button is marked', trails.marked === 'menu-trails', trails.marked);
 check('wide: the selection moves into the screen', !trails.inColumn);
-check('wide: its previews paint once it opens', await page(`
-  for (let i = 0; i < 300; i++) {
-    if (t.painted(document.querySelector('#menu-trail-view .trail-preview'))) return true;
-    await t.frames(1);
-  }
-  return false;`));
+check('wide: its trails show their thumbnails, drawn ahead', await page(`
+  const image = document.querySelector('#menu-trail-view .trail-preview');
+  for (let i = 0; i < 300 && !(image.complete && image.naturalWidth); i++) await t.frames(1);
+  return image.tagName === 'IMG' && image.naturalWidth === 576 && image.naturalHeight === 192;`));
 
 const crossing = await page(`
   t.key('ArrowLeft'); await t.frames(1);
@@ -131,10 +132,13 @@ const switched = await page(`
   t.click('menu-trails'); await t.frames(2);
   t.click('menu-how-to'); await t.frames(2);
   const state = history.state?.hjulben, marked = t.marked();
+  for (let i = 0; i < 300 && !t.painted(t.howArt()[0]); i++) await t.frames(1);
+  const painted = t.painted(t.howArt()[0]);
   history.back();
   for (let i = 0; i < 60 && t.view() !== 'home'; i++) await t.frames(1);
-  return { state, marked, after: t.view() };`);
+  return { state, marked, painted, after: t.view() };`);
 check('wide: another button switches the screen', switched.state === 'how' && switched.marked === 'menu-how-to', JSON.stringify(switched));
+check('wide: its previews paint once it opens', switched.painted);
 check('wide: the browser\'s back then goes home, not to the screen before', switched.after === 'home', switched.after);
 
 // --- A phone: home's buttons give way to the screen ------------------------
