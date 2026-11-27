@@ -794,6 +794,7 @@ export function startGame({ shared = null } = {}) {
 
   function setMenuOpen(open) {
     game.classList.toggle('menu-open', open);
+    if (open) delete game.dataset.arrived;
   }
 
   function closeMainMenu() {
@@ -810,20 +811,43 @@ export function startGame({ shared = null } = {}) {
     } else setState(previous === 'paused' ? 'paused' : 'running');
   }
 
+  // While the menu flies into a ride, which nothing may interrupt.
+  let flying = false;
+
   function startSelectedTrail(load, requiresSave = true) {
     if (requiresSave && !session.saveGame) return;
     endReplay();
-    menu.close();
-    setMenuOpen(false);
     menu.markRideStarted();
     openingTrail = true;
     load();
+    if (!menu.showsTrail(session.trail)) { enterRide(); return; }
+    // The trail the menu's backdrop shows is flown into: the ride's first
+    // frame is drawn now, behind the menu, which sets the camera's opening
+    // view to land on and readies the trail.
+    flying = true;
+    drawRide(0);
+    menu.flyInto($('canvas'), renderer.lastView()).then(clocks => {
+      flying = false;
+      // The ride's clouds, animals and rain carry on from the backdrop's, and
+      // it is drawn again with them, so nothing jumps as the menu goes.
+      renderer.clock = clocks.scene;
+      effects.carryWeather(clocks.weather);
+      drawRide(0);
+      game.dataset.arrived = '';
+      enterRide();
+    });
+  }
+
+  function enterRide() {
+    menu.close();
+    setMenuOpen(false);
     setState('running');
     focusGame();
     session.gameLoopStarted = true;
   }
 
   function handlePress(action) {
+    if (flying) return;
     // A new release waits for its reload; a pad can only confirm it.
     if (updatePromptOpen()) {
       if (action === 'confirm') reloadNow();
@@ -1221,6 +1245,22 @@ export function startGame({ shared = null } = {}) {
 
   // --- Frame loop ----------------------------------------------------------
 
+  /** Draws the ride `dt` seconds on, the ride and the ghost each `alpha` of the way to their next step. */
+  function drawRide(dt, alpha = 1, ghostAlpha = 1) {
+    const ride = session.ride;
+    const restore = interpolateRide(ride, alpha);
+    const ghostRide = ghost?.ride;
+    // A finished ghost is no longer stepped: hold it where it stopped.
+    const restoreGhost = ghostRide ? interpolateRide(ghostRide, ghostRide.status === 'won' ? 1 : ghostAlpha) : null;
+    renderer.draw({
+      ride, ghost: ghostRide, camera, effects, look: replay?.look ?? session.look, ghostLook: ghost?.look, state: session.state,
+      full: session.preferences.scenery === 'full', dt, debug: debugEnabled, fireworks,
+      kick: kick === null ? null : kick / KICK_SECONDS
+    });
+    restoreGhost?.();
+    restore();
+  }
+
   function frame(now) {
     fpsMeter?.frame(now);
     const elapsed = lastTime ? (now - lastTime) / 1000 : 1 / 60;
@@ -1265,17 +1305,7 @@ export function startGame({ shared = null } = {}) {
       const still = session.state === 'paused' || (session.state === 'won' && renderer.settled() && !fireworks.active() && !ghostRiding());
       if (!still || redraw) {
         redraw = false;
-        const restore = interpolateRide(ride, alpha);
-        const ghostRide = ghost?.ride;
-        // A finished ghost is no longer stepped: hold it where it stopped.
-        const restoreGhost = ghostRide ? interpolateRide(ghostRide, ghostRide.status === 'won' ? 1 : ghostAlpha) : null;
-        renderer.draw({
-          ride, ghost: ghostRide, camera, effects, look: replay?.look ?? session.look, ghostLook: ghost?.look, state: session.state,
-          full: session.preferences.scenery === 'full', dt, debug: debugEnabled, fireworks,
-          kick: kick === null ? null : kick / KICK_SECONDS
-        });
-        restoreGhost?.();
-        restore();
+        drawRide(dt, alpha, ghostAlpha);
         if (renderer.takeWoofs()) sounds.woof();
         const knock = renderer.takeBallKnock();
         if (knock) sounds.beachBall(knock);
@@ -1294,6 +1324,7 @@ export function startGame({ shared = null } = {}) {
 
   game.addEventListener('keydown', event => {
     if (input.capturing) { input.keyDown(event); return; }
+    if (flying) { event.preventDefault(); return; }
     if (event.code === 'Escape') {
       event.preventDefault();
       // With the keyboard lock held, Esc can repeat; one press must be one action.

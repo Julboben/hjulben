@@ -2374,6 +2374,15 @@ export function createRenderer(canvas, { still = false } = {}) {
     },
     /** Where the rider was in the last frame, as fractions of the view's width and height. */
     riderOnScreen: () => riderOnScreen,
+    /** The last frame's view: its top left in world units, and device pixels per world unit. */
+    lastView: () => ({ x: cameraX, y: cameraY, worldToDevice: pixelScale / ART_PIXEL }),
+    /** The scene's clock in milliseconds, which moves the clouds, props and animals. */
+    get clock() {
+      return sceneClock;
+    },
+    set clock(ms) {
+      sceneClock = ms;
+    },
     get width() {
       return W;
     },

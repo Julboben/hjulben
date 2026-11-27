@@ -771,6 +771,7 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
 
   /** Draws the backdrop `dt` seconds on from the last frame. */
   function drawBackground(dt = 0) {
+    if (flight) { fly(dt); return; }
     const bounds = $('menu-background').getBoundingClientRect();
     const trail = (canResume() && session.trail) || (trails[session.savedTrail] ?? trails[0]);
     menuScene.show(trail, session.look, session.preferences.headlight !== 'off');
@@ -803,6 +804,76 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
       backgroundFrame = requestAnimationFrame(step);
     };
     backgroundFrame = requestAnimationFrame(step);
+  }
+
+  // Starting the trail the backdrop shows, the menu fades and the camera
+  // flies from the backdrop's view into the ride's first, zooming to the
+  // ride's scale, and the ride takes over where it lands. The renderer only
+  // draws whole device pixels per art pixel, so the backdrop is drawn at its
+  // own and its canvas stretched to the zoom between. It draws just the world
+  // its part of the screen shows, which narrows from the whole menu to the
+  // ride's canvas, as the sky, sun and stars are placed by the view's size.
+  let flight = null;
+  // The seconds a flight takes: longer the farther the backdrop's camera has
+  // glided from the rider, up to the most.
+  const FLIGHT = { least: 0.7, most: 1.4, perWorldUnit: 1 / 3000 };
+
+  /** Whether the backdrop shows `trail`, so starting it can fly into the ride. */
+  const showsTrail = trail => isOpen() && !reducedMotion && Boolean(backgroundFrame) && menuScene.trail === trail;
+
+  /**
+   * Where a canvas drawn with `view` (see the renderer's lastView) is on
+   * screen, and where it puts the world there: the CSS pixels per world
+   * unit, and the world's origin on screen.
+   */
+  function placement(canvas, view) {
+    const box = canvas.getBoundingClientRect();
+    const scale = view.worldToDevice * box.width / canvas.width;
+    return { box, scale, x: box.left - view.x * scale, y: box.top - view.y * scale };
+  }
+
+  /**
+   * Flies from the backdrop into `view`, the ride's first frame as drawn on
+   * `canvas`, which the menu covers; resolves with the backdrop's clocks
+   * (see the menu scene's) when the ride can take over.
+   */
+  function flyInto(canvas, view) {
+    const from = placement($('menu-background'), menuScene.lastView()), to = placement(canvas, view);
+    // The point the flight turns on: the middle of the ride's view.
+    const anchor = { x: to.box.left + to.box.width / 2, y: to.box.top + to.box.height / 2 };
+    const start = { x: (anchor.x - from.x) / from.scale, y: (anchor.y - from.y) / from.scale };
+    const end = { x: (anchor.x - to.x) / to.scale, y: (anchor.y - to.y) / to.scale };
+    const duration = clamp(FLIGHT.least + Math.hypot(end.x - start.x, end.y - start.y) * FLIGHT.perWorldUnit, FLIGHT.least, FLIGHT.most);
+    $('menu-screen').dataset.flying = '';
+    $('menu-screen').inert = true;
+    return new Promise(resolve => {
+      flight = { from, to, anchor, start, end, duration, time: 0, screen: $('menu-screen').getBoundingClientRect(), resolve };
+    });
+  }
+
+  /** Draws the flight `dt` seconds on, and hands over to the ride once it has landed. */
+  function fly(dt) {
+    const { from, to, anchor, start, end, duration, screen, resolve } = flight;
+    if (flight.time >= duration) { resolve(menuScene.clocks()); return; }
+    flight.time = Math.min(duration, flight.time + dt);
+    const t = flight.time / duration;
+    const eased = t < 0.5 ? 4 * t ** 3 : 1 - (-2 * t + 2) ** 3 / 2;
+    const along = (a, b) => a + (b - a) * eased;
+    // The zoom grows by the same factor every frame, so it feels even.
+    const scale = from.scale * (to.scale / from.scale) ** eased;
+    const centre = { x: along(start.x, end.x), y: along(start.y, end.y) };
+    const left = along(from.box.left, to.box.left), top = along(from.box.top, to.box.top);
+    menuScene.draw({
+      viewWidth: Math.ceil(along(from.box.width, to.box.width) / scale),
+      viewHeight: Math.ceil(along(from.box.height, to.box.height) / scale),
+      dt, full: session.preferences.scenery === 'full', sharp: true,
+      at: { x: centre.x - (anchor.x - left) / scale, y: centre.y - (anchor.y - top) / scale }
+    });
+    const backdrop = $('menu-background'), drawn = menuScene.lastView().worldToDevice;
+    Object.assign(backdrop.style, {
+      inset: 'auto', left: `${left - screen.left}px`, top: `${top - screen.top}px`,
+      width: `${backdrop.width / drawn * scale}px`, height: `${backdrop.height / drawn * scale}px`
+    });
   }
 
   function updateDashboard() {
@@ -945,6 +1016,8 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     else history.pushState(historyTag('menu'), '');
   }
   window.addEventListener('popstate', () => {
+    // A flight lands in the ride whatever happens on the way.
+    if (flight) return;
     // Mid-ride, a phone's back gesture opens the menu, as Escape does.
     if (!isOpen()) { if (session.gameLoopStarted) onBack?.(); return; }
     fromHistory = true;
@@ -1049,6 +1122,11 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     setLookConfirm(false);
     if (panel.open) panel.close();
     $('menu-screen').hidden = true;
+    if (!flight) return;
+    flight = null;
+    delete $('menu-screen').dataset.flying;
+    $('menu-screen').inert = false;
+    $('menu-background').removeAttribute('style');
   }
 
   // Riders from an earlier version get a NEW badge on What's new until they
@@ -2330,5 +2408,5 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     if (!onHome()) { goBack(); return true; }
     return false;
   };
-  return { open, close, isOpen, syncHowTo, showTrailsStatus, updateDashboard, drawBackground, syncSettings, handlePad, showView, showCredits, canResume, back, refreshCloudSave, refreshNotifications, markRideStarted };
+  return { open, close, isOpen, showsTrail, flyInto, syncHowTo, showTrailsStatus, updateDashboard, drawBackground, syncSettings, handlePad, showView, showCredits, canResume, back, refreshCloudSave, refreshNotifications, markRideStarted };
 }

@@ -3,8 +3,9 @@
 // buttons and closing it again by its ✕, its button, Escape or the browser's
 // back, moving the selection between the column and the screen with the
 // keys, the narrower layout that gives home's buttons way to the screen,
-// the trails' thumbnails, drawn ahead, and the previews drawn in the game,
-// which wait until their screen opens.
+// the trails' thumbnails, drawn ahead, the previews drawn in the game,
+// which wait until their screen opens, and Continue flying from the backdrop
+// into the ride.
 //
 //   node scripts/test-menu.mjs
 //
@@ -152,6 +153,30 @@ const phone = await page(`
   return { ...opened, back: t.view(), homeAgain: t.homeShown() };`);
 check('phone: Trails replaces home\'s buttons', phone.view === 'trails' && !phone.home, JSON.stringify(phone));
 check('phone: Back brings them back', phone.back === 'home' && phone.homeAgain, JSON.stringify(phone));
+
+// --- Continue: flying from the backdrop into the ride ------------------------
+// A rider who has seen How to play, so Continue starts their next trail,
+// the one the backdrop shows.
+await evaluate(`(async () => {
+  const storage = await import('/js/storage.js'), { trails } = await import('/js/trails.js');
+  storage.createSave(0, {}, trails.length, 'Tester');
+  storage.saveSeenHowTo();
+})()`);
+await load(1280, 800, 2);
+await evaluate(PAGE_HELPERS);
+const flight = await page(`
+  const screen = document.getElementById('menu-screen'), game = document.getElementById('game');
+  t.click('menu-continue'); await t.frames(2);
+  const flying = 'flying' in screen.dataset;
+  for (let i = 0; i < 180 && !screen.hidden; i++) await t.frames(1);
+  return { flying, landed: screen.hidden, riding: !game.classList.contains('menu-open'), arrived: 'arrived' in game.dataset };`);
+check('Continue flies from the backdrop into the ride', flight.flying && flight.landed && flight.riding && flight.arrived, JSON.stringify(flight));
+const reopened = await page(`
+  t.key('Escape'); await t.frames(2);
+  const screen = document.getElementById('menu-screen').getBoundingClientRect(), backdrop = document.getElementById('menu-background');
+  const box = backdrop.getBoundingClientRect();
+  return { open: !document.getElementById('menu-screen').hidden, styled: backdrop.hasAttribute('style'), fits: box.width === screen.width && box.height === screen.height };`);
+check('the menu opens again over a whole backdrop', reopened.open && !reopened.styled && reopened.fits, JSON.stringify(reopened));
 
 clearTimeout(timer);
 await chrome.close();

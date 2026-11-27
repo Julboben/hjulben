@@ -3,7 +3,8 @@
 // camera rests on the rider, glides along the trail to near the finish,
 // rests there and glides back, rising and falling with the ground, smoothed
 // so it never bobs over bumps. Clouds, rain, water and animals move as they
-// do on a ride.
+// do on a ride. Starting the trail, the menu flies the camera into the
+// ride's own view instead (see flyInto in menu.js).
 import { STEP } from '../config.js';
 import { createRenderer } from '../render.js';
 import { createEffects } from '../effects.js';
@@ -81,14 +82,26 @@ export function createMenuScene(canvas) {
       weatherTime = 0;
     },
 
+    /** The trail shown, or null before the first. */
+    get trail() {
+      return scene?.trail ?? null;
+    },
+
+    /** The last frame's view (see the renderer's lastView). */
+    lastView: () => renderer.lastView(),
+
+    /** The scene's clock and weather clock, for a ride to carry on from. */
+    clocks: () => ({ scene: renderer.clock, weather: effects.weather.time }),
+
     /**
      * Draws the scene `dt` seconds on, `viewWidth` × `viewHeight` CSS pixels,
      * with the camera's point `focus` of the way across: the middle of the
      * part of the menu the trail is seen in. `sharp` draws it at the screen's
      * own resolution, for when it is the view itself rather than a backdrop
-     * behind a veil; `pace` speeds the camera up or slows it down.
+     * behind a veil; `pace` speeds the camera up or slows it down. `at`, the
+     * view's top left in world units, holds the camera there instead.
      */
-    draw({ viewWidth, viewHeight, dt, focus, full, sharp, pace }) {
+    draw({ viewWidth, viewHeight, dt, focus, full, sharp, pace, at = null }) {
       if (!scene || !viewWidth || !viewHeight) return;
       // Sharp, the camera moves by device pixels, as on a ride, rather than
       // in steps of several; behind a veil, a quarter of the pixels will do.
@@ -118,8 +131,8 @@ export function createMenuScene(canvas) {
         else if (out >= glide && back < 0) x += span;
         else if (back >= 0) x += span - Math.sign(span) * glided(back, Math.abs(span));
       }
-      view.x = x - renderer.width * focus;
-      view.y = groundAt(x) - renderer.height * GROUND_LINE;
+      view.x = at ? at.x : x - renderer.width * focus;
+      view.y = at ? at.y : groundAt(x) - renderer.height * GROUND_LINE;
       renderer.draw({ ride, ghost: null, camera, effects, look: scene.look, state: 'ready', full, dt, debug: false });
     }
   };

@@ -2210,6 +2210,26 @@ h2 {
         }
     }
 }
+/* Flying into a ride (see flyInto in js/ui/menu.js), the menu and its veils
+   fade off the trail, which narrows to the ride's view, leaving the game's
+   frame around it, and the ride's overlays fade in once it lands. */
+.menu-screen[data-flying] {
+    background: transparent;
+    &::before,
+    &::after,
+    & > :not(.menu-background) {
+        opacity: 0;
+        transition: opacity 0.3s ease-out;
+    }
+}
+.game[data-arrived] :is(.hud, .control-area) {
+    animation: arrive 0.3s ease-out;
+}
+@keyframes arrive {
+    from {
+        opacity: 0;
+    }
+}
 .app-version {
     padding: 0;
     border: 0;
