@@ -330,6 +330,8 @@ const trailIds = new Set(catalog.trails.map(entry => entry.id));
   const start = sandcastle.props.find(prop => prop.type === 'beach-ball');
   assert.ok(!ballAtFlag(onGround(start.x, start.y), flower), 'not where it starts');
   assert.ok(!ballAtFlag(onGround(flower.x + 150, -813), flower), 'nor on the roof beside the keep');
+  assert.deepEqual(eventAchievements({ type: 'ball-at-flag', trail: 'official:sandcastle' }), ['king-of-the-castle'], 'on Sandcastle it counts');
+  assert.deepEqual(eventAchievements({ type: 'ball-at-flag', trail: 'custom:beach' }), [], 'on any other trail it doesn\'t');
 }
 
 console.log('Achievement tests passed.');

@@ -183,7 +183,9 @@ export const ACHIEVEMENTS = /** @type {readonly Achievement[]} */ (Object.freeze
   },
   {
     id: 'king-of-the-castle', group: 'riding', name: 'King of the Castle', icon: 'castle',
-    blurb: 'Bring the beach ball all the way up to the flag on Sandcastle.', event: e => e.type === 'ball-at-flag'
+    blurb: 'Bring the beach ball all the way up to the flag on Sandcastle.',
+    // Only Sandcastle's keep: a beach ball beside another trail's finish proves nothing.
+    event: e => e.type === 'ball-at-flag' && e.trail === 'official:sandcastle'
   },
   {
     id: 'natural-talent', group: 'riding', name: 'Natural Talent', icon: 'star',

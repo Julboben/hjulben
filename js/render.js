@@ -380,10 +380,11 @@ export function createRenderer(canvas, { still = false } = {}) {
   // as it is still behind the pause screen, rather than freezing mid-burst.
   let wonFor = 0;
   let frameNow = 0;
+  // The run the scene below belongs to (see startScene).
+  let sceneRun = null;
   // Birds and bats that have taken off, with when and which way, for the
   // current ride.
   const flights = new Map();
-  let flightRide = null;
   // Vultures swooping down to the crashed rider, by prop: where from and to,
   // and when they set off. `crashedAt` is when the ragdoll first appeared.
   const swoops = new Map();
@@ -393,17 +394,14 @@ export function createRenderer(canvas, { still = false } = {}) {
   // Halfway flags and mailboxes the rider has passed this ride: the split,
   // and when.
   const passes = new Map();
-  let passRide = null;
   let passFromX = null;
   // Each corgi's state (see corgiStep) for the current ride, and how many
   // woofs have gone off in view since game.js last asked, for the sound.
   const corgis = new Map();
-  let corgiRide = null;
   // Each beach ball's state (see ballStep) for the current ride, where the
   // wheels were last frame, for how fast they hit one, and the hardest knock
   // a ball in view has taken since game.js last asked, for the sound.
   const balls = new Map();
-  let ballRide = null;
   let wheelsBefore = null;
   let ballKnock = 0;
   // When (scene time) a coin last went into each stall's honesty box.
@@ -652,11 +650,26 @@ export function createRenderer(canvas, { still = false } = {}) {
   // away from the rider (a squirrel to its tree), once the rider comes close,
   // and crabs dig in, unless a wheel gets to one first and bowls it over.
   // Purely visual: nothing here feeds back into the simulation.
+  /**
+   * Starts the scene afresh for `run`, a new ride, or carries it on: the
+   * animals that have fled, Coda, the beach balls, the flags passed, the
+   * coins paid and the coconuts knocked down all belong to a run, which a
+   * rewind keeps while it draws earlier copies of the ride.
+   */
+  function startScene(run) {
+    if (sceneRun === run) return;
+    sceneRun = run;
+    flights.clear();
+    corgis.clear();
+    balls.clear();
+    wheelsBefore = null;
+    passes.clear();
+    payments.clear();
+    coconuts.clear();
+    passFromX = null;
+  }
+
   function startleProps(ride, focus, now) {
-    if (flightRide !== ride) {
-      flights.clear();
-      flightRide = ride;
-    }
     for (const prop of bucketProps().startled) {
       const reach = STARTLE[prop.type];
       const flight = flights.get(prop);
@@ -703,11 +716,7 @@ export function createRenderer(canvas, { still = false } = {}) {
 
   // Coda trots about and runs over to greet the rider. Purely visual, like the
   // startled animals; with reduced motion (time 0) he sits still.
-  function walkCorgis(ride, focus, dt) {
-    if (corgiRide !== ride) {
-      corgis.clear();
-      corgiRide = ride;
-    }
+  function walkCorgis(focus, dt) {
     for (const prop of bucketProps().corgis) {
       const y = Number.isFinite(prop.y) ? prop.y : terrainAt(trail, prop.x).y;
       const state = corgiStep(corgis.get(prop) ?? corgiStart(prop.flip ? -1 : 1), {
@@ -724,22 +733,19 @@ export function createRenderer(canvas, { still = false } = {}) {
   }
 
   // Beach balls go wherever the wheels push them, for the rest of the ride.
-  // Purely visual, like Coda; with reduced motion (time 0) they stay put.
+  // Purely visual, like Coda; with reduced motion (time 0) they stay put. A
+  // rewind's earlier copy of the ride (not `sceneRun`) pushes nothing: the
+  // balls roll on from where the run left them.
   function rollBalls(ride, dt) {
-    if (ballRide !== ride) {
-      balls.clear();
-      ballRide = ride;
-      wheelsBefore = null;
-    }
     const props = bucketProps().balls;
     if (!props.length) return;
     // A long frame, such as coming back to the tab, is taken as a short one.
     const step = propScene.time ? Math.min(dt, 0.05) : 0;
-    const wheels = [ride.rear, ride.front].map(({ x, y }, index) => {
+    const wheels = ride !== sceneRun ? [] : [ride.rear, ride.front].map(({ x, y }, index) => {
       const before = wheelsBefore?.[index];
       return { x, y, vx: before && dt ? (x - before.x) / dt : 0, vy: before && dt ? (y - before.y) / dt : 0 };
     });
-    wheelsBefore = wheels;
+    if (wheels.length) wheelsBefore = wheels;
     const water = waterBodies(trail);
     for (const prop of props) {
       const state = balls.get(prop) ?? ballStart(prop.x, Number.isFinite(prop.y) ? prop.y : terrainAt(trail, prop.x).y);
@@ -892,15 +898,6 @@ export function createRenderer(canvas, { still = false } = {}) {
   // time it was passed at for its timing board, and a mailbox's flag flips
   // up. Purely visual.
   function watchHalfway(ride, focus, now) {
-    if (passRide !== ride) {
-      passes.clear();
-      // Coins dropped into honesty boxes, and coconuts knocked off palms,
-      // belong to the ride too.
-      payments.clear();
-      coconuts.clear();
-      passRide = ride;
-      passFromX = null;
-    }
     const fromX = passFromX;
     passFromX = ride.ragdoll ? null : focus.x;
     if (!ride.started || ride.ragdoll || fromX === null || fromX === focus.x) return;
@@ -2125,12 +2122,14 @@ export function createRenderer(canvas, { still = false } = {}) {
    * @param {{
    *   ride: any, ghost: any, camera: any, effects: any, state: string,
    *   look?: import('./cosmetics.js').Look | null, ghostLook?: import('./cosmetics.js').Look | null,
-   *   full: boolean, dt: number, debug: boolean, kick?: number | null, held?: boolean
+   *   full: boolean, dt: number, debug: boolean, kick?: number | null, held?: boolean, run?: any
    * }} frame  `look` is the rider's, `ghostLook` the ghost's (the rider's by default);
    *   `dt` is the seconds since the last frame, 0 for a still scene; `kick`
    *   is how far through kick-starting the engine the rider is, 0 to 1; `held`
    *   keeps the rider's and the ghost's hair as it is, for a ride held where
-   *   it was left while the scene around it moves on
+   *   it was left while the scene around it moves on; `run` is the ride the
+   *   scene belongs to (see startScene), `ride` itself unless a rewind draws
+   *   an earlier copy of it
    */
   function draw({
     ride,
@@ -2146,6 +2145,7 @@ export function createRenderer(canvas, { still = false } = {}) {
     fireworks = null,
     kick = null,
     held = false,
+    run = ride,
   }) {
     const paused = state === "paused";
     wonFor = state === "won" ? wonFor + dt : 0;
@@ -2185,10 +2185,11 @@ export function createRenderer(canvas, { still = false } = {}) {
     // still with reduced motion.
     effects.water.step(reducedMotion ? 0 : animationDt, propScene.weather);
     const settleWaves = floatOnWaves([ride.ragdoll, ghost?.ragdoll], effects.water);
+    startScene(run);
     startleProps(ride, focus, now);
     watchCrash(ride, focus, now);
     watchHalfway(ride, focus, now);
-    walkCorgis(ride, focus, animationDt);
+    walkCorgis(focus, animationDt);
     rollBalls(ride, animationDt);
     camera.follow(focus, {
       facing: ride.facing,

@@ -14,7 +14,7 @@ import { cloneRide, seededRandom, stepRide } from './ride.js';
 export const REWIND_SECONDS = 0.45;
 /** Seconds the tape look's flourish over a run started again at once lasts. */
 export const FLOURISH_SECONDS = 0.3;
-/** Seconds a run must have lasted to be rewound; a shorter one starts again at once. */
+/** Seconds of riding a run needs to be rewound (its time, from setting off); a shorter one starts again at once. */
 export const SHORTEST_REWIND = 1;
 // Steps between copies at first: half a second. Once a run has MOST_COPIES,
 // every other one goes and the steps between them double, so a long run
@@ -34,6 +34,9 @@ export function createRewindRecorder() {
   let inputs = [];
   let spacing = FIRST_SPACING;
   let seed = 0;
+  // The step the bike set off at: the rewind goes back to there, not
+  // through the wait at the line.
+  let setOff = null;
 
   return {
     /** Starts keeping `ride`, just created from `rideSeed`. */
@@ -42,17 +45,20 @@ export function createRewindRecorder() {
       copies = [{ step: 0, ride: cloneRide(ride) }];
       inputs = [];
       spacing = FIRST_SPACING;
+      setOff = null;
     },
 
     /** Keeps nothing: a replay isn't the rider's to rewind. */
     clear() {
       copies = [];
       inputs = [];
+      setOff = null;
     },
 
     /** Notes the input `ride` has just been stepped with. */
     note(ride, input) {
       inputs.push(input);
+      if (setOff === null && ride.started) setOff = inputs.length - 1;
       if (inputs.length % spacing) return;
       copies.push({ step: inputs.length, ride: cloneRide(ride) });
       if (copies.length <= MOST_COPIES) return;
@@ -63,6 +69,11 @@ export function createRewindRecorder() {
     /** The steps kept, so far. */
     get steps() {
       return inputs.length;
+    },
+
+    /** The step the bike set off at, the start of the riding; the last step kept if it hasn't yet. */
+    get setOff() {
+      return setOff ?? inputs.length;
     },
 
     /** The copies kept, for the tests to see the run stays small. */
@@ -85,9 +96,10 @@ export function createRewindRecorder() {
 }
 
 /**
- * The step of the run a rewind `t` of the way through (0 … 1) shows: slow
- * off the end of the run, fast through the middle, settling on the start.
+ * The step a rewind `t` of the way through (0 … 1) shows, from `last` back
+ * to `first`: slow off the end of the run, fast through the middle,
+ * settling where the riding began.
  */
-export function rewindStep(steps, t) {
-  return Math.round(steps * (1 + Math.cos(Math.PI * t)) / 2);
+export function rewindStep(first, last, t) {
+  return Math.round(first + (last - first) * (1 + Math.cos(Math.PI * t)) / 2);
 }

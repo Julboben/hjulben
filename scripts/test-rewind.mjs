@@ -73,8 +73,15 @@ check('a long run keeps few copies', long.recorder.copies <= 256, `${long.record
 const longWrong = [...longMoments].filter(step => pose(long.recorder.at(step)) !== long.poses.get(step));
 check('and still comes back exactly', !longWrong.length, `wrong at steps ${longWrong.join(', ')}`);
 
-const steps = [0, 0.1, 0.25, 0.5, 0.75, 0.9, 1].map(t => rewindStep(1000, t));
-check('a rewind runs from the end of the run back to the start', steps[0] === 1000 && steps.at(-1) === 0 && steps.every((step, index) => !index || step <= steps[index - 1]), steps.join(' '));
+const steps = [0, 0.1, 0.25, 0.5, 0.75, 0.9, 1].map(t => rewindStep(200, 1000, t));
+check('a rewind runs from the end of the run back to where it set off', steps[0] === 1000 && steps.at(-1) === 200 && steps.every((step, index) => !index || step <= steps[index - 1]), steps.join(' '));
+
+// Waiting at the line, then riding: the riding starts where the bike set off.
+{
+  const waiting = [...Array.from({ length: 300 }, () => ({ facing: 1 })), ...Array.from({ length: 120 }, () => ({ facing: 1, accelerating: true }))];
+  const { recorder } = ride(waiting, new Set());
+  check('the riding starts where the bike set off, not at the wait', recorder.setOff === 300, `set off at step ${recorder.setOff}`);
+}
 
 if (failures) {
   console.error(`Rewind test failed: ${failures} check${failures === 1 ? '' : 's'}.`);

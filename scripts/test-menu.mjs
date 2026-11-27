@@ -260,6 +260,20 @@ const instant = await page(`${RIDE}
   ride('keyup', 'ArrowUp');
   return { ...at, ended: !('rewound' in game.dataset) };`);
 check('gas held at R starts the run again at once, under the flourish', !instant.rewinding && instant.flourish && instant.steps === 0 && instant.ended, JSON.stringify(instant));
+// A wait at the line isn't riding: a short ride after one restarts at once.
+const waited = await page(`
+  const game = document.getElementById('game');
+  const { session } = await import('/js/state.js');
+  const ride = (type, code) => (type === 'keyup' ? window : game).dispatchEvent(new KeyboardEvent(type, { code, key: code, bubbles: true }));
+  ride('keydown', 'KeyR'); ride('keyup', 'KeyR');
+  for (let i = 0; i < 120 && ('rewinding' in game.dataset || 'rewound' in game.dataset); i++) await t.frames(1);
+  await t.frames(90);
+  ride('keydown', 'ArrowUp');
+  for (let i = 0; i < 120 && session.ride.elapsed < 0.4; i++) await t.frames(1);
+  ride('keyup', 'ArrowUp');
+  ride('keydown', 'KeyR'); ride('keyup', 'KeyR');
+  return { rewinding: 'rewinding' in game.dataset, steps: session.ride.steps };`);
+check('a short ride after a wait at the line restarts at once', !waited.rewinding && waited.steps === 0, JSON.stringify(waited));
 
 // --- Buttons for a whole screen: in its head on a wide screen, where the page
 // has them on a phone. A screen starts on what it shows, not on them.

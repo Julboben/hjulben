@@ -765,7 +765,7 @@ export function startGame({ shared = null } = {}) {
     if (replay) { rideAfterReplay(); return; }
     // Pressed again during a rewind, it skips to the run.
     if (rewind) { restartRewound(rewind.shown); return; }
-    if (reducedMotion || rewindable.steps * STEP < SHORTEST_REWIND) { restartRide(); return; }
+    if (reducedMotion || session.ride.elapsed < SHORTEST_REWIND) { restartRide(); return; }
     // A run worth rewinding is played back to the start first, unless a
     // hand is on the controls, ready to go again: then it starts at once.
     if (HOLD_ACTIONS.some(action => input.down(action))) {
@@ -1347,15 +1347,17 @@ export function startGame({ shared = null } = {}) {
   function stepRewind(dt) {
     rewind.time += dt;
     if (rewind.time >= REWIND_SECONDS) { restartRide(); return; }
-    if (HOLD_ACTIONS.some(action => input.held(action))) { restartRewound(rewind.shown); return; }
-    const ride = rewindable.at(rewindStep(rewindable.steps, rewind.time / REWIND_SECONDS));
+    if (HOLD_ACTIONS.some(action => input.down(action))) { restartRewound(rewind.shown); return; }
+    const ride = rewindable.at(rewindStep(rewindable.setOff, rewindable.steps, rewind.time / REWIND_SECONDS));
     effects.rewindTo(ride.steps);
     // The weather carries on, as everything around the ride does.
     for (accumulator += dt; accumulator >= STEP; accumulator -= STEP) effects.stepWeather();
     // The camera keeps up with the ride going back, however fast.
     camera.snap = true;
+    // The animals, Coda and the beach balls carry on with the run, not
+    // with each copy of it the rewind draws.
     renderer.draw({
-      ride, ghost: null, camera, effects, look: shownLook(), state: ride.ragdoll ? 'ragdoll' : 'running',
+      ride, run: session.ride, ghost: null, camera, effects, look: shownLook(), state: ride.ragdoll ? 'ragdoll' : 'running',
       full: session.preferences.scenery === 'full', dt, debug: debugEnabled
     });
     overlay.setTimer(ride.elapsed);
@@ -1429,7 +1431,7 @@ export function startGame({ shared = null } = {}) {
         drawRide(dt, alpha, ghostAlpha);
         if (!replay && !ballAtFinish && renderer.beachBalls().some(ball => ballAtFlag(ball, ride.flower))) {
           ballAtFinish = true;
-          trackAchievements({ type: 'ball-at-flag' });
+          trackAchievements({ type: 'ball-at-flag', trail: currentTrailEntry()?.id });
         }
         if (renderer.takeWoofs()) sounds.woof();
         const knock = renderer.takeBallKnock();
