@@ -365,6 +365,7 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     ...customizerHooks,
     onChange: look => { creatorTouched = !sameLook(look, creatorStart); }
   });
+  creator.actions.append($('create-save'));
   // The Garage offers what the active rider has unlocked, checked when it opens,
   // with what they have won since they last looked tagged NEW for the visit.
   let garageOwns = lookOwner(null);

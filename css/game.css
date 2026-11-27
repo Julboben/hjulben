@@ -1847,6 +1847,13 @@ h2 {
     }
 }
 .menu-scroll {
+    /* The heights of the bar the title shrinks into away from home and of the
+       look buttons' bar on phones, and the notch and home indicator that bars
+       reach under there. */
+    --menu-bar: 76px;
+    --look-actions-bar: 72px;
+    --menu-inset-top: 0px;
+    --menu-inset-bottom: 0px;
     position: absolute;
     z-index: 2;
     inset: 0;
@@ -1854,10 +1861,31 @@ h2 {
     overflow: auto;
     scrollbar-gutter: stable both-edges;
     @media (max-width: 760px) {
-        padding: calc(24px + env(safe-area-inset-top, 0px))
+        --menu-inset-top: env(safe-area-inset-top, 0px);
+        --menu-inset-bottom: env(safe-area-inset-bottom, 0px);
+        padding: calc(24px + var(--menu-inset-top))
             calc(14px + env(safe-area-inset-right, 0px))
-            calc(24px + env(safe-area-inset-bottom, 0px))
+            calc(24px + var(--menu-inset-bottom))
             calc(14px + env(safe-area-inset-left, 0px));
+        /* Room for the look buttons pinned at the bottom (.look-actions),
+           so the last looks and a picked control scroll clear of them. */
+        &:has(.look-actions:not([hidden] *)) {
+            padding-bottom: calc(
+                24px + var(--look-actions-bar) + var(--menu-inset-bottom)
+            );
+            scroll-padding-bottom: calc(
+                var(--look-actions-bar) + var(--menu-inset-bottom) + 12px
+            );
+        }
+    }
+    @media (max-width: 520px), (max-height: 500px) {
+        --menu-bar: 64px;
+    }
+    /* The bar starts at the very top, and a control picked with the keys or
+       a gamepad scrolls into view below it rather than under it. */
+    &:has(#menu-home[hidden]) {
+        padding-top: 0;
+        scroll-padding-top: calc(var(--menu-bar) + var(--menu-inset-top) + 12px);
     }
 }
 .menu-background {
@@ -1924,6 +1952,69 @@ h2 {
     @media (max-height: 500px) {
         gap: 14px;
         margin-bottom: 18px;
+    }
+}
+/* Away from home, the title shrinks into a bar that stays at the top while the
+   screen scrolls, with the screen's own title and Back beside it. The title
+   floats, so the screen's header (a flex box, which keeps clear of floats)
+   starts wherever the title ends. The version and changelog stay on home. */
+.menu-dashboard:has(#menu-home[hidden]) {
+    width: min(560px, 100%);
+    /* Portrait phones stack home in a column; other screens need the float. */
+    display: block;
+    & .menu-hero {
+        position: sticky;
+        z-index: 3;
+        top: 0;
+        float: left;
+        width: auto;
+        height: calc(var(--menu-bar) + var(--menu-inset-top));
+        box-sizing: border-box;
+        margin: 0 18px 0 0;
+        padding-top: var(--menu-inset-top);
+        grid-template-columns: auto auto;
+        gap: 12px;
+        /* Paints the bar across the whole menu, notch included, without
+           widening what scrolls. */
+        border-image: linear-gradient(
+                var(--color-shell) calc(100% - 3px),
+                var(--color-shadow) 0
+            )
+            0 fill / / 100vmax 100vmax 0;
+        & h2 {
+            font-size: calc(var(--font-display-step) * 1.5);
+            line-height: 1;
+        }
+        & .app-version {
+            display: none;
+        }
+        /* Phones keep the wheel and give the width to the screen's title. */
+        @media (max-width: 520px) {
+            margin-right: 14px;
+            & > div {
+                display: none;
+            }
+        }
+    }
+    & .menu-logo {
+        --px: 1.5px;
+    }
+    & .menu-view-head {
+        position: sticky;
+        z-index: 4;
+        top: 0;
+        height: calc(var(--menu-bar) + var(--menu-inset-top));
+        box-sizing: border-box;
+        margin-bottom: 24px;
+        padding-top: var(--menu-inset-top);
+        & h3 {
+            --px: 2px;
+            font-size: calc(var(--font-display-step) * 1.5);
+            @media (min-width: 521px) {
+                padding-left: 18px;
+                border-left: 2px solid var(--color-border);
+            }
+        }
     }
 }
 .app-version {
@@ -3008,6 +3099,27 @@ h2 {
         cursor: default;
         box-shadow: none;
     }
+    /* Phones pin the buttons in a bar along the bottom of the screen, over
+       the home indicator, lined up with the column of looks above. */
+    @media (max-width: 760px) {
+        position: fixed;
+        z-index: 3;
+        inset: auto 0 0;
+        box-sizing: border-box;
+        height: calc(var(--look-actions-bar) + var(--menu-inset-bottom));
+        padding: 12px
+            max(
+                calc(14px + env(safe-area-inset-right, 0px)),
+                calc((100% - 560px) / 2)
+            )
+            calc(12px + var(--menu-inset-bottom))
+            max(
+                calc(14px + env(safe-area-inset-left, 0px)),
+                calc((100% - 560px) / 2)
+            );
+        border-top: 3px solid var(--color-shadow);
+        background: var(--color-shell);
+    }
 }
 .look-history,
 .look-random {
@@ -3355,7 +3467,7 @@ h2 {
    over the menu's trail. With reduced motion it is a plain list to scroll. */
 .credits {
     position: relative;
-    height: min(520px, calc(100svh - 380px));
+    height: min(520px, calc(100svh - 210px));
     min-height: 260px;
     overflow: hidden;
     outline: none;
