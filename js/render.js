@@ -341,8 +341,8 @@ export function createRenderer(canvas, { still = false } = {}) {
     trail = null,
     cameraX = 0,
     cameraY = 0,
-    // The rider's place in the last frame, for the menu's resume snapshot.
-    riderOnScreen = { x: 0.5, y: 0.5 };
+    // The rider's place in the last frame (world units), for the menu's resume snapshot.
+    riderFocus = { x: 0, y: 0 };
   let xrayMask = null,
     xrayRider = null,
     glowLayer = null,
@@ -2225,7 +2225,7 @@ export function createRenderer(canvas, { still = false } = {}) {
     // Whole device pixels, so art on the world's pixel grid never straddles a pixel.
     cameraX = Math.round(view.x * worldToDevice) / worldToDevice;
     cameraY = Math.round(view.y * worldToDevice) / worldToDevice;
-    riderOnScreen = { x: (focus.x - cameraX) / W, y: (focus.y - cameraY) / H };
+    riderFocus = { x: focus.x, y: focus.y };
     // Worked out once for everything this frame draws by the sun or in the fog.
     frameSun = sunLight({ width: W, cameraX, cameraY, weather: trail.weather, timeOfDay: trail.timeOfDay });
     const fog = fogAmount(trail.weather);
@@ -2412,8 +2412,14 @@ export function createRenderer(canvas, { still = false } = {}) {
       headlights = Boolean(on);
       lighting.setHeadlights(on);
     },
-    /** Where the rider was in the last frame, as fractions of the view's width and height. */
-    riderOnScreen: () => riderOnScreen,
+    /**
+     * Where the rider was in the last frame, in device pixels from the canvas's
+     * top left, and the device pixels per world unit it was drawn at.
+     */
+    riderOnScreen: () => {
+      const worldToDevice = pixelScale / ART_PIXEL;
+      return { x: (riderFocus.x - cameraX) * worldToDevice, y: (riderFocus.y - cameraY) * worldToDevice, worldToDevice };
+    },
     /**
      * What trails behind the rider and the ghost (their hair and capes), as
      * they are now, for another renderer to draw the same ride as it was left.

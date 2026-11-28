@@ -2,6 +2,32 @@
 
 Player-facing release notes. The game shows them under **What's new**, and each GitHub Release uses its section.
 
+## 0.8.0 — 2026-11-28
+
+### New
+- Restarting with your hands off the controls rewinds your run back to the start line in a tape-style look, with a timer counting down and a short spooling sound. With gas, brake or lean held, or on short runs and with reduced motion, it restarts at once.
+- King of the Castle: bring the beach ball all the way up to the flag on Sandcastle.
+- The menu now shows the trail behind it, with your rider waiting at the start of your next trail while the camera glides along it to the finish and the farthest apples, both ways on trails that spread out from the start. Opening the menu mid-ride flies out of your ride to the trail, showing your ride as you left it. Resume ride flies you back in, and Continue flies from the trail straight into your ride, zooming in to where it starts.
+
+### Improved
+- The Continue button names the trail it leads to, with your rider and progress below it. It takes you to your next unfinished trail, even after riding an earlier one again, and it shows instead of Resume ride until you have set off.
+- On wide screens, the menu stays in a column on the left and the screen you open appears beside it. Close it with ✕, Escape or its button. Reset all settings and Credits sit at the top of Settings, and the Garage's Random, Undo, Redo and Save Look buttons sit at the top, next to the close button.
+- On phones, the Garage's Random, Undo, Redo and Save buttons stay at the bottom of the screen while you scroll, and so does Create when you make a new rider.
+- Away from the home screen, the logo, the screen's title and Back now stay at the top while you scroll.
+- The Trails screen opens with every trail's picture already in place, and scrolls smoothly, on phones too.
+- Clouds are now soft, shaded cumulus that taper at the ends and keep their shading as they drift past the sun. Behind them a hazier, lumpy cloud deck closes into a grey overcast as the cover grows, with the sun only a faint, steady glow through it.
+- Beach balls now bounce off the rider too, not just the wheels: your head and body as you ride, and the whole tumbling rider after a crash.
+- A wheel dipping into deep water, such as a hole in a ford or landing short at a bank, no longer wipes you out while you stay above the water.
+- Sandcastle is a little easier to recover on at one point.
+
+### Fixed
+- With reduced motion on, beach balls roll when you hit them instead of standing still.
+- Gas held through the menu, or pressed again while it is open, now keeps going when you return to your ride, instead of the bike coasting.
+- Pointing at a half-hidden button in the menu no longer scrolls the menu to it.
+- The notifications list no longer runs past the bottom of the game on a large window.
+- Startled birds and ducks fly on until they are out of sight, instead of vanishing mid-flight.
+- A sun half hidden behind a wall no longer leaves a dark outline of itself on the wall.
+
 ## 0.7.0 — 2026-11-25
 
 ### New
