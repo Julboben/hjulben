@@ -20,8 +20,9 @@
 // and moves it on each frame with ballStep, as it walks Coda with corgiStep.
 //
 // Decoration only: none of it touches the simulation, and at time 0 (the
-// editor, thumbnails, reduced motion) the crab and the ball sit still and the
-// flags hang straight.
+// editor, thumbnails, reduced motion) the crab sits still and the flags hang
+// straight. The ball sits still where no time passes (the editor,
+// thumbnails), but rolls with reduced motion, as only the rider sets it going.
 
 import { GRAVITY } from "./config.js";
 import { CORGI_STEP, corgiGround, corgiReach, drawGrid } from "./corgi-props.js";
