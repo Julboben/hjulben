@@ -15,11 +15,11 @@ export const RELEASES = [
       },
       {
         "type": "new",
-        "text": "The menu now shows the trail behind it, with your rider waiting at the start of your next trail while the camera glides out to the apples on both sides of the start. Opening the menu mid-ride flies out of your ride to the trail, showing your ride as you left it. Resume ride flies you back in, and Continue flies from the trail straight into your ride, zooming in to where it starts."
+        "text": "The menu now shows the trail behind it, with your rider waiting at the start of your next trail while the camera glides along it to the finish and the farthest apples, both ways on trails that spread out from the start. Opening the menu mid-ride flies out of your ride to the trail, showing your ride as you left it. Resume ride flies you back in, and Continue flies from the trail straight into your ride, zooming in to where it starts."
       },
       {
         "type": "improved",
-        "text": "The Continue button names the trail it leads to, with your rider and progress below it. It takes you to your next unfinished trail, even after riding an earlier one again, and it replaces Resume ride when you open the menu before you have set off."
+        "text": "The Continue button names the trail it leads to, with your rider and progress below it. It takes you to your next unfinished trail, even after riding an earlier one again, and it shows instead of Resume ride until you have set off."
       },
       {
         "type": "improved",
@@ -56,10 +56,6 @@ export const RELEASES = [
       {
         "type": "fixed",
         "text": "With reduced motion on, beach balls roll when you hit them instead of standing still."
-      },
-      {
-        "type": "fixed",
-        "text": "Enter starts the ride on the menu straight after the game loads, where the highlighted Continue button used to ignore it."
       },
       {
         "type": "fixed",
