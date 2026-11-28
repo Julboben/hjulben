@@ -174,26 +174,26 @@ const flight = await page(`
   for (let i = 0; i < 180 && !screen.hidden; i++) await t.frames(1);
   return { flying, landed: screen.hidden, riding: !game.classList.contains('menu-open'), arrived: 'arrived' in game.dataset };`);
 check('Continue flies from the backdrop into the ride', flight.flying && flight.landed && flight.riding && flight.arrived, JSON.stringify(flight));
-// Before the rider sets off there is nothing to resume: Escape opens the menu
-// as it is with no ride, Continue and the trail moving behind it, flown out
-// to as this is the trail Continue leads to. Escape on home keeps it open,
-// and Continue flies into the trail again.
-const waiting = await page(`
+// Before the rider sets off there is nothing to resume: Escape flies out to
+// the menu with Continue and the trail moving behind it, and Escape again
+// flies back into the ride waiting there.
+const WAITING = `
   const screen = document.getElementById('menu-screen'), backdrop = document.getElementById('menu-background');
+  const { session } = await import('/js/state.js');
   t.key('Escape'); await t.frames(2);
-  const at = { open: !screen.hidden, flewOut: screen.dataset.flying === 'out', label: document.getElementById('active-save-label').textContent };
+  const at = { open: !screen.hidden, flewOut: screen.dataset.flying === 'out', label: document.getElementById('active-save-label').textContent,
+    title: document.getElementById('active-save-title').textContent, trail: session.trail.name };
   for (let i = 0; i < 180 && 'flying' in screen.dataset; i++) await t.frames(1);
   const drawn = backdrop.toDataURL();
   await t.frames(30);
   const moving = backdrop.toDataURL() !== drawn;
   t.key('Escape'); await t.frames(2);
-  const stays = !screen.hidden;
-  t.click('menu-continue'); await t.frames(2);
   const flying = 'flying' in screen.dataset;
   for (let i = 0; i < 180 && !screen.hidden; i++) await t.frames(1);
-  return { ...at, moving, stays, flying, landed: screen.hidden };`);
-check('Escape before setting off opens the menu with Continue, flying out to the trail moving behind it', waiting.open && waiting.flewOut && waiting.label === 'CONTINUE' && waiting.moving, JSON.stringify(waiting));
-check('where Escape keeps it open, and Continue flies into the trail', waiting.stays && waiting.flying && waiting.landed, JSON.stringify(waiting));
+  return { ...at, moving, flying, landed: screen.hidden, waiting: !session.ride.started };`;
+const waiting = await page(WAITING);
+check('Escape before setting off flies out to Continue, the trail moving behind it', waiting.open && waiting.flewOut && waiting.label === 'CONTINUE' && waiting.title === waiting.trail && waiting.moving, JSON.stringify(waiting));
+check('and Escape flies back into the ride waiting there', waiting.flying && waiting.landed && waiting.waiting, JSON.stringify(waiting));
 // Setting off makes the ride one to resume.
 await page(`
   const game = document.getElementById('game');
@@ -358,6 +358,17 @@ const next = await evaluate(`(async () => {
   return { title: document.getElementById('active-save-title').textContent, third: trails[2].name };
 })()`);
 check('Continue names the next trail not yet finished', next.title === next.third, JSON.stringify(next));
+// An earlier trail opened since, before the rider sets off on it, is the one
+// Continue leads back to.
+await evaluate(PAGE_HELPERS);
+await page(`
+  const screen = document.getElementById('menu-screen');
+  t.click('menu-trails'); await t.frames(3);
+  document.querySelector('#menu-trail-grid .trail-card').click();
+  for (let i = 0; i < 180 && !screen.hidden; i++) await t.frames(1);
+  await t.frames(30);`);
+const earlier = await page(WAITING);
+check('Continue leads back to an earlier trail opened, not the next one', earlier.label === 'CONTINUE' && earlier.title === earlier.trail && earlier.title !== next.third && earlier.landed, JSON.stringify(earlier));
 
 clearTimeout(timer);
 await chrome.close();

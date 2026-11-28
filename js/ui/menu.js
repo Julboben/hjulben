@@ -199,14 +199,18 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
   });
 
   /**
-   * A ride is only resumable once the rider has set off on it, as nothing is
-   * lost before then, and while it still belongs to the active save.
+   * Whether there is a ride behind the menu to go back to: one opened since
+   * the page loaded that still belongs to the active save. Before the rider
+   * sets off on it, Continue leads back to it; after, Resume ride does.
    */
-  function canResume() {
-    if (!session.gameLoopStarted || !session.ride?.started) return false;
+  function rideBehind() {
+    if (!session.gameLoopStarted) return false;
     if (session.trailSource === 'official' && !session.saveGame) return false;
     return (session.saveGame?.createdAt ?? null) === session.rideSaveId;
   }
+
+  /** A ride to resume: one the rider has set off on, as nothing is lost before then. */
+  const canResume = () => rideBehind() && Boolean(session.ride?.started);
 
   function startTrail(index) {
     beforeFirstRide(() => {
@@ -355,7 +359,7 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
 
   function drawActiveSaveIllustration() {
     const canvasElement = $('active-save-bike');
-    if (canResume()) { drawRideSnapshot(canvasElement); return; }
+    if (rideBehind()) { drawRideSnapshot(canvasElement); return; }
     if (!session.saveGame) {
       canvasElement.getContext('2d').clearRect(0, 0, canvasElement.width, canvasElement.height);
       return;
@@ -803,10 +807,14 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
   // glides along it (see menu-scene.js).
   const menuScene = createMenuScene(/** @type {HTMLCanvasElement} */ ($('menu-background')));
 
-  /** Shows the backdrop's scene: over a ride that can be resumed, the ride as it was left; else the rider's next trail. */
+  /**
+   * Shows the backdrop's scene: over a ride that can be resumed, the ride as
+   * it was left; over one not yet set off on, its trail; else the rider's
+   * next trail.
+   */
   function showBackdrop() {
     const left = canResume() ? leftRide() : null;
-    const trail = left ? session.trail : trails[session.unlockedTrail];
+    const trail = rideBehind() ? session.trail : trails[session.unlockedTrail];
     menuScene.show(trail, left?.look ?? session.look, session.preferences.headlight !== 'off', left);
   }
 
@@ -916,13 +924,10 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
   /**
    * Flies out of a ride, `view` as drawn on `canvas` at `clock` (see the
    * game's rideView), to the backdrop resting on it, behind the menu as it
-   * opens. A ride not yet set off on gives way to the trail Continue leads
-   * to, which is flown out to from the rider waiting at its start when it is
-   * the same trail; another trail's backdrop shows at once.
+   * opens: on the rider where they were left, or waiting at the start.
    */
   function flyOutOf({ canvas, view, clock }) {
     showBackdrop();
-    if (menuScene.trail !== session.trail) return;
     menuScene.setClock(clock);
     const screen = $('menu-screen').getBoundingClientRect();
     const rest = menuScene.restingView(Math.round(screen.width), Math.round(screen.height), backdropFocus(screen));
@@ -972,10 +977,11 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
   function updateDashboard() {
     const hasSave = Boolean(session.saveGame);
     drawActiveSaveIllustration();
-    // One orange card: resume the ride going on, else continue the save, else
-    // Start riding takes its place. Retry is in the game's own controls.
-    // Either way it names the trail it leads to, the one behind the menu.
-    const resumable = canResume();
+    // One orange card: resume the ride going on, else continue the ride
+    // waiting at its start or the save, else Start riding takes its place.
+    // Retry is in the game's own controls. Either way it names the trail it
+    // leads to, the one behind the menu.
+    const behind = rideBehind(), resumable = canResume();
     const slot = hasSave ? 'SLOT ' + (session.activeSaveSlot + 1) : '';
     $('active-save-label').textContent = resumable ? 'RESUME RIDE' : 'CONTINUE';
     $('active-save-slot').textContent = slot;
@@ -984,15 +990,18 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
       $('active-save-title').textContent = session.trail?.name ?? 'Your ride';
       $('active-save-progress').textContent = [hasSave ? session.saveGame.name : '', session.stateBeforeMenu === 'paused' ? 'Paused' : 'Back to the trail']
         .filter(Boolean).join(' · ');
+    } else if (behind) {
+      $('active-save-title').textContent = session.trail.name;
+      $('active-save-progress').textContent = hasSave ? session.saveGame.name + ' · ' + (session.unlockedTrail + 1) + ' / ' + trails.length + ' trails' : '';
     } else {
       $('active-save-title').textContent = hasSave ? trails[session.unlockedTrail].name : '';
       $('active-save-progress').textContent = hasSave ? session.saveGame.name + ' · ' + (session.unlockedTrail + 1) + ' / ' + trails.length + ' trails' : '';
     }
     $('menu-trails').disabled = !hasSave && customTrailEntries.length === 0
       && !bonusTrailEntries.some(entry => bonusUnlock(entry).open);
-    $('menu-continue').hidden = !hasSave && !resumable;
+    $('menu-continue').hidden = !hasSave && !behind;
     $('menu-first-ride').hidden = hasSave;
-    $('menu-first-ride').classList.toggle('menu-action-primary', !resumable);
+    $('menu-first-ride').classList.toggle('menu-action-primary', !behind);
     $('menu-riders').hidden = !hasSave;
     $('menu-garage').hidden = !hasSave;
     $('garage-new-badge').hidden = !hasSave || !unseenGear(session.saveGame).length;
@@ -1104,7 +1113,7 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     history.pushState(historyTag('ride'), '');
   }
   function markMenuOpen() {
-    if (!canResume() || typeof history.pushState !== 'function') return;
+    if (!rideBehind() || typeof history.pushState !== 'function') return;
     if (history.state?.hjulben) history.replaceState(historyTag('menu'), '');
     else history.pushState(historyTag('menu'), '');
   }
@@ -1173,7 +1182,7 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     // Catches up with a cloud look that arrived while riding.
     if (session.saveGame) session.look = riderLook();
     syncWhatsNew();
-    if (ride && !reducedMotion) flyOutOf(ride);
+    if (ride && rideBehind() && !reducedMotion) flyOutOf(ride);
     updateDashboard();
     showView('home');
     animateBackground();
@@ -1183,7 +1192,7 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
   }
 
   /** Selects home's first button: back to the ride, or on with the rider. */
-  const selectFirst = () => selectControl($(canResume() || session.saveGame ? 'menu-continue' : 'menu-first-ride'));
+  const selectFirst = () => selectControl($(rideBehind() || session.saveGame ? 'menu-continue' : 'menu-first-ride'));
 
   /**
    * Pulls the active online rider's look and progress from the cloud, so a
@@ -2372,7 +2381,7 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     else sounds.menuSelect();
   });
   $('menu-continue').addEventListener('click', () => {
-    if (canResume()) onClose();
+    if (rideBehind()) onClose();
     else startTrail(session.unlockedTrail);
   });
   $('how-ride').addEventListener('click', () => {
@@ -2508,5 +2517,5 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     if (!onHome()) { goBack(); return true; }
     return false;
   };
-  return { open, close, isOpen, showsTrail, flyInto, syncHowTo, showTrailsStatus, updateDashboard, drawBackground, syncSettings, handlePad, showView, showCredits, canResume, back, refreshCloudSave, refreshNotifications, markRideStarted };
+  return { open, close, isOpen, showsTrail, flyInto, syncHowTo, showTrailsStatus, updateDashboard, drawBackground, syncSettings, handlePad, showView, showCredits, rideBehind, back, refreshCloudSave, refreshNotifications, markRideStarted };
 }

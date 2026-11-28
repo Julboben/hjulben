@@ -838,8 +838,8 @@ export function startGame({ shared = null } = {}) {
   let flying = false;
 
   function closeMainMenu() {
-    if (!menu.canResume() || flying) return;
-    // The backdrop shows the ride as it was left, so it is flown back into.
+    if (!menu.rideBehind() || flying) return;
+    // The backdrop shows the ride as it was left, or its trail, so it is flown back into.
     if (menu.showsTrail(session.trail)) flyIn(returnToRide);
     else returnToRide();
   }
@@ -854,7 +854,10 @@ export function startGame({ shared = null } = {}) {
       // Reopen the results as they were; finishing again would save the run twice.
       setState('won');
       if (!replay) overlay.reopen();
-    } else setState(previous === 'paused' ? 'paused' : 'running');
+    } else {
+      // A ride not yet set off on has nothing to hold, so it carries on unpaused.
+      setState(previous === 'paused' && session.ride.started ? 'paused' : 'running');
+    }
   }
 
   function startSelectedTrail(load, requiresSave = true) {
