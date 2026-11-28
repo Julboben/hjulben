@@ -1,5 +1,5 @@
 {
-  "code": "0ec1cd2ae55829881b55b2cd480913ae5bdd2cb0d65d3765cf56b1b082c85561",
+  "code": "b6cef6c9c8613f77b320172680312c6926c8a3d22bc5f50ac055a416c25e4e94",
   "trails": {
     "official:the-orchard": {
       "file": "thumbnails/official/the-orchard-13f61c0e.webp",
@@ -147,7 +147,7 @@
     },
     "official:sandcastle": {
       "file": "thumbnails/official/sandcastle-3e626f8d.webp",
-      "from": "ac94efe35b7e38f42c90e2b0b5314176d491940d1f51bb63e32c22d5e2da71d6"
+      "from": "8701a8b5015405447763201a0ac2c10da1696e3ca25f8b086938706e50f40801"
     },
     "official:long-way-up": {
       "file": "thumbnails/official/long-way-up-d7c8c128.webp",

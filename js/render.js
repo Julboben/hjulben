@@ -398,11 +398,12 @@ export function createRenderer(canvas, { still = false } = {}) {
   // Each corgi's state (see corgiStep) for the current ride, and how many
   // woofs have gone off in view since game.js last asked, for the sound.
   const corgis = new Map();
-  // Each beach ball's state (see ballStep) for the current ride, where the
-  // wheels were last frame, for how fast they hit one, and the hardest knock
-  // a ball in view has taken since game.js last asked, for the sound.
+  // Each beach ball's state (see ballStep) for the current ride, where what
+  // pushes them (see ballPushers) was last frame, for how fast it hits one,
+  // and the hardest knock a ball in view has taken since game.js last asked,
+  // for the sound.
   const balls = new Map();
-  let wheelsBefore = null;
+  let pushersBefore = new Map();
   let ballKnock = 0;
   // When (scene time) a coin last went into each stall's honesty box.
   const payments = new Map();
@@ -662,7 +663,7 @@ export function createRenderer(canvas, { still = false } = {}) {
     flights.clear();
     corgis.clear();
     balls.clear();
-    wheelsBefore = null;
+    pushersBefore = new Map();
     passes.clear();
     payments.clear();
     coconuts.clear();
@@ -732,27 +733,44 @@ export function createRenderer(canvas, { still = false } = {}) {
     }
   }
 
-  // Beach balls go wherever the wheels push them, for the rest of the ride.
-  // Purely visual, like Coda; with reduced motion (time 0) they stay put. A
-  // rewind's earlier copy of the ride (not `sceneRun`) pushes nothing: the
-  // balls roll on from where the run left them.
+  /**
+   * What pushes a beach ball, by name: the wheels, and the rider's head,
+   * shoulders and hips where the ride feels them hit, or once thrown every
+   * joint and the loose helmet. Each is round, `radius` across.
+   */
+  function ballPushers(ride) {
+    const { rear, front, ragdoll } = ride;
+    const body = ragdoll ? { ...ragdoll.points, ...(ragdoll.helmet && { helmet: ragdoll.helmet }) } : riderCollisionPoints(ride);
+    const pushers = { rear: { x: rear.x, y: rear.y, radius: RADIUS }, front: { x: front.x, y: front.y, radius: RADIUS } };
+    for (const [name, { x, y, radius }] of Object.entries(body)) pushers[name] = { x, y, radius };
+    return pushers;
+  }
+
+  // Beach balls go wherever the wheels and the rider push them, for the rest
+  // of the ride. Purely visual, like Coda: the ball never pushes back, and
+  // with reduced motion (time 0) it stays put. A rewind's earlier copy of the
+  // ride (not `sceneRun`) pushes nothing: the balls roll on from where the run
+  // left them.
   function rollBalls(ride, dt) {
     const props = bucketProps().balls;
     if (!props.length) return;
     // A long frame, such as coming back to the tab, is taken as a short one.
     const step = propScene.time ? Math.min(dt, 0.05) : 0;
-    const wheels = ride !== sceneRun ? [] : [ride.rear, ride.front].map(({ x, y }, index) => {
-      const before = wheelsBefore?.[index];
-      return { x, y, vx: before && dt ? (x - before.x) / dt : 0, vy: before && dt ? (y - before.y) / dt : 0 };
-    });
-    if (wheels.length) wheelsBefore = wheels;
+    const pushers = [];
+    if (ride === sceneRun) {
+      const now = ballPushers(ride);
+      for (const [name, { x, y, radius }] of Object.entries(now)) {
+        const before = pushersBefore.get(name);
+        pushers.push({ x, y, radius, vx: before && dt ? (x - before.x) / dt : 0, vy: before && dt ? (y - before.y) / dt : 0 });
+      }
+      pushersBefore = new Map(Object.entries(now));
+    }
     const water = waterBodies(trail);
     for (const prop of props) {
       const state = balls.get(prop) ?? ballStart(prop.x, Number.isFinite(prop.y) ? prop.y : terrainAt(trail, prop.x).y);
       const next = ballStep(state, {
         dt: step,
-        wheels,
-        wheelRadius: RADIUS,
+        pushers,
         contacts: (x, y, radius) => terrainCollisionsAt(trail, x, y, radius),
         submerged: (x, y, radius) => submergedFraction(water, x, y, radius),
       });

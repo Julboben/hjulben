@@ -227,6 +227,11 @@ const stilled = await page(`
   for (let i = 0; i < 30 && !screen.hidden; i++) await t.frames(1);
   return { landed: screen.hidden, usable: !screen.inert, riding: !document.getElementById('game').classList.contains('menu-open') };`);
 await chrome.send('Emulation.setEmulatedMedia', { features: [] }, session);
+// The page hears of the change a little later: wait for the game to before
+// the rewind checks, which reduced motion turns into plain restarts.
+await page(`
+  const state = await import('/js/state.js');
+  for (let i = 0; i < 60 && state.reducedMotion; i++) await t.frames(1);`);
 check('reduced motion turned on mid-flight lands it', stilled.landed && stilled.usable && stilled.riding, JSON.stringify(stilled));
 
 // --- Restarting: hands off the controls, the run rewinds to the start; with a
