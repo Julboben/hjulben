@@ -167,6 +167,9 @@ await evaluate(`(async () => {
 })()`);
 await load(1280, 800, 2);
 await evaluate(PAGE_HELPERS);
+// Picked while the page is still hidden as it loads, Continue takes the focus
+// once it shows, so Enter presses it.
+check('Continue has the focus once the page has loaded', await page(`return document.activeElement?.id === 'menu-continue'`));
 const flight = await page(`
   const screen = document.getElementById('menu-screen'), game = document.getElementById('game');
   t.click('menu-continue'); await t.frames(2);
@@ -182,7 +185,7 @@ const WAITING = `
   const { session } = await import('/js/state.js');
   t.key('Escape'); await t.frames(2);
   const at = { open: !screen.hidden, flewOut: screen.dataset.flying === 'out', label: document.getElementById('active-save-label').textContent,
-    title: document.getElementById('active-save-title').textContent, trail: session.trail.name };
+    title: document.getElementById('active-save-title').textContent, trail: session.trail.name, veil: Number(getComputedStyle(screen, '::before').opacity) };
   for (let i = 0; i < 180 && 'flying' in screen.dataset; i++) await t.frames(1);
   const drawn = backdrop.toDataURL();
   await t.frames(30);
@@ -359,7 +362,8 @@ const next = await evaluate(`(async () => {
 })()`);
 check('Continue names the next trail not yet finished', next.title === next.third, JSON.stringify(next));
 // An earlier trail opened since, before the rider sets off on it, is the one
-// Continue leads back to.
+// Continue leads back to. Picked from Trails, the menu closed on that screen,
+// whose veil home doesn't show even for a moment.
 await evaluate(PAGE_HELPERS);
 await page(`
   const screen = document.getElementById('menu-screen');
@@ -369,6 +373,7 @@ await page(`
   await t.frames(30);`);
 const earlier = await page(WAITING);
 check('Continue leads back to an earlier trail opened, not the next one', earlier.label === 'CONTINUE' && earlier.title === earlier.trail && earlier.title !== next.third && earlier.landed, JSON.stringify(earlier));
+check('and the menu opens on home without the veil of Trails, which it closed on', earlier.veil === 0, JSON.stringify(earlier));
 
 clearTimeout(timer);
 await chrome.close();

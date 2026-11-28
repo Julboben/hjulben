@@ -1,8 +1,9 @@
 // The menu's backdrop: the rider's next trail, drawn live by the game's own
 // renderer at half the ride's zoom, with the rider waiting at the start. The
-// camera rests on the rider, glides along the trail to near the finish,
-// rests there and glides back, rising and falling with the ground, smoothed
-// so it never bobs over bumps. Clouds, rain, water and animals move as they
+// camera rests on the rider, glides along the trail to near its far end,
+// rests there and glides back, and then the same the other way on a trail
+// that spreads both ways from the start, rising and falling with the ground,
+// smoothed so it never bobs over bumps. Clouds, rain, water and animals move as they
 // do on a ride. Over a ride left for the menu, it shows that ride as it was
 // left, ghost, tracks and all, with the camera resting on the rider and the
 // whole scene held still, as a paused ride is, to carry on from there. The
@@ -27,8 +28,8 @@ const GLIDE_SPEED = 30;
 const GLIDE_RAMP = 2;
 // Seconds the camera rests at each end.
 const REST = 3;
-// The camera turns this far short of the finish, in view widths.
-const TURN_BEFORE_FINISH = 0.2;
+// The camera turns this far short of the trail's end, in view widths.
+const TURN_BEFORE_END = 0.2;
 // How far either side of the camera the ground is averaged for its height.
 const GROUND_REACH = 300;
 // Where the ground sits, or the rider of a ride left for the menu, as a
@@ -68,21 +69,37 @@ export function createMenuScene(canvas) {
    */
   const restOn = (point, width, height, focus) => ({ x: point.x - width * focus, y: point.y - height * GROUND_LINE });
 
-  /** Where the glide has the camera, by x: resting on the rider, gliding or resting near the finish. */
-  function glideX() {
+  /**
+   * How far the glide goes from the rider each way, the way they face first:
+   * to near the trail's end that way, the finish or the farthest apple. A
+   * way whose end is already in view from the rider is left out, so a short
+   * trail keeps still, and one leading away from the start glides only along it.
+   */
+  function glideSpans() {
     const { trail, riderX } = scene;
-    const direction = Math.sign(trail.finish.x - trail.start.x) || 1;
-    const turn = trail.finish.x - direction * renderer.width * TURN_BEFORE_FINISH;
-    // Short trails, whose turn comes before the rider, keep still on the rider.
-    const span = (turn - riderX) * direction > 0 ? turn - riderX : 0;
-    if (!span) return riderX;
-    // Rest, glide out, rest, glide back.
-    const glide = glideTime(Math.abs(span));
-    const t = time % (2 * (REST + glide));
-    const out = t - REST, back = t - 2 * REST - glide;
-    if (out >= 0 && out < glide) return riderX + Math.sign(span) * glided(out, Math.abs(span));
-    if (out >= glide && back < 0) return riderX + span;
-    if (back >= 0) return riderX + span - Math.sign(span) * glided(back, Math.abs(span));
+    const ends = [trail.finish.x, ...trail.apples.map(apple => apple.x)];
+    const margin = renderer.width * TURN_BEFORE_END;
+    const right = Math.max(...ends) - margin - riderX, left = Math.min(...ends) + margin - riderX;
+    const spans = [right > 0 ? right : 0, left < 0 ? left : 0].filter(Boolean);
+    return trail.start.facing < 0 ? spans.reverse() : spans;
+  }
+
+  /** Where the glide has the camera, by x: resting on the rider, gliding or resting near an end. */
+  function glideX() {
+    const { riderX } = scene;
+    const spans = glideSpans();
+    if (!spans.length) return riderX;
+    // Each way: rest, glide out, rest, glide back.
+    const legs = spans.map(span => ({ span, glide: glideTime(Math.abs(span)) }));
+    let t = time % legs.reduce((sum, { glide }) => sum + 2 * (REST + glide), 0);
+    for (const { span, glide } of legs) {
+      const out = t - REST, back = t - 2 * REST - glide;
+      if (back >= glide) { t -= 2 * (REST + glide); continue; }
+      if (out >= 0 && out < glide) return riderX + Math.sign(span) * glided(out, Math.abs(span));
+      if (out >= glide && back < 0) return riderX + span;
+      if (back >= 0) return riderX + span - Math.sign(span) * glided(back, Math.abs(span));
+      return riderX;
+    }
     return riderX;
   }
 

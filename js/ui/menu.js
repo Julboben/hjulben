@@ -1177,6 +1177,10 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
    * and clock (see flyOutOf), which the backdrop flies out of.
    */
   function open(ride = null) {
+    // Home first, while the menu is hidden: shown on the screen it closed on,
+    // as when a trail is picked from Trails, it would be drawn with that
+    // screen's veil for a moment, which then fades.
+    showView('home');
     $('menu-screen').hidden = false;
     markMenuOpen();
     // Catches up with a cloud look that arrived while riding.
@@ -1184,7 +1188,6 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     syncWhatsNew();
     if (ride && rideBehind() && !reducedMotion) flyOutOf(ride);
     updateDashboard();
-    showView('home');
     animateBackground();
     requestAnimationFrame(selectFirst);
     refreshCloudSave();
@@ -2277,6 +2280,14 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
   const stepsLeaderboard = () => !$('menu-leaderboard-view').hidden && !isTrailPickerOpen() && !inColumn(selectedControl());
 
   /** Gamepad navigation while the menu is open. */
+  /**
+   * Focuses the selected control again: picked while the page was still
+   * hidden as it loaded, it couldn't take the focus, so Enter did nothing.
+   */
+  function focusSelected() {
+    if (isOpen()) selectedControl()?.focus({ preventScroll: true });
+  }
+
   function handlePad(action) {
     if (scrollsWithArrows() && (action === 'nav-up' || action === 'nav-down')) {
       scroller().scrollBy({ top: action === 'nav-up' ? -160 : 160, behavior: reducedMotion ? 'auto' : 'smooth' });
@@ -2517,5 +2528,5 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     if (!onHome()) { goBack(); return true; }
     return false;
   };
-  return { open, close, isOpen, showsTrail, flyInto, syncHowTo, showTrailsStatus, updateDashboard, drawBackground, syncSettings, handlePad, showView, showCredits, rideBehind, back, refreshCloudSave, refreshNotifications, markRideStarted };
+  return { open, close, isOpen, showsTrail, flyInto, syncHowTo, showTrailsStatus, updateDashboard, drawBackground, syncSettings, handlePad, focusSelected, showView, showCredits, rideBehind, back, refreshCloudSave, refreshNotifications, markRideStarted };
 }

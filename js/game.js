@@ -1623,5 +1623,9 @@ export function startGame({ shared = null } = {}) {
   requestAnimationFrame(frame);
   // Queued after the first two frames, so the reveal shows a fully drawn
   // screen, and the menu's backdrop has done the slow first draw of its trail.
-  requestAnimationFrame(() => requestAnimationFrame(() => game.removeAttribute('data-booting')));
+  // The menu's first button, picked while all was hidden, takes the focus then.
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    game.removeAttribute('data-booting');
+    menu.focusSelected();
+  }));
 }
