@@ -175,12 +175,14 @@ const flight = await page(`
   return { flying, landed: screen.hidden, riding: !game.classList.contains('menu-open'), arrived: 'arrived' in game.dataset };`);
 check('Continue flies from the backdrop into the ride', flight.flying && flight.landed && flight.riding && flight.arrived, JSON.stringify(flight));
 // Before the rider sets off there is nothing to resume: Escape opens the menu
-// as it is with no ride, Continue and the trail moving behind it, Escape on
-// home keeps it open, and Continue flies into the trail again.
+// as it is with no ride, Continue and the trail moving behind it, flown out
+// to as this is the trail Continue leads to. Escape on home keeps it open,
+// and Continue flies into the trail again.
 const waiting = await page(`
   const screen = document.getElementById('menu-screen'), backdrop = document.getElementById('menu-background');
   t.key('Escape'); await t.frames(2);
-  const at = { open: !screen.hidden, flewOut: 'flying' in screen.dataset, label: document.getElementById('active-save-label').textContent };
+  const at = { open: !screen.hidden, flewOut: screen.dataset.flying === 'out', label: document.getElementById('active-save-label').textContent };
+  for (let i = 0; i < 180 && 'flying' in screen.dataset; i++) await t.frames(1);
   const drawn = backdrop.toDataURL();
   await t.frames(30);
   const moving = backdrop.toDataURL() !== drawn;
@@ -190,7 +192,7 @@ const waiting = await page(`
   const flying = 'flying' in screen.dataset;
   for (let i = 0; i < 180 && !screen.hidden; i++) await t.frames(1);
   return { ...at, moving, stays, flying, landed: screen.hidden };`);
-check('Escape before setting off opens the menu with Continue, the trail moving behind it', waiting.open && !waiting.flewOut && waiting.label === 'CONTINUE' && waiting.moving, JSON.stringify(waiting));
+check('Escape before setting off opens the menu with Continue, flying out to the trail moving behind it', waiting.open && waiting.flewOut && waiting.label === 'CONTINUE' && waiting.moving, JSON.stringify(waiting));
 check('where Escape keeps it open, and Continue flies into the trail', waiting.stays && waiting.flying && waiting.landed, JSON.stringify(waiting));
 // Setting off makes the ride one to resume.
 await page(`

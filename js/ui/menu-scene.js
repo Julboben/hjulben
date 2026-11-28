@@ -62,10 +62,11 @@ export function createMenuScene(canvas) {
   }
 
   /**
-   * The view's top left, `width` × `height` world units, resting on the
-   * rider of a ride left for the menu, `focus` of the way across.
+   * The view's top left, `width` × `height` world units, resting on `point`,
+   * `focus` of the way across: the rider of a ride left for the menu, or
+   * the ground where the glide is.
    */
-  const restOn = (held, width, height, focus) => ({ x: held.x - width * focus, y: held.y - height * GROUND_LINE });
+  const restOn = (point, width, height, focus) => ({ x: point.x - width * focus, y: point.y - height * GROUND_LINE });
 
   /** Where the glide has the camera, by x: resting on the rider, gliding or resting near the finish. */
   function glideX() {
@@ -149,13 +150,16 @@ export function createMenuScene(canvas) {
     },
 
     /**
-     * The view a left ride's backdrop rests in, drawn `viewWidth` ×
-     * `viewHeight` CSS pixels with the camera's point `focus` of the way
-     * across (see draw): its top left and size, in world units.
+     * The view the backdrop rests in when a flight out of a ride lands, drawn
+     * `viewWidth` × `viewHeight` CSS pixels with the camera's point `focus`
+     * of the way across (see draw): on the rider of a ride left for the menu,
+     * or else where the glide starts, on the rider waiting at the start, which
+     * it starts again from. Its top left and size, in world units.
      */
     restingView(viewWidth, viewHeight, focus) {
       const width = Math.ceil(viewWidth / ART_PIXEL) * ART_PIXEL, height = Math.ceil(viewHeight / ART_PIXEL) * ART_PIXEL;
-      return { ...restOn(scene.held, width, height, focus), width, height };
+      time = 0;
+      return { ...restOn(scene.held ?? { x: scene.riderX, y: groundAt(scene.riderX) }, width, height, focus), width, height };
     },
 
     /**
@@ -181,14 +185,15 @@ export function createMenuScene(canvas) {
       }
       const { ride, held, left } = scene;
       const step = left ? 0 : dt;
-      time += step * pace;
+      // A flight holds the glide where it is, to carry on from there.
+      if (!at) time += step * pace;
       for (weatherTime += step; weatherTime >= STEP; weatherTime -= STEP) scene.effects.stepWeather();
       scene.effects.update(step);
       if (at) Object.assign(view, at);
       else if (held) Object.assign(view, restOn(held, renderer.width, renderer.height, focus));
       else {
         const x = glideX();
-        Object.assign(view, { x: x - renderer.width * focus, y: groundAt(x) - renderer.height * GROUND_LINE });
+        Object.assign(view, restOn({ x, y: groundAt(x) }, renderer.width, renderer.height, focus));
       }
       renderer.draw({
         ride, ghost: left?.ghost ?? null, ghostLook: left?.ghostLook, camera, effects: scene.effects, look: scene.look,

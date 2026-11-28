@@ -915,10 +915,14 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
 
   /**
    * Flies out of a ride, `view` as drawn on `canvas` at `clock` (see the
-   * game's rideView), to the backdrop resting on it, behind the menu as it opens.
+   * game's rideView), to the backdrop resting on it, behind the menu as it
+   * opens. A ride not yet set off on gives way to the trail Continue leads
+   * to, which is flown out to from the rider waiting at its start when it is
+   * the same trail; another trail's backdrop shows at once.
    */
   function flyOutOf({ canvas, view, clock }) {
     showBackdrop();
+    if (menuScene.trail !== session.trail) return;
     menuScene.setClock(clock);
     const screen = $('menu-screen').getBoundingClientRect();
     const rest = menuScene.restingView(Math.round(screen.width), Math.round(screen.height), backdropFocus(screen));
@@ -1169,7 +1173,7 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     // Catches up with a cloud look that arrived while riding.
     if (session.saveGame) session.look = riderLook();
     syncWhatsNew();
-    if (ride && canResume() && !reducedMotion) flyOutOf(ride);
+    if (ride && !reducedMotion) flyOutOf(ride);
     updateDashboard();
     showView('home');
     animateBackground();
