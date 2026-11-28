@@ -32,6 +32,10 @@ import {
   lookItemProgress, unseenGear, markGearSeen, garageRoom, ghostMode
 } from '../state.js';
 
+// The world the Continue card shows around the rider, in world units, and
+// where the rider sits in it (see drawScene).
+const CARD_VIEW = { width: 120, height: 84, anchor: /** @type {[number, number]} */ ([0.5, 0.72]) };
+
 // Runs made without a savegame have no name.
 const runnerName = name => name || 'RIDER';
 
@@ -104,7 +108,7 @@ export function loadStoredState() {
  *   onStartCustom: (index: number) => void,
  *   onClose: () => void,
  *   leftRide: () => { ride: any, ghost: any, ghostLook: any, effects: any, look: any, trails: any },
- *   riderOnScreen: () => { x: number, y: number },
+ *   riderOnScreen: () => { x: number, y: number, worldToDevice: number },
  *   onPreferences: () => void
  * }} hooks
  */
@@ -366,26 +370,28 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     }
     const entry = officialTrailEntries[session.unlockedTrail];
     paintPreview(canvasElement, previewKey('continue', trailKey(entry)), image => drawScene(image, {
-      ...sceneOptions(), trail: entry.trail, width: 120, height: 84
+      ...sceneOptions(), ...CARD_VIEW, trail: entry.trail
     }), { now: true });
   }
 
   /**
    * The ride as it was when the menu opened: the game canvas still holds its
    * last frame, so one copy, cropped to the card around the rider, is all it costs.
+   * It crops as much of the world as the card's own scene shows, so the rider
+   * is the same size whether the card was drawn before or after a ride, on any screen.
    */
   function drawRideSnapshot(target) {
     const source = /** @type {HTMLCanvasElement} */ ($('canvas'));
     const context = target.getContext('2d');
     context.clearRect(0, 0, target.width, target.height);
     if (!source.width || !source.height) return;
-    // The card's shape, 45% of the view wide, centred on the rider but kept inside the frame.
-    const aspect = target.width / target.height;
-    const width = Math.min(source.width * 0.45, source.height * aspect);
-    const height = width / aspect;
+    // Placed on the rider as in the card's scene, but kept inside the frame.
     const rider = riderOnScreen();
-    const x = clamp(rider.x * source.width - width / 2, 0, source.width - width);
-    const y = clamp(rider.y * source.height - height * 0.6, 0, source.height - height);
+    const aspect = CARD_VIEW.width / CARD_VIEW.height;
+    const width = Math.min(CARD_VIEW.width * rider.worldToDevice, source.width, source.height * aspect);
+    const height = width / aspect;
+    const x = clamp(rider.x - width * CARD_VIEW.anchor[0], 0, source.width - width);
+    const y = clamp(rider.y - height * CARD_VIEW.anchor[1], 0, source.height - height);
     context.imageSmoothingEnabled = false;
     context.drawImage(source, x, y, width, height, 0, 0, target.width, target.height);
   }
