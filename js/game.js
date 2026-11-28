@@ -539,10 +539,10 @@ export function startGame({ shared = null } = {}) {
   function saveProgress() {
     const { saveGame } = session;
     if (!saveGame || session.trailSource !== 'official') return;
-    session.savedTrail = session.trailIndex;
+    // The open trails, and the next one Continue leads to, are worked out
+    // from the finished ones (unlockedOf in state.js); the place and the
+    // trail last opened are still saved for clients from before that.
     saveGame.trail = session.trailIndex;
-    // The open trails are worked out from the finished ones (unlockedOf in
-    // state.js); the place is still saved for a client from before that.
     saveGame.unlocked = session.unlockedTrail;
     session.saveSlots[session.activeSaveSlot] = saveGame;
     persistProgress(session.activeSaveSlot, session.trailIndex, session.unlockedTrail, trails.length);

@@ -93,7 +93,6 @@ export function loadStoredState() {
     }
   }
   session.unlockedTrail = unlockedOf(session.saveGame);
-  session.savedTrail = session.saveGame?.trail || 0;
   session.look = riderLook();
 }
 
@@ -199,9 +198,12 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     if (bad.length) nameInput.classList.add('invalid');
   });
 
-  /** A ride is only resumable while it still belongs to the active save. */
+  /**
+   * A ride is only resumable once the rider has set off on it, as nothing is
+   * lost before then, and while it still belongs to the active save.
+   */
   function canResume() {
-    if (!session.gameLoopStarted) return false;
+    if (!session.gameLoopStarted || !session.ride?.started) return false;
     if (session.trailSource === 'official' && !session.saveGame) return false;
     return (session.saveGame?.createdAt ?? null) === session.rideSaveId;
   }
@@ -358,7 +360,7 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
       canvasElement.getContext('2d').clearRect(0, 0, canvasElement.width, canvasElement.height);
       return;
     }
-    const entry = officialTrailEntries[session.savedTrail];
+    const entry = officialTrailEntries[session.unlockedTrail];
     paintPreview(canvasElement, previewKey('continue', trailKey(entry)), image => drawScene(image, {
       ...sceneOptions(), trail: entry.trail, width: 120, height: 84
     }), { now: true });
@@ -558,7 +560,6 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     saveActiveSlot(session.activeSaveSlot);
     session.saveGame = session.saveSlots[session.activeSaveSlot];
     session.unlockedTrail = unlockedOf(session.saveGame);
-    session.savedTrail = session.saveGame?.trail || 0;
     session.look = riderLook();
     updateDashboard();
     onRiderChange();
@@ -664,7 +665,8 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
         spoken.textContent = ', ' + gender;
         title.append(save.name, spoken);
         nameLine.append(genderMark, title);
-        detail.textContent = (unlockedOf(save) + 1) + ' / ' + trails.length + ' trails · ' + trails[save.trail].name;
+        const next = unlockedOf(save);
+        detail.textContent = (next + 1) + ' / ' + trails.length + ' trails · ' + trails[next].name;
         copy.append(label, nameLine, detail);
         button.append(riderAvatar(save.look), copy);
       } else {
@@ -804,7 +806,7 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
   /** Shows the backdrop's scene: over a ride that can be resumed, the ride as it was left; else the rider's next trail. */
   function showBackdrop() {
     const left = canResume() ? leftRide() : null;
-    const trail = left ? session.trail : trails[session.savedTrail] ?? trails[0];
+    const trail = left ? session.trail : trails[session.unlockedTrail];
     menuScene.show(trail, left?.look ?? session.look, session.preferences.headlight !== 'off', left);
   }
 
@@ -979,7 +981,7 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
       $('active-save-progress').textContent = [hasSave ? session.saveGame.name : '', session.stateBeforeMenu === 'paused' ? 'Paused' : 'Back to the trail']
         .filter(Boolean).join(' · ');
     } else {
-      $('active-save-title').textContent = hasSave ? trails[session.savedTrail].name : '';
+      $('active-save-title').textContent = hasSave ? trails[session.unlockedTrail].name : '';
       $('active-save-progress').textContent = hasSave ? session.saveGame.name + ' · ' + (session.unlockedTrail + 1) + ' / ' + trails.length + ' trails' : '';
     }
     $('menu-trails').disabled = !hasSave && customTrailEntries.length === 0
@@ -1710,7 +1712,7 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
       cards.push(trailCard({
         entry,
         number: String(index + 1).padStart(2, '0'),
-        status: locked ? 'LOCKED' : (index === session.savedTrail ? 'CURRENT TRAIL' : 'UNLOCKED'),
+        status: locked ? 'LOCKED' : (index === session.unlockedTrail ? 'CURRENT TRAIL' : 'UNLOCKED'),
         best: readBest(session.activeSaveSlot, trailKey(entry), trails.length),
         locked,
         nisse: nisseFound(entry),
@@ -1998,7 +2000,7 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     if (session.trailSource === 'custom' && session.customTrailIndex >= 0) {
       return officialTrailEntries.length + bonusTrailEntries.length + session.customTrailIndex;
     }
-    return session.gameLoopStarted ? session.trailIndex : session.savedTrail;
+    return session.gameLoopStarted ? session.trailIndex : session.unlockedTrail;
   }
 
   function showSaveCreator(slotIndex) {
@@ -2080,7 +2082,7 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
         setStatus('riders-status', `Rider “${player.name}” was created, but slot ${pendingSaveSlot + 1} is full. Log in with your passkey to use it.`, true);
         return;
       }
-      session.unlockedTrail = 0; session.savedTrail = 0;
+      session.unlockedTrail = 0;
       useNewSave(pendingSaveSlot, save);
       startTrail(0);
     } catch (error) {
@@ -2367,7 +2369,7 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
   });
   $('menu-continue').addEventListener('click', () => {
     if (canResume()) onClose();
-    else startTrail(session.savedTrail);
+    else startTrail(session.unlockedTrail);
   });
   $('how-ride').addEventListener('click', () => {
     const ride = rideAfterHowTo;
@@ -2454,7 +2456,7 @@ export function createMenu({ sounds, input, onStartTrail, onStartBonus, onStartC
     saveActiveSlot(session.activeSaveSlot);
     session.saveSlots[session.activeSaveSlot] = save;
     session.look = save.look;
-    session.unlockedTrail = 0; session.savedTrail = 0;
+    session.unlockedTrail = 0;
     startTrail(0);
   });
   document.querySelectorAll('[data-setting]').forEach(button => {

@@ -4,7 +4,8 @@
 // rests there and glides back, rising and falling with the ground, smoothed
 // so it never bobs over bumps. Clouds, rain, water and animals move as they
 // do on a ride. Over a ride left for the menu, it shows that ride as it was
-// left, ghost, tracks and all, with the camera resting on the rider. The
+// left, ghost, tracks and all, with the camera resting on the rider and the
+// whole scene held still, as a paused ride is, to carry on from there. The
 // menu flies the camera between the backdrop and the ride's own view as it
 // opens over a ride and goes back to it (see startFlight in menu.js).
 import { STEP } from '../config.js';
@@ -158,12 +159,13 @@ export function createMenuScene(canvas) {
     },
 
     /**
-     * Draws the scene `dt` seconds on, `viewWidth` × `viewHeight` CSS pixels,
-     * with the camera's point `focus` of the way across: the middle of the
-     * part of the menu the trail is seen in. `sharp` draws it at the screen's
-     * own resolution, for when it is the view itself rather than a backdrop
-     * behind a veil; `pace` speeds the camera up or slows it down. `at`, the
-     * view's top left in world units, holds the camera there instead.
+     * Draws the scene `dt` seconds on, or as it is for a ride left for the
+     * menu, `viewWidth` × `viewHeight` CSS pixels, with the camera's point
+     * `focus` of the way across: the middle of the part of the menu the trail
+     * is seen in. `sharp` draws it at the screen's own resolution, for when it
+     * is the view itself rather than a backdrop behind a veil; `pace` speeds
+     * the camera up or slows it down. `at`, the view's top left in world
+     * units, holds the camera there instead.
      */
     draw({ viewWidth, viewHeight, dt, focus, full, sharp, pace, at = null }) {
       if (!scene || !viewWidth || !viewHeight) return;
@@ -177,10 +179,11 @@ export function createMenuScene(canvas) {
         scale = deviceScale;
         renderer.setViewport(width, height, scale);
       }
-      time += dt * pace;
-      for (weatherTime += dt; weatherTime >= STEP; weatherTime -= STEP) scene.effects.stepWeather();
-      scene.effects.update(dt);
       const { ride, held, left } = scene;
+      const step = left ? 0 : dt;
+      time += step * pace;
+      for (weatherTime += step; weatherTime >= STEP; weatherTime -= STEP) scene.effects.stepWeather();
+      scene.effects.update(step);
       if (at) Object.assign(view, at);
       else if (held) Object.assign(view, restOn(held, renderer.width, renderer.height, focus));
       else {
@@ -189,7 +192,7 @@ export function createMenuScene(canvas) {
       }
       renderer.draw({
         ride, ghost: left?.ghost ?? null, ghostLook: left?.ghostLook, camera, effects: scene.effects, look: scene.look,
-        state: 'ready', full, dt, debug: false, held: Boolean(left)
+        state: 'ready', full, dt: step, debug: false
       });
     }
   };

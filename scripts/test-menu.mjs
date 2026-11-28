@@ -5,9 +5,10 @@
 // keys, the narrower layout that gives home's buttons way to the screen,
 // the trails' thumbnails, drawn ahead, the previews drawn in the game,
 // which wait until their screen opens, the flights between the backdrop and
-// the ride (Continue and Resume ride into it, and Escape out of it), the
-// rewind a restart plays (see test-rewind.mjs for its recorder), and where
-// the Garage keeps its buttons.
+// the ride (Continue and Resume ride into it, and Escape out of a ride the
+// rider has set off on), the trail Continue leads to, the rewind a restart
+// plays (see test-rewind.mjs for its recorder), and where the Garage keeps
+// its buttons.
 //
 //   node scripts/test-menu.mjs
 //
@@ -173,17 +174,46 @@ const flight = await page(`
   for (let i = 0; i < 180 && !screen.hidden; i++) await t.frames(1);
   return { flying, landed: screen.hidden, riding: !game.classList.contains('menu-open'), arrived: 'arrived' in game.dataset };`);
 check('Continue flies from the backdrop into the ride', flight.flying && flight.landed && flight.riding && flight.arrived, JSON.stringify(flight));
+// Before the rider sets off there is nothing to resume: Escape opens the menu
+// as it is with no ride, Continue and the trail moving behind it, Escape on
+// home keeps it open, and Continue flies into the trail again.
+const waiting = await page(`
+  const screen = document.getElementById('menu-screen'), backdrop = document.getElementById('menu-background');
+  t.key('Escape'); await t.frames(2);
+  const at = { open: !screen.hidden, flewOut: 'flying' in screen.dataset, label: document.getElementById('active-save-label').textContent };
+  const drawn = backdrop.toDataURL();
+  await t.frames(30);
+  const moving = backdrop.toDataURL() !== drawn;
+  t.key('Escape'); await t.frames(2);
+  const stays = !screen.hidden;
+  t.click('menu-continue'); await t.frames(2);
+  const flying = 'flying' in screen.dataset;
+  for (let i = 0; i < 180 && !screen.hidden; i++) await t.frames(1);
+  return { ...at, moving, stays, flying, landed: screen.hidden };`);
+check('Escape before setting off opens the menu with Continue, the trail moving behind it', waiting.open && !waiting.flewOut && waiting.label === 'CONTINUE' && waiting.moving, JSON.stringify(waiting));
+check('where Escape keeps it open, and Continue flies into the trail', waiting.stays && waiting.flying && waiting.landed, JSON.stringify(waiting));
+// Setting off makes the ride one to resume.
+await page(`
+  const game = document.getElementById('game');
+  const { session } = await import('/js/state.js');
+  game.dispatchEvent(new KeyboardEvent('keydown', { code: 'ArrowUp', key: 'ArrowUp', bubbles: true }));
+  for (let i = 0; i < 120 && !session.ride.started; i++) await t.frames(1);
+  window.dispatchEvent(new KeyboardEvent('keyup', { code: 'ArrowUp', key: 'ArrowUp' }));`);
 // Escape mid-ride opens the menu at once, usable, while the backdrop flies
-// out of the ride behind it.
+// out of the ride behind it, which holds still there.
 const reopened = await page(`
   const menu = document.getElementById('menu-screen'), backdrop = document.getElementById('menu-background');
   t.key('Escape'); await t.frames(2);
-  const at = { flying: menu.dataset.flying, open: !menu.hidden, usable: !menu.inert, selected: t.selected() };
+  const at = { flying: menu.dataset.flying, open: !menu.hidden, usable: !menu.inert, selected: t.selected(), label: document.getElementById('active-save-label').textContent };
   for (let i = 0; i < 180 && 'flying' in menu.dataset; i++) await t.frames(1);
   const screen = menu.getBoundingClientRect(), box = backdrop.getBoundingClientRect();
-  return { ...at, landed: !('flying' in menu.dataset), styled: backdrop.hasAttribute('style'), fits: box.width === screen.width && box.height === screen.height };`);
-check('Escape opens the menu at once, Resume ride picked', reopened.open && reopened.usable && reopened.selected === 'menu-continue', JSON.stringify(reopened));
+  const landed = backdrop.toDataURL();
+  await t.frames(30);
+  return { ...at, landed: !('flying' in menu.dataset), styled: backdrop.hasAttribute('style'), fits: box.width === screen.width && box.height === screen.height,
+    still: backdrop.toDataURL() === landed };`);
+check('Escape opens the menu at once, Resume ride picked', reopened.open && reopened.usable && reopened.selected === 'menu-continue' && reopened.label === 'RESUME RIDE', JSON.stringify(reopened));
 check('while the backdrop flies out of the ride, to land over the whole menu', reopened.flying === 'out' && reopened.landed && !reopened.styled && reopened.fits, JSON.stringify(reopened));
+check('and the ride behind the menu holds still, as a paused ride does', reopened.still, JSON.stringify(reopened));
 // Resume ride flies back into the ride the backdrop shows; Escape on the
 // way can't stop it. Gas pressed in the menu is held when the ride carries on.
 const resumed = await page(`
@@ -312,6 +342,20 @@ await evaluate(PAGE_HELPERS);
 const phoneScreens = await page(placed);
 check('phone: the Garage\'s buttons make a bar along the bottom', phoneScreens.garage.view === 'look' && !phoneScreens.garage.inHead && phoneScreens.garage.pinned, JSON.stringify(phoneScreens.garage));
 check('phone: and Reset and Credits stay in Settings', !phoneScreens.settings.reset && !phoneScreens.settings.credits && phoneScreens.settings.about, JSON.stringify(phoneScreens.settings));
+
+// --- Continue leads on to the next trail not yet finished, not back to the
+// one opened last.
+await evaluate(`(async () => {
+  const storage = await import('/js/storage.js'), { trails, officialTrailEntries } = await import('/js/trails.js'), { trailKey } = await import('/js/state.js');
+  officialTrailEntries.slice(0, 2).forEach(entry => storage.saveBest(0, trailKey(entry), 30, trails.length));
+  storage.saveProgress(0, 0, 2, trails.length);
+})()`);
+await load(1280, 800, 2);
+const next = await evaluate(`(async () => {
+  const { trails } = await import('/js/trails.js');
+  return { title: document.getElementById('active-save-title').textContent, third: trails[2].name };
+})()`);
+check('Continue names the next trail not yet finished', next.title === next.third, JSON.stringify(next));
 
 clearTimeout(timer);
 await chrome.close();
