@@ -755,7 +755,9 @@ export function createRenderer(canvas, { still = false } = {}) {
     const props = bucketProps().balls;
     if (!props.length) return;
     // A long frame, such as coming back to the tab, is taken as a short one.
-    const step = propScene.time ? Math.min(dt, 0.05) : 0;
+    // The balls roll with reduced motion too, as the rider sets them going:
+    // getting one up to Sandcastle's flag is an achievement.
+    const step = Math.min(dt, 0.05);
     const pushers = [];
     if (ride === sceneRun) {
       const now = ballPushers(ride);

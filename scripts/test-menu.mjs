@@ -286,6 +286,15 @@ const rewound = await page(`${RIDE_AND_RESTART}
   for (; frames < 120 && 'rewinding' in game.dataset; frames++) await t.frames(1);
   return { rewinding, frames, back: !('rewinding' in game.dataset), elapsed: session.ride.elapsed, state: session.state };`);
 check('R rewinds a run to the start', rewound.rewinding && rewound.back && rewound.frames > 10 && rewound.elapsed === 0 && rewound.state === 'running', JSON.stringify(rewound));
+// Losing the focus during a rewind skips to the new run, which waits paused.
+const blurred = await page(`${RIDE_AND_RESTART}
+  await t.frames(3);
+  window.dispatchEvent(new Event('blur'));
+  await t.frames(2);
+  const result = { rewinding, back: !('rewinding' in game.dataset), state: session.state, steps: session.ride.steps };
+  document.getElementById('pause-overlay').click(); await t.frames(2);
+  return result;`);
+check('and losing the focus during it starts the run paused', blurred.rewinding && blurred.back && blurred.state === 'paused' && blurred.steps === 0, JSON.stringify(blurred));
 const skipped = await page(`${RIDE_AND_RESTART}
   await t.frames(2);
   ride('keydown', 'ArrowUp'); await t.frames(2);

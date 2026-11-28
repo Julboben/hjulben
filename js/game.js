@@ -714,9 +714,9 @@ export function startGame({ shared = null } = {}) {
   }
 
   /**
-   * Leaves a replay for a ride of your own on its trail. It counts as more
-   * attempts on the trail, not a fresh opening, so watching a replay doesn't
-   * hand out First Try.
+   * Leaves a replay for a ride of your own on its trail, at once: the replay
+   * is no run of the rider's to rewind. It counts as more attempts on the
+   * trail, not a fresh opening, so watching a replay doesn't hand out First Try.
    */
   function rideAfterReplay() {
     const { source, index } = replay;
@@ -727,7 +727,7 @@ export function startGame({ shared = null } = {}) {
       overlay.toast(session.saveGame ? 'That trail is still locked · Finish the ones before it first' : 'Pick a rider to ride the trails', 5000);
       return;
     }
-    startFresh();
+    restartRide();
   }
 
   function loadPlaytestTrail() {
@@ -787,7 +787,12 @@ export function startGame({ shared = null } = {}) {
     setState('running'); focusGame();
   }
 
-  function pauseGame() { if (session.state === 'running') { setState('paused'); haptics.stop(); } }
+  function pauseGame() {
+    // A rewind under way skips to the new run, which waits paused, so losing
+    // the focus never lets a run start while the player is away.
+    if (session.state === 'rewinding') restartRide();
+    if (session.state === 'running') { setState('paused'); haptics.stop(); }
+  }
   function resumeGame() {
     if (session.state !== 'paused') return;
     setState('running'); focusGame();
