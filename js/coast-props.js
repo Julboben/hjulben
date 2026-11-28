@@ -15,13 +15,14 @@
 // like the other animals and notices a wheel running it over, so all of this
 // is a pure function of how long ago that happened.
 //
-// The beach ball goes wherever the wheels push it, bouncing off the terrain
-// and floating on water: render.js keeps its state for the ride and moves it
-// on each frame with ballStep, as it walks Coda with corgiStep.
+// The beach ball goes wherever the wheels and the rider push it, bouncing off
+// the terrain and floating on water: render.js keeps its state for the ride
+// and moves it on each frame with ballStep, as it walks Coda with corgiStep.
 //
 // Decoration only: none of it touches the simulation, and at time 0 (the
-// editor, thumbnails, reduced motion) the crab and the ball sit still and the
-// flags hang straight.
+// editor, thumbnails, reduced motion) the crab sits still and the flags hang
+// straight. The ball sits still where no time passes (the editor,
+// thumbnails), but rolls with reduced motion, as only the rider sets it going.
 
 import { GRAVITY } from "./config.js";
 import { CORGI_STEP, corgiGround, corgiReach, drawGrid } from "./corgi-props.js";
@@ -572,7 +573,7 @@ const BALL_SETTLE = 30;
 const BALL_ROLL = 0.6;
 const BALL_REST = 3;
 const BALL_LEVEL = 0.97;
-// How much of a wheel's closing speed it bounces off with, and how far it
+// How much of a pusher's closing speed it bounces off with, and how far it
 // pops up off a hard knock (units per second).
 const BALL_KICK = 0.8;
 const BALL_POP = 80;
@@ -589,39 +590,40 @@ const BALL_SUBSTEP = 4;
  * A ball at rest on the ground at (`x`, `groundY`): its middle, velocity, how
  * far it has turned, how squashed it is (0…1) and how hard it was last hit
  * (see ballStep), and whether it is resting, which it does where it was put
- * until a wheel touches it, whatever the slope.
+ * until something pushes it, whatever the slope.
  */
 export function ballStart(x, groundY) {
   return { x, y: groundY - BALL_RADIUS, vx: 0, vy: 0, turn: 0, squash: 0, knock: 0, resting: true };
 }
 
 /**
- * The ball `dt` seconds on: pushed by the `wheels` ({ x, y, vx, vy }, each
- * `wheelRadius` round) it touches, falling, bouncing off the terrain
+ * The ball `dt` seconds on: pushed by the `pushers` it touches (round
+ * things, { x, y, vx, vy, radius }: the wheels and the rider), falling,
+ * bouncing off the terrain
  * (`contacts(x, y, radius)` as terrainCollisionsAt gives them), rolling to a
  * stop on level enough ground and floating where `submerged(x, y, radius)`
  * (0…1) says it is under water. It turns with the distance it rolls, and is
  * squashed for a moment by a hard landing. `knock` is the speed of the
- * hardest hit this step, by a wheel or a bounce, for its sound (0 if none).
+ * hardest hit this step, by a pusher or a bounce, for its sound (0 if none).
  */
-export function ballStep(state, { dt, wheels, wheelRadius, contacts, submerged }) {
+export function ballStep(state, { dt, pushers, contacts, submerged }) {
   if (!dt) return state;
-  const touched = wheels.some((wheel) => Math.hypot(state.x - wheel.x, state.y - wheel.y) < BALL_RADIUS + wheelRadius);
+  const touched = pushers.some((pusher) => Math.hypot(state.x - pusher.x, state.y - pusher.y) < BALL_RADIUS + pusher.radius);
   if (state.resting && !touched) return state;
   let { x, y, vx, vy, turn } = state;
   let squash = Math.max(0, state.squash - dt / BALL_SQUASH_TIME),
     knock = 0;
-  for (const wheel of wheels) {
-    const dx = x - wheel.x,
-      dy = y - wheel.y;
+  for (const pusher of pushers) {
+    const dx = x - pusher.x,
+      dy = y - pusher.y;
     const distance = Math.hypot(dx, dy),
-      reach = BALL_RADIUS + wheelRadius;
+      reach = BALL_RADIUS + pusher.radius;
     if (distance >= reach || !distance) continue;
     const nx = dx / distance,
       ny = dy / distance;
     x += nx * (reach - distance);
     y += ny * (reach - distance);
-    const closing = (vx - wheel.vx) * nx + (vy - wheel.vy) * ny;
+    const closing = (vx - pusher.vx) * nx + (vy - pusher.vy) * ny;
     if (closing >= 0) continue;
     knock = Math.max(knock, -closing);
     vx -= (1 + BALL_KICK) * closing * nx;

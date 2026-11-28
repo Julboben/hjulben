@@ -20,9 +20,10 @@ export const WATER_SIZE = {
 };
 
 /**
- * A wheel deeper than this below the surface wipes the rider out, so a body
- * up to this deep is a rideable ford and anything deeper is a hazard. It is
- * about where the water reaches the seat.
+ * A body up to this deep is a rideable ford, and anything deeper is a hazard:
+ * with a wheel deeper than this below the surface, water over the rider's
+ * chest wipes them out (see wipedOut in ride.js). It is about where the water
+ * reaches the seat.
  */
 export const WATER_WIPEOUT_DEPTH = 40;
 

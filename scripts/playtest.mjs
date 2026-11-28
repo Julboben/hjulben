@@ -33,12 +33,12 @@
 // stderr and the report to stdout.
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { RADIUS, STEP, WHEELBASE } from '../js/config.js';
-import { bikeSpeed, createRide, seededRandom, stepRide } from '../js/ride.js';
+import { bikeSpeed, cloneRide, createRide, seededRandom, stepRide } from '../js/ride.js';
 import { decodeInputs, encodeInputs } from '../js/replay-codec.js';
 import { DESCRIPTION_MAX_LENGTH, normalizeTrail, validateTrail } from '../js/trail-schema.js';
 import { terrainAt } from '../js/terrain.js';
 import { hangsBelowWheel } from '../js/vehicle-physics.js';
-import { MILLION, cloneRide, exploreTrail, recordTrail } from './lib/replay-bot.mjs';
+import { MILLION, exploreTrail, recordTrail } from './lib/replay-bot.mjs';
 import { MAX_JSON_BYTES } from '../js/trail-link.js';
 import { trailHash } from '../js/trail-hash.js';
 import { loadCatalogTrails, loadTrailArgument, playtestRunPath, repoRoot } from './lib/trails.mjs';

@@ -201,6 +201,17 @@ export default {
     .#.....#.
     ..#####..
   `,
+  // The timer's clock while a restart rewinds the run (see js/rewind.js):
+  // back to the start.
+  rewind: `
+    #....#....#
+    #...##...##
+    #..###..###
+    #.####.####
+    #..###..###
+    #...##...##
+    #....#....#
+  `,
   apple: {
     palette: { r: '#ec7044', h: '#f6a17b', g: '#4b7952', s: '#6b4a2b' },
     grid: `
@@ -213,6 +224,23 @@ export default {
       rrrrrrrrr
       .rrrrrrr.
       ..rr.rr..
+    `,
+  },
+  // A sandcastle with the beach ball on top, in the ball's own colours:
+  // King of the Castle.
+  castle: {
+    palette: { r: '#d63b2c', y: '#f1b95d', b: '#3f6fc0', w: '#f4e9d1', s: '#e3c48c', d: '#8a6a3c' },
+    grid: `
+      ....rr.....
+      ...rrrr....
+      ...ywbb....
+      ....rr.....
+      s.s.s.s.s.s
+      sssssssssss
+      .sssssssss.
+      .sssddssss.
+      .sssddssss.
+      .sssddssss.
     `,
   },
   // The nisse hidden on some trails: red hat, face, white beard, grey tunic.

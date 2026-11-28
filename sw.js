@@ -6,7 +6,7 @@
 // reload it can't skip (see update-prompt.js): files it loads after that come
 // from the new release, so it can't safely keep running the old one. Trail files and anything
 // else are network-first, and kept so the game also starts offline.
-const CACHE = 'hjulben-c601a0e5';
+const CACHE = 'hjulben-4efe146a';
 const CORE = [
   './',
   './css/editor.css',
@@ -115,6 +115,7 @@ const CORE = [
   './js/ragdoll.js',
   './js/render.js',
   './js/replay-codec.js',
+  './js/rewind.js',
   './js/ride.js',
   './js/rider-hair.js',
   './js/rider-name.js',

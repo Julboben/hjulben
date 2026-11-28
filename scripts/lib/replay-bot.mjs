@@ -3,8 +3,7 @@
 // trail; both can also start from any ride and stop at any goal, which
 // scripts/probe-replay-bot.mjs uses to test the bot on stretches of a run.
 import { STEP } from '../../js/config.js';
-import { copyRideTerrain } from '../../js/glass.js';
-import { createRide, stepRide } from '../../js/ride.js';
+import { cloneRide, createRide, stepRide } from '../../js/ride.js';
 import { terrainAt, terrainCollisionsAt } from '../../js/terrain.js';
 
 const DECISION_STEPS = 12;
@@ -27,12 +26,6 @@ for (const leanInput of [-1, -.5, 0, .5, 1]) {
   }
 }
 
-// The trail is shared rather than cloned, apart from its broken glass: a pane
-// one try breaks must still be whole for the next.
-export function cloneRide(ride) {
-  const { trail, random, ...rest } = ride;
-  return { ...structuredClone(rest), trail: copyRideTerrain(trail), random };
-}
 
 function target(ride) {
   const mx = (ride.rear.x + ride.front.x) / 2;

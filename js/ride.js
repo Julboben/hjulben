@@ -323,15 +323,22 @@ function reportGlass(ride, events) {
 }
 
 /**
- * Where the rider goes under: a wheel deeper than the wipe-out depth, or the
- * head under the surface. Null while the rider is above water.
+ * Where the rider goes under: deep water (a wheel deeper than the wipe-out
+ * depth) up over their chest, the middle of the shoulders, or any water over
+ * their head, as when upside down in a ford. A wheel dipping into a hole, or
+ * landing short at a bank, is no wipe-out while the rider stays above the
+ * water, and a ford stays a ford however hard the landing that squashes the
+ * rider down into it. Null while they stay dry.
+ * @param {Ride} ride
+ * @param {Record<string, { x: number, y: number }>} rider  riderCollisionPoints
  */
-function wipedOut(ride, head) {
-  for (const wheel of [ride.rear, ride.front])
-    if (wheelImmersion(ride.water, wheel.x, wheel.y, RADIUS) > WATER_WIPEOUT_DEPTH)
-      return { x: wheel.x, y: waterAt(ride.water, wheel.x, wheel.y)?.y ?? wheel.y };
-  const body = waterAt(ride.water, head.x, head.y);
-  return body ? { x: head.x, y: body.y } : null;
+function wipedOut(ride, { shoulder, head }) {
+  const over = waterAt(ride.water, head.x, head.y);
+  if (over) return { x: head.x, y: over.y };
+  const chest = waterAt(ride.water, shoulder.x, shoulder.y);
+  if (chest && [ride.rear, ride.front].some(wheel => wheelImmersion(ride.water, wheel.x, wheel.y, RADIUS) > WATER_WIPEOUT_DEPTH))
+    return { x: shoulder.x, y: chest.y };
+  return null;
 }
 
 /** A splash for the fastest of these points to break the surface this step. */
@@ -403,6 +410,17 @@ function bikeMidpoint(ride) {
 export function bikeSpeed(ride) {
   const { rear, front } = ride;
   return (rear.x - rear.ox + (front.x - front.ox)) / (2 * STEP);
+}
+
+/**
+ * A copy of `ride` to step on its own, to look ahead or to go back to. The
+ * trail is shared rather than copied, apart from its broken glass, so a pane
+ * one copy breaks is still whole for the next; so are the random numbers,
+ * which only a crash draws (see the rewind's recorder in rewind.js).
+ */
+export function cloneRide(ride) {
+  const { trail, random, ...rest } = ride;
+  return { ...structuredClone(rest), trail: copyRideTerrain(trail), random };
 }
 
 /** The point a camera follows on `ride`: the bike, or the rider once thrown off it. */
@@ -617,7 +635,7 @@ function advanceRide(ride, input, hooks, events) {
     crash(ride, "spike", spikeHit.x, spikeHit.y, events);
     return events;
   }
-  const underwater = ride.water.length ? wipedOut(ride, head) : null;
+  const underwater = ride.water.length ? wipedOut(ride, riderContacts) : null;
   if (underwater) {
     // The rider goes under as the bike stalls, so the wipe-out is the splash.
     const speed = hypot(rear.x - rear.ox, rear.y - rear.oy) / STEP;

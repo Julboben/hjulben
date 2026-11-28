@@ -279,6 +279,91 @@ canvas {
 .timer-icon {
     color: var(--color-hud-icon);
 }
+/* A restart rewinding the run (see js/rewind.js) plays it back as if on
+   tape: washed out and cool under scanlines, with a tracking band rolling up
+   the picture, in the rewind's time (--rewind-seconds, set by js/game.js),
+   and the timer's clock turned to rewind. A run started again at once
+   (data-rewound) gets a flourish of the same look, fading off the new run
+   in --flourish-seconds. */
+#canvas {
+    transition: filter 0.15s ease-out;
+}
+.game:is([data-rewinding], [data-rewound]) {
+    & .viewport::after {
+        content: "";
+        position: absolute;
+        z-index: 1;
+        inset: 0;
+        pointer-events: none;
+        background:
+            linear-gradient(
+                transparent 46%,
+                rgb(255 255 255 / 0.12) 50%,
+                transparent 54%
+            )
+                0 100% / 100% 300% no-repeat,
+            repeating-linear-gradient(
+                transparent 0 2px,
+                rgb(11 20 22 / 0.14) 2px 4px
+            ),
+            rgb(127 180 204 / 0.16);
+    }
+    /* Two pixels wider than the clock, it reaches into the pill's padding
+       rather than push the time along. */
+    & .timer-icon {
+        --icon: var(--icon-rewind);
+        --icon-w: 11;
+        --icon-h: 7;
+        margin-left: calc(-2 * var(--px, 2px));
+        color: var(--color-accent);
+    }
+}
+.game[data-rewinding] {
+    & #canvas {
+        filter: saturate(0.45) contrast(1.06);
+    }
+    & .viewport::after {
+        animation: rewind-tape var(--rewind-seconds) linear;
+    }
+}
+.game[data-rewound] {
+    & #canvas {
+        animation: rewound-picture var(--flourish-seconds) ease-out;
+    }
+    & .viewport::after {
+        animation: rewound-tape var(--flourish-seconds) ease-out forwards;
+    }
+}
+@keyframes rewound-picture {
+    from {
+        filter: saturate(0.45) contrast(1.06);
+    }
+}
+@keyframes rewound-tape {
+    from {
+        background-position: 0 70%, 0 0, 0 0;
+    }
+    to {
+        opacity: 0;
+        background-position: 0 0, 0 0, 0 0;
+    }
+}
+@keyframes rewind-tape {
+    from {
+        opacity: 0;
+    }
+    15% {
+        opacity: 1;
+    }
+    80% {
+        opacity: 1;
+        background-position: 0 20%, 0 0, 0 0;
+    }
+    to {
+        opacity: 0.2;
+        background-position: 0 0, 0 0, 0 0;
+    }
+}
 /* A quieter slot after the clock for the next medal in reach or the split
    against the ghost. The timer is the last pill, so it can grow and shrink
    with this slot without moving anything. */

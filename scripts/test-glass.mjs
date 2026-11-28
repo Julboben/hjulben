@@ -1,9 +1,8 @@
 import assert from 'node:assert/strict';
 import { RADIUS, STEP, GRAVITY, GLASS_WEIGHT_IMPACT } from '../js/config.js';
-import { createRide, stepRide } from '../js/ride.js';
+import { cloneRide, createRide, stepRide } from '../js/ride.js';
 import { terrainGeometry } from '../js/terrain.js';
 import { glassStrength, paneSize } from '../js/glass.js';
-import { cloneRide } from './lib/replay-bot.mjs';
 import { blockTrail, polygonBlock, rectangle } from './lib/terrain-fixtures.mjs';
 
 const PANE_TOP = 300;

@@ -258,55 +258,58 @@ for (const [name, draw, bounds] of [['driftwood', drawDriftwood, DRIFTWOOD_BOUND
   const placed = trail([]);
   const contacts = (x, y, radius) => terrainCollisionsAt(placed, x, y, radius);
   const dry = () => 0;
-  const roll = (state, seconds, { wheels = () => [], submerged = dry } = {}) => {
+  const roll = (state, seconds, { pushers = () => [], submerged = dry } = {}) => {
     for (let t = 0; t < seconds; t += 1 / 60)
-      state = ballStep(state, { dt: 1 / 60, wheels: wheels(t), wheelRadius: RADIUS, contacts, submerged });
+      state = ballStep(state, { dt: 1 / 60, pushers: pushers(t), contacts, submerged });
     return state;
   };
   const resting = ballStart(500, 320);
   assert.deepEqual(roll(resting, 2), resting, 'left alone, it stays put');
-  assert.equal(ballStep(resting, { dt: 0, wheels: [], wheelRadius: RADIUS, contacts, submerged: dry }), resting, 'still at time 0');
+  assert.equal(ballStep(resting, { dt: 0, pushers: [], contacts, submerged: dry }), resting, 'still at time 0');
   // Dropped, it bounces and comes to rest on the ground.
   const dropped = roll({ ...ballStart(500, 320), y: 200, resting: false }, 6);
   assert.ok(Math.abs(dropped.y - (320 - BALL_RADIUS)) < 1 && dropped.vx === 0 && dropped.vy === 0, `${dropped.y}`);
   // A wheel rolling into it sends it off ahead, rolling and turning.
-  const wheel = (from, speed) => (t) => [{ x: from + speed * t, y: 320 - RADIUS, vx: speed, vy: 0 }];
-  const pushed = roll(ballStart(500, 320), 0.5, { wheels: wheel(470, 200) });
+  const wheel = (from, speed) => (t) => [{ x: from + speed * t, y: 320 - RADIUS, vx: speed, vy: 0, radius: RADIUS }];
+  const pushed = roll(ballStart(500, 320), 0.5, { pushers: wheel(470, 200) });
   assert.ok(pushed.x > 520 && pushed.turn > 0, `pushed to ${pushed.x}`);
+  // So does the rider's head, smaller than a wheel, at the ball's height.
+  const headed = roll(ballStart(500, 320), 0.5, { pushers: (t) => [{ x: 480 + 200 * t, y: 320 - BALL_RADIUS, vx: 200, vy: 0, radius: 6 }] });
+  assert.ok(headed.x > 520, `headed to ${headed.x}`);
   // Sent into the wall, it bounces back off it.
   const thrown = roll({ ...ballStart(900, 320), vx: 400, resting: false }, 0.4);
   assert.ok(thrown.x < 1000 - BALL_RADIUS + 1 && thrown.vx < 0, `bounced to ${thrown.x} at ${thrown.vx}`);
   // A wheel's knock and a hard landing are heard, and the landing squashes it
   // for a moment; rolling along is silent.
-  const kicked = ballStep(ballStart(500, 320), { dt: 1 / 60, wheels: [{ x: 480, y: 310, vx: 300, vy: 0 }], wheelRadius: RADIUS, contacts, submerged: dry });
+  const kicked = ballStep(ballStart(500, 320), { dt: 1 / 60, pushers: [{ x: 480, y: 310, vx: 300, vy: 0, radius: RADIUS }], contacts, submerged: dry });
   assert.ok(kicked.knock > 200, `knocked at ${kicked.knock}`);
   let landing = { ...ballStart(500, 320), y: 150, resting: false }, landed = null;
   for (let t = 0; t < 2 && !landed; t += 1 / 60) {
-    landing = ballStep(landing, { dt: 1 / 60, wheels: [], wheelRadius: RADIUS, contacts, submerged: dry });
+    landing = ballStep(landing, { dt: 1 / 60, pushers: [], contacts, submerged: dry });
     if (landing.knock) landed = landing;
   }
   assert.ok(landed && landed.squash === 1 && landed.knock > 150, 'a hard landing is heard and squashes it');
   assert.ok(roll(landed, 0.2).squash === 0, 'and it springs back');
-  const rolling = ballStep({ ...ballStart(500, 320), vx: 80, resting: false }, { dt: 1 / 60, wheels: [], wheelRadius: RADIUS, contacts, submerged: dry });
+  const rolling = ballStep({ ...ballStart(500, 320), vx: 80, resting: false }, { dt: 1 / 60, pushers: [], contacts, submerged: dry });
   assert.equal(rolling.knock, 0, 'rolling along is silent');
   // It rolls to a stop, and can be pushed again, as often as the wheels like.
   const stopped = roll(pushed, 10);
   assert.ok(stopped.vx === 0 && stopped.x > pushed.x, 'rolls to a stop');
-  const again = roll(stopped, 0.5, { wheels: wheel(stopped.x + 30, -200) });
+  const again = roll(stopped, 0.5, { pushers: wheel(stopped.x + 30, -200) });
   assert.ok(again.x < stopped.x - 10, 'pushed back the other way');
   // Put on a slope it rests there until touched; once moving it rolls down
   // the slope rather than coming to rest on it.
   const onSlope = trail([]);
   onSlope.terrainBlocks.push(polygonBlock([[1200, 320], [1600, 220], [1600, 320]], 'sand', 'ramp'));
   const slopeContacts = (x, y, radius) => terrainCollisionsAt(onSlope, x, y, radius);
-  const rollOn = (state, seconds, wheels = () => []) => {
+  const rollOn = (state, seconds, pushers = () => []) => {
     for (let t = 0; t < seconds; t += 1 / 60)
-      state = ballStep(state, { dt: 1 / 60, wheels: wheels(t), wheelRadius: RADIUS, contacts: slopeContacts, submerged: dry });
+      state = ballStep(state, { dt: 1 / 60, pushers: pushers(t), contacts: slopeContacts, submerged: dry });
     return state;
   };
   const perched = ballStart(1400, 270);
   assert.deepEqual(rollOn(perched, 3), perched, 'rests on a slope where it was put');
-  const nudged = rollOn(perched, 3, (t) => (t < 0.1 ? [{ x: 1400 + 20, y: 258, vx: -60, vy: 0 }] : []));
+  const nudged = rollOn(perched, 3, (t) => (t < 0.1 ? [{ x: 1400 + 20, y: 258, vx: -60, vy: 0, radius: RADIUS }] : []));
   assert.ok(nudged.x < 1250, `rolls down the slope to ${nudged.x}`);
 
   // In water it floats up to the surface.

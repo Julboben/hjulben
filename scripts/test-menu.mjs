@@ -5,8 +5,10 @@
 // keys, the narrower layout that gives home's buttons way to the screen,
 // the trails' thumbnails, drawn ahead, the previews drawn in the game,
 // which wait until their screen opens, the flights between the backdrop and
-// the ride (Continue and Resume ride into it, and Escape out of it), and
-// where the Garage keeps its buttons.
+// the ride (Continue and Resume ride into it, and Escape out of a ride the
+// rider has set off on), the trail Continue leads to, the rewind a restart
+// plays (see test-rewind.mjs for its recorder), and where the Garage keeps
+// its buttons.
 //
 //   node scripts/test-menu.mjs
 //
@@ -165,6 +167,9 @@ await evaluate(`(async () => {
 })()`);
 await load(1280, 800, 2);
 await evaluate(PAGE_HELPERS);
+// Picked while the page is still hidden as it loads, Continue takes the focus
+// once it shows, so Enter presses it.
+check('Continue has the focus once the page has loaded', await page(`return document.activeElement?.id === 'menu-continue'`));
 const flight = await page(`
   const screen = document.getElementById('menu-screen'), game = document.getElementById('game');
   t.click('menu-continue'); await t.frames(2);
@@ -172,17 +177,48 @@ const flight = await page(`
   for (let i = 0; i < 180 && !screen.hidden; i++) await t.frames(1);
   return { flying, landed: screen.hidden, riding: !game.classList.contains('menu-open'), arrived: 'arrived' in game.dataset };`);
 check('Continue flies from the backdrop into the ride', flight.flying && flight.landed && flight.riding && flight.arrived, JSON.stringify(flight));
+// Before the rider sets off there is nothing to resume: Escape flies out to
+// the menu with Continue and the trail moving behind it, and Escape again
+// flies back into the ride waiting there.
+const WAITING = `
+  const screen = document.getElementById('menu-screen'), backdrop = document.getElementById('menu-background');
+  const { session } = await import('/js/state.js');
+  t.key('Escape'); await t.frames(2);
+  const at = { open: !screen.hidden, flewOut: screen.dataset.flying === 'out', label: document.getElementById('active-save-label').textContent,
+    title: document.getElementById('active-save-title').textContent, trail: session.trail.name, veil: Number(getComputedStyle(screen, '::before').opacity) };
+  for (let i = 0; i < 180 && 'flying' in screen.dataset; i++) await t.frames(1);
+  const drawn = backdrop.toDataURL();
+  await t.frames(30);
+  const moving = backdrop.toDataURL() !== drawn;
+  t.key('Escape'); await t.frames(2);
+  const flying = 'flying' in screen.dataset;
+  for (let i = 0; i < 180 && !screen.hidden; i++) await t.frames(1);
+  return { ...at, moving, flying, landed: screen.hidden, waiting: !session.ride.started };`;
+const waiting = await page(WAITING);
+check('Escape before setting off flies out to Continue, the trail moving behind it', waiting.open && waiting.flewOut && waiting.label === 'CONTINUE' && waiting.title === waiting.trail && waiting.moving, JSON.stringify(waiting));
+check('and Escape flies back into the ride waiting there', waiting.flying && waiting.landed && waiting.waiting, JSON.stringify(waiting));
+// Setting off makes the ride one to resume.
+await page(`
+  const game = document.getElementById('game');
+  const { session } = await import('/js/state.js');
+  game.dispatchEvent(new KeyboardEvent('keydown', { code: 'ArrowUp', key: 'ArrowUp', bubbles: true }));
+  for (let i = 0; i < 120 && !session.ride.started; i++) await t.frames(1);
+  window.dispatchEvent(new KeyboardEvent('keyup', { code: 'ArrowUp', key: 'ArrowUp' }));`);
 // Escape mid-ride opens the menu at once, usable, while the backdrop flies
-// out of the ride behind it.
+// out of the ride behind it, which holds still there.
 const reopened = await page(`
   const menu = document.getElementById('menu-screen'), backdrop = document.getElementById('menu-background');
   t.key('Escape'); await t.frames(2);
-  const at = { flying: menu.dataset.flying, open: !menu.hidden, usable: !menu.inert, selected: t.selected() };
+  const at = { flying: menu.dataset.flying, open: !menu.hidden, usable: !menu.inert, selected: t.selected(), label: document.getElementById('active-save-label').textContent };
   for (let i = 0; i < 180 && 'flying' in menu.dataset; i++) await t.frames(1);
   const screen = menu.getBoundingClientRect(), box = backdrop.getBoundingClientRect();
-  return { ...at, landed: !('flying' in menu.dataset), styled: backdrop.hasAttribute('style'), fits: box.width === screen.width && box.height === screen.height };`);
-check('Escape opens the menu at once, Resume ride picked', reopened.open && reopened.usable && reopened.selected === 'menu-continue', JSON.stringify(reopened));
+  const landed = backdrop.toDataURL();
+  await t.frames(30);
+  return { ...at, landed: !('flying' in menu.dataset), styled: backdrop.hasAttribute('style'), fits: box.width === screen.width && box.height === screen.height,
+    still: backdrop.toDataURL() === landed };`);
+check('Escape opens the menu at once, Resume ride picked', reopened.open && reopened.usable && reopened.selected === 'menu-continue' && reopened.label === 'RESUME RIDE', JSON.stringify(reopened));
 check('while the backdrop flies out of the ride, to land over the whole menu', reopened.flying === 'out' && reopened.landed && !reopened.styled && reopened.fits, JSON.stringify(reopened));
+check('and the ride behind the menu holds still, as a paused ride does', reopened.still, JSON.stringify(reopened));
 // Resume ride flies back into the ride the backdrop shows; Escape on the
 // way can't stop it. Gas pressed in the menu is held when the ride carries on.
 const resumed = await page(`
@@ -226,7 +262,67 @@ const stilled = await page(`
   for (let i = 0; i < 30 && !screen.hidden; i++) await t.frames(1);
   return { landed: screen.hidden, usable: !screen.inert, riding: !document.getElementById('game').classList.contains('menu-open') };`);
 await chrome.send('Emulation.setEmulatedMedia', { features: [] }, session);
+// The page hears of the change a little later: wait for the game to before
+// the rewind checks, which reduced motion turns into plain restarts.
+await page(`
+  const state = await import('/js/state.js');
+  for (let i = 0; i < 60 && state.reducedMotion; i++) await t.frames(1);`);
 check('reduced motion turned on mid-flight lands it', stilled.landed && stilled.usable && stilled.riding, JSON.stringify(stilled));
+
+// --- Restarting: hands off the controls, the run rewinds to the start; with a
+// hand on them, or once one is pressed, it starts again at once under a flourish
+const RIDE = `
+  const game = document.getElementById('game');
+  const { session } = await import('/js/state.js');
+  const ride = (type, code) => (type === 'keyup' ? window : game).dispatchEvent(new KeyboardEvent(type, { code, key: code, bubbles: true }));
+  ride('keydown', 'ArrowUp');
+  for (let i = 0; i < 300 && session.ride.elapsed < 1.3; i++) await t.frames(1);`;
+const RIDE_AND_RESTART = `${RIDE}
+  ride('keyup', 'ArrowUp');
+  ride('keydown', 'KeyR'); ride('keyup', 'KeyR');
+  const rewinding = 'rewinding' in game.dataset;`;
+const rewound = await page(`${RIDE_AND_RESTART}
+  let frames = 0;
+  for (; frames < 120 && 'rewinding' in game.dataset; frames++) await t.frames(1);
+  return { rewinding, frames, back: !('rewinding' in game.dataset), elapsed: session.ride.elapsed, state: session.state };`);
+check('R rewinds a run to the start', rewound.rewinding && rewound.back && rewound.frames > 10 && rewound.elapsed === 0 && rewound.state === 'running', JSON.stringify(rewound));
+// Losing the focus during a rewind skips to the new run, which waits paused.
+const blurred = await page(`${RIDE_AND_RESTART}
+  await t.frames(3);
+  window.dispatchEvent(new Event('blur'));
+  await t.frames(2);
+  const result = { rewinding, back: !('rewinding' in game.dataset), state: session.state, steps: session.ride.steps };
+  document.getElementById('pause-overlay').click(); await t.frames(2);
+  return result;`);
+check('and losing the focus during it starts the run paused', blurred.rewinding && blurred.back && blurred.state === 'paused' && blurred.steps === 0, JSON.stringify(blurred));
+const skipped = await page(`${RIDE_AND_RESTART}
+  await t.frames(2);
+  ride('keydown', 'ArrowUp'); await t.frames(2);
+  const result = { rewinding, back: !('rewinding' in game.dataset), flourish: 'rewound' in game.dataset, gas: session.ride.throttle };
+  ride('keyup', 'ArrowUp');
+  return result;`);
+check('and gas pressed during it skips to the run, gas held, under the flourish', skipped.rewinding && skipped.back && skipped.flourish && skipped.gas > 0, JSON.stringify(skipped));
+const instant = await page(`${RIDE}
+  ride('keydown', 'KeyR'); ride('keyup', 'KeyR');
+  const at = { rewinding: 'rewinding' in game.dataset, flourish: 'rewound' in game.dataset, steps: session.ride.steps };
+  for (let i = 0; i < 60 && 'rewound' in game.dataset; i++) await t.frames(1);
+  ride('keyup', 'ArrowUp');
+  return { ...at, ended: !('rewound' in game.dataset) };`);
+check('gas held at R starts the run again at once, under the flourish', !instant.rewinding && instant.flourish && instant.steps === 0 && instant.ended, JSON.stringify(instant));
+// A wait at the line isn't riding: a short ride after one restarts at once.
+const waited = await page(`
+  const game = document.getElementById('game');
+  const { session } = await import('/js/state.js');
+  const ride = (type, code) => (type === 'keyup' ? window : game).dispatchEvent(new KeyboardEvent(type, { code, key: code, bubbles: true }));
+  ride('keydown', 'KeyR'); ride('keyup', 'KeyR');
+  for (let i = 0; i < 120 && ('rewinding' in game.dataset || 'rewound' in game.dataset); i++) await t.frames(1);
+  await t.frames(90);
+  ride('keydown', 'ArrowUp');
+  for (let i = 0; i < 120 && session.ride.elapsed < 0.4; i++) await t.frames(1);
+  ride('keyup', 'ArrowUp');
+  ride('keydown', 'KeyR'); ride('keyup', 'KeyR');
+  return { rewinding: 'rewinding' in game.dataset, steps: session.ride.steps };`);
+check('a short ride after a wait at the line restarts at once', !waited.rewinding && waited.steps === 0, JSON.stringify(waited));
 
 // --- Buttons for a whole screen: in its head on a wide screen, where the page
 // has them on a phone. A screen starts on what it shows, not on them.
@@ -260,6 +356,33 @@ await evaluate(PAGE_HELPERS);
 const phoneScreens = await page(placed);
 check('phone: the Garage\'s buttons make a bar along the bottom', phoneScreens.garage.view === 'look' && !phoneScreens.garage.inHead && phoneScreens.garage.pinned, JSON.stringify(phoneScreens.garage));
 check('phone: and Reset and Credits stay in Settings', !phoneScreens.settings.reset && !phoneScreens.settings.credits && phoneScreens.settings.about, JSON.stringify(phoneScreens.settings));
+
+// --- Continue leads on to the next trail not yet finished, not back to the
+// one opened last.
+await evaluate(`(async () => {
+  const storage = await import('/js/storage.js'), { trails, officialTrailEntries } = await import('/js/trails.js'), { trailKey } = await import('/js/state.js');
+  officialTrailEntries.slice(0, 2).forEach(entry => storage.saveBest(0, trailKey(entry), 30, trails.length));
+  storage.saveProgress(0, 0, 2, trails.length);
+})()`);
+await load(1280, 800, 2);
+const next = await evaluate(`(async () => {
+  const { trails } = await import('/js/trails.js');
+  return { title: document.getElementById('active-save-title').textContent, third: trails[2].name };
+})()`);
+check('Continue names the next trail not yet finished', next.title === next.third, JSON.stringify(next));
+// An earlier trail opened since, before the rider sets off on it, is the one
+// Continue leads back to. Picked from Trails, the menu closed on that screen,
+// whose veil home doesn't show even for a moment.
+await evaluate(PAGE_HELPERS);
+await page(`
+  const screen = document.getElementById('menu-screen');
+  t.click('menu-trails'); await t.frames(3);
+  document.querySelector('#menu-trail-grid .trail-card').click();
+  for (let i = 0; i < 180 && !screen.hidden; i++) await t.frames(1);
+  await t.frames(30);`);
+const earlier = await page(WAITING);
+check('Continue leads back to an earlier trail opened, not the next one', earlier.label === 'CONTINUE' && earlier.title === earlier.trail && earlier.title !== next.third && earlier.landed, JSON.stringify(earlier));
+check('and the menu opens on home without the veil of Trails, which it closed on', earlier.veil === 0, JSON.stringify(earlier));
 
 clearTimeout(timer);
 await chrome.close();

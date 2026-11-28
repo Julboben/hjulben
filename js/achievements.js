@@ -182,6 +182,12 @@ export const ACHIEVEMENTS = /** @type {readonly Achievement[]} */ (Object.freeze
     blurb: 'Give Coda the corgi some attention.', interact: 'corgi'
   },
   {
+    id: 'king-of-the-castle', group: 'riding', name: 'King of the Castle', icon: 'castle',
+    blurb: 'Bring the beach ball all the way up to the flag on Sandcastle.',
+    // Only Sandcastle's keep: a beach ball beside another trail's finish proves nothing.
+    event: e => e.type === 'ball-at-flag' && e.trail === 'official:sandcastle'
+  },
+  {
     id: 'natural-talent', group: 'riding', name: 'Natural Talent', icon: 'star',
     blurb: 'Finish 5 trails on your first ride of them.', stat: 'first-rides', goal: 5
   },
@@ -447,6 +453,13 @@ export function createFeatTracker(step) {
 
 /** The ids a ride event or feat earns. */
 export const eventAchievements = event => ACHIEVEMENTS.filter(a => a.event?.(event)).map(a => a.id);
+
+/**
+ * Whether a beach ball (its centre) has been brought to a trail's finish
+ * `flower`: on the ground under it, or higher, and no further either side
+ * than the flower's ground reaches on Sandcastle's keep.
+ */
+export const ballAtFlag = (ball, flower) => Math.abs(ball.x - flower.x) < 80 && ball.y < flower.y + 70;
 
 /** The ids a finished run earns. @param {FinishedRun} run */
 export const finishAchievements = run => ACHIEVEMENTS.filter(a => a.finish?.(run)).map(a => a.id);

@@ -81,7 +81,6 @@ export const session = {
   customTrailIndex: -1,
   /** @type {import('./cosmetics.js').Look} */ look: DEFAULT_LOOK,
   unlockedTrail: 0,
-  savedTrail: 0,
   /** @type {any} */ saveGame: null,
   /** @type {any[]} */ saveSlots: [null, null, null],
   activeSaveSlot: 0,

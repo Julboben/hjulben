@@ -3294,6 +3294,20 @@ const SCRAMBLER_ENGINE = [
   " kkkkkkkk ",
 ];
 
+/**
+ * How far a startled bird has flown from its perch `age` seconds after
+ * taking off, away from the rider (`dir`, ±1): a steep take-off that
+ * flattens out.
+ */
+export const birdFlight = (age, dir) => ({ x: dir * (50 * age + 90 * age * age), y: -(80 * age + 40 * age * age) });
+
+/**
+ * How far a startled duck has flown from where it sat `age` seconds after
+ * taking off, away from the rider (`dir`, ±1): a run across the water, then
+ * up and away.
+ */
+export const duckFlight = (age, dir) => ({ x: dir * (40 * age + 70 * age * age), y: -(30 * age + 50 * age * age) });
+
 function parseColor(color) {
   const hex = color.replace("#", "");
   const value =
@@ -5850,10 +5864,10 @@ export function createGameArt(ctx) {
       }
       const flight = scene.flight;
       if (flight) {
-        // A run across the water, then up and away from the rider.
         const age = flight.age;
         const dir = flight.dir * (mirrored ? -1 : 1);
-        ctx.translate(snap(dir * (40 * age + 70 * age * age)), snap(wave(0) - (30 * age + 50 * age * age)));
+        const at = duckFlight(age, dir);
+        ctx.translate(snap(at.x), snap(wave(0) + at.y));
         ctx.scale(dir, 1);
         drawDuckFlying(tools, Math.floor(age * 10) % 2 === 0);
         return;
@@ -6554,11 +6568,11 @@ export function createGameArt(ctx) {
       const tools = { pixelRect };
       const flight = scene.flight;
       if (flight) {
-        // Away from the rider: a steep take-off that flattens out.
         const age = flight.age;
         const dir = flight.dir * (mirrored ? -1 : 1);
         const snap = (value) => Math.round(value / ART_PIXEL) * ART_PIXEL;
-        ctx.translate(snap(dir * (50 * age + 90 * age * age)), snap(-(80 * age + 40 * age * age)));
+        const at = birdFlight(age, dir);
+        ctx.translate(snap(at.x), snap(at.y));
         ctx.scale(dir, 1);
         drawBirdFlying(tools, Math.floor(age * 14) % 2 === 0);
       } else {

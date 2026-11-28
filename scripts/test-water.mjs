@@ -8,7 +8,7 @@ import { trailHash } from '../js/trail-hash.js';
 import { WATER_SIZE, WATER_WIPEOUT_DEPTH, createWaterSurface, deepWater, normalizeWater, waterAt, wheelImmersion, windWaves } from '../js/water.js';
 import { resolveWeather } from '../js/weather.js';
 import { terrainGeometry } from '../js/terrain.js';
-import { rectangle } from './lib/terrain-fixtures.mjs';
+import { polygonBlock, rectangle } from './lib/terrain-fixtures.mjs';
 import { propSpan, propWallFit, waterPropAt } from '../js/drawing.js';
 import { DRAGONFLY_RANGE, FISH_HALF, FISH_RANGE, FROG_LEAP, SURFACE_PROPS, WATER_PROPS, dragonflyAt, fishDart, fishSwim, frogLeap, risingBubbles } from '../js/water-props.js';
 
@@ -68,6 +68,19 @@ const errors = trail => validateTrail(trail).filter(message => message.type === 
   const ford = run([{ x: 400, y: 320 - WATER_WIPEOUT_DEPTH, width: 500, depth: WATER_WIPEOUT_DEPTH }]);
   assert.notEqual(ford.ride.status, 'crashed', 'a ford no deeper than the threshold is rideable');
   assert.ok(ford.ride.rear.x < dry.ride.rear.x - 20, 'water slows the bike');
+}
+
+// A wheel dropping into a dip in a ford's bed, deeper than a ford, is no
+// wipe-out while the rider stays above the water: they ride on through.
+{
+  const dip = flatTrail({
+    terrainBlocks: [polygonBlock([[0, 320], [560, 320], [620, 350], [820, 350], [845, 378], [870, 350], [1080, 350], [1140, 320], [3000, 320], [3000, 620], [0, 620]])],
+    water: [{ x: 560, y: 320, width: 580, depth: 58 }],
+  });
+  const steady = Array.from({ length: 1400 }, (_, i) => ({ facing: 1, leanInput: 0, accelerating: i % 20 < 8, braking: false }));
+  const { ride } = simulateRun(dip, steady);
+  assert.equal(ride.status, 'running', `rides through the dip (${ride.crashCause})`);
+  assert.ok(ride.rear.x > 1140, `and out of the ford (${ride.rear.x.toFixed(0)})`);
 }
 
 // Riding into deep water wipes the rider out, and the rider floats upright.

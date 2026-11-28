@@ -6,8 +6,9 @@ import { readFileSync } from 'node:fs';
 import {
   ACHIEVEMENTS, ACHIEVEMENT_GROUPS, achievement, statGains, eventAchievements, finishAchievements,
   interactAchievements, eggAchievements, editorAchievements, editorProgress, bikeBroken, hasAchievement, newlyEarned, cleanAchievements, cleanStats, mergeAchievements, mergeStats, aheadOf,
-  createFeatTracker, statProgressText, finishGains
+  createFeatTracker, statProgressText, finishGains, ballAtFlag
 } from '../js/achievements.js';
+import { createRide } from '../js/ride.js';
 import { createLimWatcher } from '../js/easter-eggs.js';
 import { UNLOCKS, trailUnlock, lookUnlock, unlockStatus } from '../js/unlocks.js';
 import { lookItem } from '../js/cosmetics.js';
@@ -314,6 +315,23 @@ const trailIds = new Set(catalog.trails.map(entry => entry.id));
   const restored = storage.loadSaveSlots(9)[index];
   assert.deepEqual(restored.achievements, { splashdown: 3 }, 'logging in brings the cloud achievements');
   assert.deepEqual(restored.stats, { panes: 2 });
+}
+
+{
+  // King of the Castle: the beach ball on the top of Sandcastle's keep, by
+  // the flag, counts; where it starts, in the gate hall, and on the roof
+  // beside the keep, it doesn't.
+  const sandcastle = JSON.parse(readFileSync(new URL('../trails/official/37-sandcastle.json', import.meta.url), 'utf8'));
+  const { flower } = createRide(sandcastle);
+  const onGround = (x, groundY) => ({ x, y: groundY - 10 });
+  assert.ok(ballAtFlag(onGround(flower.x, -940), flower), 'a ball on the keep by the flag is there');
+  assert.ok(ballAtFlag(onGround(flower.x - 55, -940), flower), 'anywhere on the keep\'s top');
+  assert.ok(ballAtFlag({ x: flower.x, y: flower.y - 40 }, flower), 'or bouncing above it');
+  const start = sandcastle.props.find(prop => prop.type === 'beach-ball');
+  assert.ok(!ballAtFlag(onGround(start.x, start.y), flower), 'not where it starts');
+  assert.ok(!ballAtFlag(onGround(flower.x + 150, -813), flower), 'nor on the roof beside the keep');
+  assert.deepEqual(eventAchievements({ type: 'ball-at-flag', trail: 'official:sandcastle' }), ['king-of-the-castle'], 'on Sandcastle it counts');
+  assert.deepEqual(eventAchievements({ type: 'ball-at-flag', trail: 'custom:beach' }), [], 'on any other trail it doesn\'t');
 }
 
 console.log('Achievement tests passed.');

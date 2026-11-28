@@ -12,9 +12,9 @@
 import { spawn } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { STEP } from '../js/config.js';
-import { createRide, stepRide } from '../js/ride.js';
+import { cloneRide, createRide, stepRide } from '../js/ride.js';
 import { decodeInputs } from '../js/replay-codec.js';
-import { MILLION, cloneRide, exploreTrail, recordTrail } from './lib/replay-bot.mjs';
+import { MILLION, exploreTrail, recordTrail } from './lib/replay-bot.mjs';
 import { loadCatalogTrails, replayFile, repoRoot } from './lib/trails.mjs';
 
 const BUDGET = (Number(process.env.PROBE_BUDGET) || 8) * MILLION;
